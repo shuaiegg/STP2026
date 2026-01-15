@@ -4,8 +4,19 @@ import prisma from '@/lib/prisma';
 import { uploadImageFromUrl } from '@/lib/storage';
 import { ContentStatus, ContentSource } from '@prisma/client';
 
+// Schema update: readingTime added
+
 // Initialize notion-to-md
 const n2m = new NotionToMarkdown({ notionClient: notion });
+
+// Add custom image transformer to ensure we get the URL as markdown
+n2m.setCustomTransformer('image', async (block: any) => {
+    const { image } = block;
+    const url = image.file?.url || image.external?.url || '';
+    const caption = image.caption?.[0]?.plain_text || '';
+    if (!url) return '';
+    return `![${caption}](${url})`;
+});
 
 // Types for Notion API responses
 type NotionPage = any; // Simplified for now
@@ -49,28 +60,51 @@ function getPropertyValue(page: NotionPage, propertyName: string): string | null
 async function findCategoryByName(name: string | null): Promise<string | null> {
     if (!name) return null;
 
-    // Try to find existing category
-    const category = await prisma.category.findFirst({
+    // Generate a valid slug - allow alphanumeric, Chinese characters, and hyphens
+    let slug = name
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, '-')
+        .replace(/[^\w\u4e00-\u9fa5-]/g, '');
+
+    // If slug becomes empty after stripping, fallback to a random string or hash
+    if (!slug) {
+        slug = `cat-${Math.random().toString(36).substring(2, 7)}`;
+    }
+
+    // Try to find existing category by name or slug
+    const existingCategory = await prisma.category.findFirst({
         where: {
-            name: {
-                equals: name,
-                mode: 'insensitive',
-            },
+            OR: [
+                {
+                    name: {
+                        equals: name,
+                        mode: 'insensitive',
+                    },
+                },
+                {
+                    slug: slug,
+                },
+            ],
         },
     });
 
-    if (category) return category.id;
+    if (existingCategory) return existingCategory.id;
 
-    // Auto-create category if it doesn't exist
-    const newCategory = await prisma.category.create({
-        data: {
+    // Use upsert to handle possible race conditions and ensure slug uniqueness
+    const category = await prisma.category.upsert({
+        where: { slug: slug },
+        update: {
+            name: name, // Ensure name is synced if it matches slug but not exact name
+        },
+        create: {
             name: name,
-            slug: name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, ''),
+            slug: slug,
             isActive: true,
         },
     });
 
-    return newCategory.id;
+    return category.id;
 }
 
 /**
@@ -81,12 +115,16 @@ async function processMarkdownImages(
     markdown: string,
     pageId: string
 ): Promise<string> {
-    // Regex to find Notion image URLs in markdown
-    const imageRegex = /!\[([^\]]*)\]\((https:\/\/[^)]+notion[^)]+)\)/g;
+    // Regex to find ANY external image URLs in markdown
+    const imageRegex = /!\[([^\]]*)\]\((https?:\/\/[^)]+)\)/g;
     let processedMarkdown = markdown;
     let match;
 
+    console.log(`[Sync] Processing images in markdown...`);
+    let imageCount = 0;
+
     while ((match = imageRegex.exec(markdown)) !== null) {
+        imageCount++;
         const [fullMatch, altText, imageUrl] = match;
 
         try {
@@ -112,24 +150,68 @@ async function processMarkdownImages(
 }
 
 /**
+ * Calculate estimated reading time in minutes
+ */
+function calculateReadingTime(content: string): number {
+    if (!content) return 1;
+    // Remove markdown image syntax and links to get cleaner text
+    const cleanText = content.replace(/!\[.*?\]\(.*?\)/g, '').replace(/\[(.*?)\]\(.*?\)/g, '$1');
+    // For Chinese/Japanese/Korean, count characters. For others, count words.
+    // Simple heuristic: if there are CJK characters, use char count / 300, else word count / 200
+    const hasCJK = /[\u4e00-\u9fa5]/.test(cleanText);
+    if (hasCJK) {
+        const charCount = cleanText.replace(/\s+/g, '').length;
+        return Math.max(1, Math.ceil(charCount / 300));
+    } else {
+        const wordCount = cleanText.split(/\s+/).length;
+        return Math.max(1, Math.ceil(wordCount / 200));
+    }
+}
+
+/**
  * Sync a single Notion page to the database
  */
-export async function syncNotionPage(pageId: string): Promise<SyncResult> {
+export async function syncNotionPage(pageId: string, force: boolean = false): Promise<SyncResult> {
     try {
         // Fetch the page
         const page = await notion.pages.retrieve({ page_id: pageId }) as NotionPage;
+        const lastEditedAt = new Date(page.last_edited_time);
 
         // Extract properties
         const title = (getPropertyValue(page, 'Title') || 'Untitled').trim();
         let slug = getPropertyValue(page, 'Slug');
-        const summary = getPropertyValue(page, 'Summary');
-        const categoryName = getPropertyValue(page, 'Category');
-        const coverUrl = getPropertyValue(page, 'Cover') || page.cover?.external?.url || page.cover?.file?.url;
-        const status = getPropertyValue(page, 'Status');
 
         if (slug) {
             slug = slug.trim().replace(/^\/+/, '');
         }
+
+        // Check if we can skip sync based on last_edited_time
+        if (!force && slug) {
+            const existing = await prisma.content.findUnique({
+                where: { notionPageId: pageId },
+                select: { notionLastEditedAt: true }
+            });
+
+            if (existing?.notionLastEditedAt) {
+                const existingTime = existing.notionLastEditedAt.getTime();
+                const newTime = lastEditedAt.getTime();
+
+                console.log(`[Sync] Comparing timestamps for "${title}": Existing=${existingTime}, New=${newTime}`);
+
+                if (existingTime === newTime) {
+                    console.log(`[Sync] Skipping unchanged page: "${title}" (${slug})`);
+                    return { success: true, slug };
+                }
+            }
+        }
+
+        const summary = getPropertyValue(page, 'Summary');
+        const categoryName = getPropertyValue(page, 'Category');
+        const coverUrl = getPropertyValue(page, 'Cover') || page.cover?.external?.url || page.cover?.file?.url;
+        const status = getPropertyValue(page, 'Status');
+        const notionReadingTime = getPropertyValue(page, 'ReadingTime') || getPropertyValue(page, 'Minutes');
+
+        console.log(`[Sync] Processing page: "${title}", Summary: "${summary}"`);
 
         if (!slug) {
             return { success: false, error: 'Page missing required Slug property' };
@@ -145,6 +227,13 @@ export async function syncNotionPage(pageId: string): Promise<SyncResult> {
 
         // 2. Fetch from page blocks (standard way)
         const mdBlocks = await n2m.pageToMarkdown(pageId);
+
+        // Debug: Log if images are found in blocks
+        const imageBlocks = mdBlocks.filter(b => b.type === 'image');
+        if (imageBlocks.length > 0) {
+            console.log(`[Sync] Found ${imageBlocks.length} image blocks in page ${pageId}`);
+        }
+
         let bodyMd = n2m.toMarkdownString(mdBlocks).parent || '';
 
         // Use property value if exists, otherwise use body
@@ -157,6 +246,15 @@ export async function syncNotionPage(pageId: string): Promise<SyncResult> {
 
         // Process and localize images
         contentMd = await processMarkdownImages(contentMd, pageId);
+
+        // Calculate reading time
+        let readingTime = 1;
+        if (notionReadingTime) {
+            const parsed = parseInt(notionReadingTime);
+            readingTime = isNaN(parsed) ? calculateReadingTime(contentMd) : parsed;
+        } else {
+            readingTime = calculateReadingTime(contentMd);
+        }
 
         // Find category (don't auto-create!)
         const categoryId = await findCategoryByName(categoryName);
@@ -175,18 +273,20 @@ export async function syncNotionPage(pageId: string): Promise<SyncResult> {
         }
 
         // Upsert content
-        const content = await prisma.content.upsert({
+        // @ts-ignore - Ignore temporary sync issues with generated client
+        const content = await (prisma.content as any).upsert({
             where: { notionPageId: pageId },
             update: {
                 title,
                 slug,
                 summary,
                 contentMd,
-                categoryId,
-                coverImageId,
+                category: categoryId ? { connect: { id: categoryId } } : { disconnect: true },
+                coverImage: coverImageId ? { connect: { id: coverImageId } } : { disconnect: true },
+                readingTime: readingTime || 1,
                 status: ContentStatus.PUBLISHED,
                 publishedAt: new Date(),
-                notionLastEditedAt: new Date(page.last_edited_time),
+                notionLastEditedAt: lastEditedAt,
                 updatedAt: new Date(),
             },
             create: {
@@ -195,15 +295,15 @@ export async function syncNotionPage(pageId: string): Promise<SyncResult> {
                 slug,
                 summary,
                 contentMd,
-                categoryId,
-                coverImageId,
+                category: categoryId ? { connect: { id: categoryId } } : undefined,
+                coverImage: coverImageId ? { connect: { id: coverImageId } } : undefined,
+                readingTime: readingTime || 1,
                 status: ContentStatus.PUBLISHED,
                 source: ContentSource.NOTION,
                 publishedAt: new Date(),
-                notionLastEditedAt: new Date(page.last_edited_time),
+                notionLastEditedAt: lastEditedAt,
             },
         });
-
         return { success: true, contentId: content.id, slug: content.slug };
     } catch (error) {
         console.error('Sync error:', error);
@@ -214,12 +314,13 @@ export async function syncNotionPage(pageId: string): Promise<SyncResult> {
 /**
  * Sync all pages from the Notion database
  */
-export async function syncAllNotionPages(): Promise<{
+export async function syncAllNotionPages(options: { force?: boolean } = {}): Promise<{
     total: number;
     synced: number;
     failed: number;
     results: SyncResult[];
 }> {
+    const { force = false } = options;
     // Create sync log
     const syncLog = await prisma.syncLog.create({
         data: { status: 'running' },
@@ -234,18 +335,29 @@ export async function syncAllNotionPages(): Promise<{
             throw new Error('NOTION_DATABASE_ID is not defined in environment variables');
         }
 
-        // Query all pages from Notion database
-        const response = await notion.databases.query({
-            database_id: NOTION_DATABASE_ID,
-            filter: {
-                property: 'Status',
-                select: {
-                    equals: 'Ready',
-                },
-            },
-        });
+        // Query all pages from Notion database with pagination
+        let results_all: any[] = [];
+        let hasMore = true;
+        let cursor: string | undefined = undefined;
 
-        const total = response.results.length;
+        while (hasMore) {
+            const response = await notion.databases.query({
+                database_id: NOTION_DATABASE_ID,
+                filter: {
+                    property: 'Status',
+                    select: {
+                        equals: 'Ready',
+                    },
+                },
+                start_cursor: cursor,
+            });
+
+            results_all = [...results_all, ...response.results];
+            hasMore = response.has_more;
+            cursor = response.next_cursor || undefined;
+        }
+
+        const total = results_all.length;
 
         // Update sync log with total
         await prisma.syncLog.update({
@@ -254,8 +366,11 @@ export async function syncAllNotionPages(): Promise<{
         });
 
         // Process each page
-        for (const page of response.results) {
-            const result = await syncNotionPage(page.id);
+        for (const page of results_all) {
+            // Add a small delay between requests to avoid overwhelming the connection
+            await new Promise(resolve => setTimeout(resolve, 300));
+
+            const result = await syncNotionPage(page.id, force);
             results.push(result);
 
             if (result.success) {

@@ -46,9 +46,9 @@ model Content {
   notionLastEditedAt DateTime?
   source             ContentSource  @default(NOTION)
   categoryId         String?
-  readingTime        Int?
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
+  readingTime        Int?
   category           Category?      @relation(fields: [categoryId], references: [id])
   coverImage         Media?         @relation("ContentCover", fields: [coverImageId], references: [id])
   previewTokens      PreviewToken[]
@@ -172,3 +172,5 @@ enum UserRole {
   ADMIN
   EDITOR
 }
+
+

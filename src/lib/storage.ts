@@ -33,10 +33,30 @@ export async function uploadImageFromUrl(
         }
     }
 
-    // Download the image
-    const response = await fetch(imageUrl);
-    if (!response.ok) {
-        throw new Error(`Failed to download image: ${response.statusText}`);
+    // Download the image with retry logic
+    let response: Response | null = null;
+    let retries = 3;
+    let lastError: any;
+
+    while (retries > 0) {
+        try {
+            response = await fetch(imageUrl);
+            if (response.ok) break;
+            throw new Error(`Failed to download image: ${response.statusText}`);
+        } catch (error: any) {
+            lastError = error;
+            if (error.code === 'ECONNRESET' || error.message?.includes('socket disconnected')) {
+                console.warn(`[Storage] Connection reset for image ${imageUrl}, retrying... (${retries} left)`);
+                retries--;
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                continue;
+            }
+            throw error;
+        }
+    }
+
+    if (!response || !response.ok) {
+        throw lastError || new Error(`Failed to download image after retries`);
     }
 
     const contentType = response.headers.get('content-type') || 'image/png';

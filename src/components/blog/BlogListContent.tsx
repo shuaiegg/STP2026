@@ -20,6 +20,7 @@ interface Post {
     summary: string | null;
     publishedAt: Date | string | null;
     category: Category | null;
+    readingTime: number | null;
     coverImage?: {
         id: string;
         storageUrl: string | null;
@@ -105,7 +106,7 @@ export default function BlogListContent({ initialPosts, categories }: BlogListCo
                                     </p>
                                     <div className="mt-auto flex items-center justify-between pt-6 border-t border-brand-border text-[10px] font-bold uppercase tracking-wider text-brand-text-muted">
                                         <span>{formatDate(post.publishedAt)}</span>
-                                        <span>阅读时间 约 10 min</span>
+                                        <span>阅读时间 约 {post.readingTime || 10} min</span>
                                     </div>
                                 </div>
                             </Card>

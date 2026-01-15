@@ -6,9 +6,9 @@ import { revalidatePath } from 'next/cache';
 /**
  * Server Action: Sync all content from Notion
  */
-export async function syncAllContent() {
+export async function syncAllContent(options: { force?: boolean } = {}) {
     try {
-        const result = await syncAllNotionPages();
+        const result = await syncAllNotionPages(options);
 
         // Revalidate blog pages
         revalidatePath('/blog');
