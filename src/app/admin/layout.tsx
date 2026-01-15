@@ -32,9 +32,24 @@ const NavItem = ({ href, icon: Icon, label, active }: { href: string; icon: any;
     </Link>
 );
 
+import { authClient } from '@/lib/auth-client';
+import { useRouter } from 'next/navigation';
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
+    const router = useRouter();
     const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
+    const { data: session, isPending } = authClient.useSession();
+
+    const handleSignOut = async () => {
+        await authClient.signOut({
+            fetchOptions: {
+                onSuccess: () => {
+                    router.push('/admin/login');
+                }
+            }
+        });
+    };
 
     const navItems = [
         { href: '/admin', icon: LayoutDashboard, label: '控制面板' },
@@ -86,7 +101,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             <ExternalLink size={20} />
                             <span className="font-semibold">返回官网</span>
                         </Link>
-                        <Button variant="ghost" className="justify-start gap-3 px-4 py-3 h-auto rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600 transition-all font-semibold">
+                        <Button
+                            variant="ghost"
+                            onClick={handleSignOut}
+                            className="justify-start gap-3 px-4 py-3 h-auto rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600 transition-all font-semibold"
+                        >
                             <LogOut size={20} />
                             <span>退出登录</span>
                         </Button>
@@ -118,12 +137,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
                     <div className="flex items-center gap-6">
                         <div className="flex flex-col items-end hidden sm:flex">
-                            <span className="text-sm font-bold text-slate-900">管理员</span>
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-brand-primary">超级权限</span>
+                            <span className="text-sm font-bold text-slate-900">{session?.user?.name || (isPending ? '加载中...' : '管理员')}</span>
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-brand-primary">
+                                {(session?.user as any)?.role === 'ADMIN' ? '超级权限' : '管理员'}
+                            </span>
                         </div>
                         <div className="w-12 h-12 rounded-2xl bg-slate-200 border-2 border-white shadow-sm overflow-hidden">
-                            {/* Avatar Placeholder */}
-                            <div className="w-full h-full bg-gradient-to-br from-brand-primary to-purple-600" />
+                            {session?.user?.image ? (
+                                <img src={session.user.image} alt="Avatar" className="w-full h-full object-cover" />
+                            ) : (
+                                <div className="w-full h-full bg-gradient-to-br from-brand-primary to-purple-600" />
+                            )}
                         </div>
                     </div>
                 </header>
