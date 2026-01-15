@@ -18,9 +18,7 @@ export default function RootLayout({
   return (
     <html lang="zh-Hans">
       <body className="antialiased text-brand-text-primary bg-brand-background">
-        <MainLayout>
-          {children}
-        </MainLayout>
+        {children}
       </body>
     </html>
   );

@@ -1,145 +1,76 @@
 'use server';
 
-import {
-    publishContent,
-    archiveContent,
-    generatePreviewToken,
-} from '@/lib/content';
-import { revalidatePath } from 'next/cache';
-import { uploadImageFromUrl } from '@/lib/storage';
 import prisma from '@/lib/prisma';
-import { ContentStatus, ContentSource } from '@prisma/client';
+import { updateNotionPageProperties } from '@/lib/notion/client';
+import { revalidatePath } from 'next/cache';
 
-/**
- * Server Action: Publish content
- */
-export async function publishContentAction(contentId: string) {
+export async function updateContentMetadata(id: string, data: {
+    title?: string;
+    slug?: string;
+    summary?: string;
+    contentMd?: string;
+}) {
     try {
-        const content = await publishContent(contentId);
-
-        revalidatePath('/blog');
-        revalidatePath(`/blog/${content.slug}`);
-
-        return {
-            success: true,
-            message: `Published: ${content.title}`,
-        };
-    } catch (error) {
-        return {
-            success: false,
-            message: String(error),
-        };
-    }
-}
-
-/**
- * Server Action: Archive content
- */
-export async function archiveContentAction(contentId: string) {
-    try {
-        const content = await archiveContent(contentId);
-
-        revalidatePath('/blog');
-        revalidatePath(`/blog/${content.slug}`);
-
-        return {
-            success: true,
-            message: `Archived: ${content.title}`,
-        };
-    } catch (error) {
-        return {
-            success: false,
-            message: String(error),
-        };
-    }
-}
-
-/**
- * Server Action: Generate preview token
- */
-export async function generatePreviewTokenAction(contentId: string) {
-    try {
-        const token = await generatePreviewToken(contentId, 24);
-        const previewUrl = `${process.env.NEXT_PUBLIC_APP_URL}/preview/${token}`;
-
-        return {
-            success: true,
-            token,
-            previewUrl,
-        };
-    } catch (error) {
-        return {
-            success: false,
-            message: String(error),
-        };
-    }
-}
-
-/**
- * Server Action: Update content SEO
- */
-export async function updateContentSeo(
-    contentId: string,
-    data: {
-        metaTitle?: string;
-        metaDescription?: string;
-        canonicalUrl?: string;
-        noIndex?: boolean;
-    }
-) {
-    try {
-        const seo = await prisma.seoMeta.upsert({
-            where: { contentId },
-            update: data,
-            create: {
-                contentId,
-                ...data,
-            },
-        });
-
+        // 1. Get the content item to get the notionPageId
         const content = await prisma.content.findUnique({
-            where: { id: contentId },
-            select: { slug: true },
+            where: { id },
+            select: { notionPageId: true }
         });
 
-        if (content) {
-            revalidatePath(`/blog/${content.slug}`);
+        if (!content || !content.notionPageId) {
+            throw new Error('Content not found or not connected to Notion');
         }
 
-        return {
-            success: true,
-            message: 'SEO updated',
-            data: seo,
-        };
-    } catch (error) {
-        return {
-            success: false,
-            message: String(error),
-        };
-    }
-}
+        // 2. Prepare Notion properties
+        const properties: any = {};
+        if (data.title) {
+            properties.Title = {
+                title: [{ text: { content: data.title } }]
+            };
+        }
+        if (data.slug) {
+            properties.Slug = {
+                rich_text: [{ text: { content: data.slug } }]
+            };
+        }
+        if (data.summary) {
+            properties.Summary = {
+                rich_text: [{ text: { content: data.summary } }]
+            };
+        }
 
-/**
- * Server Action: Update content category
- */
-export async function updateContentCategory(contentId: string, categoryId: string | null) {
-    try {
-        const content = await prisma.content.update({
-            where: { id: contentId },
-            data: { categoryId },
+        // 3. Update Notion Properties
+        await updateNotionPageProperties(content.notionPageId, properties);
+
+        // 4. Update Notion Content (Blocks) if provided
+        if (data.contentMd) {
+            const { updateNotionPageContent } = await import('@/lib/notion/client');
+            await updateNotionPageContent(content.notionPageId, data.contentMd);
+        }
+
+        // 5. Update local database
+        await prisma.content.update({
+            where: { id },
+            data: {
+                title: data.title,
+                slug: data.slug,
+                summary: data.summary,
+                contentMd: data.contentMd,
+                updatedAt: new Date()
+            }
         });
 
+        // 6. Revalidate
+        revalidatePath('/admin/content');
+        revalidatePath(`/admin/content/${id}`);
+        if (data.slug) {
+            revalidatePath(`/blog/${data.slug}`);
+        }
         revalidatePath('/blog');
-        revalidatePath(`/blog/${content.slug}`);
 
-        return {
-            success: true,
-            message: 'Category updated',
-        };
+        return { success: true };
     } catch (error) {
-        return {
-            success: false,
-            message: String(error),
-        };
+        console.error('Failed to update content metadata:', error);
+        return { success: false, error: String(error) };
     }
 }
