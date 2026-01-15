@@ -3,10 +3,22 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { MOCK_POSTS } from '@/constants';
+import { getPublishedContent } from '@/lib/content';
 
-export default function Home() {
-  const featuredPosts = MOCK_POSTS.slice(0, 3);
+export const dynamic = 'force-dynamic';
+
+export default async function Home() {
+  const { contents } = await getPublishedContent({}, { limit: 3 });
+  const featuredPosts = contents;
+
+  const formatDate = (date: Date | null) => {
+    if (!date) return 'Not Published';
+    return date.toLocaleDateString('zh-CN', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
 
   return (
     <div className="flex flex-col">
@@ -101,34 +113,37 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            {featuredPosts.map(post => (
-              <Link key={post.slug} href={`/blog/${post.slug}`} className="group block">
-                <Card className="h-full border-0 bg-white/50 hover:bg-white shadow-sm hover:shadow-2xl hover:shadow-brand-primary/10 transition-all duration-500 overflow-hidden ring-1 ring-slate-200/50">
-                  <div className="aspect-[16/10] overflow-hidden bg-slate-100 relative">
-                    <img
-                      src={post.coverImage}
-                      alt={post.title}
-                      className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105 group-hover:rotate-1"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                  </div>
-                  <div className="p-8">
-                    <Badge variant="muted" className="mb-6 bg-slate-100 text-slate-600 border-0">{post.category}</Badge>
-                    <h3 className="text-2xl font-bold text-brand-text-primary group-hover:text-brand-primary transition-colors mb-4 leading-snug">
-                      {post.title}
-                    </h3>
-                    <p className="text-brand-text-secondary text-base line-clamp-2 leading-relaxed mb-8 opacity-80">
-                      {post.excerpt}
-                    </p>
-                    <div className="flex items-center gap-4 text-[10px] font-bold text-brand-text-muted uppercase tracking-widest pt-6 border-t border-slate-100">
-                      <span>{post.publishedAt}</span>
-                      <span className="w-1.5 h-1.5 bg-brand-secondary/40 rounded-full"></span>
-                      <span>{post.readTime}</span>
+            {featuredPosts.map((post: any) => {
+              const coverSrc = post.coverImage?.storageUrl || post.coverImage?.originalUrl || 'https://picsum.photos/seed/placeholder/1200/630';
+              return (
+                <Link key={post.slug} href={`/blog/${post.slug}`} className="group block">
+                  <Card className="h-full border-0 bg-white/50 hover:bg-white shadow-sm hover:shadow-2xl hover:shadow-brand-primary/10 transition-all duration-500 overflow-hidden ring-1 ring-slate-200/50">
+                    <div className="aspect-[16/10] overflow-hidden bg-slate-100 relative">
+                      <img
+                        src={coverSrc}
+                        alt={post.title}
+                        className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105 group-hover:rotate-1"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                     </div>
-                  </div>
-                </Card>
-              </Link>
-            ))}
+                    <div className="p-8">
+                      <Badge variant="muted" className="mb-6 bg-slate-100 text-slate-600 border-0">{post.category?.name}</Badge>
+                      <h3 className="text-2xl font-bold text-brand-text-primary group-hover:text-brand-primary transition-colors mb-4 leading-snug">
+                        {post.title}
+                      </h3>
+                      <p className="text-brand-text-secondary text-base line-clamp-2 leading-relaxed mb-8 opacity-80">
+                        {post.summary}
+                      </p>
+                      <div className="flex items-center gap-4 text-[10px] font-bold text-brand-text-muted uppercase tracking-widest pt-6 border-t border-slate-100">
+                        <span>{formatDate(post.publishedAt)}</span>
+                        <span className="w-1.5 h-1.5 bg-brand-secondary/40 rounded-full"></span>
+                        <span>约 10 min</span>
+                      </div>
+                    </div>
+                  </Card>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>

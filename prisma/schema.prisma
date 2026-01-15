@@ -1,0 +1,173 @@
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_DIRECT")
+}
+
+/// Category - System managed, not auto-created from Notion
+model Category {
+  id             String    @id @default(uuid())
+  slug           String    @unique
+  name           String
+  description    String?
+  ctaTitle       String?
+  ctaDescription String?
+  ctaButtonText  String?
+  ctaButtonUrl   String?
+  order          Int       @default(0)
+  isActive       Boolean   @default(true)
+  noIndex        Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  contents       Content[]
+
+  @@index([isActive, order])
+}
+
+/// Content - Blog posts, pages, courses synced from Notion or created manually
+model Content {
+  id                 String         @id @default(uuid())
+  type               ContentType    @default(BLOG)
+  title              String
+  slug               String         @unique
+  summary            String?
+  contentMd          String
+  contentHtml        String?
+  coverImageId       String?
+  status             ContentStatus  @default(DRAFT)
+  visibility         Visibility     @default(PUBLIC)
+  publishedAt        DateTime?
+  notionPageId       String?        @unique
+  notionLastEditedAt DateTime?
+  source             ContentSource  @default(NOTION)
+  categoryId         String?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  category           Category?      @relation(fields: [categoryId], references: [id])
+  coverImage         Media?         @relation("ContentCover", fields: [coverImageId], references: [id])
+  previewTokens      PreviewToken[]
+  seo                SeoMeta?
+
+  @@index([status, visibility, publishedAt(sort: Desc)])
+  @@index([categoryId, status])
+  @@index([type, status])
+}
+
+/// SeoMeta - SEO metadata for content, managed separately from Notion
+model SeoMeta {
+  id              String  @id @default(uuid())
+  contentId       String  @unique
+  metaTitle       String?
+  metaDescription String?
+  ogImageId       String?
+  canonicalUrl    String?
+  noIndex         Boolean @default(false)
+  content         Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  ogImage         Media?  @relation("SeoOgImage", fields: [ogImageId], references: [id])
+}
+
+/// Media - Images and files stored in Supabase Storage
+model Media {
+  id            String    @id @default(uuid())
+  filename      String
+  originalUrl   String?
+  storageUrl    String
+  storagePath   String
+  mimeType      String
+  size          Int
+  width         Int?
+  height        Int?
+  notionBlockId String?   @unique
+  createdAt     DateTime  @default(now())
+  contentCovers Content[] @relation("ContentCover")
+  seoOgImages   SeoMeta[] @relation("SeoOgImage")
+
+  @@index([notionBlockId])
+}
+
+/// PreviewToken - Temporary tokens for previewing unpublished content
+model PreviewToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  contentId String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  content   Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([expiresAt])
+}
+
+/// User - Admin and editor users for the backend
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  name         String?
+  passwordHash String?
+  role         UserRole @default(EDITOR)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([email])
+}
+
+/// Session - User sessions for authentication
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([token])
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+/// SyncLog - Track Notion sync operations
+model SyncLog {
+  id          String    @id @default(uuid())
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  status      String
+  itemsTotal  Int       @default(0)
+  itemsSynced Int       @default(0)
+  itemsFailed Int       @default(0)
+  error       String?
+
+  @@index([startedAt(sort: Desc)])
+}
+
+enum ContentType {
+  BLOG
+  PAGE
+  COURSE
+}
+
+enum ContentStatus {
+  DRAFT
+  SYNCED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum Visibility {
+  PUBLIC
+  PRIVATE
+  UNLISTED
+}
+
+enum ContentSource {
+  NOTION
+  MANUAL
+}
+
+enum UserRole {
+  ADMIN
+  EDITOR
+}
