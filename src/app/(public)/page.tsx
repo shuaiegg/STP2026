@@ -12,7 +12,7 @@ export default async function Home() {
   const featuredPosts = contents;
 
   const formatDate = (date: Date | null) => {
-    if (!date) return 'Not Published';
+    if (!date) return '未发布';
     return date.toLocaleDateString('zh-CN', {
       year: 'numeric',
       month: 'long',
@@ -22,125 +22,294 @@ export default async function Home() {
 
   return (
     <div className="flex flex-col">
-      {/* Modern Hero Section */}
-      <section className="relative overflow-hidden pt-24 pb-32 md:pt-40 md:pb-52 border-b border-brand-border bg-white">
-        {/* Abstract Background Elements */}
-        <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
-          <div className="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] bg-brand-primary/10 rounded-full blur-[120px]"></div>
-          <div className="absolute bottom-[-10%] left-[-5%] w-[40%] h-[40%] bg-brand-secondary/10 rounded-full blur-[100px]"></div>
-          {/* Subtle Grid Pattern */}
-          <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(#6366f1 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
+      {/* Hero Section - Editorial Magazine Style */}
+      <section className="relative pt-32 pb-40 md:pt-48 md:pb-56 overflow-hidden bg-brand-surface">
+        {/* Structured Grid Background - Suggests System & Methodology */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
+          <div className="grid-bg-dense h-full w-full"></div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="max-w-4xl mx-auto text-center">
-            <Badge variant="default" className="mb-8 px-4 py-1.5 bg-brand-primary/10 text-brand-primary border border-brand-primary/20">
-              Future of Digital Growth
-            </Badge>
-            <h1 className="text-5xl md:text-8xl font-bold text-brand-text-primary tracking-tighter leading-[0.95] mb-10">
-              重塑增长的<br />
-              <span className="text-gradient-brand">工程学范式</span>
+        {/* Geometric Flow Accent - Top Right */}
+        <div className="absolute top-0 right-0 w-96 h-96 opacity-5 pointer-events-none">
+          <svg viewBox="0 0 200 200" className="w-full h-full">
+            <path d="M20,50 L80,50 L80,80 L120,80 L120,120 L80,120 L80,150 L50,150"
+              stroke="currentColor" strokeWidth="4" fill="none" className="text-brand-primary"/>
+            <path d="M50,20 L120,20 L120,50 L150,50 L150,90 L120,90 L120,120 L90,120"
+              stroke="currentColor" strokeWidth="2" fill="none" className="text-brand-secondary"/>
+          </svg>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
+          <div className="max-w-5xl">
+            {/* Eyebrow - Process Indicator */}
+            <div className="flex items-center gap-4 mb-12 opacity-0 animate-slide-in-left">
+              <div className="h-[2px] w-12 bg-brand-secondary"></div>
+              <span className="font-mono text-xs tracking-[0.2em] text-brand-text-muted uppercase font-bold">
+                可复制的获客方法
+              </span>
+            </div>
+
+            {/* Main Headline - Result-Focused per Brand Guidelines */}
+            <h1 className="font-display text-6xl md:text-[5.5rem] font-black text-brand-text-primary leading-[0.95] mb-10 tracking-tight opacity-0 animate-slide-in-up stagger-1">
+              帮中国企业<br />
+              <span className="relative inline-block">
+                稳定获取
+                <svg className="absolute -bottom-3 left-0 w-full h-4 opacity-30" viewBox="0 0 300 20" preserveAspectRatio="none">
+                  <path d="M0,10 Q75,5 150,10 T300,10" stroke="currentColor" strokeWidth="6" fill="none" className="text-brand-secondary"/>
+                </svg>
+              </span>
+              海外询盘与客户
             </h1>
-            <p className="text-xl md:text-2xl text-brand-text-secondary leading-relaxed mb-12 max-w-2xl mx-auto">
-              ScaletoTop 助力企业通过深度技术审计、程序化 SEO 与数据闭环，构建不可撼动的数字化增长壁垒。
+
+            {/* Subtitle - Method Focus, No Abstract Terms */}
+            <p className="text-xl md:text-2xl text-brand-text-secondary leading-relaxed mb-16 max-w-3xl opacity-0 animate-slide-in-up stagger-2 font-normal">
+              通过<span className="font-semibold text-brand-text-primary">广告、内容与工具的组合</span>，把一次性的海外获客，变成可长期使用的获客方式
             </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-5">
+
+            {/* CTA Buttons - Per Brand Guidelines */}
+            <div className="flex flex-col sm:flex-row gap-5 opacity-0 animate-slide-in-up stagger-3">
               <Link href="/blog">
-                <Button as="span" variant="gradient" size="lg" className="w-full sm:w-auto text-lg">开始探索</Button>
+                <Button
+                  as="span"
+                  variant="default"
+                  size="lg"
+                  className="w-full sm:w-auto text-base bg-brand-primary hover:bg-brand-primary-hover text-brand-text-inverted border-2 border-brand-border-heavy shadow-[4px_4px_0_0_rgba(10,10,10,1)] hover:shadow-[6px_6px_0_0_rgba(10,10,10,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all"
+                >
+                  查看获客方法与实战拆解
+                </Button>
               </Link>
-              <Link href="/course">
-                <Button as="span" variant="outline" size="lg" className="w-full sm:w-auto text-lg glass-effect">查看实战框架</Button>
+              <Link href="/tools">
+                <Button
+                  as="span"
+                  variant="outline"
+                  size="lg"
+                  className="w-full sm:w-auto text-base border-2 border-brand-border-heavy hover:bg-brand-surface-alt transition-colors"
+                >
+                  正在构建的工具
+                  <span className="ml-2 text-xs font-mono text-brand-text-muted">BETA</span>
+                </Button>
               </Link>
+            </div>
+
+            {/* Trust Indicators - Subtle */}
+            <div className="flex items-center gap-8 mt-16 text-sm text-brand-text-muted opacity-0 animate-slide-in-up stagger-4">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-brand-secondary rounded-full"></div>
+                <span>长期可用的方法</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-brand-secondary rounded-full"></div>
+                <span>实战验证的流程</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-brand-secondary rounded-full"></div>
+                <span>可复制的组合</span>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Tech Value Proposition */}
-      <section className="py-32 relative">
+      {/* Value Proposition - Second Screen, Can Introduce "System" Concepts */}
+      <section className="py-32 relative border-t-2 border-brand-border">
+        {/* Section Header */}
+        <div className="max-w-7xl mx-auto px-6 mb-24">
+          <div className="max-w-3xl">
+            <div className="flex items-center gap-3 mb-6">
+              <span className="font-mono text-xs tracking-[0.25em] text-brand-secondary uppercase font-bold">01</span>
+              <div className="h-[1px] flex-1 bg-brand-border"></div>
+            </div>
+            <h2 className="font-display text-4xl md:text-5xl font-bold text-brand-text-primary mb-6 leading-tight">
+              把零散的获客动作<br />变成<span className="text-brand-secondary">可持续的流程</span>
+            </h2>
+            <p className="text-lg text-brand-text-secondary leading-relaxed">
+              不同于一次性的广告投放或零散技巧，我们关注的是如何通过方法组合，建立长期稳定的获客体系
+            </p>
+          </div>
+        </div>
+
+        {/* Three Value Props - Structured Grid Layout */}
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
-            <div className="group">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-primary to-brand-primary-hover flex items-center justify-center text-white mb-8 shadow-lg shadow-brand-primary/20 transition-transform group-hover:-translate-y-1">
-                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Card 1 */}
+            <div className="group relative">
+              <div className="border-2 border-brand-border-heavy p-10 bg-white transition-all hover:shadow-[8px_8px_0_0_rgba(10,10,10,1)] hover:translate-x-[-4px] hover:translate-y-[-4px]">
+                <div className="mb-8">
+                  <div className="font-mono text-4xl font-bold text-brand-primary mb-2">01</div>
+                  <div className="h-1 w-12 bg-brand-secondary"></div>
+                </div>
+                <h3 className="font-display text-2xl font-bold text-brand-text-primary mb-5 leading-snug">
+                  广告投放<br />不只是投广告
+                </h3>
+                <p className="text-brand-text-secondary leading-relaxed text-base mb-6">
+                  从受众定位到落地页设计，从转化追踪到数据分析，完整的广告获客流程让每一分预算都有明确的回报路径
+                </p>
+                <div className="flex items-center gap-2 text-sm font-mono text-brand-text-muted">
+                  <svg className="w-4 h-4 text-brand-secondary" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd"/>
+                  </svg>
+                  <span>稳定可控</span>
+                </div>
               </div>
-              <h3 className="text-2xl font-bold text-brand-text-primary mb-4">底层技术审计</h3>
-              <p className="text-brand-text-secondary leading-relaxed text-lg">
-                深入现代 JS 框架的渲染链路，解决 Next.js/React 应用在 SEO 性能与收录层面的工程挑战。
-              </p>
             </div>
-            <div className="group">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-secondary to-cyan-600 flex items-center justify-center text-white mb-8 shadow-lg shadow-brand-secondary/20 transition-transform group-hover:-translate-y-1">
-                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+
+            {/* Card 2 */}
+            <div className="group relative">
+              <div className="border-2 border-brand-border-heavy p-10 bg-white transition-all hover:shadow-[8px_8px_0_0_rgba(10,10,10,1)] hover:translate-x-[-4px] hover:translate-y-[-4px]">
+                <div className="mb-8">
+                  <div className="font-mono text-4xl font-bold text-brand-primary mb-2">02</div>
+                  <div className="h-1 w-12 bg-brand-secondary"></div>
+                </div>
+                <h3 className="font-display text-2xl font-bold text-brand-text-primary mb-5 leading-snug">
+                  内容产出<br />从单篇到流程
+                </h3>
+                <p className="text-brand-text-secondary leading-relaxed text-base mb-6">
+                  建立可复用的内容生产流程，从关键词研究到文章结构，从 SEO 优化到持续更新，让内容成为长期资产
+                </p>
+                <div className="flex items-center gap-2 text-sm font-mono text-brand-text-muted">
+                  <svg className="w-4 h-4 text-brand-secondary" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd"/>
+                  </svg>
+                  <span>长期累积</span>
+                </div>
               </div>
-              <h3 className="text-2xl font-bold text-brand-text-primary mb-4">程序化增长 (pSEO)</h3>
-              <p className="text-brand-text-secondary leading-relaxed text-lg">
-                从结构化数据定义到全自动化页面生成流程，通过工程手段实现内容产出的指数级规模化。
-              </p>
             </div>
-            <div className="group">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center text-white mb-8 shadow-lg shadow-slate-900/20 transition-transform group-hover:-translate-y-1">
-                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+
+            {/* Card 3 */}
+            <div className="group relative">
+              <div className="border-2 border-brand-border-heavy p-10 bg-white transition-all hover:shadow-[8px_8px_0_0_rgba(10,10,10,1)] hover:translate-x-[-4px] hover:translate-y-[-4px]">
+                <div className="mb-8">
+                  <div className="font-mono text-4xl font-bold text-brand-primary mb-2">03</div>
+                  <div className="h-1 w-12 bg-brand-secondary"></div>
+                </div>
+                <h3 className="font-display text-2xl font-bold text-brand-text-primary mb-5 leading-snug">
+                  工具辅助<br />提升效率和规模
+                </h3>
+                <p className="text-brand-text-secondary leading-relaxed text-base mb-6">
+                  通过工具产品化，把重复的人工操作变成可规模化的流程，让小团队也能实现大规模的获客动作
+                </p>
+                <div className="flex items-center gap-2 text-sm font-mono text-brand-text-muted">
+                  <svg className="w-4 h-4 text-brand-secondary" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd"/>
+                  </svg>
+                  <span>可规模化</span>
+                </div>
               </div>
-              <h3 className="text-2xl font-bold text-brand-text-primary mb-4">数据驱动闭环</h3>
-              <p className="text-brand-text-secondary leading-relaxed text-lg">
-                构建从流量获取到业务转化的全链路归因模型，让每一分营销预算都有迹可循。
+            </div>
+          </div>
+        </div>
+
+        {/* Process Flow Visualization */}
+        <div className="max-w-7xl mx-auto px-6 mt-20">
+          <div className="border-2 border-brand-border-heavy p-12 bg-brand-surface-alt relative overflow-hidden">
+            {/* Flow Diagram Background */}
+            <div className="absolute inset-0 opacity-5 pointer-events-none">
+              <svg className="w-full h-full" viewBox="0 0 800 200" preserveAspectRatio="none">
+                <path d="M50,100 L150,100 L150,80 L250,80 L250,120 L350,120 L350,100 L450,100"
+                  stroke="currentColor" strokeWidth="3" fill="none" className="text-brand-primary"/>
+                <circle cx="50" cy="100" r="8" fill="currentColor" className="text-brand-secondary"/>
+                <circle cx="250" cy="100" r="8" fill="currentColor" className="text-brand-secondary"/>
+                <circle cx="450" cy="100" r="8" fill="currentColor" className="text-brand-secondary"/>
+              </svg>
+            </div>
+
+            <div className="relative z-10">
+              <div className="font-mono text-xs tracking-[0.2em] text-brand-secondary uppercase font-bold mb-4">
+                方法组合示例
+              </div>
+              <p className="text-lg text-brand-text-primary font-semibold mb-2">
+                广告获客 + SEO 内容 + 营销自动化工具 = 可持续的客户获取体系
+              </p>
+              <p className="text-sm text-brand-text-muted">
+                每个环节相互配合，形成长期稳定的获客机制
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Modern Content Grid */}
-      <section className="py-32 bg-brand-surface relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
+      {/* Featured Content - Editorial Grid */}
+      <section className="py-32 bg-white border-t-2 border-brand-border">
+        {/* Section Header */}
+        <div className="max-w-7xl mx-auto px-6 mb-20">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
             <div className="max-w-2xl">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-8 h-[2px] bg-brand-primary"></div>
-                <h2 className="text-sm font-bold uppercase tracking-[0.25em] text-brand-primary">深度见解 / DEEP INSIGHTS</h2>
+                <span className="font-mono text-xs tracking-[0.25em] text-brand-secondary uppercase font-bold">02</span>
+                <div className="h-[1px] flex-1 bg-brand-border md:max-w-[100px]"></div>
               </div>
-              <p className="text-4xl md:text-5xl font-bold text-brand-text-primary tracking-tight leading-tight">
-                解构复杂系统中的<br />增长逻辑
-              </p>
+              <h2 className="font-display text-4xl md:text-5xl font-bold text-brand-text-primary leading-tight">
+                实战方法<br />与拆解案例
+              </h2>
             </div>
             <Link href="/blog">
-              <Button as="span" variant="outline" className="glass-effect group">
-                浏览全部档案
-                <svg className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+              <Button
+                as="span"
+                variant="outline"
+                className="border-2 border-brand-border-heavy hover:bg-brand-surface transition-colors group"
+              >
+                查看全部文章
+                <svg className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                </svg>
               </Button>
             </Link>
           </div>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            {featuredPosts.map((post: any) => {
+        {/* Articles Grid */}
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {featuredPosts.map((post: any, index: number) => {
               const coverSrc = post.coverImage?.storageUrl || post.coverImage?.originalUrl || 'https://picsum.photos/seed/placeholder/1200/630';
               return (
-                <Link key={post.slug} href={`/blog/${post.slug}`} className="group block">
-                  <Card className="h-full border-0 bg-white/50 hover:bg-white shadow-sm hover:shadow-2xl hover:shadow-brand-primary/10 transition-all duration-500 overflow-hidden ring-1 ring-slate-200/50">
-                    <div className="aspect-[16/10] overflow-hidden bg-slate-100 relative">
+                <Link
+                  key={post.slug}
+                  href={`/blog/${post.slug}`}
+                  className="group block"
+                >
+                  <article className="border-2 border-brand-border-heavy bg-white overflow-hidden transition-all hover:shadow-[8px_8px_0_0_rgba(10,10,10,1)] hover:translate-x-[-4px] hover:translate-y-[-4px]">
+                    {/* Image */}
+                    <div className="aspect-[16/10] overflow-hidden bg-brand-surface relative border-b-2 border-brand-border-heavy">
                       <img
                         src={coverSrc}
                         alt={post.title}
-                        className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105 group-hover:rotate-1"
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                      {/* Category Badge Overlay */}
+                      {post.category?.name && (
+                        <div className="absolute top-4 left-4">
+                          <Badge
+                            variant="default"
+                            className="bg-white text-brand-text-primary border-2 border-brand-border-heavy font-mono text-xs"
+                          >
+                            {post.category.name}
+                          </Badge>
+                        </div>
+                      )}
                     </div>
+
+                    {/* Content */}
                     <div className="p-8">
-                      <Badge variant="muted" className="mb-6 bg-slate-100 text-slate-600 border-0">{post.category?.name}</Badge>
-                      <h3 className="text-2xl font-bold text-brand-text-primary group-hover:text-brand-primary transition-colors mb-4 leading-snug">
+                      <h3 className="font-display text-2xl font-bold text-brand-text-primary group-hover:text-brand-secondary transition-colors mb-4 leading-tight">
                         {post.title}
                       </h3>
-                      <p className="text-brand-text-secondary text-base line-clamp-2 leading-relaxed mb-8 opacity-80">
+                      <p className="text-brand-text-secondary text-base leading-relaxed mb-6 line-clamp-2">
                         {post.summary}
                       </p>
-                      <div className="flex items-center gap-4 text-[10px] font-bold text-brand-text-muted uppercase tracking-widest pt-6 border-t border-slate-100">
-                        <span>{formatDate(post.publishedAt)}</span>
-                        <span className="w-1.5 h-1.5 bg-brand-secondary/40 rounded-full"></span>
-                        <span>约 10 min</span>
+
+                      {/* Meta */}
+                      <div className="flex items-center gap-3 pt-6 border-t border-brand-border">
+                        <span className="font-mono text-xs text-brand-text-muted">
+                          {formatDate(post.publishedAt)}
+                        </span>
+                        <div className="w-1 h-1 bg-brand-text-muted rounded-full"></div>
+                        <span className="font-mono text-xs text-brand-text-muted">
+                          {post.readingTime || '5'} 分钟
+                        </span>
                       </div>
                     </div>
-                  </Card>
+                  </article>
                 </Link>
               );
             })}
@@ -148,32 +317,46 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Modern Newsletter */}
-      <section className="py-32 px-6">
+      {/* CTA Section - Strong, Clear */}
+      <section className="py-32 px-6 bg-brand-primary border-t-2 border-brand-border-heavy">
         <div className="max-w-7xl mx-auto">
-          <div className="relative rounded-3xl overflow-hidden bg-slate-900 text-white p-12 md:p-24">
-            {/* Background Accent */}
-            <div className="absolute top-0 right-0 w-[40%] h-full bg-gradient-brand opacity-20 blur-3xl -rotate-12 translate-x-1/2"></div>
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="font-display text-4xl md:text-6xl font-bold text-brand-text-inverted mb-8 leading-tight">
+              开始建立你的<br />
+              <span className="text-brand-secondary">长期获客方法</span>
+            </h2>
+            <p className="text-xl text-brand-text-inverted/80 mb-12 leading-relaxed">
+              从实战案例中学习可复制的方法，逐步建立适合自己业务的获客流程
+            </p>
 
-            <div className="relative z-10 max-w-3xl">
-              <h2 className="text-4xl md:text-6xl font-bold mb-8 tracking-tight">
-                获取专为<span className="text-brand-secondary">增长专家</span>准备的深度周报
-              </h2>
-              <p className="text-lg md:text-xl text-slate-400 mb-12 leading-relaxed">
-                每周为您剖析 2-3 个技术驱动的增长案例，涵盖 SEO 工程化、自动化流程与数据洞察。
-              </p>
-              <form className="flex flex-col sm:flex-row gap-4 max-w-lg">
-                <input
-                  type="email"
-                  placeholder="name@company.com"
-                  className="flex-1 px-6 py-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:bg-white/15 transition-all"
-                />
-                <Button variant="gradient" size="lg" className="shadow-none">立即订阅</Button>
-              </form>
-              <p className="mt-6 text-sm text-slate-500">
-                已有 5,000+ 工程与营销专家加入。拒绝垃圾邮件，随时取消。
-              </p>
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row justify-center gap-5 mb-12">
+              <Link href="/blog">
+                <Button
+                  as="span"
+                  variant="default"
+                  size="lg"
+                  className="w-full sm:w-auto text-base bg-brand-secondary hover:bg-brand-secondary-hover text-brand-text-primary border-2 border-brand-border-heavy shadow-[4px_4px_0_0_rgba(255,255,255,0.3)] hover:shadow-[6px_6px_0_0_rgba(255,255,255,0.3)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all font-bold"
+                >
+                  浏览实战文章
+                </Button>
+              </Link>
+              <Link href="/course">
+                <Button
+                  as="span"
+                  variant="outline"
+                  size="lg"
+                  className="w-full sm:w-auto text-base text-brand-text-inverted border-2 border-brand-text-inverted/30 hover:bg-brand-text-inverted/10 transition-colors"
+                >
+                  查看完整框架
+                </Button>
+              </Link>
             </div>
+
+            {/* Trust Line */}
+            <p className="text-sm text-brand-text-inverted/60 font-mono">
+              所有方法均来自实战验证，专注长期可用的获客体系构建
+            </p>
           </div>
         </div>
       </section>
