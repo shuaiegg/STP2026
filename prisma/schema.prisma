@@ -68,8 +68,25 @@ model SeoMeta {
   ogImageId       String?
   canonicalUrl    String?
   noIndex         Boolean @default(false)
+
+  // SEO/GEO Enhancement Fields
+  keywords        String[] @default([])        // Target keywords list
+  schemaJson      String?  @db.Text            // JSON-LD structured data
+  geoScore        Int?                         // GEO audit score (0-100)
+  geoAuditedAt    DateTime?                    // Last GEO audit timestamp
+
+  // Distribution Snippets
+  snippetLinkedIn String?  @db.Text            // LinkedIn post copy
+  snippetReddit   String?  @db.Text            // Reddit post copy
+  snippetTwitter  String?  @db.Text            // Twitter/X thread copy
+
+  // Internal Linking
+  suggestedLinks  String[] @default([])        // Suggested internal link slugs
+
   content         Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
   ogImage         Media?  @relation("SeoOgImage", fields: [ogImageId], references: [id])
+
+  @@index([geoScore])
 }
 
 /// Media - Images and files stored in Supabase Storage

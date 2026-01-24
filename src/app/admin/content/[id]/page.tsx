@@ -19,6 +19,7 @@ async function getArticle(id: string) {
         where: { id },
         include: {
             category: true,
+            seo: true,
         }
     });
     return article;

@@ -55,6 +55,33 @@ function getPropertyValue(page: NotionPage, propertyName: string): string | null
 }
 
 /**
+ * Extract number property from Notion page
+ */
+function getNumberProperty(page: NotionPage, propertyName: string): number | null {
+    const prop = page.properties[propertyName];
+    if (!prop || prop.type !== 'number') return null;
+    return prop.number;
+}
+
+/**
+ * Extract date property from Notion page
+ */
+function getDateProperty(page: NotionPage, propertyName: string): Date | null {
+    const prop = page.properties[propertyName];
+    if (!prop || prop.type !== 'date' || !prop.date?.start) return null;
+    return new Date(prop.date.start);
+}
+
+/**
+ * Extract multi-select property as array from Notion page
+ */
+function getMultiSelectProperty(page: NotionPage, propertyName: string): string[] {
+    const prop = page.properties[propertyName];
+    if (!prop || prop.type !== 'multi_select') return [];
+    return prop.multi_select?.map((s: any) => s.name) || [];
+}
+
+/**
  * Find category by name (case-insensitive)
  */
 async function findCategoryByName(name: string | null): Promise<string | null> {
@@ -210,6 +237,15 @@ export async function syncNotionPage(pageId: string, force: boolean = false): Pr
         const coverUrl = getPropertyValue(page, 'Cover') || page.cover?.external?.url || page.cover?.file?.url;
         const status = getPropertyValue(page, 'Status');
         const notionReadingTime = getPropertyValue(page, 'ReadingTime') || getPropertyValue(page, 'Minutes');
+
+        // SEO properties from Notion (optional)
+        const seoStatus = getPropertyValue(page, 'SEOStatus') || getPropertyValue(page, 'SEO Status');
+        const geoScore = getNumberProperty(page, 'GEOScore') || getNumberProperty(page, 'GEO Score');
+        const seoUpdatedAt = getDateProperty(page, 'SEOUpdated') || getDateProperty(page, 'SEO Updated');
+        const keywords = getMultiSelectProperty(page, 'Keywords') ||
+            (getPropertyValue(page, 'Keywords')?.split(',').map(k => k.trim()).filter(Boolean) || []);
+        const metaTitle = getPropertyValue(page, 'MetaTitle') || getPropertyValue(page, 'Meta Title');
+        const metaDescription = getPropertyValue(page, 'MetaDescription') || getPropertyValue(page, 'Meta Description');
 
         console.log(`[Sync] Processing page: "${title}", Summary: "${summary}"`);
 
