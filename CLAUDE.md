@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-STP2026 is a Next.js 16 (App Router) full-stack CMS platform that uses Notion as a content source. It syncs content from Notion, automatically processes images to Supabase Storage, and publishes to a public blog/marketing site with an admin backend.
+ScaletoTop is a Next.js 16 (App Router) full-stack CMS platform that uses Notion as a content source. It syncs content from Notion, automatically processes images to Supabase Storage, and publishes to a public blog/marketing site with an admin backend.
 
 **Tech Stack**: Next.js 16, React 19, Prisma ORM, PostgreSQL (Supabase), Notion API, better-auth, TailwindCSS
 

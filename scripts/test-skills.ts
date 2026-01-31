@@ -59,7 +59,7 @@ Without proper technical SEO, even the best content won't rank well. Search engi
 4. Robots.txt configuration
 5. Structured data markup`,
         contentType: 'TOFU',
-        brandName: 'STP2026',
+        brandName: 'ScaletoTop',
         url: 'https://example.com/technical-seo',
     };
 

@@ -247,7 +247,7 @@ export function EditForm({ article }: { article: Article }) {
                     input: {
                         content: formData.contentMd,
                         contentType: contentType,
-                        brandName: 'STP2026',
+                        brandName: 'ScaletoTop',
                         url: `https://scaletotop.com/blog/${formData.slug}`,
                     }
                 })
