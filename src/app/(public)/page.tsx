@@ -50,15 +50,19 @@ export default async function Home() {
             </div>
 
             {/* Main Headline - Result-Focused per Brand Guidelines */}
-            <h1 className="font-display text-6xl md:text-[5.5rem] font-black text-brand-text-primary leading-[0.95] mb-10 tracking-tight opacity-0 animate-slide-in-up stagger-1">
-              帮中国企业<br />
-              <span className="relative inline-block">
+            <h1 className="font-display text-6xl md:text-[5.5rem] font-black leading-[0.95] mb-10 tracking-tight opacity-0 animate-slide-in-up stagger-1">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-primary bg-[length:200%_auto] animate-gradient-x">
+                帮中国企业
+              </span>
+              <br />
+              <span className="relative inline-block text-brand-text-primary mt-2">
                 稳定获取
-                <svg className="absolute -bottom-3 left-0 w-full h-4 opacity-30" viewBox="0 0 300 20" preserveAspectRatio="none">
-                  <path d="M0,10 Q75,5 150,10 T300,10" stroke="currentColor" strokeWidth="6" fill="none" className="text-brand-secondary"/>
+                <svg className="absolute -bottom-3 left-0 w-full h-4 opacity-30 text-brand-secondary" viewBox="0 0 300 20" preserveAspectRatio="none">
+                  <path d="M0,10 Q75,5 150,10 T300,10" stroke="currentColor" strokeWidth="6" fill="none" />
                 </svg>
               </span>
-              海外询盘与客户
+              <br />
+              <span className="text-brand-text-primary">海外询盘与客户</span>
             </h1>
 
             {/* Subtitle - Method Focus, No Abstract Terms */}
@@ -111,7 +115,7 @@ export default async function Home() {
       </section>
 
       {/* Value Proposition - Second Screen, Can Introduce "System" Concepts */}
-      <section className="py-32 relative border-t-2 border-brand-border">
+      <section className="py-32 relative border-t-2 border-brand-border bg-gradient-to-b from-transparent to-brand-surface/30">
         {/* Section Header */}
         <div className="max-w-7xl mx-auto px-6 mb-24">
           <div className="max-w-3xl">
