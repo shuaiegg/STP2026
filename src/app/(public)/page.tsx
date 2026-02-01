@@ -75,7 +75,7 @@ export default async function Home() {
               <Link href="/blog">
                 <Button
                   as="span"
-                  variant="default"
+                  variant="primary"
                   size="lg"
                   className="w-full sm:w-auto text-base bg-brand-primary hover:bg-brand-primary-hover text-brand-text-inverted border-2 border-brand-border-heavy shadow-[4px_4px_0_0_rgba(10,10,10,1)] hover:shadow-[6px_6px_0_0_rgba(10,10,10,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all"
                 >
@@ -338,7 +338,7 @@ export default async function Home() {
               <Link href="/blog">
                 <Button
                   as="span"
-                  variant="default"
+                  variant="primary"
                   size="lg"
                   className="w-full sm:w-auto text-base bg-brand-secondary hover:bg-brand-secondary-hover text-brand-text-primary border-2 border-brand-border-heavy shadow-[4px_4px_0_0_rgba(255,255,255,0.3)] hover:shadow-[6px_6px_0_0_rgba(255,255,255,0.3)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all font-bold"
                 >
