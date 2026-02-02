@@ -14,19 +14,16 @@ ScaletoTop is a Next.js 16 (App Router) full-stack CMS platform that uses Notion
 # Development
 npm run dev              # Start dev server at http://localhost:3000
 
-# Build & Production
-npm run build            # Build for production (includes Prisma client generation)
-npm start                # Start production server
-
-# Linting
-npm run lint             # Run ESLint
-
-# Database
-npx prisma generate      # Generate Prisma client after schema changes
-npx prisma db push       # Push schema changes to database (dev/staging)
-npx prisma studio        # Open Prisma Studio GUI for database inspection
-npx prisma migrate dev   # Create and apply migrations (use for production-ready changes)
+# Rules & Standards
+# Refer to rules/STP_RULES.md for engineering guidelines
 ```
+
+## Engineering Standards
+
+The project follows strict engineering standards for immutability, component composition, and performance.
+- **Rules Directory**: Detailed guidelines are stored in `rules/*.md`.
+- **Primary Rules**: `rules/STP_RULES.md` is the source of truth for project standards.
+- **Frontend Patterns**: `frontend-patterns.skill` contains React/Next.js best practices.
 
 ## Architecture Overview
 

@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '../ui/Button';
+import { authClient } from '@/lib/auth-client';
 
 const NavIcon: React.FC<{ type: 'home' | 'blog' | 'course' | 'tools' }> = ({ type }) => {
     switch (type) {
@@ -38,6 +39,7 @@ const NavIcon: React.FC<{ type: 'home' | 'blog' | 'course' | 'tools' }> = ({ typ
 
 const Header: React.FC = () => {
     const pathname = usePathname();
+    const { data: session } = authClient.useSession();
 
     const getLinkClass = (href: string) => {
         const isActive = href === '/' ? pathname === '/' : pathname.startsWith(href);
@@ -73,9 +75,26 @@ const Header: React.FC = () => {
                         </Link>
                     </nav>
                 </div>
-                <div className="flex items-center gap-6">
-                    <Button variant="ghost" size="sm" className="hidden sm:inline-flex text-xs uppercase tracking-widest font-bold">登录</Button>
-                    <Button variant="gradient" size="sm" className="text-xs uppercase tracking-widest font-bold">加入简报</Button>
+                <div className="flex items-center gap-4">
+                    {session ? (
+                        <Link href="/dashboard">
+                            <Button variant="ghost" size="sm" className="hidden sm:inline-flex text-xs uppercase tracking-widest font-bold">控制台</Button>
+                        </Link>
+                    ) : (
+                        <Link href="/login">
+                            <Button variant="ghost" size="sm" className="hidden sm:inline-flex text-xs uppercase tracking-widest font-bold">登录</Button>
+                        </Link>
+                    )}
+                    
+                    {session ? (
+                        <div className="w-10 h-10 rounded-full border-2 border-brand-border-heavy flex items-center justify-center bg-brand-surface font-display font-bold text-xs">
+                            {session.user.name?.[0]?.toUpperCase() || 'U'}
+                        </div>
+                    ) : (
+                        <Link href="/register">
+                            <Button variant="gradient" size="sm" className="text-xs uppercase tracking-widest font-bold">开启旅程</Button>
+                        </Link>
+                    )}
                 </div>
             </div>
         </header>
