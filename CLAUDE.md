@@ -149,6 +149,13 @@ All data mutations use Next.js Server Actions (`'use server'`):
 - `src/app/actions/category.ts` - Category management
 - `src/app/actions/auth.ts` - Authentication helpers
 
+### Webhooks
+
+- **/api/webhooks/creem** - Receives payment confirmation from Creem.io.
+  - Verifies signature using `CREEM_WEBHOOK_SECRET`.
+  - Automatically credits user accounts based on `amount_paid`.
+  - Records transaction in `CreditTransaction` table.
+
 Pattern: Server Actions return `{ success: boolean, message: string, data?: any }`
 
 ## Prisma Usage Notes
