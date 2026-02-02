@@ -46,9 +46,9 @@ model Content {
   notionLastEditedAt DateTime?
   source             ContentSource  @default(NOTION)
   categoryId         String?
-  readingTime        Int?
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
+  readingTime        Int?
   category           Category?      @relation(fields: [categoryId], references: [id])
   coverImage         Media?         @relation("ContentCover", fields: [coverImageId], references: [id])
   previewTokens      PreviewToken[]
@@ -61,30 +61,23 @@ model Content {
 
 /// SeoMeta - SEO metadata for content, managed separately from Notion
 model SeoMeta {
-  id              String  @id @default(uuid())
-  contentId       String  @unique
+  id              String    @id @default(uuid())
+  contentId       String    @unique
   metaTitle       String?
   metaDescription String?
   ogImageId       String?
   canonicalUrl    String?
-  noIndex         Boolean @default(false)
-
-  // SEO/GEO Enhancement Fields
-  keywords        String[] @default([])        // Target keywords list
-  schemaJson      String?  @db.Text            // JSON-LD structured data
-  geoScore        Int?                         // GEO audit score (0-100)
-  geoAuditedAt    DateTime?                    // Last GEO audit timestamp
-
-  // Distribution Snippets
-  snippetLinkedIn String?  @db.Text            // LinkedIn post copy
-  snippetReddit   String?  @db.Text            // Reddit post copy
-  snippetTwitter  String?  @db.Text            // Twitter/X thread copy
-
-  // Internal Linking
-  suggestedLinks  String[] @default([])        // Suggested internal link slugs
-
-  content         Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
-  ogImage         Media?  @relation("SeoOgImage", fields: [ogImageId], references: [id])
+  noIndex         Boolean   @default(false)
+  geoAuditedAt    DateTime?
+  geoScore        Int?
+  keywords        String[]  @default([])
+  schemaJson      String?
+  snippetLinkedIn String?
+  snippetReddit   String?
+  snippetTwitter  String?
+  suggestedLinks  String[]  @default([])
+  content         Content   @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  ogImage         Media?    @relation("SeoOgImage", fields: [ogImageId], references: [id])
 
   @@index([geoScore])
 }
@@ -123,18 +116,18 @@ model PreviewToken {
 
 /// User - Admin and editor users for the backend
 model User {
-  id            String    @id @default(uuid())
-  email         String    @unique
+  id            String              @id @default(uuid())
+  email         String              @unique
   name          String?
-  emailVerified Boolean   @default(false)
+  role          UserRole            @default(USER)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  emailVerified Boolean             @default(false)
   image         String?
-  role          UserRole  @default(USER)
-  credits       Int       @default(0)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  sessions      Session[]
+  credits       Int                 @default(0)
   accounts      Account[]
   transactions  CreditTransaction[]
+  sessions      Session[]
   executions    SkillExecution[]
 
   @@index([email])
@@ -142,13 +135,13 @@ model User {
 
 model Session {
   id        String   @id @default(uuid())
-  expiresAt DateTime
-  token     String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  ipAddress String?
-  userAgent String?
   userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  ipAddress String?
+  updatedAt DateTime @updatedAt
+  userAgent String?
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([token])
@@ -160,7 +153,6 @@ model Account {
   accountId             String
   providerId            String
   userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -170,6 +162,7 @@ model Account {
   password              String?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
@@ -195,6 +188,46 @@ model SyncLog {
   error       String?
 
   @@index([startedAt(sort: Desc)])
+}
+
+/// CreditTransaction - Track all credit-related activities
+model CreditTransaction {
+  id             String          @id @default(uuid())
+  userId         String
+  amount         Int
+  type           TransactionType
+  description    String?
+  createdAt      DateTime        @default(now())
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skillExecution SkillExecution?
+
+  @@index([userId])
+  @@index([createdAt(sort: Desc)])
+}
+
+/// SkillExecution - Detailed logs of AI tool usage
+model SkillExecution {
+  id              String             @id @default(uuid())
+  skillName       String
+  status          String             @default("success")
+  input           Json
+  output          Json?
+  metadata        Json?
+  cost            Float?
+  executionTimeMs Int?
+  errorMessage    String?
+  createdAt       DateTime           @default(now())
+  modelUsed       String?
+  provider        String?
+  tokensUsed      Int?
+  transactionId   String?            @unique
+  userId          String?
+  transaction     CreditTransaction? @relation(fields: [transactionId], references: [id])
+  user            User?              @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([skillName])
+  @@index([createdAt(sort: Desc)])
 }
 
 enum ContentType {
@@ -227,50 +260,9 @@ enum UserRole {
   USER
 }
 
-/// CreditTransaction - Track all credit-related activities
-model CreditTransaction {
-  id              String          @id @default(uuid())
-  userId          String
-  amount          Int             // Positive for purchase/bonus, negative for consumption
-  type            TransactionType
-  description     String?
-  createdAt       DateTime        @default(now())
-  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  skillExecution  SkillExecution?
-
-  @@index([userId])
-  @@index([createdAt(sort: Desc)])
-}
-
-/// SkillExecution - Detailed logs of AI tool usage
-model SkillExecution {
-  id              String    @id @default(uuid())
-  skillName       String
-  input           Json
-  output          Json?
-  status          String    @default("success") // success, error
-  errorMessage    String?
-  provider        String?
-  modelUsed       String?
-  tokensUsed      Int?
-  cost            Float?
-  executionTimeMs Int?      // ms
-  metadata        Json?     // AI metadata
-  userId          String?
-  transactionId   String?   @unique
-  createdAt       DateTime  @default(now())
-
-  user          User?             @relation(fields: [userId], references: [id])
-  transaction   CreditTransaction? @relation(fields: [transactionId], references: [id])
-
-  @@index([userId])
-  @@index([skillName])
-  @@index([createdAt(sort: Desc)])
-}
-
 enum TransactionType {
-  PURCHASE    // Credits bought via Creem.io/Stripe
-  CONSUMPTION // Credits spent on tools/courses
-  REFUND      // Credits returned to user
-  BONUS       // Credits given for promo/referral
+  PURCHASE
+  CONSUMPTION
+  REFUND
+  BONUS
 }

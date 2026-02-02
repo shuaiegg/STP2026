@@ -30,6 +30,7 @@ export default function UserRegisterPage() {
             });
 
             if (authError) {
+                console.error("Signup error:", authError);
                 setError(authError.message || "注册失败，请稍后重试");
             } else {
                 router.push("/dashboard");

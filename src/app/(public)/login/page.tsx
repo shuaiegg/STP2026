@@ -27,6 +27,7 @@ export default function UserLoginPage() {
             });
 
             if (authError) {
+                console.error("Login error:", authError);
                 setError(authError.message || "登录失败，请检查您的凭据");
             } else {
                 router.push("/dashboard");

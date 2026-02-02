@@ -10,18 +10,8 @@ export const auth = betterAuth({
         enabled: true,
     },
     user: {
-        additionalFields: {
-            role: {
-                type: "string",
-                required: false,
-                defaultValue: "USER",
-            },
-            credits: {
-                type: "number",
-                required: false,
-                defaultValue: 0,
-            },
-        },
+        // We let Prisma handle the fields and defaults. 
+        // Better Auth will include these in the session if they exist in the DB.
     },
     // Optional: Add session settings
     session: {
