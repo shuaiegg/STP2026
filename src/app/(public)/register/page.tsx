@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Mail, Lock, Loader2, ArrowRight, User as UserIcon } from "lucide-react";
 import Link from "next/link";
+import { translateAuthError } from "@/lib/auth-errors";
 
 export default function UserRegisterPage() {
     const [name, setName] = useState("");
@@ -31,7 +32,7 @@ export default function UserRegisterPage() {
 
             if (authError) {
                 console.error("Signup error:", authError);
-                setError(authError.message || "注册失败，请稍后重试");
+                setError(translateAuthError(authError.message || "注册失败，请稍后重试"));
             } else {
                 router.push("/dashboard");
                 router.refresh();

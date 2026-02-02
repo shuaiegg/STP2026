@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Mail, Lock, Loader2, ArrowRight, User as UserIcon } from "lucide-react";
 import Link from "next/link";
+import { translateAuthError } from "@/lib/auth-errors";
 
 export default function UserLoginPage() {
     const [email, setEmail] = useState("");
@@ -28,7 +29,7 @@ export default function UserLoginPage() {
 
             if (authError) {
                 console.error("Login error:", authError);
-                setError(authError.message || "登录失败，请检查您的凭据");
+                setError(translateAuthError(authError.message || "登录失败，请检查您的凭据"));
             } else {
                 router.push("/dashboard");
                 router.refresh();
