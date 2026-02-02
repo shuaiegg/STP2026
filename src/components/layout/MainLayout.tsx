@@ -78,11 +78,11 @@ const Header: React.FC = () => {
                 <div className="flex items-center gap-4">
                     {session ? (
                         <Link href="/dashboard">
-                            <Button variant="ghost" size="sm" className="hidden sm:inline-flex text-xs uppercase tracking-widest font-bold">控制台</Button>
+                            <Button variant="ghost" size="sm" className="text-xs uppercase tracking-widest font-bold">控制台</Button>
                         </Link>
                     ) : (
                         <Link href="/login">
-                            <Button variant="ghost" size="sm" className="hidden sm:inline-flex text-xs uppercase tracking-widest font-bold">登录</Button>
+                            <Button variant="ghost" size="sm" className="text-xs uppercase tracking-widest font-bold">登录</Button>
                         </Link>
                     )}
                     
@@ -92,7 +92,7 @@ const Header: React.FC = () => {
                         </div>
                     ) : (
                         <Link href="/register">
-                            <Button variant="gradient" size="sm" className="text-xs uppercase tracking-widest font-bold">开启旅程</Button>
+                            <Button variant="gradient" size="sm" className="hidden sm:inline-flex text-xs uppercase tracking-widest font-bold">开启旅程</Button>
                         </Link>
                     )}
                 </div>
