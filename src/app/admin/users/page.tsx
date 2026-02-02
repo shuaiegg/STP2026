@@ -171,9 +171,11 @@ export default function UserManagementPage() {
                                                         {isUpdating === user.id ? <Loader2 size={14} className="animate-spin" /> : <Minus size={14} />}
                                                     </button>
                                                 </div>
-                                                <Button variant="ghost" size="sm" className="h-9 w-9 p-0 rounded-lg border border-slate-200" title="代理登录">
-                                                    <ExternalLink size={16} className="text-slate-400" />
-                                                </Button>
+                                                <Link href={`/dashboard?impersonate=${user.id}`}>
+                                                    <Button variant="ghost" size="sm" className="h-9 w-9 p-0 rounded-lg border border-slate-200" title="代理查看">
+                                                        <ExternalLink size={16} className="text-slate-400" />
+                                                    </Button>
+                                                </Link>
                                             </div>
                                         </td>
                                     </tr>

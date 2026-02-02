@@ -26,7 +26,11 @@ async function getUserData(userId: string) {
     return { user, transactions, executions };
 }
 
-export default async function UserDashboard() {
+export default async function UserDashboard({ 
+    searchParams 
+}: { 
+    searchParams: Promise<{ impersonate?: string }> 
+}) {
     const session = await auth.api.getSession({
         headers: await headers()
     });
@@ -35,13 +39,18 @@ export default async function UserDashboard() {
         redirect('/login');
     }
 
-    const { user, transactions, executions } = await getUserData(session.user.id);
+    const { impersonate } = await searchParams;
+    const isAdmin = (session.user as any).role === 'ADMIN';
+    const targetUserId = (isAdmin && impersonate) ? impersonate : session.user.id;
+
+    const { user, transactions, executions } = await getUserData(targetUserId);
 
     return (
         <DashboardContent 
             user={user} 
             transactions={transactions} 
             executions={executions} 
+            isImpersonating={isAdmin && !!impersonate}
         />
     );
 }

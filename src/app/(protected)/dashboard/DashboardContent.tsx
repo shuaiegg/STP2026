@@ -14,15 +14,18 @@ import { Badge } from '@/components/ui/Badge';
 import { authClient } from "@/lib/auth-client";
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { ShieldAlert, ArrowLeft } from 'lucide-react';
 
 export function DashboardContent({ 
     user, 
     transactions, 
-    executions 
+    executions,
+    isImpersonating = false
 }: { 
     user: any; 
     transactions: any[]; 
     executions: any[]; 
+    isImpersonating?: boolean;
 }) {
     const router = useRouter();
 
@@ -39,6 +42,19 @@ export function DashboardContent({
 
     return (
         <div className="max-w-7xl mx-auto px-6 py-12">
+            {isImpersonating && (
+                <div className="bg-amber-50 border-2 border-amber-200 p-4 mb-8 flex items-center justify-between rounded-xl">
+                    <div className="flex items-center gap-3 text-amber-800 font-bold text-sm">
+                        <ShieldAlert size={20} />
+                        代理预览模式：正在查看用户 {user?.email} 的账户
+                    </div>
+                    <Link href="/admin/users">
+                        <Button size="sm" variant="outline" className="border-amber-200 bg-white text-amber-700 hover:bg-amber-100 flex items-center gap-2">
+                            <ArrowLeft size={14} /> 返回管理后台
+                        </Button>
+                    </Link>
+                </div>
+            )}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
                 <div>
                     <h1 className="font-display text-4xl font-black text-brand-text-primary mb-2">
