@@ -128,11 +128,14 @@ model User {
   name          String?
   emailVerified Boolean   @default(false)
   image         String?
-  role          UserRole  @default(EDITOR)
+  role          UserRole  @default(USER)
+  credits       Int       @default(0)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
+  transactions  CreditTransaction[]
+  executions    SkillExecution[]
 
   @@index([email])
 }
@@ -221,4 +224,53 @@ enum ContentSource {
 enum UserRole {
   ADMIN
   EDITOR
+  USER
+}
+
+/// CreditTransaction - Track all credit-related activities
+model CreditTransaction {
+  id              String          @id @default(uuid())
+  userId          String
+  amount          Int             // Positive for purchase/bonus, negative for consumption
+  type            TransactionType
+  description     String?
+  createdAt       DateTime        @default(now())
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skillExecution  SkillExecution?
+
+  @@index([userId])
+  @@index([createdAt(sort: Desc)])
+}
+
+/// SkillExecution - Detailed logs of AI tool usage
+model SkillExecution {
+  id              String    @id @default(uuid())
+  skillName       String
+  input           Json
+  output          Json?
+  status          String    @default("success") // success, error
+  errorMessage    String?
+  provider        String?
+  modelUsed       String?
+  tokensUsed      Int?
+  cost            Float?
+  executionTimeMs Int?      // ms
+  metadata        Json?     // AI metadata
+  userId          String?
+  transactionId   String?   @unique
+  createdAt       DateTime  @default(now())
+
+  user          User?             @relation(fields: [userId], references: [id])
+  transaction   CreditTransaction? @relation(fields: [transactionId], references: [id])
+
+  @@index([userId])
+  @@index([skillName])
+  @@index([createdAt(sort: Desc)])
+}
+
+enum TransactionType {
+  PURCHASE    // Credits bought via Creem.io/Stripe
+  CONSUMPTION // Credits spent on tools/courses
+  REFUND      // Credits returned to user
+  BONUS       // Credits given for promo/referral
 }
