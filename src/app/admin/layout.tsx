@@ -41,6 +41,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
     const { data: session, isPending } = authClient.useSession();
 
+    React.useEffect(() => {
+        if (!isPending && !session && pathname !== '/admin/login' && pathname !== '/admin/setup') {
+            router.push('/admin/login');
+        }
+        if (!isPending && session && (session.user as any)?.role === 'USER') {
+            router.push('/dashboard');
+        }
+    }, [session, isPending, pathname, router]);
+
     const handleSignOut = async () => {
         await authClient.signOut({
             fetchOptions: {
