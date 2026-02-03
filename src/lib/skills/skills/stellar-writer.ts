@@ -1,15 +1,16 @@
 /**
- * StellarWriter Unified Skill
+ * StellarWriter Unified Skill v2.2
  * 
  * The powerhouse of STP content generation.
  * Combines Technical SEO, GEO (Generative Engine Optimization), 
- * and real-world Entity Data.
+ * and Competitor Reverse Engineering.
  */
 
 import { BaseSkill } from '../base-skill';
-import { SkillInput, SkillExecutionMetadata } from '../types';
+import { SkillInput, SkillOutput, SkillExecutionMetadata } from '../types';
 import { getProvider } from '../providers';
 import { DataForSEOClient, MapDataItem } from '../../external/dataforseo';
+import { SkeletonExtractor, ContentSkeleton } from '../../external/skeleton-extractor';
 
 /**
  * Input for StellarWriter
@@ -33,6 +34,8 @@ export interface StellarWriterInput extends SkillInput {
     url?: string;
     /** If true, only return score and audit without full rewrite */
     auditOnly?: boolean;
+    /** Whether to perform deep competitor analysis */
+    analyzeCompetitors?: boolean;
 }
 
 /**
@@ -58,6 +61,10 @@ export interface StellarWriterOutput {
     };
     /** Entities discovered/injected */
     entities: MapDataItem[];
+    /** Discovered topics/questions for content planning */
+    topics?: string[];
+    /** Competitor analysis data */
+    competitors?: ContentSkeleton[];
     /** Recommended internal links */
     internalLinks: string[];
     /** Visual/Image suggestions */
@@ -75,8 +82,6 @@ export interface StellarWriterOutput {
     };
     /** Strategic optimization suggestions */
     suggestions: string[];
-    /** Discovered topics/questions for content planning */
-    topics?: string[];
 }
 
 /**
@@ -84,8 +89,8 @@ export interface StellarWriterOutput {
  */
 export class StellarWriterSkill extends BaseSkill {
     name = 'stellar-writer';
-    description = 'Universal SEO & GEO Content Engine. Real-world data integration + citation-first writing.';
-    version = '2.0.0';
+    description = 'Universal SEO & GEO Content Engine with Competitor Reverse Engineering.';
+    version = '2.2.0';
     category: 'seo' = 'seo';
 
     protected preferredProvider: 'gemini' | 'claude' | 'deepseek' = 'deepseek';
@@ -104,27 +109,39 @@ export class StellarWriterSkill extends BaseSkill {
         data: StellarWriterOutput;
         metadata: Partial<SkillExecutionMetadata>;
     }> {
-        const { keywords, location, auditOnly } = input;
+        const { keywords, location, analyzeCompetitors = true } = input;
 
-        // 1. Context Injection: Fetch real-world entities + related topics
+        // 1. Intelligence Gathering Phase
         let entities: MapDataItem[] = [];
         let topics: string[] = [];
+        let competitorSkeletons: ContentSkeleton[] = [];
+
         try {
-            const [mapData, topicData] = await Promise.all([
-                DataForSEOClient.searchGoogleMaps(keywords, location, 5),
-                DataForSEOClient.getRelatedTopics(keywords)
-            ]);
-            entities = mapData;
-            topics = topicData;
+            // A. Fetch Google Maps Entities
+            entities = await DataForSEOClient.searchGoogleMaps(keywords, location, 5);
+            
+            // B. Fetch Related Topics
+            topics = await DataForSEOClient.getRelatedTopics(keywords);
+
+            // C. Competitor Analysis (The new "Secret Sauce")
+            if (analyzeCompetitors) {
+                const serp = await DataForSEOClient.searchGoogleSERP(keywords, location, 5);
+                const competitorUrls = serp
+                    .filter(item => item.type === 'organic')
+                    .slice(0, 3) // Analyze top 3 for speed and cost
+                    .map(item => item.url);
+                
+                competitorSkeletons = await SkeletonExtractor.batchExtract(competitorUrls);
+            }
         } catch (e) {
-            console.error('DataForSEO fetch failed, proceeding with pure AI logic');
+            console.error('Intelligence phase failed, proceeding with fallback AI knowledge', e);
         }
 
-        // 2. Intelligence: Build Unified Prompt
+        // 2. Generation Phase: Build Unified Prompt
         const provider = getProvider(this.preferredProvider);
-        const prompt = this.buildPrompt(input, entities, topics);
+        const prompt = this.buildPrompt(input, entities, topics, competitorSkeletons);
 
-        // 3. Generation
+        // 3. Execution
         const { response, cost } = await this.generateWithAI(provider, prompt, {
             model: this.preferredModel,
             temperature: 0.7,
@@ -132,7 +149,7 @@ export class StellarWriterSkill extends BaseSkill {
         });
 
         // 4. Orchestration: Parse and finalize
-        const result = this.parseResponse(response.content, entities, topics);
+        const result = this.parseResponse(response.content, entities, topics, competitorSkeletons);
 
         return {
             data: result,
@@ -145,18 +162,31 @@ export class StellarWriterSkill extends BaseSkill {
         };
     }
 
-    private buildPrompt(input: StellarWriterInput, entities: MapDataItem[], topics: string[]): string {
+    private buildPrompt(
+        input: StellarWriterInput, 
+        entities: MapDataItem[], 
+        topics: string[],
+        competitors: ContentSkeleton[]
+    ): string {
         const { keywords, brandName = 'ScaletoTop', industry = 'General', tone = 'professional', type = 'blog', originalContent, auditOnly, url } = input;
 
         const entityCtx = entities.length > 0
             ? `## Real-World Entities (Inject for GEO Citation)
-${entities.map(e => `- ${e.title}: ${e.address}. Rating: ${e.rating}. Web: ${e.website}`).join('\n')}`
+${entities.map(e => `- ${e.title}: ${e.address}. Rating: ${e.rating}.`).join('\n')}`
             : '';
 
         const topicCtx = topics.length > 0
-            ? `## Related High-Intent Topics (Helpful for Content Planning)
+            ? `## Related High-Intent Topics
 ${topics.map(t => `- ${t}`).join('\n')}`
-            : 'No real-time topics found. Please suggest 5-8 high-intent related keywords based on your internal knowledge.';
+            : '';
+
+        const competitorCtx = competitors.length > 0
+            ? `## Competitor Content Structures (Reverse Engineer these)
+${competitors.map(c => `### Competitor: ${c.title}
+Outlines:
+${c.headings.map(h => `${'  '.repeat(h.level - 1)}- ${h.text}`).join('\n')}
+`).join('\n')}`
+            : '';
 
         return `You are a world-class Growth Marketer and SEO/GEO expert. Your mission is to create/optimize content that dominates both search engines and AI citation engines.
 
@@ -168,17 +198,19 @@ CRITICAL MODE: ${auditOnly ? 'AUDIT & STRATEGY ONLY. Do NOT write content.' : 'F
 - **Industry**: ${industry}
 - **Tone**: ${tone}
 - **Type**: ${type}
-${url ? `- **Target URL**: ${url}` : ''}
 
 ${originalContent ? `\n## Original Draft to Optimize\n${originalContent}\n` : ''}
 
+${competitorCtx}
+
 ${entityCtx}
+
 ${topicCtx}
 
 ## Core Requirements (The Secret Sauce)
-1. **AEO Optimization**: First 50 words must provide a definitive answer.
-2. **Entity Binding**: Link the brand to industry facts or local entities provided above.
-3. **Information Gain**: Provide unique insights, data placeholders, or named frameworks.
+1. **Reverse Engineering**: Analyze the competitor skeletons. Create a "Master Outline" that covers ALL their key points plus ONE unique "Information Gain" point they all missed.
+2. **AEO Optimization**: First 50 words must provide a definitive answer to the primary search intent.
+3. **Entity Binding**: Link the brand to industry facts or local entities provided.
 4. **Technical SEO**: Optimized Title (50-60 chars), Meta Description (120-160 chars), Slug.
 5. **E-E-A-T**: Infuse experience-based language ("In our testing...", "We discovered...").
 
@@ -194,23 +226,22 @@ ${topicCtx}
     "slug": "url-slug"
   },
   "schema": {
-    "article": { /* Article LD-JSON */ },
-    "faq": { /* FAQ LD-JSON if applicable */ }
+    "article": { /* Article LD-JSON */ }
   },
-  "entities": [],
-  "topics": ["keyword1", "keyword2", "..."],
-  "internalLinks": ["related-slug-1"],
-  "imageSuggestions": ["Visual prompt 1"],
-  "distribution": { "linkedin": "...", "reddit": "..." },
   "scores": { "seo": 95, "geo": 92 },
-  "suggestions": ["suggestion 1", "suggestion 2"]
+  "suggestions": ["Strategic point 1", "Strategic point 2"]
 }
 \`\`\`
 
 Return ONLY the JSON block.`;
     }
 
-    private parseResponse(raw: string, entities: MapDataItem[], topics: string[]): StellarWriterOutput {
+    private parseResponse(
+        raw: string, 
+        entities: MapDataItem[], 
+        topics: string[],
+        competitors: ContentSkeleton[]
+    ): StellarWriterOutput {
         const json = this.extractJSON<any>(raw);
         
         return {
@@ -220,6 +251,7 @@ Return ONLY the JSON block.`;
             schema: json?.schema || { article: {} },
             entities: entities,
             topics: topics,
+            competitors: competitors,
             internalLinks: json?.internalLinks || [],
             imageSuggestions: json?.imageSuggestions || [],
             distribution: json?.distribution || {},

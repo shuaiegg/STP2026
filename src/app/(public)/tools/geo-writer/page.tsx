@@ -17,7 +17,8 @@ import {
     ChevronUp,
     FileText,
     Image as ImageIcon,
-    Link as LinkIcon
+    Link as LinkIcon,
+    Users
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -338,6 +339,32 @@ export default function GEOWriterPage() {
                                                             </span>
                                                         ))}
                                                     </div>
+                                                </div>
+                                            )}
+
+                                            {auditResult.competitors?.length > 0 && (
+                                                <div className="pt-6 border-t border-brand-border">
+                                                    <h4 className="text-xs font-black text-brand-text-primary uppercase mb-4 flex items-center gap-2">
+                                                        <Users size={14} className="text-brand-secondary" /> 竞品骨架拆解 (Reverse Engineering)
+                                                    </h4>
+                                                    <div className="space-y-4">
+                                                        {auditResult.competitors.map((comp: any, i: number) => (
+                                                            <div key={i} className="p-4 bg-slate-50 border border-slate-200 rounded-xl group/comp">
+                                                                <div className="text-[10px] font-bold text-slate-400 truncate mb-2">{comp.url}</div>
+                                                                <div className="text-xs font-bold text-slate-700 mb-3">{comp.title}</div>
+                                                                <div className="flex flex-wrap gap-1.5 opacity-60 group-hover/comp:opacity-100 transition-opacity">
+                                                                    {comp.headings.slice(0, 6).map((h: any, j: number) => (
+                                                                        <span key={j} className="px-2 py-0.5 bg-white border border-slate-200 text-[9px] text-slate-500 rounded whitespace-nowrap">
+                                                                            H{h.level}: {h.text.slice(0, 20)}...
+                                                                        </span>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                    <p className="mt-4 text-[10px] italic text-brand-text-muted">
+                                                        * 阿拉丁已自动分析以上竞品的逻辑漏洞，并将在重写时为您填入独家“信息增益”点。
+                                                    </p>
                                                 </div>
                                             )}
 

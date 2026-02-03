@@ -103,7 +103,8 @@ export class DataForSEOClient {
                 location_name: locationName || "United States",
                 language_name: "English",
                 device: "desktop",
-                os: "windows"
+                os: "windows",
+                depth: 20 // Get more results for better analysis
             }];
 
             const response = await fetch(`${this.baseUrl}/public_data/google/search/live/regular`, {
