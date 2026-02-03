@@ -295,7 +295,7 @@ export default function GEOWriterPage() {
                                             {showOriginal ? form.originalContent : finalResult.content.replace(/^# .*\n/, '')}
                                         </div>
                                     ) : (
-                                        <div className="space-y-6">
+                                        <div className="space-y-4">
                                             <div>
                                                 <h4 className="text-xs font-black text-brand-text-primary uppercase mb-2 flex items-center gap-2">
                                                     <Zap size={14} className="text-brand-secondary" /> 核心策略建议
@@ -308,6 +308,22 @@ export default function GEOWriterPage() {
                                                     ))}
                                                 </div>
                                             </div>
+
+                                            {auditResult.topics?.length > 0 && (
+                                                <div>
+                                                    <h4 className="text-xs font-black text-brand-text-primary uppercase mb-2 flex items-center gap-2">
+                                                        <Sparkles size={14} className="text-brand-primary" /> 话题探测器 (相关高搜索词)
+                                                    </h4>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {auditResult.topics.map((t: string, i: number) => (
+                                                            <span key={i} className="px-3 py-1 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-full border border-slate-200 uppercase tracking-tighter">
+                                                                {t}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div>
                                                     <h4 className="text-xs font-black text-brand-text-primary uppercase mb-2 flex items-center gap-2">

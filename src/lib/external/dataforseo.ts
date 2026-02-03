@@ -37,20 +37,13 @@ export class DataForSEOClient {
 
     /**
      * Search Google Maps for local businesses
-     * 
-     * @param keyword Business keyword (e.g. "dental clinic in New York")
-     * @param locationName Location name (optional)
-     * @param limit Number of results
      */
     static async searchGoogleMaps(
         keyword: string, 
         locationName?: string, 
         limit: number = 5
     ): Promise<MapDataItem[]> {
-        if (!DATAFORSEO_LOGIN || !DATAFORSEO_PASSWORD) {
-            console.warn('DataForSEO credentials missing');
-            return [];
-        }
+        if (!DATAFORSEO_LOGIN || !DATAFORSEO_PASSWORD) return [];
 
         try {
             const payload = [{
@@ -70,10 +63,6 @@ export class DataForSEOClient {
                 body: JSON.stringify(payload)
             });
 
-            if (!response.ok) {
-                throw new Error(`DataForSEO error: ${response.status} ${response.statusText}`);
-            }
-
             const data = await response.json();
             
             if (data.tasks && data.tasks[0] && data.tasks[0].result) {
@@ -91,10 +80,75 @@ export class DataForSEOClient {
                     longitude: item.longitude
                 }));
             }
-
             return [];
         } catch (error) {
-            console.error('DataForSEO search error:', error);
+            console.error('DataForSEO maps error:', error);
+            return [];
+        }
+    }
+
+    /**
+     * Search Google SERP for ranking and featured snippets
+     */
+    static async searchGoogleSERP(
+        keyword: string,
+        locationName?: string,
+        limit: number = 10
+    ): Promise<any[]> {
+        if (!DATAFORSEO_LOGIN || !DATAFORSEO_PASSWORD) return [];
+
+        try {
+            const payload = [{
+                keyword,
+                location_name: locationName || "United States",
+                language_name: "English",
+                device: "desktop",
+                os: "windows"
+            }];
+
+            const response = await fetch(`${this.baseUrl}/public_data/google/search/live/regular`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': this.getAuthHeader(),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+            return data.tasks?.[0]?.result?.[0]?.items || [];
+        } catch (error) {
+            console.error('DataForSEO SERP error:', error);
+            return [];
+        }
+    }
+
+    /**
+     * Get related keywords and People Also Ask
+     */
+    static async getRelatedTopics(keyword: string): Promise<string[]> {
+        if (!DATAFORSEO_LOGIN || !DATAFORSEO_PASSWORD) return [];
+
+        try {
+            // Using keyword suggestions endpoint
+            const payload = [{
+                keyword,
+                location_name: "United States",
+                language_name: "English"
+            }];
+
+            const response = await fetch(`${this.baseUrl}/keywords_data/google/search_volume/live`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': this.getAuthHeader(),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+            return data.tasks?.[0]?.result?.map((r: any) => r.keyword) || [];
+        } catch (error) {
             return [];
         }
     }

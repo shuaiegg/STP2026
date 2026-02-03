@@ -75,6 +75,8 @@ export interface StellarWriterOutput {
     };
     /** Strategic optimization suggestions */
     suggestions: string[];
+    /** Discovered topics/questions for content planning */
+    topics?: string[];
 }
 
 /**
@@ -104,17 +106,23 @@ export class StellarWriterSkill extends BaseSkill {
     }> {
         const { keywords, location, auditOnly } = input;
 
-        // 1. Context Injection: Fetch real-world entities if keywords provided
+        // 1. Context Injection: Fetch real-world entities + related topics
         let entities: MapDataItem[] = [];
+        let topics: string[] = [];
         try {
-            entities = await DataForSEOClient.searchGoogleMaps(keywords, location, 5);
+            const [mapData, topicData] = await Promise.all([
+                DataForSEOClient.searchGoogleMaps(keywords, location, 5),
+                auditOnly ? DataForSEOClient.getRelatedTopics(keywords) : Promise.resolve([])
+            ]);
+            entities = mapData;
+            topics = topicData;
         } catch (e) {
             console.error('DataForSEO fetch failed, proceeding with pure AI logic');
         }
 
         // 2. Intelligence: Build Unified Prompt
         const provider = getProvider(this.preferredProvider);
-        const prompt = this.buildPrompt(input, entities);
+        const prompt = this.buildPrompt(input, entities, topics);
 
         // 3. Generation
         const { response, cost } = await this.generateWithAI(provider, prompt, {
@@ -124,7 +132,7 @@ export class StellarWriterSkill extends BaseSkill {
         });
 
         // 4. Orchestration: Parse and finalize
-        const result = this.parseResponse(response.content, entities, input);
+        const result = this.parseResponse(response.content, entities, topics);
 
         return {
             data: result,
@@ -137,12 +145,17 @@ export class StellarWriterSkill extends BaseSkill {
         };
     }
 
-    private buildPrompt(input: StellarWriterInput, entities: MapDataItem[]): string {
+    private buildPrompt(input: StellarWriterInput, entities: MapDataItem[], topics: string[]): string {
         const { keywords, brandName = 'ScaletoTop', industry = 'General', tone = 'professional', type = 'blog', originalContent, auditOnly, url } = input;
 
         const entityCtx = entities.length > 0
             ? `## Real-World Entities (Inject for GEO Citation)
 ${entities.map(e => `- ${e.title}: ${e.address}. Rating: ${e.rating}. Web: ${e.website}`).join('\n')}`
+            : '';
+
+        const topicCtx = topics.length > 0
+            ? `## Related High-Intent Topics (Helpful for Content Planning)
+${topics.map(t => `- ${t}`).join('\n')}`
             : '';
 
         return `You are a world-class Growth Marketer and SEO/GEO expert. Your mission is to create/optimize content that dominates both search engines and AI citation engines.
@@ -160,6 +173,7 @@ ${url ? `- **Target URL**: ${url}` : ''}
 ${originalContent ? `\n## Original Draft to Optimize\n${originalContent}\n` : ''}
 
 ${entityCtx}
+${topicCtx}
 
 ## Core Requirements (The Secret Sauce)
 1. **AEO Optimization**: First 50 words must provide a definitive answer.
@@ -195,7 +209,7 @@ ${entityCtx}
 Return ONLY the JSON block.`;
     }
 
-    private parseResponse(raw: string, entities: MapDataItem[], input: StellarWriterInput): StellarWriterOutput {
+    private parseResponse(raw: string, entities: MapDataItem[], topics: string[]): StellarWriterOutput {
         const json = this.extractJSON<any>(raw);
         
         return {
@@ -204,6 +218,7 @@ Return ONLY the JSON block.`;
             seoMetadata: json?.seoMetadata || { title: '', description: '', keywords: [], slug: '' },
             schema: json?.schema || { article: {} },
             entities: entities,
+            topics: topics,
             internalLinks: json?.internalLinks || [],
             imageSuggestions: json?.imageSuggestions || [],
             distribution: json?.distribution || {},
