@@ -7,15 +7,44 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSkillRegistry } from '@/lib/skills';
 import { registerAllSkills } from '@/lib/skills/skills';
 import { SkillInput } from '@/lib/skills/types';
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import prisma from "@/lib/prisma";
 
 // Initialize skills on module load
 registerAllSkills();
+
+/**
+ * Get credit cost for a skill
+ */
+function getSkillCost(skillName: string, input?: any): number {
+    if (skillName === 'geo-writer' && input?.auditOnly) {
+        return 0; // Free audit
+    }
+    
+    const costs: Record<string, number> = {
+        'seo-optimizer': 20,
+        'geo-writer': 50,
+    };
+    return costs[skillName] || 10;
+}
 
 /**
  * Execute a skill
  */
 export async function POST(request: NextRequest) {
     try {
+        const session = await auth.api.getSession({
+            headers: await headers()
+        });
+
+        if (!session) {
+            return NextResponse.json(
+                { error: 'Unauthorized: Please login to use tools' },
+                { status: 401 }
+            );
+        }
+
         const body = await request.json();
         const { skillName, input, options } = body as {
             skillName: string;
@@ -28,17 +57,11 @@ export async function POST(request: NextRequest) {
 
         // Validate request
         if (!skillName) {
-            return NextResponse.json(
-                { error: 'skillName is required' },
-                { status: 400 }
-            );
+            return NextResponse.json({ error: 'skillName is required' }, { status: 400 });
         }
 
         if (!input) {
-            return NextResponse.json(
-                { error: 'input is required' },
-                { status: 400 }
-            );
+            return NextResponse.json({ error: 'input is required' }, { status: 400 });
         }
 
         // Get the skill
@@ -52,6 +75,23 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Check credits
+        const user = await prisma.user.findUnique({
+            where: { id: session.user.id }
+        });
+
+        if (!user) {
+            return NextResponse.json({ error: 'User not found' }, { status: 404 });
+        }
+
+        const cost = getSkillCost(skillName, input);
+        if (user.credits < cost) {
+            return NextResponse.json(
+                { error: `Insufficient credits. This tool requires ${cost} credits, but you have ${user.credits}.` },
+                { status: 402 }
+            );
+        }
+
         // Execute the skill
         const startTime = Date.now();
         const result = await skill.execute(input);
@@ -60,20 +100,54 @@ export async function POST(request: NextRequest) {
         // Generate execution ID
         const executionId = `exec_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 
-        // TODO: Save execution to database for tracking
-        // await saveExecutionRecord({
-        //   id: executionId,
-        //   skillName,
-        //   input,
-        //   output: result,
-        //   ...
-        // });
+        // Process transaction and log in a Prisma transaction
+        const dbResult = await prisma.$transaction(async (tx) => {
+            // 1. Deduct credits
+            const updatedUser = await tx.user.update({
+                where: { id: user.id },
+                data: {
+                    credits: {
+                        decrement: cost
+                    }
+                }
+            });
+
+            // 2. Create transaction record
+            const transaction = await tx.creditTransaction.create({
+                data: {
+                    userId: user.id,
+                    amount: -cost,
+                    type: 'CONSUMPTION',
+                    description: `Used tool: ${skillName}`
+                }
+            });
+
+            // 3. Create execution record
+            const execution = await tx.skillExecution.create({
+                data: {
+                    id: executionId,
+                    skillName,
+                    userId: user.id,
+                    transactionId: transaction.id,
+                    status: 'success',
+                    input: input as any,
+                    output: result.data as any,
+                    executionTimeMs: executionTime,
+                    modelUsed: result.metadata.modelUsed,
+                    provider: result.metadata.provider,
+                    tokensUsed: result.metadata.tokensUsed,
+                }
+            });
+
+            return { updatedUser, execution };
+        });
 
         return NextResponse.json({
             success: true,
             executionId,
             output: result,
             executionTime,
+            remainingCredits: dbResult.updatedUser.credits
         });
     } catch (error) {
         console.error('Skill execution error:', error);

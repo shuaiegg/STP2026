@@ -29,7 +29,19 @@ These rules are synthesized from high-performance AI coding patterns and optimiz
 - **TDD (Test-Driven Development)**: For complex logic (like image URL parsing or reading time calculation), write tests before implementation.
 - **Documentation**: Keep `CLAUDE.md` and `MEMORY.md` updated with every significant architectural change.
 
-## 6. AI Interaction Rules
-- **Plan Mode**: Before starting a complex task, output a step-by-step plan.
-- **Verify Loop**: After implementing a feature, verify it by running the build or specific tests.
-- **Rule Reference**: I (Aladdin) will always consult the `rules/` directory before making significant changes.
+## 7. STP Tool Development Lifecycle (Standardized)
+To ensure every tool delivers business value and has a premium user experience:
+
+1.  **Refinement Phase**:
+    -   Define business logic & core value proposition.
+    -   Identify data sources (e.g., DataForSEO, Google Ads).
+    -   Map the "White-Label Novice" user journey.
+2.  **API/Protocol Definition**:
+    -   Define Prisma Schemas for the tool's specific data.
+    -   Write API specifications before implementation.
+3.  **Core Logic Implementation**:
+    -   Build backend skills/services.
+    -   Verify accuracy using scripts or CLI tools.
+4.  **Premium UI Packaging**:
+    -   Apply "UI/UX Pro Max" principles.
+    -   Implement "Magic" interactions (e.g., direct rewrite with revert, scoreboards).

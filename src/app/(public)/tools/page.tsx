@@ -11,7 +11,7 @@ export default function Tools() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
                 {/* Tool 1: SEO & GEO Content Generator */}
-                <div className="group relative">
+                <Link href="/tools/geo-writer" className="group relative">
                     <div className="border-2 border-brand-border-heavy p-10 bg-white transition-all hover:shadow-[8px_8px_0_0_rgba(10,10,10,1)] hover:translate-x-[-4px] hover:translate-y-[-4px] cursor-pointer h-full text-left">
                         <div className="w-12 h-12 bg-brand-primary/10 border-2 border-brand-primary/20 flex items-center justify-center text-brand-primary mb-6">
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -23,11 +23,11 @@ export default function Tools() {
                             基于 Google 地图数据与本地 SEO 算法，一键生成针对特定地理位置的高转化 B2B 文案。
                         </p>
                         <div className="flex items-center justify-between">
-                            <span className="font-mono text-[10px] font-bold text-brand-secondary uppercase bg-brand-secondary/10 px-2 py-1">即将上线</span>
-                            <span className="text-xs font-bold text-brand-text-muted">10 积分 / 次</span>
+                            <span className="font-mono text-[10px] font-bold text-emerald-600 uppercase bg-emerald-50 px-2 py-1">立即使用</span>
+                            <span className="text-xs font-bold text-brand-text-muted">50 积分 / 次</span>
                         </div>
                     </div>
-                </div>
+                </Link>
 
                 {/* Tool 2: Google Maps Leads Scraper */}
                 <div className="group relative">

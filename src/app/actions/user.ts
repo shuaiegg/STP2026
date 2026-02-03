@@ -83,7 +83,7 @@ export async function updateUserCredits(userId: string, amount: number, reason: 
                     userId,
                     amount,
                     type: amount >= 0 ? 'BONUS' : 'CONSUMPTION',
-                    description: `Admin manual adjustment: ${reason} (by ${adminSession.user.email})`
+                    description: reason || (amount >= 0 ? '管理员手动增加积分' : '管理员手动扣除积分')
                 }
             });
 
@@ -98,6 +98,69 @@ export async function updateUserCredits(userId: string, amount: number, reason: 
         console.error("Failed to update user credits:", error);
         return { success: false, message: error.message || "Failed to update credits" };
     }
+}
+
+/**
+ * Revert a specific transaction
+ */
+export async function revertTransaction(transactionId: string) {
+    await checkAdmin();
+
+    try {
+        const result = await prisma.$transaction(async (tx) => {
+            // 1. Get transaction info
+            const transaction = await tx.creditTransaction.findUnique({
+                where: { id: transactionId }
+            });
+
+            if (!transaction) throw new Error("Transaction not found");
+            
+            // Only allow reverting BONUS or CONSUMPTION (not PURCHASE or automatic ones with executions)
+            if (transaction.type === 'PURCHASE') {
+                throw new Error("Cannot revert purchase transactions here");
+            }
+
+            // 2. Revert credits
+            await tx.user.update({
+                where: { id: transaction.userId },
+                data: {
+                    credits: {
+                        decrement: transaction.amount
+                    }
+                }
+            });
+
+            // 3. Delete the transaction record (per user's request to not show mistakes)
+            await tx.creditTransaction.delete({
+                where: { id: transactionId }
+            });
+
+            return { userId: transaction.userId };
+        });
+
+        revalidatePath('/admin/users');
+        revalidatePath('/dashboard');
+        
+        return { success: true };
+    } catch (error: any) {
+        console.error("Failed to revert transaction:", error);
+        return { success: false, message: error.message || "Failed to revert" };
+    }
+}
+
+/**
+ * Get recent transactions for a user
+ */
+export async function getUserTransactions(userId: string, limit = 5) {
+    await checkAdmin();
+
+    const transactions = await prisma.creditTransaction.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+        take: limit
+    });
+
+    return transactions;
 }
 
 /**

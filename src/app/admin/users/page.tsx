@@ -12,12 +12,16 @@ import {
     Minus,
     Loader2,
     CheckCircle2,
-    XCircle
+    XCircle,
+    RotateCcw,
+    Undo2,
+    History as HistoryIcon
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { getUsers, updateUserCredits } from '@/app/actions/user';
+import Link from 'next/link';
+import { getUsers, updateUserCredits, getUserTransactions, revertTransaction } from '@/app/actions/user';
 
 export default function UserManagementPage() {
     const [users, setUsers] = useState<any[]>([]);
@@ -27,6 +31,11 @@ export default function UserManagementPage() {
     
     const [isUpdating, setIsUpdating] = useState<string | null>(null);
     const [creditAmount, setCreditAmount] = useState(100);
+
+    const [selectedUserForHistory, setSelectedUserForHistory] = useState<string | null>(null);
+    const [userTransactions, setUserTransactions] = useState<any[]>([]);
+    const [loadingHistory, setLoadingHistory] = useState(false);
+    const [isReverting, setIsReverting] = useState<string | null>(null);
 
     const fetchUsers = async () => {
         setLoading(true);
@@ -41,6 +50,18 @@ export default function UserManagementPage() {
         }
     };
 
+    const fetchUserHistory = async (userId: string) => {
+        setLoadingHistory(true);
+        try {
+            const data = await getUserTransactions(userId);
+            setUserTransactions(data);
+        } catch (error) {
+            console.error("Failed to load history:", error);
+        } finally {
+            setLoadingHistory(false);
+        }
+    };
+
     useEffect(() => {
         const timer = setTimeout(() => {
             fetchUsers();
@@ -51,10 +72,14 @@ export default function UserManagementPage() {
     const handleUpdateCredits = async (userId: string, amount: number) => {
         setIsUpdating(userId);
         try {
-            const res = await updateUserCredits(userId, amount, "Admin Manual Adjustment");
+            const reason = amount >= 0 ? "管理员手动增加积分" : "管理员手动扣除积分";
+            const res = await updateUserCredits(userId, amount, reason);
             if (res.success) {
                 // Optimistic UI update or just refetch
                 await fetchUsers();
+                if (selectedUserForHistory === userId) {
+                    fetchUserHistory(userId);
+                }
             } else {
                 alert(res.message);
             }
@@ -63,8 +88,27 @@ export default function UserManagementPage() {
         }
     };
 
+    const handleRevert = async (txId: string, userId: string) => {
+        if (!confirm("确定要撤销这条记录吗？这将恢复积分余额并从用户账单中完全移除此项。")) return;
+        
+        setIsReverting(txId);
+        try {
+            const res = await revertTransaction(txId);
+            if (res.success) {
+                await fetchUsers();
+                if (selectedUserForHistory === userId) {
+                    fetchUserHistory(userId);
+                }
+            } else {
+                alert(res.message);
+            }
+        } finally {
+            setIsReverting(null);
+        }
+    };
+
     return (
-        <div className="space-y-8">
+        <div className="space-y-8 pb-20">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-900 mb-2 font-display">用户管理</h1>
@@ -108,77 +152,159 @@ export default function UserManagementPage() {
                                 </tr>
                             ) : users.length > 0 ? (
                                 users.map((user) => (
-                                    <tr key={user.id} className="hover:bg-slate-50/30 transition-colors group">
-                                        <td className="px-8 py-6">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 rounded-2xl bg-brand-primary/5 flex items-center justify-center text-brand-primary border-2 border-white shadow-sm">
-                                                    {user.image ? (
-                                                        <img src={user.image} alt="" className="w-full h-full object-cover rounded-2xl" />
-                                                    ) : (
-                                                        <UserIcon size={24} />
-                                                    )}
+                                    <React.Fragment key={user.id}>
+                                        <tr className={`hover:bg-slate-50/30 transition-colors group ${selectedUserForHistory === user.id ? 'bg-brand-primary/[0.02]' : ''}`}>
+                                            <td className="px-8 py-6">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-12 h-12 rounded-2xl bg-brand-primary/5 flex items-center justify-center text-brand-primary border-2 border-white shadow-sm">
+                                                        {user.image ? (
+                                                            <img src={user.image} alt="" className="w-full h-full object-cover rounded-2xl" />
+                                                        ) : (
+                                                            <UserIcon size={24} />
+                                                        )}
+                                                    </div>
+                                                    <div>
+                                                        <div className="font-bold text-slate-900">{user.name || '未命名'}</div>
+                                                        <div className="text-xs text-slate-500">{user.email}</div>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <div className="font-bold text-slate-900">{user.name || '未命名'}</div>
-                                                    <div className="text-xs text-slate-500">{user.email}</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-8 py-6">
-                                            <Badge variant="outline" className={`font-mono text-[10px] uppercase border-2 ${
-                                                user.role === 'ADMIN' ? 'text-purple-600 bg-purple-50 border-purple-100' : 'text-slate-500 bg-slate-50 border-slate-100'
-                                            }`}>
-                                                {user.role}
-                                            </Badge>
-                                        </td>
-                                        <td className="px-8 py-6">
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600">
-                                                    <Coins size={16} />
-                                                </div>
-                                                <span className="font-mono font-bold text-slate-700">{user.credits}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-8 py-6 text-slate-500 text-xs">
-                                            <div className="flex flex-col gap-1">
-                                                <span>文章使用: <strong>{user._count.executions}</strong></span>
-                                                <span>最近活动: {new Date(user.updatedAt).toLocaleDateString()}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-8 py-6">
-                                            <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <div className="flex items-center bg-slate-100 rounded-lg p-1">
-                                                    <input 
-                                                        type="number" 
-                                                        value={creditAmount}
-                                                        onChange={(e) => setCreditAmount(parseInt(e.target.value))}
-                                                        className="w-16 bg-transparent border-none text-xs font-bold text-center focus:ring-0"
-                                                    />
+                                            </td>
+                                            <td className="px-8 py-6">
+                                                <Badge variant="outline" className={`font-mono text-[10px] uppercase border-2 ${
+                                                    user.role === 'ADMIN' ? 'text-purple-600 bg-purple-50 border-purple-100' : 'text-slate-500 bg-slate-50 border-slate-100'
+                                                }`}>
+                                                    {user.role}
+                                                </Badge>
+                                            </td>
+                                            <td className="px-8 py-6">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600">
+                                                            <Coins size={16} />
+                                                        </div>
+                                                        <span className="font-mono font-bold text-slate-700">{user.credits}</span>
+                                                    </div>
                                                     <button 
-                                                        onClick={() => handleUpdateCredits(user.id, creditAmount)}
-                                                        disabled={isUpdating === user.id}
-                                                        className="p-1.5 hover:bg-emerald-500 hover:text-white rounded-md transition-all text-emerald-600"
-                                                        title="增加积分"
+                                                        onClick={() => {
+                                                            if (selectedUserForHistory === user.id) {
+                                                                setSelectedUserForHistory(null);
+                                                            } else {
+                                                                setSelectedUserForHistory(user.id);
+                                                                fetchUserHistory(user.id);
+                                                            }
+                                                        }}
+                                                        className={`p-1.5 rounded-lg transition-all ${selectedUserForHistory === user.id ? 'bg-slate-900 text-white' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'}`}
+                                                        title="查看记录并撤销"
                                                     >
-                                                        {isUpdating === user.id ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
-                                                    </button>
-                                                    <button 
-                                                        onClick={() => handleUpdateCredits(user.id, -creditAmount)}
-                                                        disabled={isUpdating === user.id}
-                                                        className="p-1.5 hover:bg-red-500 hover:text-white rounded-md transition-all text-red-600"
-                                                        title="扣除积分"
-                                                    >
-                                                        {isUpdating === user.id ? <Loader2 size={14} className="animate-spin" /> : <Minus size={14} />}
+                                                        <HistoryIcon size={14} />
                                                     </button>
                                                 </div>
-                                                <Link href={`/dashboard?impersonate=${user.id}`}>
-                                                    <Button variant="ghost" size="sm" className="h-9 w-9 p-0 rounded-lg border border-slate-200" title="代理查看">
-                                                        <ExternalLink size={16} className="text-slate-400" />
-                                                    </Button>
-                                                </Link>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                            </td>
+                                            <td className="px-8 py-6 text-slate-500 text-xs">
+                                                <div className="flex flex-col gap-1">
+                                                    <span>文章使用: <strong>{user._count.executions}</strong></span>
+                                                    <span>最近活动: {new Date(user.updatedAt).toLocaleDateString()}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-6">
+                                                <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <div className="flex items-center bg-slate-100 rounded-lg p-1">
+                                                        <input 
+                                                            type="number" 
+                                                            value={creditAmount}
+                                                            onChange={(e) => setCreditAmount(parseInt(e.target.value))}
+                                                            className="w-16 bg-transparent border-none text-xs font-bold text-center focus:ring-0"
+                                                        />
+                                                        <button 
+                                                            onClick={() => handleUpdateCredits(user.id, creditAmount)}
+                                                            disabled={isUpdating === user.id}
+                                                            className="p-1.5 hover:bg-emerald-500 hover:text-white rounded-md transition-all text-emerald-600"
+                                                            title="增加积分"
+                                                        >
+                                                            {isUpdating === user.id ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => handleUpdateCredits(user.id, -creditAmount)}
+                                                            disabled={isUpdating === user.id}
+                                                            className="p-1.5 hover:bg-red-500 hover:text-white rounded-md transition-all text-red-600"
+                                                            title="扣除积分"
+                                                        >
+                                                            {isUpdating === user.id ? <Loader2 size={14} className="animate-spin" /> : <Minus size={14} />}
+                                                        </button>
+                                                    </div>
+                                                    <div className="relative group/tooltip">
+                                                        <Link href={`/dashboard?impersonate=${user.id}`}>
+                                                            <Button variant="ghost" size="sm" className="h-9 px-3 gap-2 rounded-lg border border-slate-200 hover:bg-brand-primary/5 hover:text-brand-primary hover:border-brand-primary/20 transition-all">
+                                                                <ExternalLink size={14} />
+                                                                <span className="text-xs font-bold">代理登录</span>
+                                                            </Button>
+                                                        </Link>
+                                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-slate-900 text-white text-[10px] rounded-lg opacity-0 group-hover/tooltip:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-10 shadow-xl">
+                                                            以 {user.name || '此用户'} 的身份进入控制台
+                                                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-900"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {selectedUserForHistory === user.id && (
+                                            <tr className="bg-brand-primary/[0.02]">
+                                                <td colSpan={5} className="px-8 pb-8 pt-0">
+                                                    <div className="bg-white rounded-xl border border-brand-primary/10 shadow-sm p-4 animate-in slide-in-from-top-2 duration-200">
+                                                        <div className="flex items-center justify-between mb-4 px-2">
+                                                            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                                                <HistoryIcon size={12} />
+                                                                最近积分记录
+                                                            </h4>
+                                                            <button onClick={() => setSelectedUserForHistory(null)} className="text-slate-300 hover:text-slate-500">
+                                                                <XCircle size={16} />
+                                                            </button>
+                                                        </div>
+                                                        <div className="space-y-2">
+                                                            {loadingHistory ? (
+                                                                <div className="py-8 flex justify-center">
+                                                                    <Loader2 size={20} className="animate-spin text-brand-primary/30" />
+                                                                </div>
+                                                            ) : userTransactions.length > 0 ? (
+                                                                userTransactions.map((tx) => (
+                                                                    <div key={tx.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50/50 border border-slate-100 group/tx">
+                                                                        <div className="flex items-center gap-3">
+                                                                            <div className={`w-8 h-8 rounded flex items-center justify-center ${tx.amount > 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
+                                                                                <Coins size={14} />
+                                                                            </div>
+                                                                            <div>
+                                                                                <div className="text-xs font-bold text-slate-700">{tx.description || tx.type}</div>
+                                                                                <div className="text-[10px] text-slate-400 font-mono">{new Date(tx.createdAt).toLocaleString()}</div>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className="flex items-center gap-4">
+                                                                            <span className={`font-mono text-xs font-bold ${tx.amount > 0 ? 'text-emerald-600' : 'text-slate-700'}`}>
+                                                                                {tx.amount > 0 ? `+${tx.amount}` : tx.amount}
+                                                                            </span>
+                                                                            {tx.type !== 'PURCHASE' && (
+                                                                                <button 
+                                                                                    onClick={() => handleRevert(tx.id, user.id)}
+                                                                                    disabled={isReverting === tx.id}
+                                                                                    className="px-2 py-1 text-[10px] font-bold text-red-500 hover:bg-red-500 hover:text-white rounded transition-all opacity-0 group-hover/tx:opacity-100 disabled:opacity-50 flex items-center gap-1"
+                                                                                >
+                                                                                    {isReverting === tx.id ? <Loader2 size={10} className="animate-spin" /> : <Undo2 size={10} />}
+                                                                                    撤销
+                                                                                </button>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                ))
+                                                            ) : (
+                                                                <div className="py-8 text-center text-xs text-slate-400 italic">
+                                                                    暂无积分变动记录
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </React.Fragment>
                                 ))
                             ) : (
                                 <tr>
