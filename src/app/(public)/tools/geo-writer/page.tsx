@@ -291,8 +291,25 @@ export default function GEOWriterPage() {
                                 
                                 <div className="prose prose-sm prose-brand max-w-none min-h-[300px]">
                                     {finalResult ? (
-                                        <div className="whitespace-pre-wrap text-brand-text-secondary leading-relaxed">
-                                            {showOriginal ? form.originalContent : finalResult.content.replace(/^# .*\n/, '')}
+                                        <div className="space-y-8">
+                                            <div className="whitespace-pre-wrap text-brand-text-secondary leading-relaxed">
+                                                {showOriginal ? form.originalContent : finalResult.content.replace(/^# .*\n/, '')}
+                                            </div>
+                                            
+                                            {auditResult.topics?.length > 0 && (
+                                                <div className="pt-8 border-t border-brand-border">
+                                                    <h4 className="text-xs font-black text-brand-text-primary uppercase mb-3 flex items-center gap-2">
+                                                        <Sparkles size={14} className="text-brand-primary" /> 下一篇文章建议 (相关高搜索词)
+                                                    </h4>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {auditResult.topics.map((t: string, i: number) => (
+                                                            <span key={i} className="px-3 py-1 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-full border border-slate-200 uppercase tracking-tighter">
+                                                                {t}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     ) : (
                                         <div className="space-y-4">

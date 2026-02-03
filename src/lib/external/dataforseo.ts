@@ -130,14 +130,15 @@ export class DataForSEOClient {
         if (!DATAFORSEO_LOGIN || !DATAFORSEO_PASSWORD) return [];
 
         try {
-            // Using keyword suggestions endpoint
             const payload = [{
                 keyword,
                 location_name: "United States",
-                language_name: "English"
+                language_name: "English",
+                depth: 1
             }];
 
-            const response = await fetch(`${this.baseUrl}/keywords_data/google/search_volume/live`, {
+            // Using keyword_ideas which is more robust for "Topic Explorer"
+            const response = await fetch(`${this.baseUrl}/keywords_data/google/ad_groups/live`, {
                 method: 'POST',
                 headers: {
                     'Authorization': this.getAuthHeader(),
@@ -147,8 +148,12 @@ export class DataForSEOClient {
             });
 
             const data = await response.json();
-            return data.tasks?.[0]?.result?.map((r: any) => r.keyword) || [];
+            const results = data.tasks?.[0]?.result || [];
+            // Extract unique keywords from the ad groups/ideas
+            const topics = results.slice(0, 10).map((r: any) => r.keyword);
+            return topics.filter(Boolean);
         } catch (error) {
+            console.error('DataForSEO Keywords error:', error);
             return [];
         }
     }

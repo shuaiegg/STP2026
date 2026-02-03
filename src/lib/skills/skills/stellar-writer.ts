@@ -112,7 +112,7 @@ export class StellarWriterSkill extends BaseSkill {
         try {
             const [mapData, topicData] = await Promise.all([
                 DataForSEOClient.searchGoogleMaps(keywords, location, 5),
-                auditOnly ? DataForSEOClient.getRelatedTopics(keywords) : Promise.resolve([])
+                DataForSEOClient.getRelatedTopics(keywords)
             ]);
             entities = mapData;
             topics = topicData;
@@ -156,7 +156,7 @@ ${entities.map(e => `- ${e.title}: ${e.address}. Rating: ${e.rating}. Web: ${e.w
         const topicCtx = topics.length > 0
             ? `## Related High-Intent Topics (Helpful for Content Planning)
 ${topics.map(t => `- ${t}`).join('\n')}`
-            : '';
+            : 'No real-time topics found. Please suggest 5-8 high-intent related keywords based on your internal knowledge.';
 
         return `You are a world-class Growth Marketer and SEO/GEO expert. Your mission is to create/optimize content that dominates both search engines and AI citation engines.
 
@@ -198,6 +198,7 @@ ${topicCtx}
     "faq": { /* FAQ LD-JSON if applicable */ }
   },
   "entities": [],
+  "topics": ["keyword1", "keyword2", "..."],
   "internalLinks": ["related-slug-1"],
   "imageSuggestions": ["Visual prompt 1"],
   "distribution": { "linkedin": "...", "reddit": "..." },
