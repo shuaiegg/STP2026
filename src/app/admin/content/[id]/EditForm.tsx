@@ -243,12 +243,14 @@ export function EditForm({ article }: { article: Article }) {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    skillName: 'seo-optimizer',
+                    skillName: 'stellar-writer',
                     input: {
-                        content: formData.contentMd,
-                        contentType: contentType,
+                        keywords: formData.title, // Use title as base keywords
+                        originalContent: formData.contentMd,
+                        industry: 'General', // Could be dynamic
                         brandName: 'ScaletoTop',
                         url: `https://scaletotop.com/blog/${formData.slug}`,
+                        auditOnly: false
                     }
                 })
             });
@@ -313,22 +315,22 @@ export function EditForm({ article }: { article: Article }) {
 
                 setOptimizationResult(data);
                 setAuditResult({
-                    score: data.geoScore || 0,
-                    passed: (data.geoScore || 0) >= 70,
+                    score: data.scores?.seo || 0,
+                    passed: (data.scores?.seo || 0) >= 70,
                     issues: [],
                     suggestions: data.suggestions || [],
                     stats: {
                         titleLength: data.seoMetadata.title?.length || 0,
                         descriptionLength: data.seoMetadata.description?.length || 0,
-                        h1Count: (data.optimizedContent?.match(/^# /gm) || []).length,
-                        h2Count: (data.optimizedContent?.match(/^## /gm) || []).length,
+                        h1Count: (data.content?.match(/^# /gm) || []).length,
+                        h2Count: (data.content?.match(/^## /gm) || []).length,
                         internalLinks: data.internalLinks?.length || 0,
-                        hasList: data.optimizedContent?.includes('- ') || false,
-                        hasTable: data.optimizedContent?.includes('|') || false,
+                        hasList: data.content?.includes('- ') || false,
+                        hasTable: data.content?.includes('|') || false,
                     }
                 });
 
-                alert(`AI 优化完成！\n\nGEO 评分: ${data.geoScore}/100\n成本: $${result.output.metadata.cost.toFixed(4)}`);
+                alert(`AI 优化完成！\n\nSEO 评分: ${data.scores?.seo}/100\nGEO 评分: ${data.scores?.geo}/100`);
             } else {
                 alert('优化失败: ' + (result.error || result.output.error));
             }
@@ -472,20 +474,32 @@ export function EditForm({ article }: { article: Article }) {
                     onClick={() => setSeoExpanded(!seoExpanded)}
                     className="w-full p-6 flex items-center justify-between hover:bg-slate-50 transition-colors"
                 >
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
-                            <Sparkles size={20} className="text-white" />
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-200">
+                                <Sparkles size={20} className="text-white" />
+                            </div>
+                            <div className="text-left">
+                                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">智作 (StellarWriter) 引擎</h3>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase">AI 驱动的 SEO & GEO 深度优化</p>
+                            </div>
                         </div>
-                        <div className="text-left">
-                            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">SEO & GEO 优化</h3>
-                            <p className="text-xs text-slate-400 mt-0.5">优化搜索引擎和 AI 引用</p>
-                        </div>
-                    </div>
                     {seoExpanded ? <ChevronUp size={20} className="text-slate-400" /> : <ChevronDown size={20} className="text-slate-400" />}
                 </button>
 
                 {seoExpanded && (
                     <div className="px-6 pb-6 space-y-6 border-t border-slate-100 pt-6">
+                        {/* Scores Ribbon */}
+                        <div className="flex gap-4 mb-2">
+                            <div className="flex-1 bg-violet-50/50 border border-violet-100 p-4 rounded-2xl flex flex-col items-center">
+                                <span className="text-[10px] font-black text-violet-400 uppercase tracking-widest mb-1">SEO Score</span>
+                                <span className="text-2xl font-black text-violet-600">{auditResult?.score || '--'}</span>
+                            </div>
+                            <div className="flex-1 bg-brand-primary/5 border border-brand-primary/10 p-4 rounded-2xl flex flex-col items-center">
+                                <span className="text-[10px] font-black text-brand-primary uppercase tracking-widest mb-1">GEO Score</span>
+                                <span className="text-2xl font-black text-brand-text-primary">{optimizationResult?.scores?.geo || '--'}</span>
+                            </div>
+                        </div>
+
                         {/* Google Preview */}
                         <div className="p-4 bg-slate-50 rounded-xl">
                             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Google 搜索预览</div>

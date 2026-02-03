@@ -50,8 +50,8 @@ export default function GEOWriterPage() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    skillName: 'geo-writer',
-                    input: { ...form, auditOnly: true }
+                    skillName: 'stellar-writer',
+                    input: { ...form, industry: 'General', auditOnly: true }
                 })
             });
 
@@ -76,8 +76,8 @@ export default function GEOWriterPage() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    skillName: 'geo-writer',
-                    input: { ...form, auditOnly: false }
+                    skillName: 'stellar-writer',
+                    input: { ...form, industry: 'General', auditOnly: false }
                 })
             });
 
@@ -252,15 +252,15 @@ export default function GEOWriterPage() {
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <Card className="p-4 bg-white border-2 border-brand-border-heavy flex flex-col items-center justify-center">
                                     <span className="text-[10px] font-black text-brand-text-muted uppercase tracking-widest">GEO Score</span>
-                                    <span className={`text-3xl font-black ${auditResult.geoScore > 80 ? 'text-emerald-600' : 'text-brand-primary'}`}>{auditResult.geoScore}%</span>
+                                    <span className={`text-3xl font-black ${auditResult.scores?.geo > 80 ? 'text-emerald-600' : 'text-brand-primary'}`}>{auditResult.scores?.geo || auditResult.geoScore}%</span>
                                 </Card>
                                 <Card className="p-4 bg-white border-2 border-brand-border-heavy flex flex-col items-center justify-center">
                                     <span className="text-[10px] font-black text-brand-text-muted uppercase tracking-widest">Entities</span>
                                     <span className="text-3xl font-black text-brand-text-primary">{auditResult.entities?.length || 0}</span>
                                 </Card>
                                 <Card className="p-4 bg-white border-2 border-brand-border-heavy flex flex-col items-center justify-center">
-                                    <span className="text-[10px] font-black text-brand-text-muted uppercase tracking-widest">Status</span>
-                                    <span className="text-xs font-black text-brand-secondary">{finalResult ? 'OPTIMIZED' : 'AUDIT ONLY'}</span>
+                                    <span className="text-[10px] font-black text-brand-text-muted uppercase tracking-widest">SEO Score</span>
+                                    <span className="text-3xl font-black text-violet-600">{auditResult.scores?.seo || '--'}%</span>
                                 </Card>
                             </div>
 

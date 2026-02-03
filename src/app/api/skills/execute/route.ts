@@ -18,13 +18,12 @@ registerAllSkills();
  * Get credit cost for a skill
  */
 function getSkillCost(skillName: string, input?: any): number {
-    if (skillName === 'geo-writer' && input?.auditOnly) {
+    if (skillName === 'stellar-writer' && input?.auditOnly) {
         return 0; // Free audit
     }
     
     const costs: Record<string, number> = {
-        'seo-optimizer': 20,
-        'geo-writer': 50,
+        'stellar-writer': 50,
     };
     return costs[skillName] || 10;
 }

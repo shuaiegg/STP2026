@@ -2,12 +2,10 @@
  * Skills exports
  */
 
-export * from './seo-optimizer';
-export * from './geo-writer';
+export * from './stellar-writer';
 
 // Import skills for auto-registration
-import { SEOOptimizerSkill } from './seo-optimizer';
-import { GEOWriterSkill } from './geo-writer';
+import { StellarWriterSkill } from './stellar-writer';
 import { getSkillRegistry } from '../skill-registry';
 
 /**
@@ -17,8 +15,7 @@ export function registerAllSkills(): void {
     const registry = getSkillRegistry();
 
     // Register using factories for lazy loading
-    registry.registerFactory('seo-optimizer', () => new SEOOptimizerSkill());
-    registry.registerFactory('geo-writer', () => new GEOWriterSkill());
+    registry.registerFactory('stellar-writer', () => new StellarWriterSkill());
 
     // Add more skills here as they are created
 }
