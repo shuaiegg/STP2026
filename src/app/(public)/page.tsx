@@ -91,7 +91,7 @@ function ProcessStep({ number, title, description, icon }: {
             {icon}
           </div>
           <div className="flex-1">
-            <div className="font-mono text-xs text-brand-secondary font-bold mb-2">STEP {number}</div>
+            <div className="font-mono text-xs text-brand-secondary font-bold mb-2">步骤 {number}</div>
             <h3 className="font-display text-xl font-bold text-brand-text-primary mb-3">{title}</h3>
             <p className="text-brand-text-secondary leading-relaxed">{description}</p>
           </div>
@@ -155,27 +155,27 @@ export default async function Home() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-5 mb-12 opacity-0 animate-slide-in-up stagger-3">
-              <Link href="/consultation">
+              <Link href="/blog">
                 <Button
                   as="span"
                   variant="primary"
                   size="lg"
                   className="w-full sm:w-auto text-base bg-brand-secondary hover:bg-brand-secondary-hover text-brand-text-primary border-2 border-brand-border-heavy shadow-[4px_4px_0_0_rgba(10,10,10,1)] hover:shadow-[6px_6px_0_0_rgba(10,10,10,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all font-bold cursor-pointer"
                 >
-                  获取免费获客诊断
+                  查看获客方法
                   <svg className="w-5 h-5 ml-2 inline" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
                   </svg>
                 </Button>
               </Link>
-              <Link href="/case-studies">
+              <Link href="/tools">
                 <Button
                   as="span"
                   variant="outline"
                   size="lg"
                   className="w-full sm:w-auto text-base border-2 border-brand-border-heavy hover:bg-brand-surface-alt transition-colors cursor-pointer"
                 >
-                  查看成功案例
+                  探索效率工具
                 </Button>
               </Link>
             </div>
@@ -510,14 +510,14 @@ export default async function Home() {
             </p>
 
             <div className="flex flex-col sm:flex-row justify-center gap-5 mb-12">
-              <Link href="/consultation">
+              <Link href="/tools">
                 <Button
                   as="span"
                   variant="primary"
                   size="lg"
                   className="w-full sm:w-auto text-lg bg-brand-secondary hover:bg-brand-secondary-hover text-brand-text-primary border-2 border-brand-border-heavy shadow-[4px_4px_0_0_rgba(255,255,255,0.3)] hover:shadow-[6px_6px_0_0_rgba(255,255,255,0.3)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all font-bold cursor-pointer px-10 py-4"
                 >
-                  获取免费诊断
+                  探索智作工具
                   <svg className="w-5 h-5 ml-2 inline" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
                   </svg>
@@ -530,7 +530,7 @@ export default async function Home() {
                   size="lg"
                   className="w-full sm:w-auto text-base text-brand-text-inverted border-2 border-brand-text-inverted/30 hover:bg-brand-text-inverted/10 transition-colors cursor-pointer"
                 >
-                  先看看方法文章
+                  查看方法论文章
                 </Button>
               </Link>
             </div>

@@ -80,7 +80,7 @@ export default function UserLoginPage() {
                         <div className="space-y-2">
                             <div className="flex items-center justify-between ml-1">
                                 <label className="font-mono text-[10px] font-bold text-brand-text-muted uppercase tracking-widest">访问密码</label>
-                                <Link href="/forgot-password" size="sm" className="text-[10px] font-bold text-brand-secondary uppercase hover:underline">
+                                <Link href="/login" size="sm" className="text-[10px] font-bold text-brand-secondary uppercase hover:underline">
                                     忘记密码?
                                 </Link>
                             </div>

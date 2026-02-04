@@ -41,7 +41,10 @@ export default async function UserDashboard({
 
     const { impersonate } = await searchParams;
     const isAdmin = (session.user as any).role === 'ADMIN';
-    const targetUserId = (isAdmin && impersonate) ? impersonate : session.user.id;
+    
+    // Don't treat as impersonation if the target is the admin themselves
+    const isActuallyImpersonating = !!(isAdmin && impersonate && impersonate !== session.user.id);
+    const targetUserId = isActuallyImpersonating ? (impersonate as string) : session.user.id;
 
     const { user, transactions, executions } = await getUserData(targetUserId);
 
@@ -50,7 +53,7 @@ export default async function UserDashboard({
             user={user} 
             transactions={transactions} 
             executions={executions} 
-            isImpersonating={isAdmin && !!impersonate}
+            isImpersonating={isActuallyImpersonating}
         />
     );
 }

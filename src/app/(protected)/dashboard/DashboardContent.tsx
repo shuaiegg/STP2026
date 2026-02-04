@@ -77,7 +77,7 @@ export function DashboardContent({
                             去使用工具
                         </Button>
                     </Link>
-                    <Link href="/pricing">
+                    <Link href="/dashboard">
                         <Button as="span" className="bg-brand-secondary text-brand-text-primary border-2 border-brand-border-heavy font-bold shadow-[4px_4px_0_0_rgba(10,10,10,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all">
                             充值积分
                         </Button>
@@ -122,7 +122,7 @@ export function DashboardContent({
                         会员等级
                     </div>
                     <div className="text-4xl font-black text-brand-text-primary mb-4">
-                        Free Plan
+                        免费计划
                     </div>
                     <div className="text-sm text-brand-text-muted mb-6">
                         升级 Pro 获取更低积分消耗率
@@ -142,7 +142,7 @@ export function DashboardContent({
                             <History size={24} className="text-brand-secondary" />
                             最近工具使用
                         </h3>
-                        <Link href="/dashboard/history" className="text-sm font-bold text-brand-text-muted hover:text-brand-primary transition-colors">
+                        <Link href="/dashboard" className="text-sm font-bold text-brand-text-muted hover:text-brand-primary transition-colors">
                             查看全部
                         </Link>
                     </div>
@@ -185,7 +185,7 @@ export function DashboardContent({
                             <CreditCard size={24} className="text-brand-secondary" />
                             积分收支明细
                         </h3>
-                        <Link href="/dashboard/billing" className="text-sm font-bold text-brand-text-muted hover:text-brand-primary transition-colors">
+                        <Link href="/dashboard" className="text-sm font-bold text-brand-text-muted hover:text-brand-primary transition-colors">
                             查看账单
                         </Link>
                     </div>

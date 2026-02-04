@@ -134,7 +134,7 @@ export default async function AdminDashboard() {
                     </div>
                     <Link href="/admin/sync" className="flex items-center gap-1.5 text-xs font-bold text-brand-primary hover:underline">
                         <RefreshCw size={12} />
-                        <span>最近同步: {stats.lastSync?.completedAt ? new Date(stats.lastSync.completedAt).toLocaleTimeString() : 'N/A'}</span>
+                        <span>最近同步: {stats.lastSync?.completedAt ? new Date(stats.lastSync.completedAt).toLocaleTimeString() : '暂无记录'}</span>
                     </Link>
                 </Card>
             </div>
@@ -187,15 +187,15 @@ export default async function AdminDashboard() {
                         <div className="space-y-4">
                             <div className="flex items-center justify-between text-sm">
                                 <span className="text-slate-500">Notion API</span>
-                                <span className="text-emerald-600 font-bold">Connected</span>
+                                <span className="text-emerald-600 font-bold">已连接</span>
                             </div>
                             <div className="flex items-center justify-between text-sm">
-                                <span className="text-slate-500">Supabase DB</span>
-                                <span className="text-emerald-600 font-bold">Healthy</span>
+                                <span className="text-slate-500">Supabase 数据库</span>
+                                <span className="text-emerald-600 font-bold">正常</span>
                             </div>
                             <div className="flex items-center justify-between text-sm">
-                                <span className="text-slate-500">DeepSeek AI</span>
-                                <span className="text-emerald-600 font-bold">Online</span>
+                                <span className="text-slate-500">DeepSeek AI 引擎</span>
+                                <span className="text-emerald-600 font-bold">在线</span>
                             </div>
                         </div>
                     </Card>

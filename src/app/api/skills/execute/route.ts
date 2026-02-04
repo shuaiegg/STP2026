@@ -83,7 +83,23 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
 
-        const cost = getSkillCost(skillName, input);
+        // 5. Check if this is a repeat execution for the same keywords (Paid Project Logic)
+        const executions = await prisma.skillExecution.findMany({
+            where: {
+                userId: user.id,
+                skillName,
+                status: 'success'
+            },
+            select: { input: true }
+        });
+
+        const isRepeat = executions.some(exe => 
+            (exe.input as any)?.keywords === (input as any).keywords && 
+            !(input as any).auditOnly
+        );
+
+        const cost = isRepeat ? 0 : getSkillCost(skillName, input);
+        
         if (user.credits < cost) {
             return NextResponse.json(
                 { error: `Insufficient credits. This tool requires ${cost} credits, but you have ${user.credits}.` },

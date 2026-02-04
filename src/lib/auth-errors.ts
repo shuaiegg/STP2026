@@ -10,6 +10,8 @@ export function translateAuthError(errorMsg: string): string {
         "Something went wrong": "发生了一些错误，请重试",
         "Invalid credentials": "身份验证凭据无效",
         "Session expired": "会话已过期，请重新登录",
+        "Missing required fields": "缺少必要字段",
+        "Too many requests": "请求过于频繁，请稍后再试",
     };
 
     return errorMap[errorMsg] || errorMsg;

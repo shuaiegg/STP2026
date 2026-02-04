@@ -491,11 +491,11 @@ export function EditForm({ article }: { article: Article }) {
                         {/* Scores Ribbon */}
                         <div className="flex gap-4 mb-2">
                             <div className="flex-1 bg-violet-50/50 border border-violet-100 p-4 rounded-2xl flex flex-col items-center">
-                                <span className="text-[10px] font-black text-violet-400 uppercase tracking-widest mb-1">SEO Score</span>
+                                <span className="text-[10px] font-black text-violet-400 uppercase tracking-widest mb-1">SEO 评分</span>
                                 <span className="text-2xl font-black text-violet-600">{auditResult?.score || '--'}</span>
                             </div>
                             <div className="flex-1 bg-brand-primary/5 border border-brand-primary/10 p-4 rounded-2xl flex flex-col items-center">
-                                <span className="text-[10px] font-black text-brand-primary uppercase tracking-widest mb-1">GEO Score</span>
+                                <span className="text-[10px] font-black text-brand-primary uppercase tracking-widest mb-1">GEO 评分</span>
                                 <span className="text-2xl font-black text-brand-text-primary">{optimizationResult?.scores?.geo || '--'}</span>
                             </div>
                         </div>

@@ -37,9 +37,9 @@ export class SkeletonExtractor {
             const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
             const title = titleMatch ? titleMatch[1].trim() : 'No Title';
 
-            // 2. Extract Headings (H1, H2, H3)
+            // 2. Extract Headings (H1, H2, H3, H4)
             const headings: { level: number, text: string }[] = [];
-            const headingRegex = /<h([1-3])[^>]*>([\s\S]*?)<\/h\1>/gi;
+            const headingRegex = /<h([1-4])[^>]*>([\s\S]*?)<\/h\1>/gi;
             
             let match;
             while ((match = headingRegex.exec(html)) !== null) {

@@ -22,8 +22,10 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import Link from 'next/link';
 import { getUsers, updateUserCredits, getUserTransactions, revertTransaction } from '@/app/actions/user';
+import { authClient } from '@/lib/auth-client';
 
 export default function UserManagementPage() {
+    const { data: session } = authClient.useSession();
     const [users, setUsers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -233,14 +235,23 @@ export default function UserManagementPage() {
                                                         </button>
                                                     </div>
                                                     <div className="relative group/tooltip">
-                                                        <Link href={`/dashboard?impersonate=${user.id}`}>
-                                                            <Button variant="ghost" size="sm" className="h-9 px-3 gap-2 rounded-lg border border-slate-200 hover:bg-brand-primary/5 hover:text-brand-primary hover:border-brand-primary/20 transition-all">
-                                                                <ExternalLink size={14} />
-                                                                <span className="text-xs font-bold">代理登录</span>
-                                                            </Button>
-                                                        </Link>
+                                                        {user.id !== session?.user?.id ? (
+                                                            <Link href={`/dashboard?impersonate=${user.id}`}>
+                                                                <Button variant="ghost" size="sm" className="h-9 px-3 gap-2 rounded-lg border border-slate-200 hover:bg-brand-primary/5 hover:text-brand-primary hover:border-brand-primary/20 transition-all">
+                                                                    <ExternalLink size={14} />
+                                                                    <span className="text-xs font-bold">代理登录</span>
+                                                                </Button>
+                                                            </Link>
+                                                        ) : (
+                                                            <Link href="/dashboard">
+                                                                <Button variant="ghost" size="sm" className="h-9 px-3 gap-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-400 cursor-default">
+                                                                    <UserIcon size={14} />
+                                                                    <span className="text-xs font-bold">当前账户</span>
+                                                                </Button>
+                                                            </Link>
+                                                        )}
                                                         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-slate-900 text-white text-[10px] rounded-lg opacity-0 group-hover/tooltip:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-10 shadow-xl">
-                                                            以 {user.name || '此用户'} 的身份进入控制台
+                                                            {user.id !== session?.user?.id ? `以 ${user.name || '此用户'} 的身份进入控制台` : '您当前正在使用的账户'}
                                                             <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-900"></div>
                                                         </div>
                                                     </div>

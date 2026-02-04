@@ -1,5 +1,5 @@
 /**
- * StellarWriter Unified Skill v2.2
+ * StellarWriter Unified Skill v2.3
  * 
  * The powerhouse of STP content generation.
  * Combines Technical SEO, GEO (Generative Engine Optimization), 
@@ -62,7 +62,16 @@ export interface StellarWriterOutput {
     /** Entities discovered/injected */
     entities: MapDataItem[];
     /** Discovered topics/questions for content planning */
-    topics?: string[];
+    topics?: {
+        keyword: string;
+        volume: number;
+        competition: number;
+    }[];
+    /** Suggested master outline (if no content provided) */
+    masterOutline?: {
+        level: number;
+        text: string;
+    }[];
     /** Competitor analysis data */
     competitors?: ContentSkeleton[];
     /** Recommended internal links */
@@ -90,7 +99,7 @@ export interface StellarWriterOutput {
 export class StellarWriterSkill extends BaseSkill {
     name = 'stellar-writer';
     description = 'Universal SEO & GEO Content Engine with Competitor Reverse Engineering.';
-    version = '2.2.0';
+    version = '2.3.0';
     category: 'seo' = 'seo';
 
     protected preferredProvider: 'gemini' | 'claude' | 'deepseek' = 'deepseek';
@@ -109,32 +118,32 @@ export class StellarWriterSkill extends BaseSkill {
         data: StellarWriterOutput;
         metadata: Partial<SkillExecutionMetadata>;
     }> {
-        const { keywords, location, analyzeCompetitors = true } = input;
+        const { keywords, location, analyzeCompetitors = true, auditOnly } = input;
 
         // 1. Intelligence Gathering Phase
         let entities: MapDataItem[] = [];
-        let topics: string[] = [];
+        let topics: any[] = [];
         let competitorSkeletons: ContentSkeleton[] = [];
 
         try {
             // A. Fetch Google Maps Entities
             entities = await DataForSEOClient.searchGoogleMaps(keywords, location, 5);
             
-            // B. Fetch Related Topics
+            // B. Fetch Related Topics with Volume & Competition
             topics = await DataForSEOClient.getRelatedTopics(keywords);
 
-            // C. Competitor Analysis (The new "Secret Sauce")
+            // C. Competitor Analysis
             if (analyzeCompetitors) {
                 const serp = await DataForSEOClient.searchGoogleSERP(keywords, location, 5);
                 const competitorUrls = serp
                     .filter(item => item.type === 'organic')
-                    .slice(0, 3) // Analyze top 3 for speed and cost
+                    .slice(0, 3)
                     .map(item => item.url);
                 
                 competitorSkeletons = await SkeletonExtractor.batchExtract(competitorUrls);
             }
         } catch (e) {
-            console.error('Intelligence phase failed, proceeding with fallback AI knowledge', e);
+            console.error('Intelligence phase failed', e);
         }
 
         // 2. Generation Phase: Build Unified Prompt
@@ -165,81 +174,66 @@ export class StellarWriterSkill extends BaseSkill {
     private buildPrompt(
         input: StellarWriterInput, 
         entities: MapDataItem[], 
-        topics: string[],
+        topics: any[],
         competitors: ContentSkeleton[]
     ): string {
         const { keywords, brandName = 'ScaletoTop', industry = 'General', tone = 'professional', type = 'blog', originalContent, auditOnly, url } = input;
 
         const entityCtx = entities.length > 0
-            ? `## Real-World Entities (Inject for GEO Citation)
+            ? `## Real-World Entities
 ${entities.map(e => `- ${e.title}: ${e.address}. Rating: ${e.rating}.`).join('\n')}`
             : '';
 
         const topicCtx = topics.length > 0
-            ? `## Related High-Intent Topics
-${topics.map(t => `- ${t}`).join('\n')}`
+            ? `## Related Keywords & Search Volume
+${topics.map(t => `- ${t.keyword}: Volume ${t.volume}, Competition ${t.competition}%`).join('\n')}`
             : '';
 
         const competitorCtx = competitors.length > 0
-            ? `## Competitor Content Structures (Reverse Engineer these)
-${competitors.map(c => `### Competitor: ${c.title}
-Outlines:
-${c.headings.map(h => `${'  '.repeat(h.level - 1)}- ${h.text}`).join('\n')}
-`).join('\n')}`
+            ? `## Competitor Outlines
+${competitors.map(c => `### Competitor: ${c.title}\n${c.headings.map(h => `${'  '.repeat(h.level - 1)}- ${h.text}`).join('\n')}\n`).join('\n')}`
             : '';
 
-        return `You are a world-class Growth Marketer and SEO/GEO expert. Your mission is to create/optimize content that dominates both search engines and AI citation engines.
+        return `You are a world-class Growth Marketer and SEO/GEO expert.
 
-CRITICAL MODE: ${auditOnly ? 'AUDIT & STRATEGY ONLY. Do NOT write content.' : 'FULL MAGICAL REWRITE.'}
+MODE: ${auditOnly ? 'AUDIT & STRATEGY ONLY. Analyse keywords and competitors, and provide a "Master Outline" that can beat them.' : 'FULL MAGICAL REWRITE.'}
 
 ## Target Profiles
-- **Keywords**: ${keywords}
-- **Brand**: ${brandName}
-- **Industry**: ${industry}
-- **Tone**: ${tone}
-- **Type**: ${type}
+- Keywords: ${keywords}
+- Brand: ${brandName}
+- Industry: ${industry}
 
-${originalContent ? `\n## Original Draft to Optimize\n${originalContent}\n` : ''}
+${originalContent ? `\n## Original Content\n${originalContent}\n` : 'Note: User is starting from scratch. Focus on creating the best Master Outline.'}
 
 ${competitorCtx}
-
 ${entityCtx}
-
 ${topicCtx}
 
-## Core Requirements (The Secret Sauce)
-1. **Reverse Engineering**: Analyze the competitor skeletons. Create a "Master Outline" that covers ALL their key points plus ONE unique "Information Gain" point they all missed.
-2. **AEO Optimization**: First 50 words must provide a definitive answer to the primary search intent.
-3. **Entity Binding**: Link the brand to industry facts or local entities provided.
-4. **Technical SEO**: Optimized Title (50-60 chars), Meta Description (120-160 chars), Slug.
-5. **E-E-A-T**: Infuse experience-based language ("In our testing...", "We discovered...").
+## Core Requirements
+1. **Reverse Engineering**: Create a "Master Outline" (H1-H3) that is superior to all competitors.
+2. **GEO Strategy**: Direct Answer First (AEO), Entity Binding, and Information Gain.
+3. **SEO Technicals**: Optimized Title, Meta Description, Slug, and Schema.org Article JSON-LD.
 
 ## Output JSON Format
 \`\`\`json
 {
-  ${!auditOnly ? '"content": "# Optimized Markdown Content here",' : ''}
+  ${!auditOnly ? '"content": "# Markdown content here",' : ''}
   "summary": "1-sentence summary",
-  "seoMetadata": {
-    "title": "SEO Title",
-    "description": "Meta description",
-    "keywords": ["kw1", "kw2"],
-    "slug": "url-slug"
-  },
-  "schema": {
-    "article": { /* Article LD-JSON */ }
-  },
+  "seoMetadata": { "title": "...", "description": "...", "keywords": [], "slug": "..." },
+  "schema": { "article": { /* JSON-LD Article */ } },
+  ${auditOnly ? '"masterOutline": [ { "level": 1, "text": "H1 Title" }, { "level": 2, "text": "H2 Subtitle" } ],' : ''}
   "scores": { "seo": 95, "geo": 92 },
-  "suggestions": ["Strategic point 1", "Strategic point 2"]
+  "suggestions": ["Strategic point 1", "..."]
 }
 \`\`\`
 
-Return ONLY the JSON block.`;
+Return ONLY JSON.`;
     }
 
     private parseResponse(
         raw: string, 
         entities: MapDataItem[], 
-        topics: string[],
+        topics: any[],
         competitors: ContentSkeleton[]
     ): StellarWriterOutput {
         const json = this.extractJSON<any>(raw);
@@ -251,6 +245,7 @@ Return ONLY the JSON block.`;
             schema: json?.schema || { article: {} },
             entities: entities,
             topics: topics,
+            masterOutline: json?.masterOutline,
             competitors: competitors,
             internalLinks: json?.internalLinks || [],
             imageSuggestions: json?.imageSuggestions || [],

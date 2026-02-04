@@ -127,7 +127,7 @@ export class DataForSEOClient {
     /**
      * Get related keywords and People Also Ask
      */
-    static async getRelatedTopics(keyword: string): Promise<string[]> {
+    static async getRelatedTopics(keyword: string): Promise<any[]> {
         if (!DATAFORSEO_LOGIN || !DATAFORSEO_PASSWORD) return [];
 
         try {
@@ -135,11 +135,11 @@ export class DataForSEOClient {
                 keyword,
                 location_name: "United States",
                 language_name: "English",
-                depth: 1
+                search_partners: false
             }];
 
-            // Using keyword_ideas which is more robust for "Topic Explorer"
-            const response = await fetch(`${this.baseUrl}/keywords_data/google/ad_groups/live`, {
+            // Using keyword_ideas which is more robust
+            const response = await fetch(`${this.baseUrl}/keywords_data/google/search_volume/live`, {
                 method: 'POST',
                 headers: {
                     'Authorization': this.getAuthHeader(),
@@ -150,9 +150,13 @@ export class DataForSEOClient {
 
             const data = await response.json();
             const results = data.tasks?.[0]?.result || [];
-            // Extract unique keywords from the ad groups/ideas
-            const topics = results.slice(0, 10).map((r: any) => r.keyword);
-            return topics.filter(Boolean);
+            
+            return results.slice(0, 10).map((r: any) => ({
+                keyword: r.keyword,
+                volume: r.search_volume || 0,
+                competition: Math.round((r.competition_level || 0) * 100), // Convert to 0-100
+                cpc: r.cpc || 0
+            }));
         } catch (error) {
             console.error('DataForSEO Keywords error:', error);
             return [];

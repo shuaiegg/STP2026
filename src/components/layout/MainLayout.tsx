@@ -133,34 +133,34 @@ const Footer: React.FC = () => {
                             <ul className="space-y-4 text-sm text-brand-text-secondary">
                                 <li><Link href="/course" className="hover:text-brand-primary transition-colors">技术型 SEO 课程</Link></li>
                                 <li><Link href="/tools" className="hover:text-brand-primary transition-colors">pSEO 自动化工具</Link></li>
-                                <li><Link href="#" className="hover:text-brand-primary transition-colors">增长咨询服务</Link></li>
+                                <li><Link href="/consultation" className="hover:text-brand-primary transition-colors">增长咨询服务</Link></li>
                             </ul>
                         </div>
                         <div>
                             <h5 className="text-brand-text-primary font-bold text-sm mb-8 tracking-widest uppercase">知识库</h5>
                             <ul className="space-y-4 text-sm text-brand-text-secondary">
                                 <li><Link href="/blog" className="hover:text-brand-primary transition-colors">最新文章</Link></li>
-                                <li><Link href="#" className="hover:text-brand-primary transition-colors">案例拆解</Link></li>
-                                <li><Link href="#" className="hover:text-brand-primary transition-colors">技术文档</Link></li>
+                                <li><Link href="/case-studies" className="hover:text-brand-primary transition-colors">案例拆解</Link></li>
+                                <li><Link href="/blog" className="hover:text-brand-primary transition-colors">技术文档</Link></li>
                             </ul>
                         </div>
                         <div>
                             <h5 className="text-brand-text-primary font-bold text-sm mb-8 tracking-widest uppercase">关于</h5>
                             <ul className="space-y-4 text-sm text-brand-text-secondary">
-                                <li><Link href="#" className="hover:text-brand-primary transition-colors">隐私声明</Link></li>
-                                <li><Link href="#" className="hover:text-brand-primary transition-colors">服务条款</Link></li>
+                                <li><Link href="/blog" className="hover:text-brand-primary transition-colors">隐私声明</Link></li>
+                                <li><Link href="/blog" className="hover:text-brand-primary transition-colors">服务条款</Link></li>
                             </ul>
                         </div>
                     </div>
                 </div>
                 <div className="mt-24 pt-10 border-t border-brand-border flex flex-col sm:flex-row justify-between items-center gap-6">
                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-text-muted">
-                        © 2024 ScaletoTop Engineering. Built for high-growth teams.
+                        © 2026 ScaletoTop 工程部。为高增长团队打造。
                     </p>
                     <div className="flex gap-8 text-[10px] font-bold uppercase tracking-[0.2em] text-brand-text-muted">
-                        <Link href="#" className="hover:text-brand-primary">Status</Link>
-                        <Link href="#" className="hover:text-brand-primary">Contact</Link>
-                        <Link href="#" className="hover:text-brand-primary">English</Link>
+                        <Link href="/" className="hover:text-brand-primary">系统状态</Link>
+                        <Link href="/" className="hover:text-brand-primary">联系我们</Link>
+                        <Link href="/" className="hover:text-brand-primary">中文 (简体)</Link>
                     </div>
                 </div>
             </div>
