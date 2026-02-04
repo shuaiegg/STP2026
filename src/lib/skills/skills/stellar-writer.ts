@@ -102,8 +102,8 @@ export class StellarWriterSkill extends BaseSkill {
     version = '2.3.0';
     category: 'seo' = 'seo';
 
-    protected preferredProvider: 'gemini' | 'claude' | 'deepseek' = 'deepseek';
-    protected preferredModel = 'deepseek-chat';
+    protected preferredProvider: 'gemini' | 'claude' | 'deepseek' = 'gemini';
+    protected preferredModel = 'gemini-pro';
 
     protected getRequiredInputs(): string[] {
         return ['keywords'];
