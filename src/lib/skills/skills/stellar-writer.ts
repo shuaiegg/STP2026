@@ -126,14 +126,14 @@ export class StellarWriterSkill extends BaseSkill {
         let competitorSkeletons: ContentSkeleton[] = [];
 
         try {
-            // A. Fetch Google Maps Entities
+            console.log(`Step 1: Fetching maps data for ${keywords}...`);
             entities = await DataForSEOClient.searchGoogleMaps(keywords, location, 5);
             
-            // B. Fetch Related Topics with Volume & Competition
+            console.log(`Step 2: Fetching topics data for ${keywords}...`);
             topics = await DataForSEOClient.getRelatedTopics(keywords);
 
-            // C. Competitor Analysis
             if (analyzeCompetitors) {
+                console.log(`Step 3: Fetching SERP data...`);
                 const serp = await DataForSEOClient.searchGoogleSERP(keywords, location, 5);
                 const competitorUrls = serp
                     .filter(item => item.type === 'organic')
@@ -146,6 +146,7 @@ export class StellarWriterSkill extends BaseSkill {
             }
         } catch (e) {
             console.error('Intelligence phase partial failure', e);
+            // We don't throw here, allow AI to proceed with what it has
         }
 
         // 2. Generation Phase: Build Unified Prompt
@@ -153,11 +154,16 @@ export class StellarWriterSkill extends BaseSkill {
         const prompt = this.buildPrompt(input, entities, topics, competitorSkeletons);
 
         // 3. Execution
+        console.log(`Step 4: Generating with AI (${this.preferredProvider})...`);
         const { response, cost } = await this.generateWithAI(provider, prompt, {
             model: this.preferredModel,
             temperature: 0.7,
             maxOutputTokens: 8000,
         });
+
+        if (!response || !response.content) {
+            throw new Error('AI Engine returned an empty response');
+        }
 
         // 4. Orchestration: Parse and finalize
         const result = this.parseResponse(response.content, entities, topics, competitorSkeletons);
@@ -167,7 +173,7 @@ export class StellarWriterSkill extends BaseSkill {
             metadata: {
                 modelUsed: response.model,
                 provider: this.preferredProvider,
-                tokensUsed: response.inputTokens + response.outputTokens,
+                tokensUsed: (response.inputTokens || 0) + (response.outputTokens || 0),
                 cost,
             },
         };

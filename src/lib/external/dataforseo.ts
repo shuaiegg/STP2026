@@ -131,6 +131,7 @@ export class DataForSEOClient {
         if (!DATAFORSEO_LOGIN || !DATAFORSEO_PASSWORD) return [];
 
         try {
+            console.log(`DataForSEO: Researching topics for "${keyword}"...`);
             const payload = [{
                 keywords: [keyword],
                 location_name: "United States",
@@ -139,7 +140,6 @@ export class DataForSEOClient {
                 limit: 10
             }];
 
-            // Using keyword_ideas which is better for discovery
             const response = await fetch(`${this.baseUrl}/keywords_data/google/keyword_ideas/live`, {
                 method: 'POST',
                 headers: {
@@ -150,6 +150,12 @@ export class DataForSEOClient {
             });
 
             const data = await response.json();
+            
+            if (data.status_code !== 20000) {
+                console.error('DataForSEO API error status:', data.status_code, data.status_message);
+                return [];
+            }
+
             const results = data.tasks?.[0]?.result?.[0]?.items || [];
             
             return results.map((r: any) => ({
@@ -159,7 +165,7 @@ export class DataForSEOClient {
                 cpc: r.keyword_info?.cpc || 0
             }));
         } catch (error) {
-            console.error('DataForSEO Keywords error:', error);
+            console.error('DataForSEO Keywords exception:', error);
             return [];
         }
     }

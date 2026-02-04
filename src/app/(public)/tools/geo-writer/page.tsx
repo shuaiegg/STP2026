@@ -56,7 +56,7 @@ export default function GEOWriterPage() {
                 throw new Error(data.error || '请求失败');
             }
 
-            if (!data.success || !data.output.success) {
+            if (!data.success || !data.output || !data.output.success) {
                 throw new Error(data.output?.error || data.error || '研究逻辑执行失败');
             }
 
@@ -70,7 +70,7 @@ export default function GEOWriterPage() {
             setIsPaid(data.isRepeat || false);
             setStep(2);
         } catch (err: any) {
-            console.error(err);
+            console.error('Research error:', err);
             setError(err.message);
         } finally {
             setLoading(false);
