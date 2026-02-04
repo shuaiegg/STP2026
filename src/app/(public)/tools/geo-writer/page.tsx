@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { 
+import {
     Zap, MapPin, Type, Sparkles, Loader2, ArrowRight,
-    CheckCircle2, Copy, LayoutDashboard, Undo, 
-    FileText, Image as ImageIcon, Link as LinkIcon, 
+    CheckCircle2, Copy, LayoutDashboard, Undo,
+    FileText, Image as ImageIcon, Link as LinkIcon,
     Users, BarChart3, ChevronRight, Globe, Info,
     Eye, Code, Database, Braces, RefreshCw,
     Search, TrendingUp, Target, MousePointer2,
@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
 import Link from 'next/link';
 
 export default function GEOWriterPage() {
@@ -33,6 +34,11 @@ export default function GEOWriterPage() {
         originalContent: ''
     });
 
+    // Function to proceed from research phase to strategy phase
+    const proceedToStrategy = () => {
+        setStep(2);
+    };
+
     // 1. RESEARCH & AUDIT (Step 1 -> 2)
     const handleResearch = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -51,7 +57,7 @@ export default function GEOWriterPage() {
             });
 
             const data = await response.json();
-            
+
             if (!response.ok) {
                 throw new Error(data.error || '请求失败');
             }
@@ -68,7 +74,7 @@ export default function GEOWriterPage() {
             setResearchData(outputData.topics || []);
             setAuditResult(outputData);
             setIsPaid(data.isRepeat || false);
-            setStep(2);
+            setStep(1); // Stay on step 1 to show the research data
         } catch (err: any) {
             console.error('Research error:', err);
             setError(err.message);
@@ -93,7 +99,7 @@ export default function GEOWriterPage() {
             });
 
             const data = await response.json();
-            
+
             if (!response.ok) {
                 throw new Error(data.error || '请求失败');
             }
@@ -104,7 +110,7 @@ export default function GEOWriterPage() {
 
             const outputData = data.output.data;
             setFinalResult(outputData);
-            setAuditResult(outputData); 
+            setAuditResult(outputData);
             setIsPaid(true);
             setStep(3);
         } catch (err: any) {
@@ -164,10 +170,10 @@ export default function GEOWriterPage() {
                                         <Zap size={16} className="text-brand-secondary" />
                                         核心关键词 / 业务主题
                                     </label>
-                                    <input 
+                                    <input
                                         required
                                         value={form.keywords}
-                                        onChange={(e) => setForm({...form, keywords: e.target.value})}
+                                        onChange={(e) => setForm({ ...form, keywords: e.target.value })}
                                         placeholder="例如: Best CRM for SaaS"
                                         className="w-full bg-white border-2 border-brand-border p-4 outline-none focus:border-brand-primary transition-all text-sm font-bold rounded-xl shadow-sm"
                                     />
@@ -178,17 +184,17 @@ export default function GEOWriterPage() {
                                         <Globe size={16} className="text-brand-primary" />
                                         目标市场 (地理位置)
                                     </label>
-                                    <input 
+                                    <input
                                         value={form.location}
-                                        onChange={(e) => setForm({...form, location: e.target.value})}
+                                        onChange={(e) => setForm({ ...form, location: e.target.value })}
                                         placeholder="London, New York (可选)"
                                         className="w-full bg-white border-2 border-brand-border p-4 outline-none focus:border-brand-primary transition-all text-sm rounded-xl shadow-sm"
                                     />
                                 </div>
 
-                                <Button 
+                                <Button
                                     disabled={loading}
-                                    type="submit" 
+                                    type="submit"
                                     className="w-full py-8 text-lg bg-brand-primary text-white border-b-4 border-black hover:translate-y-[2px] hover:border-b-0 transition-all font-black uppercase tracking-widest shadow-[8px_8px_0_0_rgba(0,0,0,1)] hover:shadow-none"
                                 >
                                     {loading ? <><Loader2 className="animate-spin mr-2" /> 正在侦察全网情报...</> : "开启侦察与诊断"}
@@ -224,13 +230,13 @@ export default function GEOWriterPage() {
                                             <p className="text-[10px] text-brand-text-secondary">AI 将基于右侧的竞争情报进行降维打击。</p>
                                         </div>
                                     </div>
-                                    
+
                                     <div className="space-y-4 mb-8">
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-black text-slate-400 uppercase">语气语调</label>
-                                            <select 
+                                            <select
                                                 value={form.tone}
-                                                onChange={(e) => setForm({...form, tone: e.target.value as any})}
+                                                onChange={(e) => setForm({ ...form, tone: e.target.value as any })}
                                                 className="w-full bg-white border-2 border-slate-100 p-3 rounded-xl outline-none focus:border-brand-primary transition-all text-xs font-bold shadow-sm"
                                             >
                                                 <option value="professional">专业权威</option>
@@ -240,9 +246,9 @@ export default function GEOWriterPage() {
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-black text-slate-400 uppercase">内容类型</label>
-                                            <select 
+                                            <select
                                                 value={form.type}
-                                                onChange={(e) => setForm({...form, type: e.target.value as any})}
+                                                onChange={(e) => setForm({ ...form, type: e.target.value as any })}
                                                 className="w-full bg-white border-2 border-slate-100 p-3 rounded-xl outline-none focus:border-brand-primary transition-all text-xs font-bold shadow-sm"
                                             >
                                                 <option value="blog">深度博客文章</option>
@@ -252,16 +258,16 @@ export default function GEOWriterPage() {
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-black text-slate-400 uppercase">原始草稿 (可选)</label>
-                                            <textarea 
+                                            <textarea
                                                 value={form.originalContent}
-                                                onChange={(e) => setForm({...form, originalContent: e.target.value})}
+                                                onChange={(e) => setForm({ ...form, originalContent: e.target.value })}
                                                 placeholder="粘贴内容即可进行优化..."
                                                 className="w-full bg-white border-2 border-slate-100 p-3 rounded-xl outline-none focus:border-brand-primary transition-all text-[10px] h-20 shadow-sm"
                                             />
                                         </div>
                                     </div>
 
-                                    <Button 
+                                    <Button
                                         onClick={handleRewrite}
                                         disabled={loading}
                                         className="w-full py-6 bg-brand-primary text-white border-2 border-black font-black shadow-[4px_4px_0_0_rgba(10,10,10,1)] transition-all active:scale-95 hover:shadow-none"
@@ -304,7 +310,7 @@ export default function GEOWriterPage() {
                                 </div>
                             )}
 
-                            <button 
+                            <button
                                 onClick={() => { setStep(1); setAuditResult(null); setFinalResult(null); setResearchData(null); }}
                                 className="w-full text-xs font-bold text-slate-400 hover:text-brand-primary underline transition-colors"
                             >
@@ -359,25 +365,25 @@ export default function GEOWriterPage() {
                                 <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
                                     <BarChart3 size={120} />
                                 </div>
-                                    <div className="flex items-center justify-between mb-10">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-xl bg-brand-secondary/10 flex items-center justify-center text-brand-secondary shadow-sm">
-                                                <TrendingUp size={24} />
-                                            </div>
-                                            <div>
-                                                <h2 className="text-2xl font-black text-brand-text-primary font-display italic uppercase tracking-tighter leading-none">市场洞察：SEO/GEO 可行性</h2>
-                                                <div className="flex items-center gap-2 mt-2">
-                                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">总体可行性分数:</span>
-                                                    <span className={`text-xs font-black ${auditResult.scores?.geo > 70 ? 'text-emerald-500' : 'text-amber-500'}`}>{auditResult.scores?.geo}%</span>
-                                                </div>
-                                            </div>
+                                <div className="flex items-center justify-between mb-10">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-xl bg-brand-secondary/10 flex items-center justify-center text-brand-secondary shadow-sm">
+                                            <TrendingUp size={24} />
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <Badge className="bg-slate-50 text-slate-400 border border-slate-100 font-black text-[9px] uppercase tracking-widest px-3 py-1">
-                                                Real-time SERP Data
-                                            </Badge>
+                                        <div>
+                                            <h2 className="text-2xl font-black text-brand-text-primary font-display italic uppercase tracking-tighter leading-none">市场洞察：SEO/GEO 可行性</h2>
+                                            <div className="flex items-center gap-2 mt-2">
+                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">总体可行性分数:</span>
+                                                <span className={`text-xs font-black ${auditResult.scores?.geo > 70 ? 'text-emerald-500' : 'text-amber-500'}`}>{auditResult.scores?.geo}%</span>
+                                            </div>
                                         </div>
                                     </div>
+                                    <div className="flex items-center gap-2">
+                                        <Badge className="bg-slate-50 text-slate-400 border border-slate-100 font-black text-[9px] uppercase tracking-widest px-3 py-1">
+                                            Real-time SERP Data
+                                        </Badge>
+                                    </div>
+                                </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {researchData.length > 0 ? researchData.map((topic, i) => (
@@ -388,7 +394,7 @@ export default function GEOWriterPage() {
                                                     <MousePointer2 size={12} />
                                                 </div>
                                             </div>
-                                            
+
                                             <div className="flex items-end justify-between gap-6">
                                                 <div className="flex-1 space-y-2">
                                                     <div className="flex justify-between text-[8px] font-black text-slate-400 uppercase tracking-widest">
@@ -396,9 +402,9 @@ export default function GEOWriterPage() {
                                                         <span className={topic.competition > 70 ? 'text-red-500' : 'text-emerald-500'}>{topic.competition}%</span>
                                                     </div>
                                                     <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                                        <div 
-                                                            className={`h-full transition-all duration-1000 ${topic.competition < 40 ? 'bg-emerald-400' : topic.competition < 70 ? 'bg-amber-400' : 'bg-red-400'}`} 
-                                                            style={{width: `${topic.competition}%`}} 
+                                                        <div
+                                                            className={`h-full transition-all duration-1000 ${topic.competition < 40 ? 'bg-emerald-400' : topic.competition < 70 ? 'bg-amber-400' : 'bg-red-400'}`}
+                                                            style={{ width: `${topic.competition}%` }}
                                                         />
                                                     </div>
                                                 </div>
@@ -467,21 +473,21 @@ export default function GEOWriterPage() {
                                 <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none rotate-12">
                                     <Sparkles size={240} />
                                 </div>
-                                    <div className="flex items-center gap-4 mb-12">
-                                        <div className="w-14 h-14 rounded-2xl bg-brand-primary flex items-center justify-center text-white shadow-xl shadow-brand-primary/30">
-                                            <FileText size={32} />
-                                        </div>
-                                        <div>
-                                            <h2 className="text-3xl font-black text-brand-text-primary font-display italic uppercase tracking-tighter">大师大纲 · 策略规划</h2>
-                                            <div className="flex items-center gap-3 mt-2">
-                                                <div className="flex items-center gap-1.5 px-3 py-1 bg-brand-primary/10 rounded-full">
-                                                    <span className="text-[10px] font-black text-brand-primary uppercase">内容质量预估:</span>
-                                                    <span className="text-xs font-black text-brand-primary">待生成</span>
-                                                </div>
+                                <div className="flex items-center gap-4 mb-12">
+                                    <div className="w-14 h-14 rounded-2xl bg-brand-primary flex items-center justify-center text-white shadow-xl shadow-brand-primary/30">
+                                        <FileText size={32} />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-3xl font-black text-brand-text-primary font-display italic uppercase tracking-tighter">大师大纲 · 策略规划</h2>
+                                        <div className="flex items-center gap-3 mt-2">
+                                            <div className="flex items-center gap-1.5 px-3 py-1 bg-brand-primary/10 rounded-full">
+                                                <span className="text-[10px] font-black text-brand-primary uppercase">内容质量预估:</span>
+                                                <span className="text-xs font-black text-brand-primary">待生成</span>
                                             </div>
                                         </div>
                                     </div>
-                                
+                                </div>
+
                                 <div className="space-y-6 relative z-10">
                                     {auditResult.masterOutline?.map((h: any, i: number) => (
                                         <div key={i} className={`flex items-start gap-6 ${h.level === 1 ? 'pb-4 border-b border-slate-100 mb-4' : ''}`}>
@@ -622,7 +628,7 @@ export default function GEOWriterPage() {
                                     <div className="space-y-4">
                                         {finalResult.imageSuggestions?.map((img: string, i: number) => (
                                             <div key={i} className="p-5 bg-brand-surface border border-brand-border rounded-2xl text-xs font-bold text-brand-text-secondary flex gap-4 hover:bg-white transition-all shadow-sm">
-                                                <div className="w-6 h-6 rounded-full bg-brand-secondary text-white flex items-center justify-center shrink-0 text-[10px] font-black">{i+1}</div>
+                                                <div className="w-6 h-6 rounded-full bg-brand-secondary text-white flex items-center justify-center shrink-0 text-[10px] font-black">{i + 1}</div>
                                                 {img}
                                             </div>
                                         ))}
