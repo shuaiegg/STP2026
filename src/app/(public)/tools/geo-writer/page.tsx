@@ -280,7 +280,10 @@ export default function GEOWriterPage() {
                                         </div>
                                         <div>
                                             <h4 className="text-sm font-black text-emerald-700 uppercase">智作已送达！</h4>
-                                            <p className="text-[10px] text-emerald-600">得分已进入卓越区间。</p>
+                                            <div className="flex items-center gap-2">
+                                                <p className="text-[10px] text-emerald-600">内容质量评分:</p>
+                                                <span className="text-xs font-black text-emerald-700">{finalResult.scores?.seo}%</span>
+                                            </div>
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-2 gap-4 mb-6">
@@ -356,17 +359,25 @@ export default function GEOWriterPage() {
                                 <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
                                     <BarChart3 size={120} />
                                 </div>
-                                <div className="flex items-center justify-between mb-10">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-xl bg-brand-secondary/10 flex items-center justify-center text-brand-secondary shadow-sm">
-                                            <TrendingUp size={24} />
+                                    <div className="flex items-center justify-between mb-10">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-xl bg-brand-secondary/10 flex items-center justify-center text-brand-secondary shadow-sm">
+                                                <TrendingUp size={24} />
+                                            </div>
+                                            <div>
+                                                <h2 className="text-2xl font-black text-brand-text-primary font-display italic uppercase tracking-tighter leading-none">市场洞察：SEO/GEO 可行性</h2>
+                                                <div className="flex items-center gap-2 mt-2">
+                                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">总体可行性分数:</span>
+                                                    <span className={`text-xs font-black ${auditResult.scores?.geo > 70 ? 'text-emerald-500' : 'text-amber-500'}`}>{auditResult.scores?.geo}%</span>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <h2 className="text-2xl font-black text-brand-text-primary font-display italic uppercase tracking-tighter leading-none">话题意图热力图</h2>
+                                        <div className="flex items-center gap-2">
+                                            <Badge className="bg-slate-50 text-slate-400 border border-slate-100 font-black text-[9px] uppercase tracking-widest px-3 py-1">
+                                                Real-time SERP Data
+                                            </Badge>
+                                        </div>
                                     </div>
-                                    <Badge className="bg-slate-50 text-slate-400 border border-slate-100 font-black text-[9px] uppercase tracking-widest px-3 py-1">
-                                        Real-time SERP Data
-                                    </Badge>
-                                </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {researchData.length > 0 ? researchData.map((topic, i) => (
@@ -456,12 +467,20 @@ export default function GEOWriterPage() {
                                 <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none rotate-12">
                                     <Sparkles size={240} />
                                 </div>
-                                <div className="flex items-center gap-4 mb-12">
-                                    <div className="w-14 h-14 rounded-2xl bg-brand-primary flex items-center justify-center text-white shadow-xl shadow-brand-primary/30">
-                                        <FileText size={32} />
+                                    <div className="flex items-center gap-4 mb-12">
+                                        <div className="w-14 h-14 rounded-2xl bg-brand-primary flex items-center justify-center text-white shadow-xl shadow-brand-primary/30">
+                                            <FileText size={32} />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-3xl font-black text-brand-text-primary font-display italic uppercase tracking-tighter">大师大纲 · 策略规划</h2>
+                                            <div className="flex items-center gap-3 mt-2">
+                                                <div className="flex items-center gap-1.5 px-3 py-1 bg-brand-primary/10 rounded-full">
+                                                    <span className="text-[10px] font-black text-brand-primary uppercase">内容质量预估:</span>
+                                                    <span className="text-xs font-black text-brand-primary">待生成</span>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <h2 className="text-3xl font-black text-brand-text-primary font-display italic uppercase tracking-tighter">阿拉丁·大师大纲</h2>
-                                </div>
                                 
                                 <div className="space-y-6 relative z-10">
                                     {auditResult.masterOutline?.map((h: any, i: number) => (
