@@ -7,10 +7,13 @@
  */
 
 import { BaseSkill } from '../base-skill';
-import { SkillInput, SkillOutput, SkillExecutionMetadata } from '../types';
+import type { SkillInput, SkillOutput, SkillExecutionMetadata } from '../types';
 import { getProvider } from '../providers';
 import { DataForSEOClient, MapDataItem } from '../../external/dataforseo';
 import { SkeletonExtractor, ContentSkeleton } from '../../external/skeleton-extractor';
+import { calculateDetailedSEOScore, type DetailedSEOScore } from '@/lib/utils/seo-scoring';
+import { humanizeContent } from '@/lib/utils/humanize';
+import { detectAIPatterns } from '@/lib/utils/ai-detection';
 
 /**
  * Input for StellarWriter
@@ -90,6 +93,12 @@ export interface StellarWriterOutput {
         seo: number;
         geo: number;
     };
+    /** Detailed SEO Score Breakdown */
+    detailedSEOScore?: DetailedSEOScore;
+    /** AI detection score (0-100, lower = more human-like) */
+    aiDetectionScore?: number;
+    /** AI detection pattern flags */
+    aiDetectionFlags?: any[];
     /** Strategic optimization suggestions */
     suggestions: string[];
 }
@@ -283,7 +292,42 @@ ${competitors.map(c => `### Competitor: ${c.title}\n${c.headings.map(h => `${'  
 
         return `You are a world-class Growth Marketer and SEO/GEO expert.
 
-MODE: ${auditOnly ? 'AUDIT & STRATEGY ONLY. Analyse keywords and competitors, and provide a "Master Outline" that can beat them.' : 'FULL MAGICAL REWRITE.'}
+
+MODE: ${auditOnly ? 'AUDIT & STRATEGY ONLY. Analyse keywords and competitors, and provide a "Master Outline" that can beat them.' : `FULL CONTENT GENERATION MODE - Create complete, publication-ready article.
+
+📝 CONTENT REQUIREMENTS (CRITICAL):
+- Minimum 1500-2500 words (8000+ Chinese characters)
+- 5-7 H2 sections, each with 200-400 words
+- 2-3 full paragraphs under EVERY heading
+- Include specific examples, data, case studies
+- NO placeholders like "内容..." or "详细信息..."
+- NO outline-only structure
+- Use transition words between paragraphs
+- Answer What? Why? How? in each section
+
+🎯 HUMAN WRITING CHARACTERISTICS (MANDATORY):
+- Write naturally like a human expert, NOT as an AI
+- Use contractions (I'm, you'll, can't, won't, it's)
+- Vary sentence length dramatically (mix 5-word and 25-word sentences)
+- Be conversational and direct
+- Show personality and opinions
+- Use active voice predominantly
+
+❌ ABSOLUTELY FORBIDDEN AI PHRASES:
+- "It's worth noting that"
+- "It's important to note"
+- "Delve into" / "Dive deep into"
+- "In conclusion" / "To sum up"
+- "Furthermore" / "Moreover" / "Nevertheless"
+- "At the end of the day"
+- "However, it is important to remember"
+
+✅ USE INSTEAD:
+- Simple transitions: "Also", "Plus", "And", "But", "So"
+- Direct statements
+- Natural flow without formal connectors
+- Occasional questions to engage readers`}
+
 
 ## Target Profiles
 - Keywords: ${keywords}
@@ -306,7 +350,7 @@ ${topicCtx}
 {
   ${!auditOnly ? '"content": "# Markdown content here",' : ''}
   "summary": "1-sentence summary",
-  "seoMetadata": { "title": "...", "description": "...", "keywords": [], "slug": "..." },
+  "seoMetadata": { "title": "...", "description": "... ", "keywords": [], "slug": "..." },
   "schema": { "article": { /* JSON-LD Article */ } },
   ${auditOnly ? '"masterOutline": [ { "level": 1, "text": "H1 Title" }, { "level": 2, "text": "H2 Subtitle" } ],' : ''}
   "scores": { "seo": 95, "geo": 92 },
@@ -325,8 +369,47 @@ Return ONLY JSON.`;
     ): StellarWriterOutput {
         const json = this.extractJSON<any>(raw);
 
+        // 🎨 Apply humanization if content was generated
+        let finalContent = json?.content;
+        let humanizationChanges;
+        let aiDetectionResult;
+
+        if (finalContent) {
+            // Apply humanization
+            const humanized = humanizeContent(finalContent);
+            finalContent = humanized.text;
+            humanizationChanges = humanized.changes;
+
+            // Detect AI patterns
+            aiDetectionResult = detectAIPatterns(finalContent);
+
+            console.log('🎭 Humanization applied:', humanizationChanges);
+            console.log('🔍 AI Detection score:', aiDetectionResult.score);
+        }
+
+        // Calculate detailed SEO score if content is available
+        let detailedSEOScore;
+        if (finalContent && json?.seoMetadata) {
+            try {
+                detailedSEOScore = calculateDetailedSEOScore(
+                    json.seoMetadata.title || '',
+                    json.seoMetadata.description || '',
+                    finalContent,  // Use humanized content
+                    json.seoMetadata.keywords?.[0] || '',
+                    json.imageSuggestions?.map((alt: string) => ({ alt })) || []
+                );
+
+                // Update overall SEO score from detailed calculation
+                if (json.scores) {
+                    json.scores.seo = detailedSEOScore.overall;
+                }
+            } catch (error) {
+                console.error('Error calculating detailed SEO score:', error);
+            }
+        }
+
         return {
-            content: json?.content,
+            content: finalContent,  // Return humanized content
             summary: json?.summary || 'Optimized content',
             seoMetadata: json?.seoMetadata || { title: '', description: '', keywords: [], slug: '' },
             schema: json?.schema || { article: {} },
@@ -338,6 +421,9 @@ Return ONLY JSON.`;
             imageSuggestions: json?.imageSuggestions || [],
             distribution: json?.distribution || {},
             scores: json?.scores || { seo: 50, geo: 50 },
+            detailedSEOScore,
+            aiDetectionScore: aiDetectionResult?.score,  // New field
+            aiDetectionFlags: aiDetectionResult?.flags,   // New field
             suggestions: json?.suggestions || []
         };
     }

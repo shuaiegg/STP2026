@@ -13,6 +13,10 @@ import {
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { SEOScorePanel } from '@/components/seo/SEOScorePanel';
+import { KeywordOpportunityMatrix } from '@/components/charts/KeywordOpportunityMatrix';
+import { SEOScoreDashboard } from '@/components/charts/SEOScoreDashboard';
+import { CompetitorRadarChart } from '@/components/charts/CompetitorRadarChart';
 import Link from 'next/link';
 
 export default function GEOWriterPage() {
@@ -25,10 +29,12 @@ export default function GEOWriterPage() {
     const [viewMode, setViewMode] = useState<'preview' | 'markdown' | 'schema'>('preview');
     const [showOriginal, setShowOriginal] = useState(false);
     const [isPaid, setIsPaid] = useState(false);
+    const [selectedKeyword, setSelectedKeyword] = useState<string>(''); // 选中的主关键词
 
     const [form, setForm] = useState({
         keywords: '',
         location: '',
+        brandName: '',
         tone: 'professional',
         type: 'blog',
         originalContent: ''
@@ -74,6 +80,24 @@ export default function GEOWriterPage() {
             setResearchData(outputData.topics || []);
             setAuditResult(outputData);
             setIsPaid(data.isRepeat || false);
+
+            // 智能默认：选择机会评分最高的关键词
+            const topics = outputData.topics || [];
+            if (topics.length > 0) {
+                const calculateOpportunityScore = (kw: any) => {
+                    const volumeScore = Math.min(100, (kw.volume / 10000) * 100);
+                    const competitionScore = 100 - kw.competition;
+                    return volumeScore * 0.6 + competitionScore * 0.4;
+                };
+
+                const bestKeyword = [...topics]
+                    .sort((a, b) => calculateOpportunityScore(b) - calculateOpportunityScore(a))[0];
+
+                setSelectedKeyword(bestKeyword.keyword);
+            } else {
+                setSelectedKeyword(form.keywords);
+            }
+
             setStep(1); // Stay on step 1 to show the research data
         } catch (err: any) {
             console.error('Research error:', err);
@@ -94,7 +118,11 @@ export default function GEOWriterPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     skillName: 'stellar-writer',
-                    input: { ...form, auditOnly: false }
+                    input: {
+                        ...form,
+                        keywords: selectedKeyword || form.keywords, // 使用选中的关键词
+                        auditOnly: false
+                    }
                 })
             });
 
@@ -257,6 +285,28 @@ export default function GEOWriterPage() {
                                             </select>
                                         </div>
                                         <div className="space-y-2">
+                                            <label className="text-xs font-black text-slate-400 uppercase tracking-wider">选择地理位置（可选）</label>
+                                            <input
+                                                type="text"
+                                                value={form.location}
+                                                onChange={(e) => setForm({ ...form, location: e.target.value })}
+                                                placeholder="如：北京、上海、全球"
+                                                className="w-full bg-white border-2 border-slate-100 p-5 rounded-2xl text-sm font-bold text-brand-text-primary placeholder:text-slate-300 focus:outline-none focus:border-brand-primary transition-all shadow-sm hover:shadow-md"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-black text-slate-400 uppercase tracking-wider">品牌名称（可选）</label>
+                                            <input
+                                                type="text"
+                                                value={form.brandName}
+                                                onChange={(e) => setForm({ ...form, brandName: e.target.value })}
+                                                placeholder="如：阿里巴巴、ScaletoTop、您的品牌"
+                                                className="w-full bg-white border-2 border-slate-100 p-5 rounded-2xl text-sm font-bold text-brand-text-primary placeholder:text-slate-300 focus:outline-none focus:border-brand-primary transition-all shadow-sm hover:shadow-md"
+                                            />
+                                            <p className="text-[10px] text-slate-400 font-semibold">将在内容中使用您的品牌名，留空则使用通用表述</p>
+                                        </div>
+                                        <div className="space-y-2">
                                             <label className="text-[10px] font-black text-slate-400 uppercase">原始草稿 (可选)</label>
                                             <textarea
                                                 value={form.originalContent}
@@ -387,9 +437,31 @@ export default function GEOWriterPage() {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {researchData.length > 0 ? researchData.map((topic, i) => (
-                                        <div key={i} className="flex flex-col p-6 bg-brand-surface/40 border-2 border-slate-50 rounded-2xl hover:border-brand-secondary transition-all group cursor-pointer active:scale-[0.98] hover:shadow-md">
+                                        <div
+                                            key={i}
+                                            onClick={() => setSelectedKeyword(topic.keyword)}
+                                            className={`flex flex-col p-6 border-2 rounded-2xl hover:shadow-md transition-all group cursor-pointer active:scale-[0.98] ${selectedKeyword === topic.keyword
+                                                ? 'bg-brand-primary/5 border-brand-primary shadow-lg shadow-brand-primary/10'
+                                                : 'bg-brand-surface/40 border-slate-50 hover:border-brand-secondary'
+                                                }`}
+                                        >
                                             <div className="flex items-center justify-between mb-4">
-                                                <span className="text-sm font-black text-brand-text-primary group-hover:text-brand-secondary transition-colors">{topic.keyword}</span>
+                                                <div className="flex items-center gap-2">
+                                                    {selectedKeyword === topic.keyword && (
+                                                        <div className="w-2 h-2 rounded-full bg-brand-primary animate-pulse" />
+                                                    )}
+                                                    <span className={`text-sm font-black transition-colors ${selectedKeyword === topic.keyword
+                                                        ? 'text-brand-primary'
+                                                        : 'text-brand-text-primary group-hover:text-brand-secondary'
+                                                        }`}>
+                                                        {topic.keyword}
+                                                    </span>
+                                                    {selectedKeyword === topic.keyword && (
+                                                        <span className="text-[9px] font-black text-brand-primary uppercase tracking-wider ml-2">
+                                                            ✓ 主
+                                                        </span>
+                                                    )}
+                                                </div>
                                                 <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-brand-secondary opacity-0 group-hover:opacity-100 transition-opacity shadow-sm">
                                                     <MousePointer2 size={12} />
                                                 </div>
@@ -421,6 +493,11 @@ export default function GEOWriterPage() {
                                     )}
                                 </div>
                             </Card>
+
+                            {/* 关键词机会矩阵可视化 */}
+                            {researchData && researchData.length > 0 && (
+                                <KeywordOpportunityMatrix topics={researchData} />
+                            )}
 
                             <div className="flex justify-end">
                                 <Button onClick={proceedToStrategy} className="px-10 py-6 bg-brand-secondary text-brand-text-primary border-2 border-brand-border-heavy font-black shadow-[6px_6px_0_0_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all">
@@ -651,6 +728,47 @@ export default function GEOWriterPage() {
                                     </div>
                                 </Card>
                             </div>
+
+                            {/* SEO Score Detailed Breakdown */}
+                            {finalResult.detailedSEOScore && (
+                                <div className="mt-8">
+                                    <Card className="p-10 border-4 border-brand-primary/20 bg-gradient-to-br from-white to-brand-primary/5 rounded-3xl">
+                                        <div className="flex items-center justify-between mb-8">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-14 h-14 rounded-2xl bg-brand-primary flex items-center justify-center text-white shadow-xl">
+                                                    <TrendingUp size={28} />
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-2xl font-black text-brand-text-primary">详细SEO评分分析</h3>
+                                                    <p className="text-xs text-slate-500 font-bold">可操作的优化建议与评分细项</p>
+                                                </div>
+                                            </div>
+                                            {/* 当前关键词显示 */}
+                                            {selectedKeyword && (
+                                                <div className="flex items-center gap-2 px-4 py-2 bg-brand-primary/10 border-2 border-brand-primary/30 rounded-xl">
+                                                    <Search size={14} className="text-brand-primary" />
+                                                    <div>
+                                                        <div className="text-[9px] font-black text-brand-primary/60 uppercase tracking-wider">目标关键词</div>
+                                                        <div className="text-sm font-black text-brand-primary">{selectedKeyword}</div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* 可视化图表集合 */}
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                                            <SEOScoreDashboard score={finalResult.detailedSEOScore} />
+                                            <CompetitorRadarChart
+                                                myScore={finalResult.detailedSEOScore}
+                                                competitors={finalResult.competitors || []}
+                                            />
+                                        </div>
+
+                                        {/* 详细评分面板 */}
+                                        <SEOScorePanel score={finalResult.detailedSEOScore} />
+                                    </Card>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
