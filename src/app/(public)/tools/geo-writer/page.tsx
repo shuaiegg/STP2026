@@ -8,7 +8,7 @@ import {
     Users, BarChart3, ChevronRight, Globe, Info,
     Eye, Code, Database, Braces, RefreshCw,
     Search, TrendingUp, Target, MousePointer2,
-    Lock, Check, ArrowLeft
+    Lock, Check, ArrowLeft, ExternalLink
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -51,13 +51,26 @@ export default function GEOWriterPage() {
             });
 
             const data = await response.json();
-            if (!response.ok) throw new Error(data.error || '研究失败');
+            
+            if (!response.ok) {
+                throw new Error(data.error || '请求失败');
+            }
 
-            setResearchData(data.output.data.topics || []);
-            setAuditResult(data.output.data);
+            if (!data.success || !data.output.success) {
+                throw new Error(data.output?.error || data.error || '研究逻辑执行失败');
+            }
+
+            const outputData = data.output.data;
+            if (!outputData) {
+                throw new Error('未返回有效的研究数据');
+            }
+
+            setResearchData(outputData.topics || []);
+            setAuditResult(outputData);
             setIsPaid(data.isRepeat || false);
             setStep(2);
         } catch (err: any) {
+            console.error(err);
             setError(err.message);
         } finally {
             setLoading(false);
@@ -80,13 +93,22 @@ export default function GEOWriterPage() {
             });
 
             const data = await response.json();
-            if (!response.ok) throw new Error(data.error || '优化失败');
+            
+            if (!response.ok) {
+                throw new Error(data.error || '请求失败');
+            }
 
-            setFinalResult(data.output.data);
-            setAuditResult(data.output.data); 
+            if (!data.success || !data.output.success) {
+                throw new Error(data.output?.error || data.error || '智作执行失败');
+            }
+
+            const outputData = data.output.data;
+            setFinalResult(outputData);
+            setAuditResult(outputData); 
             setIsPaid(true);
             setStep(3);
         } catch (err: any) {
+            console.error(err);
             setError(err.message);
         } finally {
             setLoading(false);
@@ -94,6 +116,7 @@ export default function GEOWriterPage() {
     };
 
     const copyToClipboard = (text: string) => {
+        if (!text) return;
         if (typeof text === 'object') text = JSON.stringify(text, null, 2);
         navigator.clipboard.writeText(text);
         alert('已复制到剪贴板');
@@ -216,6 +239,18 @@ export default function GEOWriterPage() {
                                             </select>
                                         </div>
                                         <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase">内容类型</label>
+                                            <select 
+                                                value={form.type}
+                                                onChange={(e) => setForm({...form, type: e.target.value as any})}
+                                                className="w-full bg-white border-2 border-slate-100 p-3 rounded-xl outline-none focus:border-brand-primary transition-all text-xs font-bold shadow-sm"
+                                            >
+                                                <option value="blog">深度博客文章</option>
+                                                <option value="landing_page">高转化落地页</option>
+                                                <option value="guide">操作指南/白皮书</option>
+                                            </select>
+                                        </div>
+                                        <div className="space-y-2">
                                             <label className="text-[10px] font-black text-slate-400 uppercase">原始草稿 (可选)</label>
                                             <textarea 
                                                 value={form.originalContent}
@@ -259,7 +294,7 @@ export default function GEOWriterPage() {
                                         </Card>
                                     </div>
                                     <Link href="/dashboard" className="w-full">
-                                        <Button variant="outline" className="w-full border-emerald-200 text-emerald-700 font-bold bg-white hover:bg-emerald-50 transition-colors">
+                                        <Button variant="outline" className="w-full border-emerald-200 text-emerald-700 font-bold bg-white hover:bg-emerald-50 transition-colors text-xs">
                                             前往控制台追踪引用
                                         </Button>
                                     </Link>
@@ -267,7 +302,7 @@ export default function GEOWriterPage() {
                             )}
 
                             <button 
-                                onClick={() => { setStep(1); setAuditResult(null); setFinalResult(null); }}
+                                onClick={() => { setStep(1); setAuditResult(null); setFinalResult(null); setResearchData(null); }}
                                 className="w-full text-xs font-bold text-slate-400 hover:text-brand-primary underline transition-colors"
                             >
                                 开启新任务
@@ -326,7 +361,7 @@ export default function GEOWriterPage() {
                                         <div className="w-10 h-10 rounded-xl bg-brand-secondary/10 flex items-center justify-center text-brand-secondary shadow-sm">
                                             <TrendingUp size={24} />
                                         </div>
-                                        <h2 className="text-2xl font-black text-brand-text-primary font-display italic uppercase tracking-tighter">话题意图热力图</h2>
+                                        <h2 className="text-2xl font-black text-brand-text-primary font-display italic uppercase tracking-tighter leading-none">话题意图热力图</h2>
                                     </div>
                                     <Badge className="bg-slate-50 text-slate-400 border border-slate-100 font-black text-[9px] uppercase tracking-widest px-3 py-1">
                                         Real-time SERP Data
@@ -357,7 +392,7 @@ export default function GEOWriterPage() {
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
-                                                    <div className="text-lg font-black text-brand-text-primary leading-none font-mono">{topic.volume}</div>
+                                                    <div className="text-lg font-black text-brand-text-primary leading-none font-mono">{topic.volume || '--'}</div>
                                                     <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">月搜索量</div>
                                                 </div>
                                             </div>
@@ -380,6 +415,7 @@ export default function GEOWriterPage() {
 
                     {step === 2 && auditResult && !loading && (
                         <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500 pb-20">
+                            {/* Competitor Analysis Section */}
                             <Card className="p-10 border-2 border-brand-border-heavy bg-white rounded-3xl">
                                 <div className="flex items-center gap-4 mb-10">
                                     <div className="w-12 h-12 rounded-2xl bg-brand-primary/10 flex items-center justify-center text-brand-primary shadow-sm">
@@ -392,21 +428,27 @@ export default function GEOWriterPage() {
                                 </div>
 
                                 <div className="grid grid-cols-1 gap-6">
-                                    {auditResult.competitors?.map((comp: any, i: number) => (
+                                    {auditResult.competitors && auditResult.competitors.length > 0 ? auditResult.competitors.map((comp: any, i: number) => (
                                         <div key={i} className="border-2 border-slate-50 p-6 rounded-2xl bg-brand-surface/20 hover:border-brand-primary/20 transition-all group/comp">
                                             <div className="flex items-center gap-4 mb-6 border-b border-white pb-6">
                                                 <div className="text-xs font-black text-brand-text-primary truncate flex-1">{comp.title}</div>
-                                                <div className="text-[9px] text-brand-primary font-mono truncate max-w-[200px]">{comp.url}</div>
+                                                <a href={comp.url} target="_blank" rel="noopener noreferrer" className="text-[9px] text-brand-primary font-mono truncate max-w-[200px] flex items-center gap-1 hover:underline">
+                                                    {comp.url} <ExternalLink size={10} />
+                                                </a>
                                             </div>
                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                                {comp.headings.slice(0, 9).map((h: any, j: number) => (
+                                                {comp.headings.slice(0, 12).map((h: any, j: number) => (
                                                     <div key={j} className={`px-3 py-2 bg-white/80 border border-slate-100 rounded-xl text-[9px] font-bold truncate ${h.level > 2 ? 'opacity-50 pl-4' : 'shadow-sm text-slate-700'}`}>
                                                         <span className="text-brand-secondary mr-1.5 opacity-50">H{h.level}</span> {h.text}
                                                     </div>
                                                 ))}
                                             </div>
                                         </div>
-                                    ))}
+                                    )) : (
+                                        <div className="py-12 text-center text-slate-300 italic text-sm">
+                                            暂无竞品数据，我们将直接进行大师级大纲规划。
+                                        </div>
+                                    )}
                                 </div>
                             </Card>
 
@@ -464,7 +506,7 @@ export default function GEOWriterPage() {
                             <Card className="p-12 border-2 border-brand-border-heavy bg-white relative shadow-[20px_20px_0_0_rgba(10,10,10,0.03)] rounded-3xl min-h-[600px]">
                                 {viewMode === 'preview' && (
                                     <div className="prose prose-brand max-w-none">
-                                        <h1 className="text-4xl font-black mb-10 italic text-brand-text-primary">{finalResult.seoMetadata?.title}</h1>
+                                        <h1 className="text-4xl font-black mb-10 italic text-brand-text-primary leading-tight">{finalResult.seoMetadata?.title}</h1>
                                         <div className="space-y-8 text-brand-text-secondary leading-relaxed text-lg">
                                             {finalResult.content?.split('\n').map((line: string, i: number) => {
                                                 if (line.startsWith('## ')) return <h2 key={i} className="text-2xl font-black text-brand-text-primary pt-8 border-b-4 border-slate-50 pb-2">{line.replace('## ', '')}</h2>;
@@ -488,7 +530,11 @@ export default function GEOWriterPage() {
                                                                 <div className="w-1 h-1 rounded-full bg-brand-primary mt-1.5 group-hover:scale-150 transition-transform" />
                                                                 <div className="flex flex-col">
                                                                     <span className="text-xs font-black text-brand-text-primary">{e.title}</span>
-                                                                    <span className="text-[9px] text-slate-400 font-mono mt-0.5">{e.address}</span>
+                                                                    {e.website && (
+                                                                        <a href={e.website} target="_blank" rel="noopener noreferrer" className="text-[9px] text-slate-400 font-mono mt-0.5 hover:underline flex items-center gap-1">
+                                                                            查看网站 <ExternalLink size={8} />
+                                                                        </a>
+                                                                    )}
                                                                 </div>
                                                             </div>
                                                         ))}
@@ -502,7 +548,9 @@ export default function GEOWriterPage() {
                                                                 <div className="w-1 h-1 rounded-full bg-slate-300 mt-1.5" />
                                                                 <div className="flex flex-col truncate">
                                                                     <span className="text-xs font-bold text-slate-600 truncate">{c.title}</span>
-                                                                    <span className="text-[9px] text-brand-primary font-mono mt-0.5 truncate italic">{c.url}</span>
+                                                                    <a href={c.url} target="_blank" rel="noopener noreferrer" className="text-[9px] text-brand-primary font-mono mt-0.5 truncate italic hover:underline flex items-center gap-1">
+                                                                        查看原文 <ExternalLink size={8} />
+                                                                    </a>
                                                                 </div>
                                                             </div>
                                                         ))}
@@ -517,7 +565,7 @@ export default function GEOWriterPage() {
                                     <div className="space-y-4 h-full">
                                         <div className="flex justify-between items-center bg-slate-50 p-4 rounded-xl">
                                             <span className="text-xs font-black text-slate-500">MARKDOWN 源代码</span>
-                                            <Button size="sm" variant="outline" onClick={() => copyToClipboard(finalResult.content)} className="bg-white gap-2 font-bold shadow-sm">
+                                            <Button size="sm" variant="outline" onClick={() => copyToClipboard(finalResult.content)} className="bg-white gap-2 font-bold shadow-sm text-xs">
                                                 <Copy size={12} /> 复制代码
                                             </Button>
                                         </div>
@@ -532,14 +580,14 @@ export default function GEOWriterPage() {
                                                 <Braces className="text-violet-600" size={32} />
                                                 <div>
                                                     <span className="text-sm font-black text-violet-700 block uppercase tracking-widest">Schema.org Article 代码</span>
-                                                    <span className="text-[10px] text-violet-400 font-bold">由 AI 根据全网实体数据自动生成</span>
+                                                    <span className="text-[10px] text-violet-400 font-bold">用于提升 Google 搜索展示效果的 JSON-LD 代码</span>
                                                 </div>
                                             </div>
-                                            <Button size="sm" onClick={() => copyToClipboard(finalResult.schema)} className="bg-violet-600 hover:bg-violet-700 font-black shadow-lg shadow-violet-200">
+                                            <Button size="sm" onClick={() => copyToClipboard(finalResult.schema)} className="bg-violet-600 hover:bg-violet-700 font-black shadow-lg shadow-violet-200 text-xs">
                                                 复制 JSON-LD
                                             </Button>
                                         </div>
-                                        <pre className="p-8 bg-slate-900 text-violet-300 font-mono text-xs rounded-2xl overflow-auto h-[400px] shadow-inner">
+                                        <pre className="p-8 bg-slate-900 text-violet-300 font-mono text-xs rounded-2xl overflow-auto h-[450px] shadow-inner">
                                             {JSON.stringify(finalResult.schema, null, 2)}
                                         </pre>
                                     </div>
@@ -548,7 +596,7 @@ export default function GEOWriterPage() {
 
                             {/* Recommendations Grid */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <Card className="p-10 border-2 border-brand-border bg-white rounded-3xl relative overflow-hidden">
+                                <Card className="p-10 border-2 border-brand-border bg-white rounded-3xl relative overflow-hidden shadow-sm">
                                     <h3 className="text-xs font-black text-brand-text-muted uppercase tracking-widest mb-8 flex items-center gap-3">
                                         <ImageIcon className="text-brand-secondary" size={20} /> 视觉配图策略
                                     </h3>
@@ -561,7 +609,7 @@ export default function GEOWriterPage() {
                                         ))}
                                     </div>
                                 </Card>
-                                <Card className="p-10 border-2 border-brand-border bg-white rounded-3xl relative overflow-hidden">
+                                <Card className="p-10 border-2 border-brand-border bg-white rounded-3xl relative overflow-hidden shadow-sm">
                                     <h3 className="text-xs font-black text-brand-text-muted uppercase tracking-widest mb-8 flex items-center gap-3">
                                         <LinkIcon className="text-brand-primary" size={20} /> 建议内部链接
                                     </h3>

@@ -135,7 +135,8 @@ export class DataForSEOClient {
                 keywords: [keyword],
                 location_name: "United States",
                 language_name: "English",
-                search_partners: false
+                include_seed_keyword: false,
+                limit: 10
             }];
 
             // Using keyword_ideas which is better for discovery
@@ -151,7 +152,7 @@ export class DataForSEOClient {
             const data = await response.json();
             const results = data.tasks?.[0]?.result?.[0]?.items || [];
             
-            return results.slice(0, 10).map((r: any) => ({
+            return results.map((r: any) => ({
                 keyword: r.keyword,
                 volume: r.keyword_info?.search_volume || 0,
                 competition: Math.round((r.keyword_info?.competition_level || 0) * 100) || 50,
