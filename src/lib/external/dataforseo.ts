@@ -132,14 +132,14 @@ export class DataForSEOClient {
 
         try {
             const payload = [{
-                keyword,
+                keywords: [keyword],
                 location_name: "United States",
                 language_name: "English",
                 search_partners: false
             }];
 
-            // Using keyword_ideas which is more robust
-            const response = await fetch(`${this.baseUrl}/keywords_data/google/search_volume/live`, {
+            // Using keyword_ideas which is better for discovery
+            const response = await fetch(`${this.baseUrl}/keywords_data/google/keyword_ideas/live`, {
                 method: 'POST',
                 headers: {
                     'Authorization': this.getAuthHeader(),
@@ -149,13 +149,13 @@ export class DataForSEOClient {
             });
 
             const data = await response.json();
-            const results = data.tasks?.[0]?.result || [];
+            const results = data.tasks?.[0]?.result?.[0]?.items || [];
             
             return results.slice(0, 10).map((r: any) => ({
                 keyword: r.keyword,
-                volume: r.search_volume || 0,
-                competition: Math.round((r.competition_level || 0) * 100), // Convert to 0-100
-                cpc: r.cpc || 0
+                volume: r.keyword_info?.search_volume || 0,
+                competition: Math.round((r.keyword_info?.competition_level || 0) * 100) || 50,
+                cpc: r.keyword_info?.cpc || 0
             }));
         } catch (error) {
             console.error('DataForSEO Keywords error:', error);

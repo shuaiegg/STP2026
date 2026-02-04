@@ -137,13 +137,15 @@ export class StellarWriterSkill extends BaseSkill {
                 const serp = await DataForSEOClient.searchGoogleSERP(keywords, location, 5);
                 const competitorUrls = serp
                     .filter(item => item.type === 'organic')
-                    .slice(0, 3)
-                    .map(item => item.url);
+                    .map(item => item.url)
+                    .filter(Boolean);
                 
-                competitorSkeletons = await SkeletonExtractor.batchExtract(competitorUrls);
+                if (competitorUrls.length > 0) {
+                    competitorSkeletons = await SkeletonExtractor.batchExtract(competitorUrls.slice(0, 3));
+                }
             }
         } catch (e) {
-            console.error('Intelligence phase failed', e);
+            console.error('Intelligence phase partial failure', e);
         }
 
         // 2. Generation Phase: Build Unified Prompt

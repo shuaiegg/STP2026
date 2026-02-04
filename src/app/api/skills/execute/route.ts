@@ -162,7 +162,8 @@ export async function POST(request: NextRequest) {
             executionId,
             output: result,
             executionTime,
-            remainingCredits: dbResult.updatedUser.credits
+            remainingCredits: dbResult.updatedUser.credits,
+            isRepeat: isRepeat
         });
     } catch (error) {
         console.error('Skill execution error:', error);
