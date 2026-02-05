@@ -23,6 +23,9 @@ import { CompetitorRadarChart } from '@/components/charts/CompetitorRadarChart';
 import { SERPOpportunitiesPanel } from '@/components/serp/SERPOpportunitiesPanel';
 import Link from 'next/link';
 import { OutlineEditor, OutlineNode } from '@/components/editor/OutlineEditor';
+import { EditableSection } from '@/components/editor/EditableSection';
+import { parseMarkdownToSections, joinSectionsToMarkdown, ContentSection } from '@/lib/utils/markdown-sections';
+
 
 export default function GEOWriterPage() {
     const [step, setStep] = useState(1); // 1: Research, 2: Strategy, 3: Creation
@@ -31,12 +34,14 @@ export default function GEOWriterPage() {
     const [auditResult, setAuditResult] = useState<any>(null);
     const [finalResult, setFinalResult] = useState<any>(null);
     const [error, setError] = useState<string | null>(null);
-    const [viewMode, setViewMode] = useState<'preview' | 'markdown' | 'schema'>('preview');
+    const [viewMode, setViewMode] = useState<'preview' | 'markdown' | 'schema' | 'article'>('preview');
     const [showOriginal, setShowOriginal] = useState(false);
     const [isPaid, setIsPaid] = useState(false);
     const [selectedKeyword, setSelectedKeyword] = useState<string>(''); // 选中的主关键词
     const [cachedIntelligence, setCachedIntelligence] = useState<any>(null); // Cached intelligence data from Step 1
     const [editableOutline, setEditableOutline] = useState<OutlineNode[]>([]); // Editable outline state
+    const [contentSections, setContentSections] = useState<ContentSection[]>([]); // Step 3 editable sections
+
 
     const [form, setForm] = useState({
         keywords: '',
@@ -46,6 +51,14 @@ export default function GEOWriterPage() {
         type: 'blog',
         originalContent: ''
     });
+
+    // Sync finalResult to contentSections if needed (e.g. on load)
+    useEffect(() => {
+        if (finalResult?.content && contentSections.length === 0) {
+            const sections = parseMarkdownToSections(finalResult.content);
+            setContentSections(sections);
+        }
+    }, [finalResult, contentSections.length]);
 
     // Function to proceed from research phase to strategy phase
     const proceedToStrategy = () => {
@@ -269,6 +282,11 @@ export default function GEOWriterPage() {
             // setAuditResult(finalData);
             setIsPaid(true); // Unlock "Paid" view
             setLoading(false);
+
+            // Initialize editable sections
+            const sections = parseMarkdownToSections(result);
+            setContentSections(sections);
+            setStep(3); // Explicitly move to step 3
         },
         onError: (err) => {
             console.error('Streaming error:', err);
@@ -770,7 +788,10 @@ export default function GEOWriterPage() {
                             {/* Navigation Tabs */}
                             <div className="flex p-1.5 bg-slate-100 rounded-2xl w-fit border border-slate-200 shadow-inner">
                                 <button onClick={() => setViewMode('preview')} className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase transition-all flex items-center gap-2 ${viewMode === 'preview' ? 'bg-white text-brand-primary shadow-md border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}>
-                                    <Eye size={14} /> 渲染预览
+                                    <Eye size={14} /> 交互编辑
+                                </button>
+                                <button onClick={() => setViewMode('article')} className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase transition-all flex items-center gap-2 ${viewMode === 'article' ? 'bg-white text-brand-primary shadow-md border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}>
+                                    <FileText size={14} /> 阅读全文
                                 </button>
                                 <button onClick={() => setViewMode('markdown')} className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase transition-all flex items-center gap-2 ${viewMode === 'markdown' ? 'bg-white text-brand-primary shadow-md border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}>
                                     <Code size={14} /> Markdown
@@ -841,6 +862,36 @@ export default function GEOWriterPage() {
                                                     </div>
                                                 </div>
                                             </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {viewMode === 'article' && (
+                                    <div className="space-y-4 h-full">
+                                        <div className="flex justify-between items-center bg-slate-50 p-4 rounded-xl">
+                                            <span className="text-xs font-black text-slate-500">全文预览 (FINAL PREVIEW)</span>
+                                            <div className="flex gap-2">
+                                                <Button size="sm" variant="outline" onClick={() => copyToClipboard(finalResult?.content || completion)} className="bg-white gap-2 font-bold shadow-sm text-xs border-slate-200">
+                                                    <Copy size={12} /> 一键复制全文
+                                                </Button>
+                                            </div>
+                                        </div>
+                                        <div className="prose prose-brand max-w-none p-12 bg-white rounded-2xl border border-slate-100 min-h-[800px]">
+                                            <ReactMarkdown
+                                                components={{
+                                                    blockquote: ({ node, ...props }) => (
+                                                        <div className="border-l-4 border-brand-primary bg-brand-surface/50 p-4 rounded-r-xl my-4 not-italic">
+                                                            <div className="flex gap-2">
+                                                                <div className="text-brand-primary font-bold">💡</div>
+                                                                <div className="text-slate-700">{props.children}</div>
+                                                            </div>
+                                                        </div>
+                                                    )
+                                                }}
+                                                remarkPlugins={[remarkGfm]}
+                                            >
+                                                {finalResult?.content || completion}
+                                            </ReactMarkdown>
                                         </div>
                                     </div>
                                 )}

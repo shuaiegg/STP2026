@@ -37,7 +37,14 @@ IMPORTANT OVERRIDE:
 For this streaming response, DO NOT return JSON.
 Return ONLY the raw Markdown content for the article.
 Start directly with the H1 Title.
-Do not include metadata, summary, or schema in this stream.
+
+FORMATTING REQUIREMENTS:
+- Use H3 subsections within H2 sections for depth.
+- Include at least one comparison table.
+- Use bullet points and numbered lists frequently for readability.
+- Use > blockquotes for "Pro Tips", "Key Takeaways", or "Warnings".
+- Use **bold** for key concepts.
+- Do not include metadata, summary, or schema in this stream.
 `;
         console.log('Generated Prompt Length:', streamingPrompt.length);
         console.log('Prompt Start:', streamingPrompt.substring(0, 100));
