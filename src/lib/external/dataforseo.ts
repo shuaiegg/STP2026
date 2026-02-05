@@ -173,7 +173,7 @@ export class DataForSEOClient {
                 limit: 20
             };
 
-            const labsResponse = await fetch(`${this.baseUrl}/dataforseo_labs/google/related_keywords`, {
+            const labsResponse = await fetch(`${this.baseUrl}/dataforseo_labs/google/related_keywords/live`, {
                 method: 'POST',
                 headers: {
                     'Authorization': this.getAuthHeader(),

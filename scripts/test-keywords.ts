@@ -109,7 +109,7 @@ async function testKeywords() {
     };
 
     try {
-        console.log('📡 Sending request to DataForSEO Labs...');
+        console.log('📡 Sending request to DataForSEO Labs (Live)...');
         const response = await fetch(`${baseUrl}/dataforseo_labs/google/related_keywords/live`, {
             method: 'POST',
             headers: {
