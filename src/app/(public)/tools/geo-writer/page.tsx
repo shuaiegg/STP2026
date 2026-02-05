@@ -515,7 +515,6 @@ export default function GEOWriterPage() {
                             </Card>
 
                             {/* 关键词机会矩阵可视化 */}
-                            {console.log('🔍 Frontend Matrix Data:', researchData)}
                             {researchData && researchData.length > 0 && (
                                 <KeywordOpportunityMatrix topics={researchData} />
                             )}
