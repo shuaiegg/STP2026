@@ -132,7 +132,12 @@ export class StellarWriterSkill extends BaseSkill {
         metadata: Partial<SkillExecutionMetadata>;
     }> {
         const stellarInput = input as unknown as StellarWriterInput;
-        const { keywords, location = 'United States', analyzeCompetitors = true, auditOnly } = stellarInput;
+        let { keywords, location, analyzeCompetitors = true, auditOnly } = stellarInput;
+
+        // Ensure location has a valid value (empty string should be replaced with default)
+        if (!location || location.trim() === '') {
+            location = 'United States';
+        }
 
         // Full mock mode - return complete mock data without any API calls
         if (process.env.USE_FULL_MOCK === 'true') {
