@@ -168,9 +168,10 @@ export class DataForSEOClient {
                 location_code: 2840, // United States
                 language_code: "en",
                 include_seed_keyword: true,
-                limit: 10
+                limit: 20
             }];
 
+            console.log(`DataForSEO: Fetching related keywords for "${keyword}" (limit: 20)...`);
             const response = await fetch(`${this.baseUrl}/keywords_data/google/keyword_ideas/live`, {
                 method: 'POST',
                 headers: {
@@ -184,6 +185,8 @@ export class DataForSEOClient {
 
             if (data.status_code === 20000) {
                 const results = data.tasks?.[0]?.result?.[0]?.items || [];
+                console.log(`DataForSEO: Found ${results.length} related keywords`);
+
                 if (results.length > 0) {
                     return results.map((r: any) => ({
                         keyword: r.keyword,
@@ -192,9 +195,12 @@ export class DataForSEOClient {
                         cpc: r.keyword_info?.cpc || 0
                     }));
                 }
+            } else {
+                console.warn(`DataForSEO Keyword Ideas failed: ${data.status_message} (${data.status_code})`);
             }
 
             // Step 2: Fallback to Search Volume if no ideas found
+            console.log('DataForSEO: No related keywords found, falling back to seed keyword volume...');
             const fallbackPayload = [{
                 keywords: [keyword],
                 location_code: 2840,
