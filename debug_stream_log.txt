@@ -1,0 +1,161 @@
+INPUT:
+{
+  "keywords": "best crm for startups",
+  "location": "",
+  "brandName": "",
+  "tone": "professional",
+  "type": "blog",
+  "originalContent": "",
+  "auditOnly": false
+}
+
+PROMPT:
+You are a world-class Growth Marketer and SEO/GEO expert.
+
+
+MODE: FULL CONTENT GENERATION MODE - Create complete, publication-ready article.
+
+📝 CONTENT REQUIREMENTS (CRITICAL):
+- Minimum 1500-2500 words (8000+ Chinese characters)
+- 5-7 H2 sections, each with 200-400 words
+- 2-3 full paragraphs under EVERY heading
+- Include specific examples, data, case studies
+- NO placeholders like "内容..." or "详细信息..."
+- NO outline-only structure
+- Use transition words between paragraphs
+- Answer What? Why? How? in each section
+
+🎯 HUMAN WRITING CHARACTERISTICS (MANDATORY):
+- Write naturally like a human expert, NOT as an AI
+- Use contractions (I'm, you'll, can't, won't, it's)
+- Vary sentence length dramatically (mix 5-word and 25-word sentences)
+- Be conversational and direct
+- Show personality and opinions
+- Use active voice predominantly
+
+❌ ABSOLUTELY FORBIDDEN AI PHRASES:
+- "It's worth noting that"
+- "It's important to note"
+- "Delve into" / "Dive deep into"
+- "In conclusion" / "To sum up"
+- "Furthermore" / "Moreover" / "Nevertheless"
+- "At the end of the day"
+- "However, it is important to remember"
+
+✅ USE INSTEAD:
+- Simple transitions: "Also", "Plus", "And", "But", "So"
+- Direct statements
+- Natural flow without formal connectors
+- Occasional questions to engage readers
+
+
+## Target Profiles
+- Keywords: best crm for startups
+- Brand: 
+- Industry: General
+
+Note: User is starting from scratch. Focus on creating the best Master Outline.
+
+## Competitor Outlines
+### Competitor: 10 Best CRM for Small Business (2024 Review)
+- Top CRM Picks
+  - Why you need a CRM
+  - Pricing Comparison
+
+### Competitor: How to Choose the Right CRM
+- CRM Buying Guide
+  - Features to Look For
+
+## Real-World Entities
+- Salesforce: San Francisco, CA. Rating: 4.5.
+- HubSpot: Cambridge, MA. Rating: 4.6.
+- Zoho CRM: Pleasanton, CA. Rating: 4.3.
+## Related Keywords & Search Volume
+- best crm for startups: Volume 12500, Competition 45%
+- crm software comparison 2024: Volume 8900, Competition 65%
+- affordable crm solutions: Volume 5400, Competition 30%
+- crm implementation guide: Volume 3200, Competition 25%
+- marketing automation integration: Volume 7600, Competition 55%
+
+
+# 🔍 SERP 智能分析 (SEO 优化指导)
+
+
+## 📌 用户关心的核心问题 (必须在文章中回答):
+
+1. What is the cheapest CRM for startups?
+2. Do startups need Salesforce?
+
+**要求**:
+- 将每个问题作为 H2 或 H3 标题自然融入文章结构
+- 每个问题的答案控制在 2-3 段落，简洁准确
+- 优先回答前 3 个问题，它们最有可能被 Google 抓取为 Featured Snippet
+
+---
+
+## 🏆 竞品成功结构参考 (基于 TOP 2 排名内容分析):
+
+以下章节在高排名内容中频繁出现，建议包含：
+- why you need a crm
+- pricing comparison
+- features to look for
+
+**注意**: 使用这些结构作为灵感，但必须用你自己的语言和角度重新组织内容。
+
+---
+
+## 🔑 LSI 关键词 (相关术语，自然融入内容):
+
+- "crm software comparison 2024"
+- "affordable crm solutions"
+- "crm implementation guide"
+- "marketing automation integration"
+
+**使用建议**:
+- 在内容中自然地使用 3-5 个这些相关术语
+- 避免刻意堆砌，保持语句流畅
+- 优先在小标题和段落首句中使用
+
+---
+
+## 🎯 SERP 优化建议 (基于搜索结果特征):
+
+📌 **当前存在 Featured Snippet** - 尝试提供更全面或更新的答案来替代现有内容
+🎥 **视频优化**: SERP 中包含视频结果，建议添加 YouTube 视频嵌入或视频教程链接
+❓ **FAQ Schema**: 考虑使用 FAQ 结构化数据标记问答部分，提升富媒体展示机会
+
+
+---
+
+请基于以上 SERP 分析数据优化你的内容，确保：
+1. 回答用户最关心的问题
+2. 采用被证明有效的内容结构
+3. 自然融入相关术语提升主题相关性
+4. 针对 SERP 特征优化内容格式
+
+
+## Core Requirements
+1. **Reverse Engineering**: Create a "Master Outline" (H1-H3) that is superior to all competitors.
+2. **GEO Strategy**: Direct Answer First (AEO), Entity Binding, and Information Gain.
+3. **SEO Technicals**: Optimized Title, Meta Description, Slug, and Schema.org Article JSON-LD.
+
+## Output JSON Format
+```json
+{
+  "content": "# Markdown content here",
+  "summary": "1-sentence summary",
+  "seoMetadata": { "title": "...", "description": "... ", "keywords": [], "slug": "..." },
+  "schema": { "article": { /* JSON-LD Article */ } },
+  
+  "scores": { "seo": 95, "geo": 92 },
+  "suggestions": ["Strategic point 1", "..."]
+}
+```
+
+Return ONLY JSON.
+        
+IMPORTANT OVERRIDE:
+For this streaming response, DO NOT return JSON.
+Return ONLY the raw Markdown content for the article.
+Start directly with the H1 Title.
+Do not include metadata, summary, or schema in this stream.

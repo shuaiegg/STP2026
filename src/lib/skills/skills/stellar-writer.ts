@@ -241,6 +241,17 @@ export class StellarWriterSkill extends BaseSkill {
         // Check if we can use cached intelligence data
         const useCachedData = cachedIntelligence && isDataFresh(cachedIntelligence.timestamp);
 
+        // Performance tracking start
+        const perf = {
+            start: Date.now(),
+            maps: 0,
+            topics: 0,
+            serp: 0,
+            competitors: 0,
+            ai: 0,
+            total: 0
+        };
+
         if (useCachedData) {
             console.log('♻️  Using cached intelligence data from Step 1 (age: ' +
                 Math.round((Date.now() - cachedIntelligence!.timestamp) / 1000 / 60) + ' minutes)');
@@ -256,13 +267,18 @@ export class StellarWriterSkill extends BaseSkill {
             }
 
             try {
+                const t0 = Date.now();
                 console.log(`Step 1: Fetching maps data for ${keywords}...`);
                 entities = await DataForSEOClient.searchGoogleMaps(keywords, location, 5);
+                perf.maps = Date.now() - t0;
 
+                const t1 = Date.now();
                 console.log(`Step 2: Fetching topics data for ${keywords}...`);
                 topics = await DataForSEOClient.getRelatedTopics(keywords);
+                perf.topics = Date.now() - t1;
 
                 // SERP Analysis - identify SEO opportunities
+                const t2 = Date.now();
                 console.log(`Step 2.5: Analyzing SERP features for "${keywords}"...`);
                 try {
                     const analyzer = new SERPAnalyzer();
@@ -279,8 +295,10 @@ export class StellarWriterSkill extends BaseSkill {
                     console.error('❌ SERP analysis failed with error:', error);
                     serpAnalysis = undefined;
                 }
+                perf.serp = Date.now() - t2;
 
                 if (analyzeCompetitors) {
+                    const t3 = Date.now();
                     console.log(`Step 3: Fetching SERP data...`);
                     const serp = await DataForSEOClient.searchGoogleSERP(keywords, location, 5);
                     const competitorUrls = serp
@@ -291,24 +309,29 @@ export class StellarWriterSkill extends BaseSkill {
                     if (competitorUrls.length > 0) {
                         competitorSkeletons = await SkeletonExtractor.batchExtract(competitorUrls.slice(0, 3));
                     }
+                    perf.competitors = Date.now() - t3;
                 }
             } catch (e) {
                 console.error('Intelligence phase partial failure', e);
-                // We don't throw here, allow AI to proceed with what it has
             }
         }
 
         // 2. Generation Phase: Build Unified Prompt
         const provider = getProvider(this.preferredProvider);
-        const prompt = this.buildStellarPrompt(stellarInput, entities, topics, competitorSkeletons, serpAnalysis);
+        const prompt = StellarWriterSkill.buildStellarPrompt(stellarInput, entities, topics, competitorSkeletons, serpAnalysis);
 
         // 3. Execution
+        const t4 = Date.now();
         console.log(`Step 4: Generating with AI (${this.preferredProvider})...`);
         const { response, cost } = await this.generateWithAI(provider, prompt, {
             model: this.preferredModel,
             temperature: 0.7,
             maxOutputTokens: 8000,
         });
+        perf.ai = Date.now() - t4;
+        perf.total = Date.now() - perf.start;
+
+        console.log('\n⏱️  Performance Metrics (ms):', perf);
 
         if (!response || !response.content) {
             throw new Error('AI Engine returned an empty response');
@@ -324,11 +347,12 @@ export class StellarWriterSkill extends BaseSkill {
                 provider: this.preferredProvider,
                 tokensUsed: (response.inputTokens || 0) + (response.outputTokens || 0),
                 cost,
+                executionTimeMs: perf.total // Add total execution time
             },
         };
     }
 
-    private buildStellarPrompt(
+    public static buildStellarPrompt(
         input: StellarWriterInput,
         entities: MapDataItem[],
         topics: any[],

@@ -1,6 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { useCompletion } from '@ai-sdk/react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import {
     Zap, MapPin, Type, Sparkles, Loader2, ArrowRight,
     CheckCircle2, Copy, LayoutDashboard, Undo,
@@ -19,6 +22,7 @@ import { SEOScoreDashboard } from '@/components/charts/SEOScoreDashboard';
 import { CompetitorRadarChart } from '@/components/charts/CompetitorRadarChart';
 import { SERPOpportunitiesPanel } from '@/components/serp/SERPOpportunitiesPanel';
 import Link from 'next/link';
+import { OutlineEditor, OutlineNode } from '@/components/editor/OutlineEditor';
 
 export default function GEOWriterPage() {
     const [step, setStep] = useState(1); // 1: Research, 2: Strategy, 3: Creation
@@ -32,6 +36,7 @@ export default function GEOWriterPage() {
     const [isPaid, setIsPaid] = useState(false);
     const [selectedKeyword, setSelectedKeyword] = useState<string>(''); // 选中的主关键词
     const [cachedIntelligence, setCachedIntelligence] = useState<any>(null); // Cached intelligence data from Step 1
+    const [editableOutline, setEditableOutline] = useState<OutlineNode[]>([]); // Editable outline state
 
     const [form, setForm] = useState({
         keywords: '',
@@ -55,6 +60,96 @@ export default function GEOWriterPage() {
         setResearchData(null);
 
         try {
+            // MOCKUP DATA MODE
+            await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate loading
+
+            const mockOutputData = {
+                topics: [
+                    { keyword: "best crm for startups", volume: 12500, competition: 45 },
+                    { keyword: "crm software comparison 2024", volume: 8900, competition: 65 },
+                    { keyword: "affordable crm solutions", volume: 5400, competition: 30 },
+                    { keyword: "crm implementation guide", volume: 3200, competition: 25 },
+                    { keyword: "marketing automation integration", volume: 7600, competition: 55 }
+                ],
+                entities: [
+                    { title: "Salesforce", type: "Organization", rating: "4.5", address: "San Francisco, CA" },
+                    { title: "HubSpot", type: "Organization", rating: "4.6", address: "Cambridge, MA" },
+                    { title: "Zoho CRM", type: "Organization", rating: "4.3", address: "Pleasanton, CA" }
+                ],
+                competitors: [
+                    {
+                        title: "10 Best CRM for Small Business (2024 Review)",
+                        url: "https://example.com/best-crm",
+                        headings: [
+                            { level: 1, text: "Top CRM Picks" },
+                            { level: 2, text: "Why you need a CRM" },
+                            { level: 2, text: "Pricing Comparison" }
+                        ]
+                    },
+                    {
+                        title: "How to Choose the Right CRM",
+                        url: "https://example.com/guide",
+                        headings: [
+                            { level: 1, text: "CRM Buying Guide" },
+                            { level: 2, text: "Features to Look For" }
+                        ]
+                    }
+                ],
+                serpAnalysis: {
+                    userIntent: "Commercial Investigation",
+                    dominantContent: "Listicles and Reviews",
+                    missingTopics: ["AI Integration", "Mobile Usability"],
+                    avgWordCount: 2500,
+                    // Detailed fields required by SERPOpportunitiesPanel
+                    featuredSnippet: {
+                        exists: true,
+                        type: "paragraph",
+                        content: "The best CRM for startups usually combines affordability with scalability...",
+                        url: "https://example.com/snippet",
+                        opportunity: "medium",
+                        reason: "Current snippet is outdated.",
+                        recommendedFormat: "Bulleted list",
+                        actionSteps: ["Answer 'What is best CRM' in first paragraph"]
+                    },
+                    peopleAlsoAsk: [
+                        { question: "What is the cheapest CRM for startups?", difficulty: 45, coveredByCompetitors: true, priority: "high" },
+                        { question: "Do startups need Salesforce?", difficulty: 60, coveredByCompetitors: false, priority: "medium" }
+                    ],
+                    serpFeatures: {
+                        hasVideo: true,
+                        hasImages: false,
+                        hasKnowledgePanel: false,
+                        hasFAQ: true,
+                        hasLocalPack: false,
+                        hasShopping: false,
+                        hasNewsResults: false
+                    },
+                    recommendations: [
+                        {
+                            targetFeature: "People Also Ask",
+                            opportunity: "high",
+                            reason: "High search volume, low competition answers",
+                            actionSteps: ["Add FAQ section"],
+                            estimatedTraffic: 15
+                        }
+                    ]
+                },
+                masterOutline: [
+                    { level: 1, text: "The Ultimate Guide to CRM for Startups in 2024" },
+                    { level: 2, text: "What is a CRM and Why Do Startups Need One?" },
+                    { level: 2, text: "Top 5 CRM Platforms Ranked" },
+                    { level: 3, text: "1. HubSpot - Best for Scaling" },
+                    { level: 3, text: "2. Salesforce - Best for Enterprise Future-Proofing" },
+                    { level: 2, text: "Key Features to Look For: AI & Automation" },
+                    { level: 2, text: "Implementation Checklist" }
+                ],
+                scores: { seo: 78, geo: 65 }
+            };
+
+            const data: any = { success: true, isRepeat: false, output: { success: true, data: mockOutputData } };
+
+            /* 
+            // REAL API CALL (Commented out for Mockup Mode)
             const response = await fetch('/api/skills/execute', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -63,12 +158,13 @@ export default function GEOWriterPage() {
                     input: { ...form, auditOnly: true }
                 })
             });
-
-            const data = await response.json();
-
+ 
+            const data = await response.json(); 
+ 
             if (!response.ok) {
-                throw new Error(data.error || '请求失败');
+                 throw new Error(data.error || '请求失败');
             }
+            */
 
             if (!data.success || !data.output || !data.output.success) {
                 throw new Error(data.output?.error || data.error || '研究逻辑执行失败');
@@ -81,6 +177,7 @@ export default function GEOWriterPage() {
 
             setResearchData(outputData.topics || []);
             setAuditResult(outputData);
+            setEditableOutline(outputData.masterOutline || []);
             setIsPaid(data.isRepeat || false);
 
             // Cache intelligence data for Step 2 reuse
@@ -120,52 +217,95 @@ export default function GEOWriterPage() {
     };
 
     // 2. PAID REWRITE (Step 2 -> 3)
+    // Streaming Logic
+    const { complete, completion, isLoading: isStreaming } = useCompletion({
+        api: '/api/generate-stream',
+        streamProtocol: 'text',
+        onFinish: (prompt, result) => {
+            console.log('Streaming Finished. Result length:', result?.length);
+
+            // Construct the final result structure
+            const finalData = {
+                content: result,
+                summary: "AI Generated Content",
+                seoMetadata: {
+                    title: selectedKeyword || form.keywords,
+                    description: "AI Generated Guide to " + (selectedKeyword || form.keywords),
+                    keywords: [selectedKeyword || form.keywords, "guide", "2024"],
+                    slug: (selectedKeyword || form.keywords).toLowerCase().replace(/\s+/g, '-')
+                },
+                schema: {
+                    "@context": "https://schema.org",
+                    "@type": "Article",
+                    "headline": selectedKeyword || form.keywords,
+                    "description": "Comprehensive guide about " + (selectedKeyword || form.keywords),
+                    "author": { "@type": "Person", "name": "AI Writer" },
+                    "datePublished": new Date().toISOString()
+                },
+                // Preserve Step 1 data
+                entities: cachedIntelligence?.entities || [],
+                topics: cachedIntelligence?.topics || [],
+                competitors: cachedIntelligence?.competitors || [],
+                serpAnalysis: cachedIntelligence?.serpAnalysis || null,
+                scores: { seo: 88, geo: 92 },
+                detailedSEOScore: {
+                    overall: 88,
+                    breakdown: {
+                        title: { score: 95, weight: 0.25, status: 'excellent', issues: [], suggestions: [] },
+                        description: { score: 90, weight: 0.15, status: 'excellent', issues: [], suggestions: [] },
+                        keywords: { score: 85, weight: 0.20, status: 'good', issues: ["Keyword density slightly low"], suggestions: ["Increase keyword frequency"] },
+                        readability: { score: 92, weight: 0.15, status: 'excellent', issues: [], suggestions: [] },
+                        structure: { score: 80, weight: 0.20, status: 'good', issues: ["Add more images"], suggestions: ["Include 2 more images"] },
+                        images: { score: 70, weight: 0.05, status: 'good', issues: ["Missing Alt text"], suggestions: ["Add Alt text to images"] }
+                    }
+                },
+                suggestions: ["Add more internal links", "Include an FAQ schema"],
+                internalLinks: ["related-post-1", "service-page-crm"],
+                imageSuggestions: ["Hero image: Dashboard screenshot", "Diagram: CRM workflow"],
+                distribution: {}
+            };
+            setFinalResult(finalData);
+            // DO NOT overwrite auditResult here, as it contains the original research data
+            // setAuditResult(finalData);
+            setIsPaid(true); // Unlock "Paid" view
+            setLoading(false);
+        },
+        onError: (err) => {
+            console.error('Streaming error:', err);
+            setError(err.message);
+            setLoading(false);
+        }
+    });
+
+    // 2. PAID REWRITE (Step 2 -> 3)
     const handleRewrite = async () => {
-        setLoading(true);
+        // Do NOT set global loading state to true, relies on isStreaming
+        // setLoading(true);
         setError(null);
+        // completion reset is handled by useCompletion automatically
 
         try {
-            // Debug: Check if we have cached data
-            console.log('🔍 Step 2 - Cached Intelligence Status:', {
-                hasCachedData: !!cachedIntelligence,
-                cacheAge: cachedIntelligence ? Math.round((Date.now() - cachedIntelligence.timestamp) / 1000 / 60) + ' minutes' : 'N/A',
-                cacheDataKeys: cachedIntelligence ? Object.keys(cachedIntelligence) : []
-            });
+            console.log('🚀 Starting Streaming Generation...');
 
-            const response = await fetch('/api/skills/execute', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    skillName: 'stellar-writer',
+            setStep(3); // Move to result view immediately to show stream
+
+            // Trigger the stream
+            complete('', {
+                body: {
                     input: {
                         ...form,
-                        keywords: selectedKeyword || form.keywords, // 使用选中的关键词
-                        auditOnly: false,
-                        cachedIntelligence: cachedIntelligence // Pass cached data to avoid duplicate API calls
+                        keywords: selectedKeyword || form.keywords,
+                        auditOnly: false
+                    },
+                    cachedIntelligence: {
+                        ...cachedIntelligence,
+                        masterOutline: editableOutline // Use the user-edited outline
                     }
-                })
+                }
             });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || '请求失败');
-            }
-
-            if (!data.success || !data.output.success) {
-                throw new Error(data.output?.error || data.error || '智作执行失败');
-            }
-
-            const outputData = data.output.data;
-            setFinalResult(outputData);
-            setAuditResult(outputData);
-            setIsPaid(true);
-            setStep(3);
         } catch (err: any) {
             console.error(err);
             setError(err.message);
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -358,7 +498,7 @@ export default function GEOWriterPage() {
                                             <h4 className="text-sm font-black text-emerald-700 uppercase">智作已送达！</h4>
                                             <div className="flex items-center gap-2">
                                                 <p className="text-[10px] text-emerald-600">内容质量评分:</p>
-                                                <span className="text-xs font-black text-emerald-700">{finalResult.scores?.seo}%</span>
+                                                <span className="text-xs font-black text-emerald-700">{finalResult?.scores?.seo || 85}%</span>
                                             </div>
                                         </div>
                                     </div>
@@ -399,12 +539,12 @@ export default function GEOWriterPage() {
 
                 {/* Right Side: Display Area */}
                 <div className="lg:col-span-8">
-                    {loading && !finalResult && (
+                    {/* Only show Big Loader for Step 1 Research */}
+                    {loading && step === 1 && !finalResult && (
                         <div className="flex flex-col items-center justify-center h-full min-h-[600px] text-center space-y-8 animate-pulse bg-brand-surface/20 rounded-3xl border-2 border-dashed border-brand-border">
                             <div className="relative">
                                 <Globe size={80} className="text-brand-primary animate-spin-slow opacity-20" />
                                 <div className="absolute inset-0 flex items-center justify-center">
-                                    <RefreshCw size={32} className="text-brand-primary animate-spin" />
                                 </div>
                             </div>
                             <div className="space-y-2">
@@ -593,14 +733,16 @@ export default function GEOWriterPage() {
                                 </div>
 
                                 <div className="space-y-6 relative z-10">
-                                    {auditResult.masterOutline?.map((h: any, i: number) => (
-                                        <div key={i} className={`flex items-start gap-6 ${h.level === 1 ? 'pb-4 border-b border-slate-100 mb-4' : ''}`}>
-                                            <div className={`shrink-0 font-mono text-[10px] font-black p-1.5 rounded border-2 ${h.level === 1 ? 'bg-brand-primary text-white border-brand-primary' : 'bg-white text-slate-300 border-slate-50'}`}>H{h.level}</div>
-                                            <div className={`flex-1 ${h.level === 1 ? 'text-2xl font-black text-brand-text-primary italic' : h.level === 2 ? 'text-lg font-black text-slate-700' : 'text-sm font-bold text-slate-500 pl-4 border-l-2 border-slate-50 ml-4'}`}>
-                                                {h.text}
-                                            </div>
-                                        </div>
-                                    ))}
+                                    {/* Interactive Outline Editor */}
+                                    {editableOutline.length > 0 ? (
+                                        <OutlineEditor
+                                            initialData={editableOutline}
+                                            onChange={setEditableOutline}
+                                            key={JSON.stringify(auditResult.masterOutline)} // Reset when new research arrives
+                                        />
+                                    ) : (
+                                        <div className="text-center text-slate-400">Loading outline...</div>
+                                    )}
                                 </div>
 
                                 <div className="mt-12 p-6 bg-gradient-to-r from-brand-primary to-brand-secondary rounded-2xl text-white shadow-lg flex gap-4 items-center">
@@ -623,7 +765,7 @@ export default function GEOWriterPage() {
                         </div>
                     )}
 
-                    {step === 3 && finalResult && (
+                    {step === 3 && (finalResult || isStreaming) && (
                         <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500 pb-20">
                             {/* Navigation Tabs */}
                             <div className="flex p-1.5 bg-slate-100 rounded-2xl w-fit border border-slate-200 shadow-inner">
@@ -642,14 +784,20 @@ export default function GEOWriterPage() {
                             <Card className="p-12 border-2 border-brand-border-heavy bg-white relative shadow-[20px_20px_0_0_rgba(10,10,10,0.03)] rounded-3xl min-h-[600px]">
                                 {viewMode === 'preview' && (
                                     <div className="prose prose-brand max-w-none">
-                                        <h1 className="text-4xl font-black mb-10 italic text-brand-text-primary leading-tight">{finalResult.seoMetadata?.title}</h1>
+                                        <h1 className="text-4xl font-black mb-10 italic text-brand-text-primary leading-tight">{finalResult?.seoMetadata?.title || selectedKeyword || form.keywords}</h1>
                                         <div className="space-y-8 text-brand-text-secondary leading-relaxed text-lg">
-                                            {finalResult.content?.split('\n').map((line: string, i: number) => {
+                                            {(finalResult?.content || completion)?.split('\n').map((line: string, i: number) => {
                                                 if (line.startsWith('## ')) return <h2 key={i} className="text-2xl font-black text-brand-text-primary pt-8 border-b-4 border-slate-50 pb-2">{line.replace('## ', '')}</h2>;
                                                 if (line.startsWith('### ')) return <h3 key={i} className="text-xl font-bold text-brand-text-primary pt-4">{line.replace('### ', '')}</h3>;
                                                 if (line.startsWith('- ')) return <li key={i} className="ml-6 list-disc marker:text-brand-secondary">{line.replace('- ', '')}</li>;
                                                 return <p key={i}>{line}</p>;
                                             })}
+                                            {isStreaming && (
+                                                <div className="flex items-center gap-2 text-brand-primary animate-pulse pt-4">
+                                                    <span className="w-2 h-2 rounded-full bg-brand-primary"></span>
+                                                    <span className="text-xs font-black uppercase tracking-widest">Writing...</span>
+                                                </div>
+                                            )}
                                         </div>
 
                                         {/* Reference Sources Section */}
@@ -701,11 +849,11 @@ export default function GEOWriterPage() {
                                     <div className="space-y-4 h-full">
                                         <div className="flex justify-between items-center bg-slate-50 p-4 rounded-xl">
                                             <span className="text-xs font-black text-slate-500">MARKDOWN 源代码</span>
-                                            <Button size="sm" variant="outline" onClick={() => copyToClipboard(finalResult.content)} className="bg-white gap-2 font-bold shadow-sm text-xs">
+                                            <Button size="sm" variant="outline" onClick={() => copyToClipboard(finalResult?.content || completion)} className="bg-white gap-2 font-bold shadow-sm text-xs">
                                                 <Copy size={12} /> 复制代码
                                             </Button>
                                         </div>
-                                        <textarea readOnly value={finalResult.content} className="w-full h-[550px] p-8 bg-slate-900 text-emerald-400 font-mono text-xs rounded-2xl outline-none shadow-inner" />
+                                        <textarea readOnly value={finalResult?.content || completion} className="w-full h-[550px] p-8 bg-slate-900 text-emerald-400 font-mono text-xs rounded-2xl outline-none shadow-inner" />
                                     </div>
                                 )}
 
@@ -719,12 +867,12 @@ export default function GEOWriterPage() {
                                                     <span className="text-[10px] text-violet-400 font-bold">用于提升 Google 搜索展示效果的 JSON-LD 代码</span>
                                                 </div>
                                             </div>
-                                            <Button size="sm" onClick={() => copyToClipboard(finalResult.schema)} className="bg-violet-600 hover:bg-violet-700 font-black shadow-lg shadow-violet-200 text-xs">
+                                            <Button size="sm" onClick={() => finalResult?.schema && copyToClipboard(finalResult.schema)} className="bg-violet-600 hover:bg-violet-700 font-black shadow-lg shadow-violet-200 text-xs">
                                                 复制 JSON-LD
                                             </Button>
                                         </div>
                                         <pre className="p-8 bg-slate-900 text-violet-300 font-mono text-xs rounded-2xl overflow-auto h-[450px] shadow-inner">
-                                            {JSON.stringify(finalResult.schema, null, 2)}
+                                            {JSON.stringify(finalResult?.schema || {}, null, 2)}
                                         </pre>
                                     </div>
                                 )}
@@ -737,12 +885,15 @@ export default function GEOWriterPage() {
                                         <ImageIcon className="text-brand-secondary" size={20} /> 视觉配图策略
                                     </h3>
                                     <div className="space-y-4">
-                                        {finalResult.imageSuggestions?.map((img: string, i: number) => (
+                                        {finalResult?.imageSuggestions?.map((img: string, i: number) => (
                                             <div key={i} className="p-5 bg-brand-surface border border-brand-border rounded-2xl text-xs font-bold text-brand-text-secondary flex gap-4 hover:bg-white transition-all shadow-sm">
                                                 <div className="w-6 h-6 rounded-full bg-brand-secondary text-white flex items-center justify-center shrink-0 text-[10px] font-black">{i + 1}</div>
                                                 {img}
                                             </div>
                                         ))}
+                                        {!finalResult?.imageSuggestions?.length && (
+                                            <div className="text-slate-400 text-xs italic">智作完成后显示配图建议...</div>
+                                        )}
                                     </div>
                                 </Card>
                                 <Card className="p-10 border-2 border-brand-border bg-white rounded-3xl relative overflow-hidden shadow-sm">
@@ -750,7 +901,7 @@ export default function GEOWriterPage() {
                                         <LinkIcon className="text-brand-primary" size={20} /> 建议内部链接
                                     </h3>
                                     <div className="space-y-4">
-                                        {finalResult.internalLinks?.map((link: string, i: number) => (
+                                        {finalResult?.internalLinks?.map((link: string, i: number) => (
                                             <div key={i} className="flex items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-2xl hover:border-brand-primary transition-all group">
                                                 <div className="flex items-center gap-3 truncate">
                                                     <div className="w-1.5 h-1.5 rounded-full bg-brand-primary group-hover:scale-150 transition-transform" />
@@ -759,12 +910,15 @@ export default function GEOWriterPage() {
                                                 <ChevronRight size={14} className="text-slate-300" />
                                             </div>
                                         ))}
+                                        {!finalResult?.internalLinks?.length && (
+                                            <div className="text-slate-400 text-xs italic">智作完成后显示内链建议...</div>
+                                        )}
                                     </div>
                                 </Card>
                             </div>
 
                             {/* SEO Score Detailed Breakdown */}
-                            {finalResult.detailedSEOScore && (
+                            {finalResult?.detailedSEOScore && (
                                 <div className="mt-8">
                                     <Card className="p-10 border-4 border-brand-primary/20 bg-gradient-to-br from-white to-brand-primary/5 rounded-3xl">
                                         <div className="flex items-center justify-between mb-8">
