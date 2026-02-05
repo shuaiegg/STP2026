@@ -125,6 +125,13 @@ export default function GEOWriterPage() {
         setError(null);
 
         try {
+            // Debug: Check if we have cached data
+            console.log('🔍 Step 2 - Cached Intelligence Status:', {
+                hasCachedData: !!cachedIntelligence,
+                cacheAge: cachedIntelligence ? Math.round((Date.now() - cachedIntelligence.timestamp) / 1000 / 60) + ' minutes' : 'N/A',
+                cacheDataKeys: cachedIntelligence ? Object.keys(cachedIntelligence) : []
+            });
+
             const response = await fetch('/api/skills/execute', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
