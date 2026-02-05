@@ -126,22 +126,98 @@ export class SERPAnalyzer {
     }
 
     /**
-     * Fetch SERP data from DataForSEO API
+     * Fetch SERP data from DataForSEO API (with mock support)
      */
     private async fetchSERPData(keyword: string, location: string): Promise<any> {
-        const response = await DataForSEOClient.post('/v3/serp/google/organic/live', [{
-            keyword,
-            location_name: location,
-            language_code: 'en',
-            device: 'desktop',
-            depth: 100  // Top 100 results
-        }]);
+        // Check if mock mode is enabled
+        const useMock = process.env.USE_SERP_MOCK === 'true';
 
-        if (!response.tasks || !response.tasks[0]?.result) {
-            throw new Error('Invalid SERP API response');
+        if (useMock) {
+            console.log('🎭 SERP Mock Mode: Using realistic test data for UI demonstration');
+            return this.getMockSERPData(keyword);
         }
 
-        return response.tasks[0].result[0];
+        try {
+            const response = await DataForSEOClient.post('/v3/serp/google/organic/live', [{
+                keyword,
+                location_name: location,
+                language_code: 'en',
+                device: 'desktop',
+                depth: 100
+            }]);
+
+            if (!response.tasks || !response.tasks[0]?.result) {
+                throw new Error('Invalid SERP API response');
+            }
+
+            return response.tasks[0].result[0];
+        } catch (error) {
+            console.error('❌ DataForSEO SERP API failed:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Generate mock SERP data for testing UI
+     */
+    private getMockSERPData(keyword: string): any {
+        return {
+            items: [
+                // Featured Snippet (exists - medium authority holder)
+                {
+                    type: 'featured_snippet',
+                    domain: 'projectmanagement.com',
+                    url: 'https://projectmanagement.com/guide',
+                    description: `${keyword} is a comprehensive approach to planning, organizing, and managing resources to achieve specific goals. It involves coordinating team efforts, tracking progress, and ensuring timely delivery of projects.`,
+                    text: 'Featured snippet content'
+                },
+                // People Also Ask - 6 questions with varying coverage
+                {
+                    type: 'people_also_ask',
+                    items: [
+                        {
+                            title: `What is the best ${keyword}?`,
+                            text: '', // Not covered - high priority!
+                            url: ''
+                        },
+                        {
+                            title: `How to choose ${keyword}?`,
+                            text: 'Detailed answer from competitor with examples and best practices...',
+                            url: 'https://competitor1.com/guide'
+                        },
+                        {
+                            title: `${keyword} for small teams?`,
+                            text: '', // Not covered - high priority!
+                            url: ''
+                        },
+                        {
+                            title: `Free ${keyword} tools?`,
+                            text: 'Long detailed answer with screenshots and pricing comparisons from authoritative source...',
+                            url: 'https://techcrunch.com/review'
+                        },
+                        {
+                            title: `${keyword} vs spreadsheets?`,
+                            text: '', // Not covered - high priority!
+                            url: ''
+                        },
+                        {
+                            title: `How much does ${keyword} cost?`,
+                            text: 'Pricing varies from free to enterprise with detailed breakdown...',
+                            url: 'https://forbes.com/pricing'
+                        }
+                    ]
+                },
+                // SERP Features - Various types detected
+                { type: 'video', title: 'Top 10 Project Management Tools - Video Tutorial' },
+                { type: 'images', title: 'Project Management Software Screenshots' },
+                { type: 'shopping', title: 'Buy project management software' },
+                // Organic results
+                { type: 'organic', domain: 'asana.com', url: 'https://asana.com' },
+                { type: 'organic', domain: 'monday.com', url: 'https://monday.com' },
+                { type: 'organic', domain: 'trello.com', url: 'https://trello.com' }
+            ],
+            se_results_count: 2450000
+        };
     }
 
     /**
