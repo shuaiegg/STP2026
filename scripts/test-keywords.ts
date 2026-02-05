@@ -137,6 +137,47 @@ async function testKeywords() {
     } catch (error) {
         console.error('❌ Error testing labs API:', error);
     }
+
+    console.log('\n----------------------------------------\n');
+    console.log(`🧪 Testing DataForSEO Labs Database (Non-Live) for: "${keyword}"`);
+
+    const labsDbPayload = {
+        keyword: keyword,
+        location_code: 2840,
+        language_code: "en",
+        limit: 20
+    };
+
+    try {
+        console.log('📡 Sending request to DataForSEO Labs (Database)...');
+        // Removing /live to hit the database
+        const response = await fetch(`${baseUrl}/dataforseo_labs/google/related_keywords`, {
+            method: 'POST',
+            headers: {
+                'Authorization': authHeader,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify([labsDbPayload])
+        });
+
+        const data = await response.json();
+
+        const results = data.tasks?.[0]?.result?.[0]?.items || [];
+
+        console.log('\n📊 Labs Database Results:');
+        console.log(`Status Code: ${data.status_code} (${data.status_message})`);
+        console.log(`Found ${results.length} related keywords`);
+
+        if (results.length > 0) {
+            console.log('\nTop 5 Related (Database):');
+            results.slice(0, 5).forEach((item: any) => {
+                console.log(`- ${item.keyword_data?.keyword || item.keyword} (Vol: ${item.keyword_data?.keyword_info?.search_volume || 'N/A'})`);
+            });
+        }
+
+    } catch (error) {
+        console.error('❌ Error testing labs database API:', error);
+    }
 }
 
 testKeywords();

@@ -173,15 +173,14 @@ export class DataForSEOClient {
                 limit: 20
             };
 
-            const labsResponse = await fetch(`${this.baseUrl}/dataforseo_labs/google/related_keywords/live`, {
+            const labsResponse = await fetch(`${this.baseUrl}/dataforseo_labs/google/related_keywords`, {
                 method: 'POST',
                 headers: {
                     'Authorization': this.getAuthHeader(),
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify([labsPayload])
+                body: JSON.stringify([labsPayload]) // Labs API expects array
             });
-
             const labsData = await labsResponse.json();
 
             if (labsData.status_code === 20000) {
