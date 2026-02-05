@@ -1,0 +1,24 @@
+🧪 Testing DataForSEO SERP API...
+
+📡 Sending request to /v3/serp/google/organic/live/advanced...
+
+✅ Response received!
+Response structure: {
+  hasTasks: false,
+  taskCount: 0,
+  hasResult: false,
+  resultCount: 0,
+  hasError: false
+}
+
+❌ No result data in response
+Full response: {
+  "version": "0.1.20260203",
+  "status_code": 40400,
+  "status_message": "Not Found.",
+  "time": "0 sec.",
+  "cost": 0,
+  "tasks_count": 0,
+  "tasks_error": 0,
+  "tasks": null
+}

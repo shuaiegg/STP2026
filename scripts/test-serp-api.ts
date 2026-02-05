@@ -10,9 +10,9 @@ async function testSERPAPI() {
     console.log('🧪 Testing DataForSEO SERP API...\n');
 
     try {
-        console.log('📡 Sending request to /v3/serp/google/organic/live...');
+        console.log('📡 Sending request to /v3/serp/google/organic/live/advanced...');
 
-        const response = await DataForSEOClient.post('/v3/serp/google/organic/live', [{
+        const response = await DataForSEOClient.post('/v3/serp/google/organic/live/advanced', [{
             keyword: 'project management software',
             location_name: 'United States',
             language_code: 'en',
