@@ -41,6 +41,14 @@ export interface StellarWriterInput extends Omit<SkillInput, 'keywords'> {
     auditOnly?: boolean;
     /** Whether to perform deep competitor analysis */
     analyzeCompetitors?: boolean;
+    /** Cached intelligence data from previous research (Step 1) to avoid duplicate API calls */
+    cachedIntelligence?: {
+        entities: any[];
+        topics: any[];
+        serpAnalysis: any;
+        competitors: any[];
+        timestamp: number;
+    };
 }
 
 /**
@@ -132,7 +140,7 @@ export class StellarWriterSkill extends BaseSkill {
         metadata: Partial<SkillExecutionMetadata>;
     }> {
         const stellarInput = input as unknown as StellarWriterInput;
-        let { keywords, location, analyzeCompetitors = true, auditOnly } = stellarInput;
+        let { keywords, location, analyzeCompetitors = true, auditOnly, cachedIntelligence } = stellarInput;
 
         // Ensure location has a valid value (empty string should be replaced with default)
         if (!location || location.trim() === '') {
@@ -222,46 +230,71 @@ export class StellarWriterSkill extends BaseSkill {
         let competitorSkeletons: ContentSkeleton[] = [];
         let serpAnalysis; // Declare outside for proper scope
 
-        try {
-            console.log(`Step 1: Fetching maps data for ${keywords}...`);
-            entities = await DataForSEOClient.searchGoogleMaps(keywords, location, 5);
+        // Helper function to check if cached data is fresh (< 1 hour old)
+        const isDataFresh = (timestamp: number, maxAgeMinutes: number = 60): boolean => {
+            const ageMs = Date.now() - timestamp;
+            const ageMinutes = ageMs / (1000 * 60);
+            return ageMinutes < maxAgeMinutes;
+        };
 
-            console.log(`Step 2: Fetching topics data for ${keywords}...`);
-            topics = await DataForSEOClient.getRelatedTopics(keywords);
+        // Check if we can use cached intelligence data
+        const useCachedData = cachedIntelligence && isDataFresh(cachedIntelligence.timestamp);
 
-            // SERP Analysis - identify SEO opportunities
-            console.log(`Step 2.5: Analyzing SERP features for "${keywords}"...`);
+        if (useCachedData) {
+            console.log('♻️  Using cached intelligence data from Step 1 (age: ' +
+                Math.round((Date.now() - cachedIntelligence!.timestamp) / 1000 / 60) + ' minutes)');
+            entities = cachedIntelligence!.entities || [];
+            topics = cachedIntelligence!.topics || [];
+            serpAnalysis = cachedIntelligence!.serpAnalysis;
+            competitorSkeletons = cachedIntelligence!.competitors || [];
+        } else {
+            if (cachedIntelligence && !isDataFresh(cachedIntelligence.timestamp)) {
+                console.log('⚠️  Cached data is stale (> 60 minutes), fetching fresh data');
+            } else {
+                console.log('🆕 No cached data available, fetching fresh intelligence');
+            }
+
             try {
-                const analyzer = new SERPAnalyzer();
-                serpAnalysis = await analyzer.analyzeSERP(keywords, location);
-                console.log('✅ SERP Analysis completed successfully:', {
-                    hasData: !!serpAnalysis,
-                    featuredSnippet: serpAnalysis.featuredSnippet?.exists,
-                    opportunity: serpAnalysis.featuredSnippet?.opportunity,
-                    paaCount: serpAnalysis.peopleAlsoAsk.length,
-                    recommendationsCount: serpAnalysis.recommendations.length,
-                    features: serpAnalysis.serpFeatures
-                });
-            } catch (error) {
-                console.error('❌ SERP analysis failed with error:', error);
-                serpAnalysis = undefined;
-            }
+                console.log(`Step 1: Fetching maps data for ${keywords}...`);
+                entities = await DataForSEOClient.searchGoogleMaps(keywords, location, 5);
 
-            if (analyzeCompetitors) {
-                console.log(`Step 3: Fetching SERP data...`);
-                const serp = await DataForSEOClient.searchGoogleSERP(keywords, location, 5);
-                const competitorUrls = serp
-                    .filter(item => item.type === 'organic')
-                    .map(item => item.url)
-                    .filter(Boolean);
+                console.log(`Step 2: Fetching topics data for ${keywords}...`);
+                topics = await DataForSEOClient.getRelatedTopics(keywords);
 
-                if (competitorUrls.length > 0) {
-                    competitorSkeletons = await SkeletonExtractor.batchExtract(competitorUrls.slice(0, 3));
+                // SERP Analysis - identify SEO opportunities
+                console.log(`Step 2.5: Analyzing SERP features for "${keywords}"...`);
+                try {
+                    const analyzer = new SERPAnalyzer();
+                    serpAnalysis = await analyzer.analyzeSERP(keywords, location);
+                    console.log('✅ SERP Analysis completed successfully:', {
+                        hasData: !!serpAnalysis,
+                        featuredSnippet: serpAnalysis.featuredSnippet?.exists,
+                        opportunity: serpAnalysis.featuredSnippet?.opportunity,
+                        paaCount: serpAnalysis.peopleAlsoAsk.length,
+                        recommendationsCount: serpAnalysis.recommendations.length,
+                        features: serpAnalysis.serpFeatures
+                    });
+                } catch (error) {
+                    console.error('❌ SERP analysis failed with error:', error);
+                    serpAnalysis = undefined;
                 }
+
+                if (analyzeCompetitors) {
+                    console.log(`Step 3: Fetching SERP data...`);
+                    const serp = await DataForSEOClient.searchGoogleSERP(keywords, location, 5);
+                    const competitorUrls = serp
+                        .filter(item => item.type === 'organic')
+                        .map(item => item.url)
+                        .filter(Boolean);
+
+                    if (competitorUrls.length > 0) {
+                        competitorSkeletons = await SkeletonExtractor.batchExtract(competitorUrls.slice(0, 3));
+                    }
+                }
+            } catch (e) {
+                console.error('Intelligence phase partial failure', e);
+                // We don't throw here, allow AI to proceed with what it has
             }
-        } catch (e) {
-            console.error('Intelligence phase partial failure', e);
-            // We don't throw here, allow AI to proceed with what it has
         }
 
         // 2. Generation Phase: Build Unified Prompt
