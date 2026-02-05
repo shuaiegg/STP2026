@@ -148,11 +148,25 @@ export class SERPAnalyzer {
                 depth: 100
             }]);
 
-            if (!response.tasks || !response.tasks[0]?.result) {
-                throw new Error('Invalid SERP API response');
+            console.log('📦 Raw response:', {
+                hasTasks: !!response.tasks,
+                taskCount: response.tasks?.length,
+                task0HasResult: !!response.tasks?.[0]?.result,
+                resultLength: response.tasks?.[0]?.result?.length
+            });
+
+            if (!response.tasks || response.tasks.length === 0) {
+                console.error('❌ No tasks in response');
+                throw new Error('Invalid SERP API response: no tasks');
             }
 
-            return response.tasks[0].result[0];
+            const task = response.tasks[0];
+            if (!task.result || task.result.length === 0) {
+                console.error('❌ No result in task');
+                throw new Error('Invalid SERP API response: empty result');
+            }
+
+            return task.result[0];
         } catch (error) {
             console.error('❌ DataForSEO SERP API failed:', error);
             throw error;
