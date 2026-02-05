@@ -15,6 +15,7 @@ import { SERPAnalyzer, type SERPAnalysis } from '../../external/serp-analyzer';
 import { calculateDetailedSEOScore, type DetailedSEOScore } from '@/lib/utils/seo-scoring';
 import { humanizeContent } from '@/lib/utils/humanize';
 import { detectAIPatterns } from '@/lib/utils/ai-detection';
+import { buildSERPEnhancedPrompt } from '@/lib/utils/prompt-enhancer';
 
 /**
  * Input for StellarWriter
@@ -299,7 +300,7 @@ export class StellarWriterSkill extends BaseSkill {
 
         // 2. Generation Phase: Build Unified Prompt
         const provider = getProvider(this.preferredProvider);
-        const prompt = this.buildStellarPrompt(stellarInput, entities, topics, competitorSkeletons);
+        const prompt = this.buildStellarPrompt(stellarInput, entities, topics, competitorSkeletons, serpAnalysis);
 
         // 3. Execution
         console.log(`Step 4: Generating with AI (${this.preferredProvider})...`);
@@ -331,7 +332,8 @@ export class StellarWriterSkill extends BaseSkill {
         input: StellarWriterInput,
         entities: MapDataItem[],
         topics: any[],
-        competitors: ContentSkeleton[]
+        competitors: ContentSkeleton[],
+        serpAnalysis?: SERPAnalysis
     ): string {
         const { keywords, brandName = 'ScaletoTop', industry = 'General', tone = 'professional', type = 'blog', originalContent, auditOnly, url } = input;
 
@@ -399,6 +401,13 @@ ${originalContent ? `\n## Original Content\n${originalContent}\n` : 'Note: User 
 ${competitorCtx}
 ${entityCtx}
 ${topicCtx}
+
+${serpAnalysis ? buildSERPEnhancedPrompt({
+            serpAnalysis,
+            relatedKeywords: topics,
+            targetKeyword: keywords,
+            competitors
+        }) : ''}
 
 ## Core Requirements
 1. **Reverse Engineering**: Create a "Master Outline" (H1-H3) that is superior to all competitors.
