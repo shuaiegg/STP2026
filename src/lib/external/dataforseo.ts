@@ -199,6 +199,43 @@ export class DataForSEOClient {
                 console.warn(`DataForSEO Keyword Ideas failed: ${data.status_message} (${data.status_code})`);
             }
 
+            // Step 1.5: Fallback to DataForSEO Labs Related Keywords
+            console.log('DataForSEO: Standard discovery failed/empty, trying Labs Related Keywords...');
+
+            const labsPayload = {
+                keyword: keyword,
+                location_code: 2840,
+                language_code: "en",
+                limit: 20
+            };
+
+            const labsResponse = await fetch(`${this.baseUrl}/dataforseo_labs/google/related_keywords/live`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': this.getAuthHeader(),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify([labsPayload]) // Labs API expects array
+            });
+
+            const labsData = await labsResponse.json();
+
+            if (labsData.status_code === 20000) {
+                const labsResults = labsData.tasks?.[0]?.result?.[0]?.items || [];
+                console.log(`DataForSEO Labs: Found ${labsResults.length} related keywords`);
+
+                if (labsResults.length > 0) {
+                    return labsResults.map((r: any) => ({
+                        keyword: r.keyword_data?.keyword || r.keyword,
+                        volume: r.keyword_data?.keyword_info?.search_volume || 100,
+                        competition: Math.round((r.keyword_data?.keyword_info?.competition_level || 0.5) * 100),
+                        cpc: r.keyword_data?.keyword_info?.cpc || 0
+                    }));
+                }
+            } else {
+                console.warn(`DataForSEO Labs failed: ${labsData.status_message} (${labsData.status_code})`);
+            }
+
             // Step 2: Fallback to Search Volume if no ideas found
             console.log('DataForSEO: No related keywords found, falling back to seed keyword volume...');
             const fallbackPayload = [{
