@@ -65,145 +65,53 @@ export default function GEOWriterPage() {
         setStep(2);
     };
 
-    // 1. RESEARCH & AUDIT (Step 1 -> 2)
-    const handleResearch = async (e: React.FormEvent) => {
+    // 1. DISCOVERY PHASE (Step 1 Input -> Step 1 Results)
+    const handleDiscovery = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
         setResearchData(null);
+        setAuditResult(null); // Clear previous deep analysis
 
         try {
-            // MOCKUP DATA MODE
-            await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate loading
+            // Check if we should use Mock or Real
+            // For now, let's assume Real API usage if env var is set or per user request
+            // But preserving the structure.
 
-            const mockOutputData = {
-                topics: [
-                    { keyword: "best crm for startups", volume: 12500, competition: 45 },
-                    { keyword: "crm software comparison 2024", volume: 8900, competition: 65 },
-                    { keyword: "affordable crm solutions", volume: 5400, competition: 30 },
-                    { keyword: "crm implementation guide", volume: 3200, competition: 25 },
-                    { keyword: "marketing automation integration", volume: 7600, competition: 55 }
-                ],
-                entities: [
-                    { title: "Salesforce", type: "Organization", rating: "4.5", address: "San Francisco, CA" },
-                    { title: "HubSpot", type: "Organization", rating: "4.6", address: "Cambridge, MA" },
-                    { title: "Zoho CRM", type: "Organization", rating: "4.3", address: "Pleasanton, CA" }
-                ],
-                competitors: [
-                    {
-                        title: "10 Best CRM for Small Business (2024 Review)",
-                        url: "https://example.com/best-crm",
-                        headings: [
-                            { level: 1, text: "Top CRM Picks" },
-                            { level: 2, text: "Why you need a CRM" },
-                            { level: 2, text: "Pricing Comparison" }
-                        ]
-                    },
-                    {
-                        title: "How to Choose the Right CRM",
-                        url: "https://example.com/guide",
-                        headings: [
-                            { level: 1, text: "CRM Buying Guide" },
-                            { level: 2, text: "Features to Look For" }
-                        ]
-                    }
-                ],
-                serpAnalysis: {
-                    userIntent: "Commercial Investigation",
-                    dominantContent: "Listicles and Reviews",
-                    missingTopics: ["AI Integration", "Mobile Usability"],
-                    avgWordCount: 2500,
-                    // Detailed fields required by SERPOpportunitiesPanel
-                    featuredSnippet: {
-                        exists: true,
-                        type: "paragraph",
-                        content: "The best CRM for startups usually combines affordability with scalability...",
-                        url: "https://example.com/snippet",
-                        opportunity: "medium",
-                        reason: "Current snippet is outdated.",
-                        recommendedFormat: "Bulleted list",
-                        actionSteps: ["Answer 'What is best CRM' in first paragraph"]
-                    },
-                    peopleAlsoAsk: [
-                        { question: "What is the cheapest CRM for startups?", difficulty: 45, coveredByCompetitors: true, priority: "high" },
-                        { question: "Do startups need Salesforce?", difficulty: 60, coveredByCompetitors: false, priority: "medium" }
-                    ],
-                    serpFeatures: {
-                        hasVideo: true,
-                        hasImages: false,
-                        hasKnowledgePanel: false,
-                        hasFAQ: true,
-                        hasLocalPack: false,
-                        hasShopping: false,
-                        hasNewsResults: false
-                    },
-                    recommendations: [
-                        {
-                            targetFeature: "People Also Ask",
-                            opportunity: "high",
-                            reason: "High search volume, low competition answers",
-                            actionSteps: ["Add FAQ section"],
-                            estimatedTraffic: 15
-                        }
-                    ]
-                },
-                masterOutline: [
-                    { level: 1, text: "The Ultimate Guide to CRM for Startups in 2024" },
-                    { level: 2, text: "What is a CRM and Why Do Startups Need One?" },
-                    { level: 2, text: "Top 5 CRM Platforms Ranked" },
-                    { level: 3, text: "1. HubSpot - Best for Scaling" },
-                    { level: 3, text: "2. Salesforce - Best for Enterprise Future-Proofing" },
-                    { level: 2, text: "Key Features to Look For: AI & Automation" },
-                    { level: 2, text: "Implementation Checklist" }
-                ],
-                scores: { seo: 78, geo: 65 }
-            };
-
-            const data: any = { success: true, isRepeat: false, output: { success: true, data: mockOutputData } };
-
-            /* 
-            // REAL API CALL (Commented out for Mockup Mode)
+            // REAL API CALL
             const response = await fetch('/api/skills/execute', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     skillName: 'stellar-writer',
-                    input: { ...form, auditOnly: true }
+                    input: {
+                        ...form,
+                        auditOnly: true,
+                        researchMode: 'discovery' // NEW: Only fetch topics
+                    }
                 })
             });
- 
-            const data = await response.json(); 
- 
+
+            const data = await response.json();
+
             if (!response.ok) {
-                 throw new Error(data.error || '请求失败');
+                throw new Error(data.error || 'Discovery failed');
             }
-            */
 
             if (!data.success || !data.output || !data.output.success) {
-                throw new Error(data.output?.error || data.error || '研究逻辑执行失败');
+                throw new Error(data.output?.error || data.error || 'Discovery logic failed');
             }
 
             const outputData = data.output.data;
             if (!outputData) {
-                throw new Error('未返回有效的研究数据');
+                throw new Error('No validity data returned');
             }
 
             setResearchData(outputData.topics || []);
-            setAuditResult(outputData);
-            setEditableOutline(outputData.masterOutline || []);
+            // Do NOT set AuditResult yet.
             setIsPaid(data.isRepeat || false);
 
-            // Cache intelligence data for Step 2 reuse
-            setCachedIntelligence({
-                entities: outputData.entities || [],
-                topics: outputData.topics || [],
-                serpAnalysis: outputData.serpAnalysis,
-                competitors: outputData.competitors || [],
-                timestamp: Date.now()
-            });
-            console.log('💾 Cached intelligence data for reuse in Step 2');
-
-            // 智能默认：选择机会评分最高的关键词
+            // Smart Select Best Topic
             const topics = outputData.topics || [];
             if (topics.length > 0) {
                 const calculateOpportunityScore = (kw: any) => {
@@ -220,9 +128,62 @@ export default function GEOWriterPage() {
                 setSelectedKeyword(form.keywords);
             }
 
-            setStep(1); // Stay on step 1 to show the research data
+            setStep(1); // Stay on step 1
         } catch (err: any) {
-            console.error('Research error:', err);
+            console.error('Discovery error:', err);
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // 1.5 DEEP ANALYSIS (Step 1 Selection -> Step 2 Strategy)
+    const handleDeepAnalysis = async () => {
+        if (!selectedKeyword) return;
+        setLoading(true);
+        setError(null);
+
+        try {
+            const response = await fetch('/api/skills/execute', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    skillName: 'stellar-writer',
+                    input: {
+                        ...form,
+                        keywords: selectedKeyword, // Use the SELECTED keyword
+                        auditOnly: true,
+                        analyzeCompetitors: true, // Force competitor analysis
+                        researchMode: 'deep_analysis' // NEW: Fetch SERP/Entities/Competitors
+                    }
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                throw new Error(data.error || 'Deep analysis failed');
+            }
+
+            const outputData = data.output.data;
+
+            // Now we have the deep data
+            setAuditResult(outputData);
+            setEditableOutline(outputData.masterOutline || []);
+
+            // Cache intelligence data for Step 2/3 reuse
+            setCachedIntelligence({
+                entities: outputData.entities || [],
+                topics: researchData || [], // Keep the original topics list
+                serpAnalysis: outputData.serpAnalysis,
+                competitors: outputData.competitors || [],
+                timestamp: Date.now()
+            });
+            console.log('💾 Cached deep intelligence data');
+
+            setStep(2); // Proceed to Strategy
+        } catch (err: any) {
+            console.error('Deep analysis error:', err);
             setError(err.message);
         } finally {
             setLoading(false);
@@ -370,7 +331,7 @@ export default function GEOWriterPage() {
                                 </p>
                             </div>
 
-                            <form onSubmit={handleResearch} className="space-y-6">
+                            <form onSubmit={handleDiscovery} className="space-y-6">
                                 <div className="space-y-2">
                                     <label className="text-sm font-bold text-brand-text-primary flex items-center gap-2">
                                         <Zap size={16} className="text-brand-secondary" />
@@ -593,25 +554,34 @@ export default function GEOWriterPage() {
                                 <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
                                     <BarChart3 size={120} />
                                 </div>
-                                <div className="flex items-center justify-between mb-10">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-xl bg-brand-secondary/10 flex items-center justify-center text-brand-secondary shadow-sm">
-                                            <TrendingUp size={24} />
-                                        </div>
-                                        <div>
-                                            <h2 className="text-2xl font-black text-brand-text-primary font-display italic uppercase tracking-tighter leading-none">市场洞察：SEO/GEO 可行性</h2>
-                                            <div className="flex items-center gap-2 mt-2">
-                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">总体可行性分数:</span>
-                                                <span className={`text-xs font-black ${auditResult.scores?.geo > 70 ? 'text-emerald-500' : 'text-amber-500'}`}>{auditResult.scores?.geo}%</span>
+                                {auditResult && (
+                                    <div className="flex items-center justify-between mb-10">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-xl bg-brand-secondary/10 flex items-center justify-center text-brand-secondary shadow-sm">
+                                                <TrendingUp size={24} />
+                                            </div>
+                                            <div>
+                                                <h2 className="text-2xl font-black text-brand-text-primary font-display italic uppercase tracking-tighter leading-none">市场洞察：SEO/GEO 可行性</h2>
+                                                <div className="flex items-center gap-2 mt-2">
+                                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">总体可行性分数:</span>
+                                                    <span className={`text-xs font-black ${auditResult.scores?.geo > 70 ? 'text-emerald-500' : 'text-amber-500'}`}>{auditResult.scores?.geo}%</span>
+                                                </div>
                                             </div>
                                         </div>
+                                        <div className="flex items-center gap-2">
+                                            <Badge className="bg-slate-50 text-slate-400 border border-slate-100 font-black text-[9px] uppercase tracking-widest px-3 py-1">
+                                                Real-time SERP Data
+                                            </Badge>
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <Badge className="bg-slate-50 text-slate-400 border border-slate-100 font-black text-[9px] uppercase tracking-widest px-3 py-1">
-                                            Real-time SERP Data
-                                        </Badge>
+                                )}
+
+                                {!auditResult && (
+                                    <div className="mb-8">
+                                        <h2 className="text-xl font-black text-brand-text-primary mb-2">选择目标话题</h2>
+                                        <p className="text-xs text-slate-500">发现 {researchData.length} 个相关话题。请选择一个进行深度 SERP 分析。</p>
                                     </div>
-                                </div>
+                                )}
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {researchData.length > 0 ? researchData.map((topic, i) => (
@@ -685,8 +655,21 @@ export default function GEOWriterPage() {
                             )}
 
                             <div className="flex justify-end">
-                                <Button onClick={proceedToStrategy} className="px-10 py-6 bg-brand-secondary text-brand-text-primary border-2 border-brand-border-heavy font-black shadow-[6px_6px_0_0_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all">
-                                    进入策略定策 <ArrowRight className="ml-2" />
+                                <Button
+                                    onClick={auditResult ? proceedToStrategy : handleDeepAnalysis}
+                                    disabled={loading}
+                                    className={`px-10 py-6 font-black shadow-[6px_6px_0_0_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all border-2 border-brand-border-heavy ${auditResult
+                                        ? 'bg-brand-secondary text-brand-text-primary'
+                                        : 'bg-brand-primary text-white'
+                                        }`}
+                                >
+                                    {loading ? (
+                                        <><Loader2 className="animate-spin mr-2" /> 分析中...</>
+                                    ) : auditResult ? (
+                                        <>进入策略定策 <ArrowRight className="ml-2" /></>
+                                    ) : (
+                                        <>开始深度分析 <Search className="ml-2" size={16} /></>
+                                    )}
                                 </Button>
                             </div>
                         </div>

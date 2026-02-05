@@ -42,6 +42,8 @@ export interface StellarWriterInput extends Omit<SkillInput, 'keywords'> {
     auditOnly?: boolean;
     /** Whether to perform deep competitor analysis */
     analyzeCompetitors?: boolean;
+    /** Research Mode: 'discovery' (Topics only) | 'deep' (SERP/Competitors) | 'generate' (Full) */
+    researchMode?: 'discovery' | 'deep_analysis' | 'generate';
     /** Cached intelligence data from previous research (Step 1) to avoid duplicate API calls */
     cachedIntelligence?: {
         entities: any[];
@@ -231,6 +233,8 @@ export class StellarWriterSkill extends BaseSkill {
         let competitorSkeletons: ContentSkeleton[] = [];
         let serpAnalysis; // Declare outside for proper scope
 
+        const perf: any = { start: Date.now() };
+
         // Helper function to check if cached data is fresh (< 1 hour old)
         const isDataFresh = (timestamp: number, maxAgeMinutes: number = 60): boolean => {
             const ageMs = Date.now() - timestamp;
@@ -238,19 +242,36 @@ export class StellarWriterSkill extends BaseSkill {
             return ageMinutes < maxAgeMinutes;
         };
 
-        // Check if we can use cached intelligence data
         const useCachedData = cachedIntelligence && isDataFresh(cachedIntelligence.timestamp);
 
-        // Performance tracking start
-        const perf = {
-            start: Date.now(),
-            maps: 0,
-            topics: 0,
-            serp: 0,
-            competitors: 0,
-            ai: 0,
-            total: 0
-        };
+        // Default mode is generate if not specified
+        const mode = stellarInput.researchMode || 'generate';
+
+        if (mode === 'discovery') {
+            console.log(`🔍 [Discovery Mode] Fetching only related topics for "${keywords}"...`);
+            const t1 = Date.now();
+            topics = await DataForSEOClient.getRelatedTopics(keywords);
+            perf.topics = Date.now() - t1;
+
+            return {
+                data: {
+                    summary: 'Topic Discovery Completed',
+                    seoMetadata: { title: '', description: '', keywords: [], slug: '' },
+                    schema: { article: {} },
+                    entities: [],
+                    topics,
+                    internalLinks: [],
+                    imageSuggestions: [],
+                    distribution: {},
+                    scores: { seo: 0, geo: 0 },
+                    suggestions: []
+                },
+                metadata: {
+                    executionTime: perf.topics,
+                    cost: 0 // Topics API cost is negligible/free usually or we ignore tracking for now
+                }
+            };
+        }
 
         if (useCachedData) {
             console.log('♻️  Using cached intelligence data from Step 1 (age: ' +
@@ -260,6 +281,10 @@ export class StellarWriterSkill extends BaseSkill {
             serpAnalysis = cachedIntelligence!.serpAnalysis;
             competitorSkeletons = cachedIntelligence!.competitors || [];
         } else {
+            // Check if we are in 'deep_analysis' mode OR if this is a fresh generation run
+            // If mode is 'deep_analysis', we fetch everything.
+            // If mode is 'generate' but no cache, we fetch everything (fallback).
+
             if (cachedIntelligence && !isDataFresh(cachedIntelligence.timestamp)) {
                 console.log('⚠️  Cached data is stale (> 60 minutes), fetching fresh data');
             } else {
@@ -267,15 +292,23 @@ export class StellarWriterSkill extends BaseSkill {
             }
 
             try {
+                // If we are in deep_analysis, we might NOT need to re-fetch topics if they were passed in?
+                // But typically we just re-fetch or use what we have. 
+                // To keep it simple, we'll fetch everything needed for deep analysis.
+
+                // 1. Topics (Optional in deep mode if we trust the user's selection, but good to have context)
+                // We'll skip topics if in deep_analysis to save time, unless we have none.
+                if (mode === 'generate') {
+                    const t1 = Date.now();
+                    console.log(`Step 2: Fetching topics data for ${keywords}...`);
+                    topics = await DataForSEOClient.getRelatedTopics(keywords);
+                    perf.topics = Date.now() - t1;
+                }
+
                 const t0 = Date.now();
                 console.log(`Step 1: Fetching maps data for ${keywords}...`);
                 entities = await DataForSEOClient.searchGoogleMaps(keywords, location, 5);
                 perf.maps = Date.now() - t0;
-
-                const t1 = Date.now();
-                console.log(`Step 2: Fetching topics data for ${keywords}...`);
-                topics = await DataForSEOClient.getRelatedTopics(keywords);
-                perf.topics = Date.now() - t1;
 
                 // SERP Analysis - identify SEO opportunities
                 const t2 = Date.now();
@@ -297,23 +330,35 @@ export class StellarWriterSkill extends BaseSkill {
                 }
                 perf.serp = Date.now() - t2;
 
-                if (analyzeCompetitors) {
+                if (analyzeCompetitors || mode === 'deep_analysis') {
                     const t3 = Date.now();
-                    console.log(`Step 3: Fetching SERP data...`);
+                    console.log(`🔍 Step 3: Fetching SERP data for competitor analysis...`);
+                    console.log(`   - analyzeCompetitors: ${analyzeCompetitors}`);
+                    console.log(`   - mode: ${mode}`);
                     const serp = await DataForSEOClient.searchGoogleSERP(keywords, location, 5);
+                    console.log(`   - SERP results count: ${serp.length}`);
                     const competitorUrls = serp
                         .filter(item => item.type === 'organic')
                         .map(item => item.url)
                         .filter(Boolean);
+                    console.log(`   - Organic URLs found: ${competitorUrls.length}`);
+                    console.log(`   - URLs: ${JSON.stringify(competitorUrls.slice(0, 3))}`);
 
                     if (competitorUrls.length > 0) {
+                        console.log(`   - Extracting skeletons from top ${Math.min(3, competitorUrls.length)} competitors...`);
                         competitorSkeletons = await SkeletonExtractor.batchExtract(competitorUrls.slice(0, 3));
+                        console.log(`   ✅ Extracted ${competitorSkeletons.length} competitor skeletons`);
+                    } else {
+                        console.log(`   ⚠️ No organic URLs found in SERP results`);
                     }
                     perf.competitors = Date.now() - t3;
                 }
             } catch (e) {
                 console.error('Intelligence phase partial failure', e);
             }
+
+            // Proceed to Generation Phase to create Master Outline and Strategy
+            console.log('🧠 [Deep Analysis] Proceeding to AI Strategy Generation...');
         }
 
         // 2. Generation Phase: Build Unified Prompt
@@ -347,7 +392,7 @@ export class StellarWriterSkill extends BaseSkill {
                 provider: this.preferredProvider,
                 tokensUsed: (response.inputTokens || 0) + (response.outputTokens || 0),
                 cost,
-                executionTimeMs: perf.total // Add total execution time
+                executionTime: perf.total // Add total execution time
             },
         };
     }

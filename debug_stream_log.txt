@@ -1,6 +1,6 @@
 INPUT:
 {
-  "keywords": "best crm for startups",
+  "keywords": "best seo tools for beginners",
   "location": "",
   "brandName": "",
   "tone": "professional",
@@ -50,32 +50,20 @@ MODE: FULL CONTENT GENERATION MODE - Create complete, publication-ready article.
 
 
 ## Target Profiles
-- Keywords: best crm for startups
+- Keywords: best seo tools for beginners
 - Brand: 
 - Industry: General
 
 Note: User is starting from scratch. Focus on creating the best Master Outline.
 
-## Competitor Outlines
-### Competitor: 10 Best CRM for Small Business (2024 Review)
-- Top CRM Picks
-  - Why you need a CRM
-  - Pricing Comparison
 
-### Competitor: How to Choose the Right CRM
-- CRM Buying Guide
-  - Features to Look For
 
-## Real-World Entities
-- Salesforce: San Francisco, CA. Rating: 4.5.
-- HubSpot: Cambridge, MA. Rating: 4.6.
-- Zoho CRM: Pleasanton, CA. Rating: 4.3.
 ## Related Keywords & Search Volume
-- best crm for startups: Volume 12500, Competition 45%
-- crm software comparison 2024: Volume 8900, Competition 65%
-- affordable crm solutions: Volume 5400, Competition 30%
-- crm implementation guide: Volume 3200, Competition 25%
-- marketing automation integration: Volume 7600, Competition 55%
+- best free seo tools: Volume 1600, Competition 20%
+- seo software tools free: Volume 1000, Competition 20%
+- best seo tools for beginners: Volume 480, Competition 20%
+- best seo writing tools: Volume 50, Competition 50%
+- seo content writing tools free: Volume 40, Competition 20%
 
 
 # 🔍 SERP 智能分析 (SEO 优化指导)
@@ -83,8 +71,10 @@ Note: User is starting from scratch. Focus on creating the best Master Outline.
 
 ## 📌 用户关心的核心问题 (必须在文章中回答):
 
-1. What is the cheapest CRM for startups?
-2. Do startups need Salesforce?
+1. What is the best SEO tool for beginners?
+2. How can I start SEO as a beginner?
+3. What are the top 3 SEO tools you use the most?
+4. What is the 80/20 rule in SEO?
 
 **要求**:
 - 将每个问题作为 H2 或 H3 标题自然融入文章结构
@@ -93,23 +83,12 @@ Note: User is starting from scratch. Focus on creating the best Master Outline.
 
 ---
 
-## 🏆 竞品成功结构参考 (基于 TOP 2 排名内容分析):
-
-以下章节在高排名内容中频繁出现，建议包含：
-- why you need a crm
-- pricing comparison
-- features to look for
-
-**注意**: 使用这些结构作为灵感，但必须用你自己的语言和角度重新组织内容。
-
----
-
 ## 🔑 LSI 关键词 (相关术语，自然融入内容):
 
-- "crm software comparison 2024"
-- "affordable crm solutions"
-- "crm implementation guide"
-- "marketing automation integration"
+- "best free seo tools"
+- "seo software tools free"
+- "best seo writing tools"
+- "seo content writing tools free"
 
 **使用建议**:
 - 在内容中自然地使用 3-5 个这些相关术语
@@ -120,8 +99,7 @@ Note: User is starting from scratch. Focus on creating the best Master Outline.
 
 ## 🎯 SERP 优化建议 (基于搜索结果特征):
 
-📌 **当前存在 Featured Snippet** - 尝试提供更全面或更新的答案来替代现有内容
-🎥 **视频优化**: SERP 中包含视频结果，建议添加 YouTube 视频嵌入或视频教程链接
+⭐ **Featured Snippet 高机会**: 在文章开头提供 40-60 词的精准答案，直接回答用户查询意图
 ❓ **FAQ Schema**: 考虑使用 FAQ 结构化数据标记问答部分，提升富媒体展示机会
 
 

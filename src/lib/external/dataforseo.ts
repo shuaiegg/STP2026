@@ -131,7 +131,7 @@ export class DataForSEOClient {
                 depth: 20 // Get more results for better analysis
             }];
 
-            const response = await fetch(`${this.baseUrl}/public_data/google/search/live/regular`, {
+            const response = await fetch(`${this.baseUrl}/serp/google/organic/live/advanced`, {
                 method: 'POST',
                 headers: {
                     'Authorization': this.getAuthHeader(),
@@ -288,7 +288,9 @@ export class DataForSEOClient {
             throw new Error('DataForSEO credentials not configured');
         }
 
-        const fullUrl = `${this.baseUrl}${endpoint}`;
+        // Normalize endpoint to avoid double /v3
+        const cleanEndpoint = endpoint.startsWith('/v3/') ? endpoint.substring(3) : endpoint;
+        const fullUrl = `${this.baseUrl}${cleanEndpoint.startsWith('/') ? '' : '/'}${cleanEndpoint}`;
         console.log('🌐 DataForSEO POST:', { endpoint, fullUrl, payloadLength: JSON.stringify(payload).length });
 
         try {
