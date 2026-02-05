@@ -215,6 +215,7 @@ export class StellarWriterSkill extends BaseSkill {
         let entities: MapDataItem[] = [];
         let topics: any[] = [];
         let competitorSkeletons: ContentSkeleton[] = [];
+        let serpAnalysis; // Declare outside for proper scope
 
         try {
             console.log(`Step 1: Fetching maps data for ${keywords}...`);
@@ -222,6 +223,21 @@ export class StellarWriterSkill extends BaseSkill {
 
             console.log(`Step 2: Fetching topics data for ${keywords}...`);
             topics = await DataForSEOClient.getRelatedTopics(keywords);
+
+            // SERP Analysis - identify SEO opportunities
+            console.log(`Step 2.5: Analyzing SERP features...`);
+            try {
+                const analyzer = new SERPAnalyzer();
+                serpAnalysis = await analyzer.analyzeSERP(keywords, location);
+                console.log('✅ SERP Analysis:', {
+                    featuredSnippet: serpAnalysis.featuredSnippet?.opportunity,
+                    paaQuestions: serpAnalysis.peopleAlsoAsk.length,
+                    recommendations: serpAnalysis.recommendations.length
+                });
+            } catch (error) {
+                console.warn('⚠️  SERP analysis failed:', error);
+                serpAnalysis = undefined;
+            }
 
             if (analyzeCompetitors) {
                 console.log(`Step 3: Fetching SERP data...`);
@@ -257,7 +273,7 @@ export class StellarWriterSkill extends BaseSkill {
         }
 
         // 4. Orchestration: Parse and finalize
-        const result = this.parseResponse(response.content, entities, topics, competitorSkeletons);
+        const result = this.parseResponse(response.content, entities, topics, competitorSkeletons, serpAnalysis);
 
         return {
             data: result,
@@ -368,7 +384,8 @@ Return ONLY JSON.`;
         raw: string,
         entities: MapDataItem[],
         topics: any[],
-        competitors: ContentSkeleton[]
+        competitors: ContentSkeleton[],
+        serpAnalysis?: SERPAnalysis
     ): StellarWriterOutput {
         const json = this.extractJSON<any>(raw);
 
@@ -425,6 +442,7 @@ Return ONLY JSON.`;
             distribution: json?.distribution || {},
             scores: json?.scores || { seo: 50, geo: 50 },
             detailedSEOScore,
+            serpAnalysis,  // SERP analysis from Phase 2
             aiDetectionScore: aiDetectionResult?.score,  // New field
             aiDetectionFlags: aiDetectionResult?.flags,   // New field
             suggestions: json?.suggestions || []

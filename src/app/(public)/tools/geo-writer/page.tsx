@@ -17,6 +17,7 @@ import { SEOScorePanel } from '@/components/seo/SEOScorePanel';
 import { KeywordOpportunityMatrix } from '@/components/charts/KeywordOpportunityMatrix';
 import { SEOScoreDashboard } from '@/components/charts/SEOScoreDashboard';
 import { CompetitorRadarChart } from '@/components/charts/CompetitorRadarChart';
+import { SERPOpportunitiesPanel } from '@/components/serp/SERPOpportunitiesPanel';
 import Link from 'next/link';
 
 export default function GEOWriterPage() {
@@ -586,6 +587,13 @@ export default function GEOWriterPage() {
                                     </div>
                                 </div>
                             </Card>
+
+                            {/* SERP Opportunities Panel - Phase 2 Module 2.1 */}
+                            {auditResult?.serpAnalysis && (
+                                <Card className="p-8 bg-white border-2 border-purple-100 shadow-lg rounded-2xl">
+                                    <SERPOpportunitiesPanel analysis={auditResult.serpAnalysis} />
+                                </Card>
+                            )}
                         </div>
                     )}
 
