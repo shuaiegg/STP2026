@@ -116,22 +116,26 @@ async function testKeywords() {
                 'Authorization': authHeader,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify([labsPayload]) // Labs API usually expects an array of task objects
+            body: JSON.stringify([labsPayload])
         });
 
         const data = await response.json();
-
         const results = data.tasks?.[0]?.result?.[0]?.items || [];
 
         console.log('\n📊 Labs Results:');
-        console.log(`Status Code: ${data.status_code} (${data.status_message})`);
+        console.log(`Status Code: ${data.status_code}`);
         console.log(`Found ${results.length} related keywords`);
 
         if (results.length > 0) {
-            console.log('\nTop 5 Related (Labs):');
-            results.slice(0, 5).forEach((item: any) => {
-                console.log(`- ${item.keyword_data?.keyword || item.keyword} (Vol: ${item.keyword_data?.keyword_info?.search_volume || 'N/A'})`);
-            });
+            console.log('\n🔍 First Item Structure Inspection:');
+            const firstItem = results[0];
+            console.log(JSON.stringify(firstItem, null, 2));
+
+            console.log('\nType Checks:');
+            const info = firstItem.keyword_data?.keyword_info;
+            console.log(`- Volume: ${info?.search_volume} (${typeof info?.search_volume})`);
+            console.log(`- Competition Level: ${info?.competition_level} (${typeof info?.competition_level})`);
+            console.log(`- CPC: ${info?.cpc} (${typeof info?.cpc})`);
         }
 
     } catch (error) {

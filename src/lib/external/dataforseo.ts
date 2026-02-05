@@ -191,7 +191,11 @@ export class DataForSEOClient {
                     return labsResults.map((r: any) => ({
                         keyword: r.keyword_data?.keyword || r.keyword,
                         volume: r.keyword_data?.keyword_info?.search_volume || 100,
-                        competition: Math.round((r.keyword_data?.keyword_info?.competition_level || 0.5) * 100),
+                        competition: typeof r.keyword_data?.keyword_info?.competition_level === 'string'
+                            ? (r.keyword_data.keyword_info.competition_level === 'HIGH' ? 80
+                                : r.keyword_data.keyword_info.competition_level === 'MEDIUM' ? 50
+                                    : 20)
+                            : Math.round((r.keyword_data?.keyword_info?.competition_level || 0.5) * 100),
                         cpc: r.keyword_data?.keyword_info?.cpc || 0
                     }));
                 }
