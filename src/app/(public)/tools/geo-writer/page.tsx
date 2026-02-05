@@ -31,6 +31,7 @@ export default function GEOWriterPage() {
     const [showOriginal, setShowOriginal] = useState(false);
     const [isPaid, setIsPaid] = useState(false);
     const [selectedKeyword, setSelectedKeyword] = useState<string>(''); // 选中的主关键词
+    const [cachedIntelligence, setCachedIntelligence] = useState<any>(null); // Cached intelligence data from Step 1
 
     const [form, setForm] = useState({
         keywords: '',
@@ -82,6 +83,16 @@ export default function GEOWriterPage() {
             setAuditResult(outputData);
             setIsPaid(data.isRepeat || false);
 
+            // Cache intelligence data for Step 2 reuse
+            setCachedIntelligence({
+                entities: outputData.entities || [],
+                topics: outputData.topics || [],
+                serpAnalysis: outputData.serpAnalysis,
+                competitors: outputData.competitors || [],
+                timestamp: Date.now()
+            });
+            console.log('💾 Cached intelligence data for reuse in Step 2');
+
             // 智能默认：选择机会评分最高的关键词
             const topics = outputData.topics || [];
             if (topics.length > 0) {
@@ -122,7 +133,8 @@ export default function GEOWriterPage() {
                     input: {
                         ...form,
                         keywords: selectedKeyword || form.keywords, // 使用选中的关键词
-                        auditOnly: false
+                        auditOnly: false,
+                        cachedIntelligence: cachedIntelligence // Pass cached data to avoid duplicate API calls
                     }
                 })
             });
