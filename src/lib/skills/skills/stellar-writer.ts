@@ -225,17 +225,20 @@ export class StellarWriterSkill extends BaseSkill {
             topics = await DataForSEOClient.getRelatedTopics(keywords);
 
             // SERP Analysis - identify SEO opportunities
-            console.log(`Step 2.5: Analyzing SERP features...`);
+            console.log(`Step 2.5: Analyzing SERP features for "${keywords}"...`);
             try {
                 const analyzer = new SERPAnalyzer();
                 serpAnalysis = await analyzer.analyzeSERP(keywords, location);
-                console.log('✅ SERP Analysis:', {
-                    featuredSnippet: serpAnalysis.featuredSnippet?.opportunity,
-                    paaQuestions: serpAnalysis.peopleAlsoAsk.length,
-                    recommendations: serpAnalysis.recommendations.length
+                console.log('✅ SERP Analysis completed successfully:', {
+                    hasData: !!serpAnalysis,
+                    featuredSnippet: serpAnalysis.featuredSnippet?.exists,
+                    opportunity: serpAnalysis.featuredSnippet?.opportunity,
+                    paaCount: serpAnalysis.peopleAlsoAsk.length,
+                    recommendationsCount: serpAnalysis.recommendations.length,
+                    features: serpAnalysis.serpFeatures
                 });
             } catch (error) {
-                console.warn('⚠️  SERP analysis failed:', error);
+                console.error('❌ SERP analysis failed with error:', error);
                 serpAnalysis = undefined;
             }
 
