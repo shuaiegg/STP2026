@@ -137,8 +137,10 @@ export class SERPAnalyzer {
             return this.getMockSERPData(keyword);
         }
 
+        console.log(`🔍 Calling DataForSEO SERP API for: "${keyword}" in ${location}`);
+
         try {
-            const response = await DataForSEOClient.post('/v3/serp/google/organic/live', [{
+            const response = await DataForSEOClient.post('/v3/serp/google/organic/live/advanced', [{
                 keyword,
                 location_name: location,
                 language_code: 'en',
