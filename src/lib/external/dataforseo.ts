@@ -225,10 +225,40 @@ export class DataForSEOClient {
             // Step 3: Last resort - generate smart mock data based on input
             console.log(`DataForSEO: No data found for "${keyword}", generating strategic topics...`);
             return generateMockKeywordData(keyword);
-            
+
         } catch (error) {
             console.error('DataForSEO Keywords exception:', error);
             return generateMockKeywordData(keyword);
+        }
+    }
+
+    /**
+     * Generic POST request to DataForSEO API
+     * Used by SERP analyzer and other custom integrations
+     */
+    static async post(endpoint: string, payload: any): Promise<any> {
+        if (!DATAFORSEO_LOGIN || !DATAFORSEO_PASSWORD) {
+            throw new Error('DataForSEO credentials not configured');
+        }
+
+        try {
+            const response = await fetch(`${this.baseUrl}${endpoint}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': this.getAuthHeader(),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                throw new Error(`DataForSEO API error: ${response.status} ${response.statusText}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error(`DataForSEO POST to ${endpoint} failed:`, error);
+            throw error;
         }
     }
 }

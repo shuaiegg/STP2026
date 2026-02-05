@@ -11,6 +11,7 @@ import type { SkillInput, SkillOutput, SkillExecutionMetadata } from '../types';
 import { getProvider } from '../providers';
 import { DataForSEOClient, MapDataItem } from '../../external/dataforseo';
 import { SkeletonExtractor, ContentSkeleton } from '../../external/skeleton-extractor';
+import { SERPAnalyzer, type SERPAnalysis } from '../../external/serp-analyzer';
 import { calculateDetailedSEOScore, type DetailedSEOScore } from '@/lib/utils/seo-scoring';
 import { humanizeContent } from '@/lib/utils/humanize';
 import { detectAIPatterns } from '@/lib/utils/ai-detection';
@@ -95,6 +96,8 @@ export interface StellarWriterOutput {
     };
     /** Detailed SEO Score Breakdown */
     detailedSEOScore?: DetailedSEOScore;
+    /** SERP Features Analysis */
+    serpAnalysis?: SERPAnalysis;
     /** AI detection score (0-100, lower = more human-like) */
     aiDetectionScore?: number;
     /** AI detection pattern flags */
@@ -112,8 +115,8 @@ export class StellarWriterSkill extends BaseSkill {
     version = '2.3.0';
     category: 'seo' = 'seo';
 
-    protected preferredProvider: 'gemini' | 'claude' | 'deepseek' = 'gemini';
-    protected preferredModel = 'gemini-flash-latest';
+    protected preferredProvider: 'gemini' | 'claude' | 'deepseek' = 'deepseek';
+    protected preferredModel = 'deepseek-chat';
 
     protected getRequiredInputs(): string[] {
         return ['keywords'];
