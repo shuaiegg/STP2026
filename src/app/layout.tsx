@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { CSPostHogProvider } from "@/components/providers/PostHogProvider";
 import "./globals.css";
 
 // Configure fonts if needed, or rely on CSS imports in globals.css
@@ -23,7 +24,9 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
       </head>
       <body className="antialiased text-brand-text-primary bg-brand-background">
-        {children}
+        <CSPostHogProvider>
+          {children}
+        </CSPostHogProvider>
       </body>
     </html>
   );

@@ -139,6 +139,22 @@ const AI_PHRASES = [
     { pattern: /It'?s (generally|typically) (believed|thought|considered) that\s*/gi, replacement: '' },
     { pattern: /One might argue that\s*/gi, replacement: '' },
     { pattern: /It could be argued that\s*/gi, replacement: '' },
+
+    // 🌟 New GPT-4/Claude Tropes (2025-2026)
+    { pattern: /\b(ever-)?evolving landscape\b/gi, replacement: 'industry' },
+    { pattern: /\bdynamic landscape\b/gi, replacement: 'market' },
+    { pattern: /\ba testament to\b/gi, replacement: 'proof of' },
+    { pattern: /\brich tapestry\b/gi, replacement: 'mix' },
+    { pattern: /\bunleash(ing)? (the )?power of\b/gi, replacement: 'use' },
+    { pattern: /\belevate (your|the)\b/gi, replacement: 'improve' },
+    { pattern: /\bgame-changer\b/gi, replacement: 'big change' },
+    { pattern: /\bnavigating the\b/gi, replacement: 'handling the' },
+    { pattern: /\brealm of\b/gi, replacement: 'world of' },
+    { pattern: /\bembark on (a|this) journey\b/gi, replacement: 'start' },
+    { pattern: /\bIn today's digital world,?\s*/gi, replacement: '' },
+    { pattern: /\bIn this article, we will\b/gi, replacement: 'We will' },
+    { pattern: /\bcomprehensive guide\b/gi, replacement: 'guide' }, // Overused
+    { pattern: /\b(pivotal|paramount) role\b/gi, replacement: 'key role' },
 ];
 
 /**

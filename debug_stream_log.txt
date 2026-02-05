@@ -1,11 +1,13 @@
 INPUT:
 {
-  "keywords": "best seo tools for beginners",
+  "keywords": "如何写好SEO文章",
   "location": "",
   "brandName": "",
   "tone": "professional",
   "type": "blog",
   "originalContent": "",
+  "url": "",
+  "autoVisuals": false,
   "auditOnly": false
 }
 
@@ -33,14 +35,20 @@ MODE: FULL CONTENT GENERATION MODE - Create complete, publication-ready article.
 - Show personality and opinions
 - Use active voice predominantly
 
-❌ ABSOLUTELY FORBIDDEN AI PHRASES:
-- "It's worth noting that"
-- "It's important to note"
+❌ ABSOLUTELY FORBIDDEN AI PHRASES (Instant failure if used):
+- "It's worth noting that" / "It is important to note"
 - "Delve into" / "Dive deep into"
 - "In conclusion" / "To sum up"
 - "Furthermore" / "Moreover" / "Nevertheless"
 - "At the end of the day"
 - "However, it is important to remember"
+- "A testament to"
+- "The ever-evolving landscape" / "Dynamic landscape"
+- "Unleash the power"
+- "Elevate your"
+- "Game-changer"
+- "Navigating the realm"
+- "In today's digital world"
 
 ✅ USE INSTEAD:
 - Simple transitions: "Also", "Plus", "And", "But", "So"
@@ -50,20 +58,61 @@ MODE: FULL CONTENT GENERATION MODE - Create complete, publication-ready article.
 
 
 ## Target Profiles
-- Keywords: best seo tools for beginners
+- Keywords: 如何写好SEO文章
 - Brand: 
 - Industry: General
 
 Note: User is starting from scratch. Focus on creating the best Master Outline.
 
+## Competitor Outlines
+### Competitor: 第五章：如何寫出符合SEO結構的文章?想做好SEO先搞懂文章怎麼寫
+- 第五章：如何寫出符合SEO結構的文章?想做好SEO先搞懂文章怎麼寫
+  - 一般文章 vs. SEO文章 的差異?
+  - 撰寫SEO文章的5個起手式
+    - 一、滿足搜尋意圖
+    - 二、文章要有一定的長度
+    - 三、豐富的圖文+影音
+    - 四、幫搜尋引擎畫好重點
+    - 五、建立系列文章群
+  - 如何讓文章有好的SEO排名？
+    - 一、部落格類型
+    - 二、產品類型
+    - 三、評論經營類型
+    - 四、案例研究與原創研究類型
+    - 五、資訊圖表類型
+    - 六、操作指南與說明書類型
+    - 七、專訪類型
+    - 八、影片類型
+  - 理想的SEO文案長度是多少?
+- &nbsp; &nbsp; [圖片來源：https://mangools.com/blog/learn-seo/#part3] &nbsp;&nbsp;
+  - 重複內容太多，怎麼辦？哪有那麼多原創可以寫？
+
+### Competitor: SEO文章怎麼寫？用7個步驟，撰寫具有SEO價值的文案 - Harris先生
+      - 【SEO基本觀念】
+      - 【SEO排名優化】
+      - 【SEO工具教學】
+- SEO文章怎麼寫？用7個步驟，撰寫具有SEO價值的文案
+  - 一篇好的文章，絕對不是只為SEO而寫
+  - 1. 確認文章目標（企業目標）
+    - 想讓你的網站行銷更有效？我們可以幫忙
+  - 2. 永遠從關鍵字出發，思考受眾心理、列出相關的關鍵字、主題
+  - 3. 確認關鍵字市場、搜尋量
+  - 4. 資料收集
+  - 5. 文章撰寫
+  - 6. 文章校正
+  - 7. 分析、優化你的 SEO
+    - 你可能也想看
+- 你可能也想看
+    - 行銷遇到瓶頸嗎？和我們聊聊
+      - 行銷專欄
+      - 顧問服務
+      - 認識Harris
+  - 與我們聯繫
+
 
 
 ## Related Keywords & Search Volume
-- best free seo tools: Volume 1600, Competition 20%
-- seo software tools free: Volume 1000, Competition 20%
-- best seo tools for beginners: Volume 480, Competition 20%
-- best seo writing tools: Volume 50, Competition 50%
-- seo content writing tools free: Volume 40, Competition 20%
+- 如何写好SEO文章: Volume 150, Competition 45%
 
 
 # 🔍 SERP 智能分析 (SEO 优化指导)
@@ -71,10 +120,10 @@ Note: User is starting from scratch. Focus on creating the best Master Outline.
 
 ## 📌 用户关心的核心问题 (必须在文章中回答):
 
-1. What is the best SEO tool for beginners?
-2. How can I start SEO as a beginner?
-3. What are the top 3 SEO tools you use the most?
-4. What is the 80/20 rule in SEO?
+1. 什么是SEO文章？
+2. 什么是SEO优化？
+3. 网站优化有哪些步骤和技巧？
+4. SEO 主要做什么？
 
 **要求**:
 - 将每个问题作为 H2 或 H3 标题自然融入文章结构
@@ -83,23 +132,26 @@ Note: User is starting from scratch. Focus on creating the best Master Outline.
 
 ---
 
-## 🔑 LSI 关键词 (相关术语，自然融入内容):
+## 🏆 竞品成功结构参考 (基于 TOP 2 排名内容分析):
 
-- "best free seo tools"
-- "seo software tools free"
-- "best seo writing tools"
-- "seo content writing tools free"
+以下章节在高排名内容中频繁出现，建议包含：
+- 一般文章 vs seo文章 的差異
+- 撰寫seo文章的個起手式
+- 如何讓文章有好的seo排名
+- 理想的seo文案長度是多少
+- 重複內容太多怎麼辦哪有那麼多原創可以寫
+- 一篇好的文章絕對不是只為seo而寫
+- 確認文章目標企業目標
+- 永遠從關鍵字出發思考受眾心理列出相關的關鍵字主題
 
-**使用建议**:
-- 在内容中自然地使用 3-5 个这些相关术语
-- 避免刻意堆砌，保持语句流畅
-- 优先在小标题和段落首句中使用
+**注意**: 使用这些结构作为灵感，但必须用你自己的语言和角度重新组织内容。
 
 ---
 
 ## 🎯 SERP 优化建议 (基于搜索结果特征):
 
 ⭐ **Featured Snippet 高机会**: 在文章开头提供 40-60 词的精准答案，直接回答用户查询意图
+🎥 **视频优化**: SERP 中包含视频结果，建议添加 YouTube 视频嵌入或视频教程链接
 ❓ **FAQ Schema**: 考虑使用 FAQ 结构化数据标记问答部分，提升富媒体展示机会
 
 
@@ -115,7 +167,13 @@ Note: User is starting from scratch. Focus on creating the best Master Outline.
 ## Core Requirements
 1. **Reverse Engineering**: Create a "Master Outline" (H1-H3) that is superior to all competitors.
 2. **GEO Strategy**: Direct Answer First (AEO), Entity Binding, and Information Gain.
-3. **SEO Technicals**: Optimized Title, Meta Description, Slug, and Schema.org Article JSON-LD.
+4. **Internal Link Strategy**: Suggest 3-5 specific internal links.
+   - Suggest links to hypothetical related content.
+   - **IMPORTANT**: Do NOT insert links into the body content. ONLY list them in the JSON `internalLinks` array. Keep the body text clean.
+5. **Visual Assets Strategy**:
+   - **IMPORTANT**: Do NOT insert images or diagrams into the body content.
+   - **Suggestions**: Provide detailed text descriptions for recommended visuals in the JSON `imageSuggestions` array.
+   - **Diagrams**: Do NOT generate Mermaid code in the body.
 
 ## Output JSON Format
 ```json
@@ -125,6 +183,7 @@ Note: User is starting from scratch. Focus on creating the best Master Outline.
   "seoMetadata": { "title": "...", "description": "... ", "keywords": [], "slug": "..." },
   "schema": { "article": { /* JSON-LD Article */ } },
   
+  "internalLinks": ["/blog/related-topic-1", "/blog/related-topic-2"],
   "scores": { "seo": 95, "geo": 92 },
   "suggestions": ["Strategic point 1", "..."]
 }

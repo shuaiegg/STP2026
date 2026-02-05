@@ -16,6 +16,7 @@ import { calculateDetailedSEOScore, type DetailedSEOScore } from '@/lib/utils/se
 import { humanizeContent } from '@/lib/utils/humanize';
 import { detectAIPatterns } from '@/lib/utils/ai-detection';
 import { buildSERPEnhancedPrompt } from '@/lib/utils/prompt-enhancer';
+import { ContentGapAnalyzer } from '@/lib/utils/content-gap-analyzer';
 
 /**
  * Input for StellarWriter
@@ -40,10 +41,18 @@ export interface StellarWriterInput extends Omit<SkillInput, 'keywords'> {
     url?: string;
     /** If true, only return score and audit without full rewrite */
     auditOnly?: boolean;
+    /** If true, auto-insert Mermaid diagrams and Pollinations images into content */
+    autoVisuals?: boolean;
     /** Whether to perform deep competitor analysis */
     analyzeCompetitors?: boolean;
-    /** Research Mode: 'discovery' (Topics only) | 'deep' (SERP/Competitors) | 'generate' (Full) */
-    researchMode?: 'discovery' | 'deep_analysis' | 'generate';
+    /** Research Mode: 'discovery' (Topics only) | 'deep' (SERP/Competitors) | 'generate' (Full) | 'section_regenerate' */
+    researchMode?: 'discovery' | 'deep_analysis' | 'generate' | 'section_regenerate';
+    /** For section_regenerate: The heading of the section */
+    sectionHeading?: string;
+    /** For section_regenerate: The existing content of the section */
+    sectionContent?: string;
+    /** For section_regenerate: Instructions for rewriting */
+    sectionInstruction?: string;
     /** Cached intelligence data from previous research (Step 1) to avoid duplicate API calls */
     cachedIntelligence?: {
         entities: any[];
@@ -113,6 +122,12 @@ export interface StellarWriterOutput {
     aiDetectionScore?: number;
     /** AI detection pattern flags */
     aiDetectionFlags?: any[];
+    /** Content Gap Analysis Results */
+    contentGap?: {
+        score: number;
+        missingKeywords: any[];
+        competitorTopics: any[];
+    };
     /** Strategic optimization suggestions */
     suggestions: string[];
 }
@@ -361,9 +376,78 @@ export class StellarWriterSkill extends BaseSkill {
             console.log('🧠 [Deep Analysis] Proceeding to AI Strategy Generation...');
         }
 
+        // 6. Internal Content Search (if domain provided)
+        let internalContentInventory: any[] = [];
+        // Check cache first
+        if (cachedIntelligence && (cachedIntelligence as any).internalContent) {
+            internalContentInventory = (cachedIntelligence as any).internalContent;
+        }
+        // Otherwise search if URL provided
+        else if (stellarInput.url && stellarInput.url.trim() !== '') {
+            try {
+                const domain = stellarInput.url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+                console.log(`🔗 [Site Search] Searching internal content for ${domain}...`);
+                const siteQuery = `site:${domain} "${keywords}"`;
+                const siteSerp = await DataForSEOClient.searchGoogleSERP(siteQuery, location, 10);
+                internalContentInventory = siteSerp
+                    .filter(item => item.type === 'organic')
+                    .map(item => ({
+                        title: item.title,
+                        url: item.url,
+                        snippet: item.description
+                    }));
+                console.log(`   ✅ Found ${internalContentInventory.length} internal pages`);
+            } catch (err) {
+                console.warn('Site search failed:', err);
+            }
+        }
+
+        // >>> NEW: Section Regeneration Mode
+        if (mode === 'section_regenerate') {
+            const tGen = Date.now();
+            console.log(`✏️ Regenerating section: "${stellarInput.sectionHeading}"`);
+
+            const systemPrompt = `You are an expert editor. Rewrite the specific section of an article.
+Target Audience: ${stellarInput.industry || 'General'}
+Tone: ${stellarInput.tone || 'Professional'}
+Goal: Improve the section based on instructions, keeping it factual and high-quality.`;
+
+            const userPrompt = `
+SECTION HEADING: ${stellarInput.sectionHeading}
+CURRENT CONTENT: 
+${stellarInput.sectionContent || '(Empty)'}
+
+INSTRUCTION: ${stellarInput.sectionInstruction || 'Improve clarity and depth.'}
+
+CONTEXT:
+Main Keyword: ${keywords}
+
+Please return ONLY the rewritten content for this section. Do not include the heading H2 in the output, just the body text (paragraphs, lists).`;
+
+            // Use the same provider as the main flow
+            const provider = getProvider(this.preferredProvider);
+            const { response, cost } = await this.generateWithAI(provider, `${systemPrompt}\n\n${userPrompt}`, {
+                model: this.preferredModel,
+                temperature: 0.7
+            });
+
+            return {
+                data: {
+                    content: response.content, // This is just the section body
+                    suggestions: []
+                } as any,
+                metadata: {
+                    executionTime: Date.now() - tGen,
+                    tokensUsed: (response.inputTokens || 0) + (response.outputTokens || 0),
+                    cost: cost
+                }
+            };
+        }
+        // <<< End Section Regeneration
+
         // 2. Generation Phase: Build Unified Prompt
         const provider = getProvider(this.preferredProvider);
-        const prompt = StellarWriterSkill.buildStellarPrompt(stellarInput, entities, topics, competitorSkeletons, serpAnalysis);
+        const prompt = StellarWriterSkill.buildStellarPrompt(stellarInput, entities, topics, competitorSkeletons, serpAnalysis, internalContentInventory);
 
         // 3. Execution
         const t4 = Date.now();
@@ -383,7 +467,7 @@ export class StellarWriterSkill extends BaseSkill {
         }
 
         // 4. Orchestration: Parse and finalize
-        const result = this.parseResponse(response.content, entities, topics, competitorSkeletons, serpAnalysis);
+        const result = this.parseResponse(response.content, entities, topics, competitorSkeletons, serpAnalysis, stellarInput.keywords);
 
         return {
             data: result,
@@ -402,9 +486,10 @@ export class StellarWriterSkill extends BaseSkill {
         entities: MapDataItem[],
         topics: any[],
         competitors: ContentSkeleton[],
-        serpAnalysis?: SERPAnalysis
+        serpAnalysis?: SERPAnalysis,
+        internalContent: any[] = []
     ): string {
-        const { keywords, brandName = 'ScaletoTop', industry = 'General', tone = 'professional', type = 'blog', originalContent, auditOnly, url } = input;
+        const { keywords, brandName = 'ScaletoTop', industry = 'General', tone = 'professional', type = 'blog', originalContent, auditOnly, url, autoVisuals = false } = input;
 
         const entityCtx = entities.length > 0
             ? `## Real-World Entities
@@ -419,6 +504,11 @@ ${topics.map(t => `- ${t.keyword}: Volume ${t.volume}, Competition ${t.competiti
         const competitorCtx = competitors.length > 0
             ? `## Competitor Outlines
 ${competitors.map(c => `### Competitor: ${c.title}\n${c.headings.map(h => `${'  '.repeat(h.level - 1)}- ${h.text}`).join('\n')}\n`).join('\n')}`
+            : '';
+
+        const internalCtx = internalContent.length > 0
+            ? `## Internal Content Inventory (Use these for Internal Link Strategy)
+${internalContent.map(c => `- [${c.title}](${c.url}): ${c.snippet}`).join('\n')}`
             : '';
 
         return `You are a world-class Growth Marketer and SEO/GEO expert.
@@ -444,14 +534,20 @@ MODE: ${auditOnly ? 'AUDIT & STRATEGY ONLY. Analyse keywords and competitors, an
 - Show personality and opinions
 - Use active voice predominantly
 
-❌ ABSOLUTELY FORBIDDEN AI PHRASES:
-- "It's worth noting that"
-- "It's important to note"
+❌ ABSOLUTELY FORBIDDEN AI PHRASES (Instant failure if used):
+- "It's worth noting that" / "It is important to note"
 - "Delve into" / "Dive deep into"
 - "In conclusion" / "To sum up"
 - "Furthermore" / "Moreover" / "Nevertheless"
 - "At the end of the day"
 - "However, it is important to remember"
+- "A testament to"
+- "The ever-evolving landscape" / "Dynamic landscape"
+- "Unleash the power"
+- "Elevate your"
+- "Game-changer"
+- "Navigating the realm"
+- "In today's digital world"
 
 ✅ USE INSTEAD:
 - Simple transitions: "Also", "Plus", "And", "But", "So"
@@ -468,6 +564,7 @@ MODE: ${auditOnly ? 'AUDIT & STRATEGY ONLY. Analyse keywords and competitors, an
 ${originalContent ? `\n## Original Content\n${originalContent}\n` : 'Note: User is starting from scratch. Focus on creating the best Master Outline.'}
 
 ${competitorCtx}
+${internalCtx}
 ${entityCtx}
 ${topicCtx}
 
@@ -481,7 +578,20 @@ ${serpAnalysis ? buildSERPEnhancedPrompt({
 ## Core Requirements
 1. **Reverse Engineering**: Create a "Master Outline" (H1-H3) that is superior to all competitors.
 2. **GEO Strategy**: Direct Answer First (AEO), Entity Binding, and Information Gain.
-3. **SEO Technicals**: Optimized Title, Meta Description, Slug, and Schema.org Article JSON-LD.
+4. **Internal Link Strategy**: Suggest 3-5 specific internal links.
+   ${internalContent.length > 0
+                ? `- MANDATORY: Select links ONLY from the "Internal Content Inventory" provided above.`
+                : `- Suggest links to hypothetical related content.`}
+   ${autoVisuals
+                ? `- Insert links naturally into the content using the format \`[Anchor Text](/suggested-slug)\`.`
+                : `- **IMPORTANT**: Do NOT insert links into the body content. ONLY list them in the JSON \`internalLinks\` array. Keep the body text clean.`}
+5. **Visual Assets Strategy**:
+   ${autoVisuals
+                ? `- **Diagrams**: Use Mermaid.js for processes/comparisons. Wrap in \`\`\`mermaid code block.
+   - **Images**: Use dynamic AI images for every section. Syntax: \`![Alt Text](https://image.pollinations.ai/prompt/KEYWORD_PLUS_SIGN_SEPARATED)\`.`
+                : `- **IMPORTANT**: Do NOT insert images or diagrams into the body content.
+   - **Suggestions**: Provide detailed text descriptions for recommended visuals in the JSON \`imageSuggestions\` array.
+   - **Diagrams**: Do NOT generate Mermaid code in the body.`}
 
 ## Output JSON Format
 \`\`\`json
@@ -491,6 +601,7 @@ ${serpAnalysis ? buildSERPEnhancedPrompt({
   "seoMetadata": { "title": "...", "description": "... ", "keywords": [], "slug": "..." },
   "schema": { "article": { /* JSON-LD Article */ } },
   ${auditOnly ? '"masterOutline": [ { "level": 1, "text": "H1 Title" }, { "level": 2, "text": "H2 Subtitle" } ],' : ''}
+  "internalLinks": ["/blog/related-topic-1", "/blog/related-topic-2"],
   "scores": { "seo": 95, "geo": 92 },
   "suggestions": ["Strategic point 1", "..."]
 }
@@ -504,7 +615,8 @@ Return ONLY JSON.`;
         entities: MapDataItem[],
         topics: any[],
         competitors: ContentSkeleton[],
-        serpAnalysis?: SERPAnalysis
+        serpAnalysis?: SERPAnalysis,
+        targetKeyword?: string
     ): StellarWriterOutput {
         const json = this.extractJSON<any>(raw);
 
@@ -556,6 +668,19 @@ Return ONLY JSON.`;
             topics: topics,
             masterOutline: json?.masterOutline,
             competitors: competitors,
+
+            contentGap: (() => {
+                if (json?.masterOutline && competitors.length > 0 && targetKeyword) {
+                    try {
+                        console.log('📊 Running Content Gap Analysis...');
+                        return ContentGapAnalyzer.analyze(targetKeyword, json.masterOutline, competitors, topics);
+                    } catch (err) {
+                        console.error('❌ Content Gap Analysis failed:', err);
+                        return undefined;
+                    }
+                }
+                return undefined;
+            })(),
             internalLinks: json?.internalLinks || [],
             imageSuggestions: json?.imageSuggestions || [],
             distribution: json?.distribution || {},

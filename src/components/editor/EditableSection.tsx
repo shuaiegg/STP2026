@@ -6,17 +6,25 @@ import remarkGfm from 'remark-gfm';
 import { Edit2, Save, X, RefreshCw, Wand2, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { ContentSection } from '@/lib/utils/markdown-sections';
+import { Mermaid } from '@/components/ui/Mermaid';
 
 interface EditableSectionProps {
     section: ContentSection;
     onSave: (id: string, newBody: string) => void;
+    onRegenerate?: (instruction: string) => Promise<boolean>;
     className?: string;
 }
 
-export function EditableSection({ section, onSave, className = "" }: EditableSectionProps) {
+export function EditableSection({ section, onSave, onRegenerate, className = "" }: EditableSectionProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [body, setBody] = useState(section.body);
     const [isCopied, setIsCopied] = useState(false);
+
+    // Regeneration State
+    const [isRegenOpen, setIsRegenOpen] = useState(false);
+    const [regenInstruction, setRegenInstruction] = useState('');
+    const [isRegenerating, setIsRegenerating] = useState(false);
+
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     // Auto-resize textarea
@@ -26,6 +34,11 @@ export function EditableSection({ section, onSave, className = "" }: EditableSec
             textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
         }
     }, [isEditing, body]);
+
+    // Update body when section prop changes (e.g. after regeneration)
+    useEffect(() => {
+        setBody(section.body);
+    }, [section.body]);
 
     const handleSave = () => {
         onSave(section.id, body);
@@ -47,11 +60,24 @@ export function EditableSection({ section, onSave, className = "" }: EditableSec
         setTimeout(() => setIsCopied(false), 2000);
     };
 
+    const handleRegenerateSubmit = async () => {
+        if (!onRegenerate || !regenInstruction.trim()) return;
+        setIsRegenerating(true);
+        try {
+            await onRegenerate(regenInstruction);
+            setIsRegenOpen(false);
+            setRegenInstruction('');
+            // Body update will happen via parent prop update
+        } finally {
+            setIsRegenerating(false);
+        }
+    };
+
     // If it's the specific "Intro" section, we might style it differently or just generic
     const isIntro = section.heading === 'Intro';
 
     return (
-        <div className={`group relative rounded-2xl transition-all duration-300 ${isEditing
+        <div className={`group relative rounded-2xl transition-all duration-300 ${isEditing || isRegenOpen
             ? 'bg-white ring-2 ring-brand-primary/20 shadow-lg p-6 my-6'
             : 'hover:bg-brand-surface/30 p-4 -mx-4 rounded-xl border border-transparent hover:border-slate-100'
             } ${className}`}>
@@ -71,8 +97,19 @@ export function EditableSection({ section, onSave, className = "" }: EditableSec
                 </div>
 
                 <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {!isEditing ? (
+                    {!isEditing && !isRegenOpen ? (
                         <>
+                            {onRegenerate && (
+                                <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => setIsRegenOpen(true)}
+                                    className="h-8 px-3 rounded-full bg-purple-50 text-purple-600 hover:bg-purple-100 border border-purple-100 mr-1"
+                                    title="AI 重写本段"
+                                >
+                                    <Wand2 size={12} className="mr-1.5" /> AI重写
+                                </Button>
+                            )}
                             <Button
                                 size="sm"
                                 variant="ghost"
@@ -91,6 +128,15 @@ export function EditableSection({ section, onSave, className = "" }: EditableSec
                                 <Edit2 size={12} className="mr-2" /> 编辑
                             </Button>
                         </>
+                    ) : isRegenOpen ? (
+                        <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setIsRegenOpen(false)}
+                            className="h-8 w-8 p-0 rounded-full hover:bg-slate-100 text-slate-400"
+                        >
+                            <X size={16} />
+                        </Button>
                     ) : (
                         <>
                             <Button
@@ -113,6 +159,33 @@ export function EditableSection({ section, onSave, className = "" }: EditableSec
                 </div>
             </div>
 
+            {/* AI Regeneration Input Area */}
+            {isRegenOpen && (
+                <div className="mb-6 p-4 bg-purple-50 rounded-xl border border-purple-100 animate-in fade-in slide-in-from-top-2">
+                    <div className="flex items-center gap-2 mb-2 text-purple-700 font-bold text-xs uppercase tracking-widest">
+                        <Wand2 size={12} /> AI 指令
+                    </div>
+                    <div className="flex gap-2">
+                        <input
+                            type="text"
+                            className="flex-1 bg-white border border-purple-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+                            placeholder="例如：添加更多数据支持，或写得更通俗易懂..."
+                            value={regenInstruction}
+                            onChange={(e) => setRegenInstruction(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleRegenerateSubmit()}
+                            autoFocus
+                        />
+                        <Button
+                            onClick={handleRegenerateSubmit}
+                            disabled={isRegenerating || !regenInstruction}
+                            className="bg-purple-600 hover:bg-purple-700 text-white px-4 rounded-lg"
+                        >
+                            {isRegenerating ? <RefreshCw size={14} className="animate-spin" /> : '生成'}
+                        </Button>
+                    </div>
+                </div>
+            )}
+
             {/* Content Area */}
             {isEditing ? (
                 <textarea
@@ -124,7 +197,7 @@ export function EditableSection({ section, onSave, className = "" }: EditableSec
                     spellCheck={false}
                 />
             ) : (
-                <div className="prose prose-slate max-w-none prose-p:leading-relaxed prose-headings:hidden">
+                <div className={`prose prose-slate max-w-none prose-p:leading-relaxed prose-headings:hidden ${isRegenerating ? 'opacity-50 blur-[1px] transition-all' : ''}`}>
                     {/* We rely on ReactMarkdown but render pure body (headings stripped) */}
                     <ReactMarkdown
                         components={{
@@ -135,14 +208,35 @@ export function EditableSection({ section, onSave, className = "" }: EditableSec
                                         <div className="text-slate-700">{props.children}</div>
                                     </div>
                                 </div>
-                            )
+                            ),
+                            code({ node, inline, className, children, ...props }: any) {
+                                const match = /language-(\w+)/.exec(className || '');
+                                const isMermaid = match && match[1] === 'mermaid';
+
+                                if (!inline && isMermaid) {
+                                    return <Mermaid chart={String(children).replace(/\n$/, '')} />;
+                                }
+
+                                return !inline && match ? (
+                                    <pre className="bg-slate-900 text-slate-100 p-4 rounded-lg overflow-x-auto my-4 text-xs font-mono">
+                                        <code className={className} {...props}>
+                                            {children}
+                                        </code>
+                                    </pre>
+                                ) : (
+                                    <code className="bg-slate-100 px-1.5 py-0.5 rounded text-brand-primary font-mono text-xs" {...props}>
+                                        {children}
+                                    </code>
+                                );
+                            }
                         }}
                         remarkPlugins={[remarkGfm]}
                     >
                         {section.body}
                     </ReactMarkdown>
                 </div>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 }

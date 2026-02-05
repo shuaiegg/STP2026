@@ -21,6 +21,8 @@ import { KeywordOpportunityMatrix } from '@/components/charts/KeywordOpportunity
 import { SEOScoreDashboard } from '@/components/charts/SEOScoreDashboard';
 import { CompetitorRadarChart } from '@/components/charts/CompetitorRadarChart';
 import { SERPOpportunitiesPanel } from '@/components/serp/SERPOpportunitiesPanel';
+import { ContentGapPanel } from '@/components/gap/ContentGapPanel';
+import { toast } from 'sonner';
 import Link from 'next/link';
 import { OutlineEditor, OutlineNode } from '@/components/editor/OutlineEditor';
 import { EditableSection } from '@/components/editor/EditableSection';
@@ -34,13 +36,84 @@ export default function GEOWriterPage() {
     const [auditResult, setAuditResult] = useState<any>(null);
     const [finalResult, setFinalResult] = useState<any>(null);
     const [error, setError] = useState<string | null>(null);
+    // >>> Module 2.2 Granular Editing
+    const [contentSections, setContentSections] = useState<ContentSection[]>([]);
+
+    // Automatically parse content into sections when finalResult is updated
+    useEffect(() => {
+        if (finalResult?.content) {
+            const sections = parseMarkdownToSections(finalResult.content);
+            setContentSections(sections);
+        }
+    }, [finalResult?.content]);
+
+    // Handle saving a manual edit
+    const handleSectionSave = (id: string, newBody: string) => {
+        const updatedSections = contentSections.map(s =>
+            s.id === id ? { ...s, body: newBody } : s
+        );
+        setContentSections(updatedSections);
+
+        // Also update the full markdown
+        const newMarkdown = joinSectionsToMarkdown(updatedSections);
+        setFinalResult(prev => prev ? { ...prev, content: newMarkdown } : null);
+        toast.success('段落已更新');
+    };
+
+    // Handle AI Regeneration of a section
+    const handleSectionRegenerate = async (section: ContentSection, instruction: string) => {
+        const loadingId = toast.loading('正在重写段落...');
+        try {
+            const response = await fetch('/api/agents/skills', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    skillName: 'stellar-writer',
+                    input: {
+                        mode: 'section_regenerate',
+                        researchMode: 'section_regenerate', // Explicit mode for skill
+                        sectionHeading: section.heading,
+                        sectionContent: section.body,
+                        sectionInstruction: instruction,
+                        keywords: selectedKeyword || form.keywords,
+                        industry: 'General', // Could be dynamic
+                        tone: form.tone
+                    }
+                })
+            });
+
+            const data = await response.json();
+            if (!data.success || !data.output?.data?.content) {
+                throw new Error(data.error || 'Regeneration failed');
+            }
+
+            // Update the section with new content
+            const newContent = data.output.data.content;
+            const updatedSections = contentSections.map(s =>
+                s.id === section.id ? { ...s, body: newContent } : s
+            );
+            setContentSections(updatedSections);
+
+            // Update full markdown
+            const newMarkdown = joinSectionsToMarkdown(updatedSections);
+            setFinalResult(prev => prev ? { ...prev, content: newMarkdown } : null);
+
+            toast.success('段落重写完成！', { id: loadingId });
+            return true;
+        } catch (error: any) {
+            console.error('Section regen error:', error);
+            toast.error(`重写失败: ${error.message}`, { id: loadingId });
+            return false;
+        }
+    };
+    // <<< End Module 2.2
     const [viewMode, setViewMode] = useState<'preview' | 'markdown' | 'schema' | 'article'>('preview');
     const [showOriginal, setShowOriginal] = useState(false);
     const [isPaid, setIsPaid] = useState(false);
     const [selectedKeyword, setSelectedKeyword] = useState<string>(''); // 选中的主关键词
     const [cachedIntelligence, setCachedIntelligence] = useState<any>(null); // Cached intelligence data from Step 1
     const [editableOutline, setEditableOutline] = useState<OutlineNode[]>([]); // Editable outline state
-    const [contentSections, setContentSections] = useState<ContentSection[]>([]); // Step 3 editable sections
+
 
 
     const [form, setForm] = useState({
@@ -49,7 +122,9 @@ export default function GEOWriterPage() {
         brandName: '',
         tone: 'professional',
         type: 'blog',
-        originalContent: ''
+        originalContent: '',
+        url: '', // Target domain for internal linking
+        autoVisuals: false // Default to false: Auto-insert visuals into content
     });
 
     // Sync finalResult to contentSections if needed (e.g. on load)
@@ -357,6 +432,29 @@ export default function GEOWriterPage() {
                                         placeholder="London, New York (可选)"
                                         className="w-full bg-white border-2 border-brand-border p-4 outline-none focus:border-brand-primary transition-all text-sm rounded-xl shadow-sm"
                                     />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-brand-text-primary flex items-center gap-2">
+                                        <LinkIcon size={16} className="text-brand-secondary" />
+                                        目标网站域名 (用于内链推荐)
+                                    </label>
+                                    <input
+                                        value={form.url}
+                                        onChange={(e) => setForm({ ...form, url: e.target.value })}
+                                        placeholder="https://yourdomain.com (可选)"
+                                        className="w-full bg-white border-2 border-brand-border p-4 outline-none focus:border-brand-primary transition-all text-sm rounded-xl shadow-sm"
+                                    />
+                                </div>
+
+                                <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-xl border-2 border-slate-100 hover:border-brand-primary/50 transition-all cursor-pointer" onClick={() => setForm({ ...form, autoVisuals: !form.autoVisuals })}>
+                                    <div className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${form.autoVisuals ? 'bg-brand-primary border-brand-primary text-white' : 'bg-white border-slate-300'}`}>
+                                        {form.autoVisuals && <Check size={14} strokeWidth={4} />}
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-xs font-bold text-slate-700">自动插入配图与图表</span>
+                                        <span className="text-[10px] text-slate-400">若关闭，仅在文末提供配图与内链建议</span>
+                                    </div>
                                 </div>
 
                                 <Button
@@ -763,6 +861,19 @@ export default function GEOWriterPage() {
                                     <SERPOpportunitiesPanel analysis={auditResult.serpAnalysis} />
                                 </Card>
                             )}
+
+                            {/* Content Gap Analysis Panel - Phase 2 Module 2.3 */}
+                            {auditResult?.contentGap && (
+                                <ContentGapPanel
+                                    data={auditResult.contentGap}
+                                    onAddTopic={(topic) => {
+                                        // Simple handler for now - just logs to console
+                                        // In Module 2.2 this will insert into EditableOutline
+                                        console.log('Adding topic:', topic);
+                                        toast.success(`已添加到大纲: ${topic}`);
+                                    }}
+                                />
+                            )}
                         </div>
                     )}
 
@@ -790,12 +901,27 @@ export default function GEOWriterPage() {
                                     <div className="prose prose-brand max-w-none">
                                         <h1 className="text-4xl font-black mb-10 italic text-brand-text-primary leading-tight">{finalResult?.seoMetadata?.title || selectedKeyword || form.keywords}</h1>
                                         <div className="space-y-8 text-brand-text-secondary leading-relaxed text-lg">
-                                            {(finalResult?.content || completion)?.split('\n').map((line: string, i: number) => {
-                                                if (line.startsWith('## ')) return <h2 key={i} className="text-2xl font-black text-brand-text-primary pt-8 border-b-4 border-slate-50 pb-2">{line.replace('## ', '')}</h2>;
-                                                if (line.startsWith('### ')) return <h3 key={i} className="text-xl font-bold text-brand-text-primary pt-4">{line.replace('### ', '')}</h3>;
-                                                if (line.startsWith('- ')) return <li key={i} className="ml-6 list-disc marker:text-brand-secondary">{line.replace('- ', '')}</li>;
-                                                return <p key={i}>{line}</p>;
-                                            })}
+                                            {/* Module 2.2: Granular Edited Sections */}
+                                            {contentSections.length > 0 ? (
+                                                <div className="space-y-4">
+                                                    {contentSections.map((section) => (
+                                                        <EditableSection
+                                                            key={section.id}
+                                                            section={section}
+                                                            onSave={handleSectionSave}
+                                                            onRegenerate={(instruction) => handleSectionRegenerate(section, instruction)}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                // Fallback to streaming/raw view if sections not yet parsed
+                                                (finalResult?.content || completion)?.split('\n').map((line: string, i: number) => {
+                                                    if (line.startsWith('## ')) return <h2 key={i} className="text-2xl font-black text-brand-text-primary pt-8 border-b-4 border-slate-50 pb-2">{line.replace('## ', '')}</h2>;
+                                                    if (line.startsWith('### ')) return <h3 key={i} className="text-xl font-bold text-brand-text-primary pt-4">{line.replace('### ', '')}</h3>;
+                                                    if (line.startsWith('- ')) return <li key={i} className="ml-6 list-disc marker:text-brand-secondary">{line.replace('- ', '')}</li>;
+                                                    return <p key={i}>{line}</p>;
+                                                })
+                                            )}
                                             {isStreaming && (
                                                 <div className="flex items-center gap-2 text-brand-primary animate-pulse pt-4">
                                                     <span className="w-2 h-2 rounded-full bg-brand-primary"></span>
