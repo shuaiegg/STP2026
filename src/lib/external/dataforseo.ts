@@ -241,8 +241,11 @@ export class DataForSEOClient {
             throw new Error('DataForSEO credentials not configured');
         }
 
+        const fullUrl = `${this.baseUrl}${endpoint}`;
+        console.log('🌐 DataForSEO POST:', { endpoint, fullUrl, payloadLength: JSON.stringify(payload).length });
+
         try {
-            const response = await fetch(`${this.baseUrl}${endpoint}`, {
+            const response = await fetch(fullUrl, {
                 method: 'POST',
                 headers: {
                     'Authorization': this.getAuthHeader(),
@@ -251,13 +254,25 @@ export class DataForSEOClient {
                 body: JSON.stringify(payload)
             });
 
+            console.log('📡 Response status:', response.status, response.statusText);
+
             if (!response.ok) {
+                const errorText = await response.text();
+                console.error('❌ API error response:', errorText.substring(0, 500));
                 throw new Error(`DataForSEO API error: ${response.status} ${response.statusText}`);
             }
 
-            return await response.json();
+            const data = await response.json();
+            console.log('✅ Response parsed:', {
+                statusCode: data.status_code,
+                statusMessage: data.status_message,
+                hasTasks: !!data.tasks,
+                tasksCount: data.tasks?.length || 0
+            });
+
+            return data;
         } catch (error) {
-            console.error(`DataForSEO POST to ${endpoint} failed:`, error);
+            console.error(`❌ DataForSEO POST to ${endpoint} failed:`, error);
             throw error;
         }
     }
