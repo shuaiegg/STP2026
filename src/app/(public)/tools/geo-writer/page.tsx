@@ -519,6 +519,13 @@ export default function GEOWriterPage() {
                                 <KeywordOpportunityMatrix topics={researchData} />
                             )}
 
+                            {/* SERP Opportunities Panel (Step 1) */}
+                            {auditResult?.serpAnalysis && (
+                                <div className="mt-8">
+                                    <SERPOpportunitiesPanel analysis={auditResult.serpAnalysis} />
+                                </div>
+                            )}
+
                             <div className="flex justify-end">
                                 <Button onClick={proceedToStrategy} className="px-10 py-6 bg-brand-secondary text-brand-text-primary border-2 border-brand-border-heavy font-black shadow-[6px_6px_0_0_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all">
                                     进入策略定策 <ArrowRight className="ml-2" />
