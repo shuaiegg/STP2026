@@ -11,7 +11,7 @@ import {
     Users, BarChart3, ChevronRight, Globe, Info,
     Eye, Code, Database, Braces, RefreshCw,
     Search, TrendingUp, Target, MousePointer2,
-    Lock, Check, ArrowLeft, ExternalLink
+    Lock, Check, ArrowLeft, ExternalLink, Shield
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -27,6 +27,9 @@ import Link from 'next/link';
 import { OutlineEditor, OutlineNode } from '@/components/editor/OutlineEditor';
 import { EditableSection } from '@/components/editor/EditableSection';
 import { parseMarkdownToSections, joinSectionsToMarkdown, ContentSection } from '@/lib/utils/markdown-sections';
+import { calculateHumanScore } from '@/lib/utils/ai-detection';
+import { downloadAsMarkdown, downloadAsHTML, triggerPrintPDF } from '@/lib/utils/export-helpers';
+import { saveSnapshot, getVersionHistory, VersionSnapshot } from '@/lib/utils/version-manager';
 
 
 export default function GEOWriterPage() {
@@ -36,8 +39,29 @@ export default function GEOWriterPage() {
     const [auditResult, setAuditResult] = useState<any>(null);
     const [finalResult, setFinalResult] = useState<any>(null);
     const [error, setError] = useState<string | null>(null);
-    // >>> Module 2.2 Granular Editing
     const [contentSections, setContentSections] = useState<ContentSection[]>([]);
+    const [selectedKeyword, setSelectedKeyword] = useState<string>(''); // 选中的主关键词
+    const [liveHumanScore, setLiveHumanScore] = useState<number | null>(null);
+    const [history, setHistory] = useState<VersionSnapshot[]>([]);
+    const [showHistory, setShowHistory] = useState(false);
+
+    // NEW Phase 2 states
+    const [viewMode, setViewMode] = useState<'preview' | 'markdown' | 'schema' | 'article'>('preview');
+    const [showOriginal, setShowOriginal] = useState(false);
+    const [isPaid, setIsPaid] = useState(false);
+    const [cachedIntelligence, setCachedIntelligence] = useState<any>(null); // Cached intelligence data from Step 1
+    const [editableOutline, setEditableOutline] = useState<OutlineNode[]>([]); // Editable outline state
+
+    const [form, setForm] = useState({
+        keywords: '',
+        location: '',
+        brandName: '',
+        tone: 'professional',
+        type: 'blog',
+        originalContent: '',
+        url: '', // Target domain for internal linking
+        autoVisuals: false // Default to false: Auto-insert visuals into content
+    });
 
     // Automatically parse content into sections when finalResult is updated
     useEffect(() => {
@@ -46,6 +70,69 @@ export default function GEOWriterPage() {
             setContentSections(sections);
         }
     }, [finalResult?.content]);
+
+    // Export Handlers
+    const handleExportMarkdown = () => {
+        const fullContent = joinSectionsToMarkdown(contentSections) || finalResult?.content || streamResult.completion;
+        if (!fullContent) return toast.error('没有可导出的内容');
+        const filename = `${finalResult?.seoMetadata?.slug || 'article'}.md`;
+        downloadAsMarkdown(fullContent, filename);
+        toast.success('Markdown 已导出');
+    };
+
+    const handleExportHTML = () => {
+        const fullContent = joinSectionsToMarkdown(contentSections) || finalResult?.content || streamResult.completion;
+        if (!fullContent) return toast.error('没有可导出的内容');
+        const filename = `${finalResult?.seoMetadata?.slug || 'article'}.html`;
+        downloadAsHTML(fullContent, {
+            title: finalResult?.seoMetadata?.title,
+            description: finalResult?.seoMetadata?.description,
+            keywords: finalResult?.seoMetadata?.keywords
+        }, filename);
+        toast.success('HTML 已导出');
+    };
+
+    const handleExportPDF = () => {
+        triggerPrintPDF();
+    };
+
+    // Initial Human Score Sync
+    useEffect(() => {
+        if (finalResult?.humanScore) {
+            setLiveHumanScore(finalResult.humanScore);
+
+            // Auto-save snapshot on initial generation
+            if (selectedKeyword && finalResult.content) {
+                const newHistory = saveSnapshot(
+                    selectedKeyword,
+                    finalResult.content,
+                    contentSections.length,
+                    { title: finalResult.seoMetadata.title, humanScore: finalResult.humanScore }
+                );
+                if (newHistory) setHistory(newHistory);
+            }
+        }
+    }, [finalResult]);
+
+    // Update Score on Edit & Auto-save (debounced effectively by being in useEffect)
+    useEffect(() => {
+        if (contentSections.length > 0) {
+            const currentText = joinSectionsToMarkdown(contentSections);
+            const score = calculateHumanScore(currentText);
+            setLiveHumanScore(score);
+
+            // For manual edits, we might want to save more carefully, maybe on a specific save button or timeout
+            // For now, let's keep it manual or on specific triggers to avoid cluttering history
+        }
+    }, [contentSections]);
+
+    const handleRestoreVersion = (version: VersionSnapshot) => {
+        const sections = parseMarkdownToSections(version.content);
+        setContentSections(sections);
+        setLiveHumanScore(version.metadata.humanScore || null);
+        toast.success(`已恢复至 ${new Date(version.timestamp).toLocaleString()}`);
+        setShowHistory(false);
+    };
 
     // Handle saving a manual edit
     const handleSectionSave = (id: string, newBody: string) => {
@@ -56,7 +143,7 @@ export default function GEOWriterPage() {
 
         // Also update the full markdown
         const newMarkdown = joinSectionsToMarkdown(updatedSections);
-        setFinalResult(prev => prev ? { ...prev, content: newMarkdown } : null);
+        setFinalResult((prev: any) => prev ? { ...prev, content: newMarkdown } : null);
         toast.success('段落已更新');
     };
 
@@ -96,7 +183,21 @@ export default function GEOWriterPage() {
 
             // Update full markdown
             const newMarkdown = joinSectionsToMarkdown(updatedSections);
-            setFinalResult(prev => prev ? { ...prev, content: newMarkdown } : null);
+            setFinalResult((prev: any) => prev ? { ...prev, content: newMarkdown } : null);
+
+            // Save snapshot after regeneration
+            if (selectedKeyword) {
+                const newHistory = saveSnapshot(
+                    selectedKeyword,
+                    newMarkdown,
+                    updatedSections.length,
+                    {
+                        title: finalResult?.seoMetadata?.title || 'Section Update',
+                        humanScore: data.output.data.humanScore || liveHumanScore || 0
+                    }
+                );
+                if (newHistory) setHistory(newHistory);
+            }
 
             toast.success('段落重写完成！', { id: loadingId });
             return true;
@@ -107,26 +208,6 @@ export default function GEOWriterPage() {
         }
     };
     // <<< End Module 2.2
-    const [viewMode, setViewMode] = useState<'preview' | 'markdown' | 'schema' | 'article'>('preview');
-    const [showOriginal, setShowOriginal] = useState(false);
-    const [isPaid, setIsPaid] = useState(false);
-    const [selectedKeyword, setSelectedKeyword] = useState<string>(''); // 选中的主关键词
-    const [cachedIntelligence, setCachedIntelligence] = useState<any>(null); // Cached intelligence data from Step 1
-    const [editableOutline, setEditableOutline] = useState<OutlineNode[]>([]); // Editable outline state
-
-
-
-    const [form, setForm] = useState({
-        keywords: '',
-        location: '',
-        brandName: '',
-        tone: 'professional',
-        type: 'blog',
-        originalContent: '',
-        url: '', // Target domain for internal linking
-        autoVisuals: false // Default to false: Auto-insert visuals into content
-    });
-
     // Sync finalResult to contentSections if needed (e.g. on load)
     useEffect(() => {
         if (finalResult?.content && contentSections.length === 0) {
@@ -135,8 +216,18 @@ export default function GEOWriterPage() {
         }
     }, [finalResult, contentSections.length]);
 
+    // NEW: Sync editableOutline when auditResult arrives or changes (e.g. on return to Step 2)
+    useEffect(() => {
+        if (auditResult?.masterOutline && editableOutline.length === 0) {
+            setEditableOutline(auditResult.masterOutline);
+        }
+    }, [auditResult, editableOutline.length]);
+
     // Function to proceed from research phase to strategy phase
     const proceedToStrategy = () => {
+        if (auditResult?.masterOutline && editableOutline.length === 0) {
+            setEditableOutline(auditResult.masterOutline);
+        }
         setStep(2);
     };
 
@@ -147,6 +238,7 @@ export default function GEOWriterPage() {
         setError(null);
         setResearchData(null);
         setAuditResult(null); // Clear previous deep analysis
+        setEditableOutline([]); // Clear previous outline
 
         try {
             // Check if we should use Mock or Real
@@ -186,7 +278,6 @@ export default function GEOWriterPage() {
             // Do NOT set AuditResult yet.
             setIsPaid(data.isRepeat || false);
 
-            // Smart Select Best Topic
             const topics = outputData.topics || [];
             if (topics.length > 0) {
                 const calculateOpportunityScore = (kw: any) => {
@@ -267,7 +358,7 @@ export default function GEOWriterPage() {
 
     // 2. PAID REWRITE (Step 2 -> 3)
     // Streaming Logic
-    const { complete, completion, isLoading: isStreaming } = useCompletion({
+    const streamResult = useCompletion({
         api: '/api/generate-stream',
         streamProtocol: 'text',
         onFinish: (prompt, result) => {
@@ -314,14 +405,8 @@ export default function GEOWriterPage() {
                 distribution: {}
             };
             setFinalResult(finalData);
-            // DO NOT overwrite auditResult here, as it contains the original research data
-            // setAuditResult(finalData);
-            setIsPaid(true); // Unlock "Paid" view
+            setIsPaid(true);
             setLoading(false);
-
-            // Initialize editable sections
-            const sections = parseMarkdownToSections(result);
-            setContentSections(sections);
             setStep(3); // Explicitly move to step 3
         },
         onError: (err) => {
@@ -344,7 +429,7 @@ export default function GEOWriterPage() {
             setStep(3); // Move to result view immediately to show stream
 
             // Trigger the stream
-            complete('', {
+            streamResult.complete('', {
                 body: {
                     input: {
                         ...form,
@@ -587,6 +672,12 @@ export default function GEOWriterPage() {
                                         <Card className="p-4 bg-white border-emerald-100 flex flex-col items-center shadow-sm">
                                             <span className="text-[10px] font-black text-slate-400 uppercase mb-1">GEO</span>
                                             <span className="text-2xl font-black text-brand-primary">{auditResult?.scores?.geo}%</span>
+                                        </Card>
+                                        <Card className="p-4 bg-white border-emerald-100 flex flex-col items-center shadow-sm col-span-2 md:col-span-1 md:col-start-1 md:col-end-3">
+                                            <span className="text-[10px] font-black text-slate-400 uppercase mb-1 flex items-center gap-1"><Shield size={10} /> HUMAN (LIVE)</span>
+                                            <span className={`text-2xl font-black ${liveHumanScore && liveHumanScore > 80 ? 'text-emerald-600' : 'text-orange-500'}`}>
+                                                {liveHumanScore ? <>{liveHumanScore}%</> : <span className="text-sm text-slate-300">N/A</span>}
+                                            </span>
                                         </Card>
                                     </div>
                                     <Link href="/dashboard" className="w-full">
@@ -877,7 +968,7 @@ export default function GEOWriterPage() {
                         </div>
                     )}
 
-                    {step === 3 && (finalResult || isStreaming) && (
+                    {step === 3 && (finalResult || streamResult.isLoading) && (
                         <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500 pb-20">
                             {/* Navigation Tabs */}
                             <div className="flex p-1.5 bg-slate-100 rounded-2xl w-fit border border-slate-200 shadow-inner">
@@ -893,7 +984,90 @@ export default function GEOWriterPage() {
                                 <button onClick={() => setViewMode('schema')} className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase transition-all flex items-center gap-2 ${viewMode === 'schema' ? 'bg-white text-brand-primary shadow-md border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}>
                                     <Braces size={14} /> Schema 代码
                                 </button>
+
+                                <div className="h-8 w-px bg-slate-200 mx-2" />
+
+                                <div className="relative group">
+                                    <button className="px-8 py-2.5 rounded-xl text-[10px] font-black uppercase transition-all flex items-center gap-2 bg-brand-primary/5 text-brand-primary hover:bg-brand-primary/10 border border-brand-primary/20">
+                                        <Copy size={14} /> 导出原文 <ChevronRight size={12} className="rotate-90" />
+                                    </button>
+                                    <div className="absolute top-full left-0 mt-2 w-40 bg-white border border-slate-200 rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 p-2 space-y-1">
+                                        <button onClick={handleExportMarkdown} className="w-full text-left px-4 py-2 hover:bg-slate-50 rounded-xl text-[10px] font-bold text-slate-700 flex items-center gap-2">
+                                            <FileText size={12} className="text-blue-500" /> Markdown
+                                        </button>
+                                        <button onClick={handleExportHTML} className="w-full text-left px-4 py-2 hover:bg-slate-50 rounded-xl text-[10px] font-bold text-slate-700 flex items-center gap-2">
+                                            <Code size={12} className="text-emerald-500" /> HTML 网页
+                                        </button>
+                                        <button onClick={handleExportPDF} className="w-full text-left px-4 py-2 hover:bg-slate-50 rounded-xl text-[10px] font-bold text-slate-700 flex items-center gap-2">
+                                            <ImageIcon size={12} className="text-purple-500" /> PDF 打印
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <button onClick={() => setShowHistory(true)} className="px-8 py-2.5 rounded-xl text-[10px] font-black uppercase transition-all flex items-center gap-2 hover:bg-slate-50 text-slate-400 border border-transparent hover:border-slate-200">
+                                    <Undo size={14} /> 历史版本 <Badge className="bg-slate-200 text-slate-500 text-[8px] h-4 min-w-4 flex items-center justify-center p-0">{history.length}</Badge>
+                                </button>
                             </div>
+
+                            {/* History Sidebar/Panel Overlay */}
+                            {showHistory && (
+                                <div className="fixed inset-0 z-[100] flex justify-end">
+                                    <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowHistory(false)} />
+                                    <div className="relative w-96 bg-white h-full shadow-2xl animate-in slide-in-from-right duration-300 border-l border-slate-200 flex flex-col">
+                                        <div className="p-8 border-b border-slate-100 flex items-center justify-between">
+                                            <div>
+                                                <h3 className="text-xl font-black text-brand-text-primary italic uppercase tracking-tighter">历史快照</h3>
+                                                <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">Version History · Auto-saved</p>
+                                            </div>
+                                            <button onClick={() => setShowHistory(false)} className="p-2 hover:bg-slate-100 rounded-xl text-slate-400">
+                                                <ArrowRight size={20} />
+                                            </button>
+                                        </div>
+
+                                        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                                            {history.length > 0 ? history.map((v, i) => (
+                                                <div key={i} className="p-4 bg-slate-50 rounded-2xl border-2 border-slate-100 hover:border-brand-primary/30 transition-all group">
+                                                    <div className="flex items-center justify-between mb-3">
+                                                        <span className="text-[10px] font-black text-slate-400">{new Date(v.timestamp).toLocaleString()}</span>
+                                                        <div className="flex items-center gap-2">
+                                                            {v.metadata.humanScore && (
+                                                                <Badge className="bg-emerald-50 text-emerald-600 text-[8px] border-emerald-100">
+                                                                    Human: {v.metadata.humanScore}%
+                                                                </Badge>
+                                                            )}
+                                                            <Badge className="bg-slate-200 text-slate-500 text-[8px] border-transparent font-mono">
+                                                                {v.sectionCount} Sections
+                                                            </Badge>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-[11px] text-slate-600 font-medium line-clamp-3 mb-4 bg-white/60 p-3 rounded-lg border border-slate-100">
+                                                        {v.content.substring(0, 150)}...
+                                                    </div>
+                                                    <Button
+                                                        onClick={() => handleRestoreVersion(v)}
+                                                        variant="outline"
+                                                        className="w-full text-[10px] font-black uppercase py-2 h-auto border-brand-primary/20 text-brand-primary hover:bg-brand-primary hover:text-white"
+                                                    >
+                                                        恢复此版本
+                                                    </Button>
+                                                </div>
+                                            )) : (
+                                                <div className="h-full flex flex-col items-center justify-center text-slate-300 space-y-4">
+                                                    <Database size={48} className="opacity-20" />
+                                                    <p className="text-xs font-bold uppercase italic">暂无历史快照</p>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="p-6 bg-slate-50 border-t border-slate-100">
+                                            <p className="text-[9px] text-slate-400 font-bold uppercase leading-relaxed text-center">
+                                                系统会自动在每次生成及重大修改后保存快照。<br />
+                                                本地存储仅保留最近 10 个版本。
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Main Display Area */}
                             <Card className="p-12 border-2 border-brand-border-heavy bg-white relative shadow-[20px_20px_0_0_rgba(10,10,10,0.03)] rounded-3xl min-h-[600px]">
@@ -914,15 +1088,14 @@ export default function GEOWriterPage() {
                                                     ))}
                                                 </div>
                                             ) : (
-                                                // Fallback to streaming/raw view if sections not yet parsed
-                                                (finalResult?.content || completion)?.split('\n').map((line: string, i: number) => {
+                                                (finalResult?.content || streamResult.completion || "")?.split('\n').map((line: string, i: number) => {
                                                     if (line.startsWith('## ')) return <h2 key={i} className="text-2xl font-black text-brand-text-primary pt-8 border-b-4 border-slate-50 pb-2">{line.replace('## ', '')}</h2>;
                                                     if (line.startsWith('### ')) return <h3 key={i} className="text-xl font-bold text-brand-text-primary pt-4">{line.replace('### ', '')}</h3>;
                                                     if (line.startsWith('- ')) return <li key={i} className="ml-6 list-disc marker:text-brand-secondary">{line.replace('- ', '')}</li>;
                                                     return <p key={i}>{line}</p>;
                                                 })
                                             )}
-                                            {isStreaming && (
+                                            {!finalResult && streamResult.isLoading && (
                                                 <div className="flex items-center gap-2 text-brand-primary animate-pulse pt-4">
                                                     <span className="w-2 h-2 rounded-full bg-brand-primary"></span>
                                                     <span className="text-xs font-black uppercase tracking-widest">Writing...</span>
@@ -980,7 +1153,7 @@ export default function GEOWriterPage() {
                                         <div className="flex justify-between items-center bg-slate-50 p-4 rounded-xl">
                                             <span className="text-xs font-black text-slate-500">全文预览 (FINAL PREVIEW)</span>
                                             <div className="flex gap-2">
-                                                <Button size="sm" variant="outline" onClick={() => copyToClipboard(finalResult?.content || completion)} className="bg-white gap-2 font-bold shadow-sm text-xs border-slate-200">
+                                                <Button size="sm" variant="outline" onClick={() => copyToClipboard(finalResult?.content || streamResult.completion)} className="bg-white gap-2 font-bold shadow-sm text-xs border-slate-200">
                                                     <Copy size={12} /> 一键复制全文
                                                 </Button>
                                             </div>
@@ -999,7 +1172,7 @@ export default function GEOWriterPage() {
                                                 }}
                                                 remarkPlugins={[remarkGfm]}
                                             >
-                                                {finalResult?.content || completion}
+                                                {finalResult?.content || streamResult.completion}
                                             </ReactMarkdown>
                                         </div>
                                     </div>
@@ -1009,11 +1182,11 @@ export default function GEOWriterPage() {
                                     <div className="space-y-4 h-full">
                                         <div className="flex justify-between items-center bg-slate-50 p-4 rounded-xl">
                                             <span className="text-xs font-black text-slate-500">MARKDOWN 源代码</span>
-                                            <Button size="sm" variant="outline" onClick={() => copyToClipboard(finalResult?.content || completion)} className="bg-white gap-2 font-bold shadow-sm text-xs">
+                                            <Button size="sm" variant="outline" onClick={() => copyToClipboard(finalResult?.content || streamResult.completion)} className="bg-white gap-2 font-bold shadow-sm text-xs">
                                                 <Copy size={12} /> 复制代码
                                             </Button>
                                         </div>
-                                        <textarea readOnly value={finalResult?.content || completion} className="w-full h-[550px] p-8 bg-slate-900 text-emerald-400 font-mono text-xs rounded-2xl outline-none shadow-inner" />
+                                        <textarea readOnly value={finalResult?.content || streamResult.completion} className="w-full h-[550px] p-8 bg-slate-900 text-emerald-400 font-mono text-xs rounded-2xl outline-none shadow-inner" />
                                     </div>
                                 )}
 
@@ -1033,6 +1206,7 @@ export default function GEOWriterPage() {
                                         </div>
                                         <pre className="p-8 bg-slate-900 text-violet-300 font-mono text-xs rounded-2xl overflow-auto h-[450px] shadow-inner">
                                             {JSON.stringify(finalResult?.schema || {}, null, 2)}
+                                            {(!finalResult && streamResult.completion) ? "\n/* Schema will be generated after content completion */" : ""}
                                         </pre>
                                     </div>
                                 )}
@@ -1104,16 +1278,18 @@ export default function GEOWriterPage() {
                                         </div>
 
                                         {/* 可视化图表集合 */}
-                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                                            <SEOScoreDashboard score={finalResult.detailedSEOScore} />
-                                            <CompetitorRadarChart
-                                                myScore={finalResult.detailedSEOScore}
-                                                competitors={finalResult.competitors || []}
-                                            />
-                                        </div>
+                                        {finalResult && (
+                                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                                                <SEOScoreDashboard score={finalResult.detailedSEOScore} />
+                                                <CompetitorRadarChart
+                                                    myScore={finalResult.detailedSEOScore}
+                                                    competitors={finalResult.competitors || []}
+                                                />
+                                            </div>
+                                        )}
 
                                         {/* 详细评分面板 */}
-                                        <SEOScorePanel score={finalResult.detailedSEOScore} />
+                                        {finalResult && <SEOScorePanel score={finalResult.detailedSEOScore} />}
                                     </Card>
                                 </div>
                             )}

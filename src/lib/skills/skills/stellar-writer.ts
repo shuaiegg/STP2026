@@ -14,7 +14,7 @@ import { SkeletonExtractor, ContentSkeleton } from '../../external/skeleton-extr
 import { SERPAnalyzer, type SERPAnalysis } from '../../external/serp-analyzer';
 import { calculateDetailedSEOScore, type DetailedSEOScore } from '@/lib/utils/seo-scoring';
 import { humanizeContent } from '@/lib/utils/humanize';
-import { detectAIPatterns } from '@/lib/utils/ai-detection';
+import { detectAIPatterns, calculateHumanScore } from '@/lib/utils/ai-detection';
 import { buildSERPEnhancedPrompt } from '@/lib/utils/prompt-enhancer';
 import { ContentGapAnalyzer } from '@/lib/utils/content-gap-analyzer';
 
@@ -97,6 +97,7 @@ export interface StellarWriterOutput {
         level: number;
         text: string;
     }[];
+    humanScore?: number;
     /** Competitor analysis data */
     competitors?: ContentSkeleton[];
     /** Recommended internal links */
@@ -431,9 +432,14 @@ Please return ONLY the rewritten content for this section. Do not include the he
                 temperature: 0.7
             });
 
+            // 4. Humanize Loop (Dual-Model Strategy)
+            console.log('🛡️  Running AI Fingerprint Bleaching Loop...');
+            const { content: finalContent, score: finalScore } = await this.humanizeLoop(provider, response.content, keywords);
+
             return {
                 data: {
-                    content: response.content, // This is just the section body
+                    content: finalContent, // This is just the section body
+                    humanScore: finalScore,
                     suggestions: []
                 } as any,
                 metadata: {
@@ -457,6 +463,11 @@ Please return ONLY the rewritten content for this section. Do not include the he
             temperature: 0.7,
             maxOutputTokens: 8000,
         });
+
+        // 4. Humanize Loop (Dual-Model Strategy)
+        console.log('🛡️  Running AI Fingerprint Bleaching Loop...');
+        const { content: finalContent, score: finalScore } = await this.humanizeLoop(provider, response.content, keywords);
+
         perf.ai = Date.now() - t4;
         perf.total = Date.now() - perf.start;
 
@@ -467,7 +478,11 @@ Please return ONLY the rewritten content for this section. Do not include the he
         }
 
         // 4. Orchestration: Parse and finalize
-        const result = this.parseResponse(response.content, entities, topics, competitorSkeletons, serpAnalysis, stellarInput.keywords);
+        // Use 'finalContent' (humanized) instead of 'response.content'
+        const result = this.parseResponse(finalContent, entities, topics, competitorSkeletons, serpAnalysis, stellarInput.keywords);
+
+        // Inject human score
+        result.humanScore = finalScore;
 
         return {
             data: result,
@@ -691,5 +706,59 @@ Return ONLY JSON.`;
             aiDetectionFlags: aiDetectionResult?.flags,   // New field
             suggestions: json?.suggestions || []
         };
+    }
+
+    /**
+     * Iterative Humanization Loop
+     * Checks "Human Score" and rewrites if necessary.
+     */
+    private async humanizeLoop(provider: any, content: string, keyword: string): Promise<{ content: string; score: number }> {
+        let currentContent = content;
+        let currentScore = calculateHumanScore(currentContent);
+        let loops = 0;
+        const MAX_LOOPS = 1; // Limit to 1 rewrite pass for speed trade-off
+
+        console.log(`   - Initial Human Score: ${currentScore.toFixed(1)}/100`);
+
+        while (currentScore < 60 && loops < MAX_LOOPS) {
+            console.log(`   ⚠️ Score too low (<60). Triggering Aggressive Editor (Pass ${loops + 1})...`);
+
+            const bleedPrompt = `You are an aggressive "Humanizer" editor. 
+            Your goal is to rewrite the text to bypass AI detection filters.
+            
+            CRITICAL RULES:
+            1. VARY SENTENCE LENGTH: Mix very short sentences (3-5 words) with long, complex ones.
+            2. USE CONTRACTIONS: "It is" -> "It's", "Do not" -> "Don't".
+            3. REMOVE AI TROPES: Delete "In conclusion", "Moreover", "It's worth noting", "Delve into".
+            4. ADD PERSONALITY: Use idioms, rhetorical questions, and "I/We" perspective.
+            
+            Original Text Context: ${keyword}
+            
+            Rewrite the following text to be 100% human-sounding. KEEP MARKDOWN FORMATTING INTACT (Headings, bold, links).`;
+
+            try {
+                const { response } = await this.generateWithAI(provider, `${bleedPrompt}\n\n${currentContent}`, {
+                    model: this.preferredModel, // Ideally use a faster/dumber model if available, but staying consistent for now
+                    temperature: 0.9 // Higher temp for more variance
+                });
+
+                if (response.content) {
+                    const newScore = calculateHumanScore(response.content);
+                    console.log(`   - New Human Score: ${newScore.toFixed(1)}/100`);
+
+                    if (newScore > currentScore) {
+                        currentContent = response.content;
+                        currentScore = newScore;
+                    } else {
+                        console.log('   - Rewrite didn\'t improve score. Keeping previous.');
+                    }
+                }
+            } catch (err) {
+                console.warn('Humanize loop failed:', err);
+            }
+            loops++;
+        }
+
+        return { content: currentContent, score: currentScore };
     }
 }

@@ -217,3 +217,12 @@ export function detectAIPatterns(text: string): AIDetectionResult {
 export function getAIScore(text: string): number {
     return detectAIPatterns(text).score;
 }
+
+/**
+ * 计算人类真实度分数 (0-100)
+ * 100 = 完全像人类
+ * 0 = 完全像AI
+ */
+export function calculateHumanScore(text: string): number {
+    return 100 - getAIScore(text);
+}
