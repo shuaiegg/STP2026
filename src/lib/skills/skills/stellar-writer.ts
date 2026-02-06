@@ -11,7 +11,7 @@ import type { SkillInput, SkillOutput, SkillExecutionMetadata } from '../types';
 import { getProvider } from '../providers';
 import { DataForSEOClient, MapDataItem } from '../../external/dataforseo';
 import { SkeletonExtractor, ContentSkeleton } from '../../external/skeleton-extractor';
-import { SERPAnalyzer, type SERPAnalysis } from '../../external/serp-analyzer';
+import { SERPAnalyzer, type SERPAnalysis, analyzeSERP } from '../../external/serp-analyzer';
 import { calculateDetailedSEOScore, type DetailedSEOScore } from '@/lib/utils/seo-scoring';
 import { humanizeContent } from '@/lib/utils/humanize';
 import { detectAIPatterns, calculateHumanScore } from '@/lib/utils/ai-detection';
@@ -150,6 +150,51 @@ export class StellarWriterSkill extends BaseSkill {
     }
 
     /**
+     * Detect language script and return appropriate DataForSEO location code.
+     * Supports: Chinese, Japanese, Korean, Russian, Arabic.
+     * Defaults to US/English for others.
+     */
+    protected detectLanguageAndLocation(text: string): { lang: string, loc: number } {
+        // Chinese (Han Script) -> China (2156)
+        if (/[\u4e00-\u9fa5]/.test(text)) {
+            return { lang: 'zh', loc: 2156 };
+        }
+        // Japanese (Hiragana/Katakana) -> Japan (2392)
+        if (/[\u3040-\u309f\u30a0-\u30ff]/.test(text)) {
+            return { lang: 'ja', loc: 2392 };
+        }
+        // Korean (Hangul) -> South Korea (2410)
+        if (/[\uac00-\ud7af]/.test(text)) {
+            return { lang: 'ko', loc: 2410 };
+        }
+        // Russian (Cyrillic) -> Russia (2643)
+        if (/[\u0400-\u04ff]/.test(text)) {
+            return { lang: 'ru', loc: 2643 };
+        }
+        // Arabic -> UAE (2784) - Common hub, or Saudi Arabia (2682)
+        if (/[\u0600-\u06ff]/.test(text)) {
+            return { lang: 'ar', loc: 2784 };
+        }
+
+        // Default: English / United States
+        return { lang: 'en', loc: 2840 };
+    }
+
+    /**
+     * Helper to map back location code to string for other APIs
+     */
+    protected getLocationNameFromCode(code: number): string {
+        switch (code) {
+            case 2156: return 'China';
+            case 2392: return 'Japan';
+            case 2410: return 'South Korea';
+            case 2643: return 'Russia';
+            case 2784: return 'United Arab Emirates';
+            default: return 'United States';
+        }
+    }
+
+    /**
      * Main execution logic
      */
     protected async executeInternal(
@@ -248,6 +293,65 @@ export class StellarWriterSkill extends BaseSkill {
         let topics: any[] = [];
         let competitorSkeletons: ContentSkeleton[] = [];
         let serpAnalysis; // Declare outside for proper scope
+
+        try {
+            // DETECT LANGUAGE & LOCATION
+            const { lang: detectedLang, loc: detectedLoc } = this.detectLanguageAndLocation(keywords);
+            console.log(`🌍 Detected Context: Lang=${detectedLang}, Loc=${detectedLoc} (based on "${keywords}")`);
+
+            // Parallel Execution: Fetch SERP Analysis AND Related Keywords
+            const promises: Promise<any>[] = [];
+
+            // 1. SERP Analysis Task
+            if (!auditOnly || input.researchMode === 'discovery' || input.researchMode === 'deep_analysis') {
+                const searchLocation = (location && location !== 'United States') ? location : this.getLocationNameFromCode(detectedLoc);
+                console.log('🔍 Starting SERP Analysis...', { keywords, location: searchLocation });
+
+                promises.push(
+                    DataForSEOClient.searchGoogleSERP(keywords, searchLocation)
+                        .then(async (results) => {
+                            if (results && results.length > 0) {
+                                const analyzer = new SERPAnalyzer();
+                                serpAnalysis = analyzer.analyzeRawData(results, keywords);
+                                competitorSkeletons = await extractCompetitorSkeletons(results);
+                            }
+                            return results;
+                        })
+                        .catch(err => console.error('SERP Analysis failed:', err))
+                );
+            } else {
+                promises.push(Promise.resolve(null));
+            }
+
+            // 2. Related Keywords Task
+            if (!auditOnly || input.researchMode === 'discovery' || input.researchMode === 'deep_analysis') {
+                console.log('📊 Fetching Related Keywords...');
+                promises.push(
+                    DataForSEOClient.getRelatedTopics(keywords, detectedLoc, detectedLang)
+                        .then(data => { topics = data; return data; })
+                        .catch(err => console.error('Keyword fetch failed:', err))
+                );
+            } else {
+                promises.push(Promise.resolve(null));
+            }
+
+            // 3. Map Entities Task (Optional)
+            if (!auditOnly || input.researchMode === 'deep_analysis') {
+                const searchLocation = (location && location !== 'United States') ? location : this.getLocationNameFromCode(detectedLoc);
+                promises.push(
+                    DataForSEOClient.searchGoogleMaps(keywords, searchLocation)
+                        .then(data => { entities = data; return data; })
+                        .catch(err => console.error('Maps fetch failed:', err))
+                );
+            }
+
+            // Wait for all intelligence gathering to complete
+            await Promise.all(promises);
+
+        } catch (error) {
+            console.error('Intelligence gathering failed:', error);
+            // Continue execution, just without rich data
+        }
 
         const perf: any = { start: Date.now() };
 
@@ -527,6 +631,12 @@ ${internalContent.map(c => `- [${c.title}](${c.url}): ${c.snippet}`).join('\n')}
             : '';
 
         return `You are a world-class Growth Marketer and SEO/GEO expert.
+Context: Current date is ${new Date().toISOString().split('T')[0]}.
+
+TITLE RULES:
+1. Only include the year (${new Date().getFullYear()}) if the content is time-sensitive (e.g. "Trends", "Best of", "Guide").
+2. Do NOT force the year into general topics (e.g. "History of SEO", "What is Marketing").
+3. Vary title structures: Questions, Listicles, How-to, Provocative Statements.
 
 
 MODE: ${auditOnly ? 'AUDIT & STRATEGY ONLY. Analyse keywords and competitors, and provide a "Master Outline" that can beat them.' : `FULL CONTENT GENERATION MODE - Create complete, publication-ready article.
@@ -618,7 +728,17 @@ ${serpAnalysis ? buildSERPEnhancedPrompt({
   ${auditOnly ? '"masterOutline": [ { "level": 1, "text": "H1 Title" }, { "level": 2, "text": "H2 Subtitle" } ],' : ''}
   "internalLinks": ["/blog/related-topic-1", "/blog/related-topic-2"],
   "scores": { "seo": 95, "geo": 92 },
-  "suggestions": ["Strategic point 1", "..."]
+  "suggestions": ["Strategic point 1", "..."],
+  "distribution": {
+    "twitter": {
+        "thread": ["Tweet 1", "Tweet 2..."],
+        "hashtags": ["#marketing", "#seo"]
+    },
+    "linkedin": {
+        "post": "Professional update...",
+        "hashtags": ["#marketing", "#seo"]
+    }
+  }
 }
 \`\`\`
 
@@ -761,4 +881,20 @@ Return ONLY JSON.`;
 
         return { content: currentContent, score: currentScore };
     }
+}
+
+/**
+ * Helper to extract competitor outlines from SERP results
+ */
+async function extractCompetitorSkeletons(serpResults: any[]): Promise<ContentSkeleton[]> {
+    const urls = serpResults
+        .filter((item: any) => item.type === 'organic')
+        .slice(0, 5)
+        .map((item: any) => item.url)
+        .filter((url: any) => !!url);
+
+    if (urls.length === 0) return [];
+
+    console.log(`🦴 Extracting skeletons from ${urls.length} competitor URLs...`);
+    return SkeletonExtractor.batchExtract(urls);
 }

@@ -11,7 +11,7 @@ import {
     Users, BarChart3, ChevronRight, Globe, Info,
     Eye, Code, Database, Braces, RefreshCw,
     Search, TrendingUp, Target, MousePointer2,
-    Lock, Check, ArrowLeft, ExternalLink, Shield
+    Lock, Check, ArrowLeft, ExternalLink, Shield, Share2
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -46,7 +46,7 @@ export default function GEOWriterPage() {
     const [showHistory, setShowHistory] = useState(false);
 
     // NEW Phase 2 states
-    const [viewMode, setViewMode] = useState<'preview' | 'markdown' | 'schema' | 'article'>('preview');
+    const [viewMode, setViewMode] = useState<'preview' | 'markdown' | 'schema' | 'article' | 'distribution'>('preview');
     const [showOriginal, setShowOriginal] = useState(false);
     const [isPaid, setIsPaid] = useState(false);
     const [cachedIntelligence, setCachedIntelligence] = useState<any>(null); // Cached intelligence data from Step 1
@@ -100,17 +100,6 @@ export default function GEOWriterPage() {
     useEffect(() => {
         if (finalResult?.humanScore) {
             setLiveHumanScore(finalResult.humanScore);
-
-            // Auto-save snapshot on initial generation
-            if (selectedKeyword && finalResult.content) {
-                const newHistory = saveSnapshot(
-                    selectedKeyword,
-                    finalResult.content,
-                    contentSections.length,
-                    { title: finalResult.seoMetadata.title, humanScore: finalResult.humanScore }
-                );
-                if (newHistory) setHistory(newHistory);
-            }
         }
     }, [finalResult]);
 
@@ -127,9 +116,32 @@ export default function GEOWriterPage() {
     }, [contentSections]);
 
     const handleRestoreVersion = (version: VersionSnapshot) => {
+        // 1. Force a new parse (this generates new IDs, forcing UI re-mount)
         const sections = parseMarkdownToSections(version.content);
+
+        // 2. Set content sections
         setContentSections(sections);
-        setLiveHumanScore(version.metadata.humanScore || null);
+
+        // 3. Update finalResult deeply to ensure UI consistency
+        const newScore = version.metadata.humanScore || null;
+        setFinalResult((prev: any) => {
+            // If prev is null, we try to reconstruct a minimal valid object
+            if (!prev) {
+                return {
+                    content: version.content,
+                    scores: { seo: 0, geo: 0 },
+                    seoMetadata: { title: version.metadata.title || '' },
+                    humanScore: newScore
+                };
+            }
+            return {
+                ...prev,
+                content: version.content,
+                humanScore: newScore
+            };
+        });
+
+        setLiveHumanScore(newScore);
         toast.success(`已恢复至 ${new Date(version.timestamp).toLocaleString()}`);
         setShowHistory(false);
     };
@@ -144,7 +156,22 @@ export default function GEOWriterPage() {
         // Also update the full markdown
         const newMarkdown = joinSectionsToMarkdown(updatedSections);
         setFinalResult((prev: any) => prev ? { ...prev, content: newMarkdown } : null);
-        toast.success('段落已更新');
+
+        // Auto-save snapshot on manual edit
+        if (selectedKeyword) {
+            const newHistory = saveSnapshot(
+                selectedKeyword,
+                newMarkdown,
+                updatedSections.length,
+                {
+                    title: finalResult?.seoMetadata?.title || 'Manual Edit',
+                    humanScore: liveHumanScore || 0
+                }
+            );
+            if (newHistory) setHistory(newHistory);
+        }
+
+        toast.success('段落已更新 (已自动保存快照)');
     };
 
     // Handle AI Regeneration of a section
@@ -371,7 +398,7 @@ export default function GEOWriterPage() {
                 seoMetadata: {
                     title: selectedKeyword || form.keywords,
                     description: "AI Generated Guide to " + (selectedKeyword || form.keywords),
-                    keywords: [selectedKeyword || form.keywords, "guide", "2024"],
+                    keywords: [selectedKeyword || form.keywords, "guide", new Date().getFullYear().toString()],
                     slug: (selectedKeyword || form.keywords).toLowerCase().replace(/\s+/g, '-')
                 },
                 schema: {
@@ -408,6 +435,20 @@ export default function GEOWriterPage() {
             setIsPaid(true);
             setLoading(false);
             setStep(3); // Explicitly move to step 3
+
+            // Auto-save snapshot on initial generation (Moved from useEffect)
+            if (selectedKeyword || form.keywords) {
+                const newHistory = saveSnapshot(
+                    selectedKeyword || form.keywords,
+                    finalData.content,
+                    (finalData.content.match(/^## /gm) || []).length, // Estimate sections
+                    {
+                        title: finalData.seoMetadata.title,
+                        humanScore: finalData.scores?.seo // Use logical score mapping or calculate
+                    }
+                );
+                if (newHistory) setHistory(newHistory);
+            }
         },
         onError: (err) => {
             console.error('Streaming error:', err);
@@ -602,8 +643,6 @@ export default function GEOWriterPage() {
                                                 className="w-full bg-white border-2 border-slate-100 p-3 rounded-xl outline-none focus:border-brand-primary transition-all text-xs font-bold shadow-sm"
                                             >
                                                 <option value="blog">深度博客文章</option>
-                                                <option value="landing_page">高转化落地页</option>
-                                                <option value="guide">操作指南/白皮书</option>
                                             </select>
                                         </div>
                                         <div className="space-y-2">
@@ -984,25 +1023,11 @@ export default function GEOWriterPage() {
                                 <button onClick={() => setViewMode('schema')} className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase transition-all flex items-center gap-2 ${viewMode === 'schema' ? 'bg-white text-brand-primary shadow-md border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}>
                                     <Braces size={14} /> Schema 代码
                                 </button>
+                                <button onClick={() => setViewMode('distribution')} className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase transition-all flex items-center gap-2 ${viewMode === 'distribution' ? 'bg-white text-brand-primary shadow-md border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}>
+                                    <Share2 size={14} /> 社交分发
+                                </button>
 
-                                <div className="h-8 w-px bg-slate-200 mx-2" />
 
-                                <div className="relative group">
-                                    <button className="px-8 py-2.5 rounded-xl text-[10px] font-black uppercase transition-all flex items-center gap-2 bg-brand-primary/5 text-brand-primary hover:bg-brand-primary/10 border border-brand-primary/20">
-                                        <Copy size={14} /> 导出原文 <ChevronRight size={12} className="rotate-90" />
-                                    </button>
-                                    <div className="absolute top-full left-0 mt-2 w-40 bg-white border border-slate-200 rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 p-2 space-y-1">
-                                        <button onClick={handleExportMarkdown} className="w-full text-left px-4 py-2 hover:bg-slate-50 rounded-xl text-[10px] font-bold text-slate-700 flex items-center gap-2">
-                                            <FileText size={12} className="text-blue-500" /> Markdown
-                                        </button>
-                                        <button onClick={handleExportHTML} className="w-full text-left px-4 py-2 hover:bg-slate-50 rounded-xl text-[10px] font-bold text-slate-700 flex items-center gap-2">
-                                            <Code size={12} className="text-emerald-500" /> HTML 网页
-                                        </button>
-                                        <button onClick={handleExportPDF} className="w-full text-left px-4 py-2 hover:bg-slate-50 rounded-xl text-[10px] font-bold text-slate-700 flex items-center gap-2">
-                                            <ImageIcon size={12} className="text-purple-500" /> PDF 打印
-                                        </button>
-                                    </div>
-                                </div>
 
                                 <button onClick={() => setShowHistory(true)} className="px-8 py-2.5 rounded-xl text-[10px] font-black uppercase transition-all flex items-center gap-2 hover:bg-slate-50 text-slate-400 border border-transparent hover:border-slate-200">
                                     <Undo size={14} /> 历史版本 <Badge className="bg-slate-200 text-slate-500 text-[8px] h-4 min-w-4 flex items-center justify-center p-0">{history.length}</Badge>
@@ -1175,6 +1200,26 @@ export default function GEOWriterPage() {
                                                 {finalResult?.content || streamResult.completion}
                                             </ReactMarkdown>
                                         </div>
+
+                                        {/* Bottom Export Actions */}
+                                        <div className="flex justify-center pb-8 opacity-60 hover:opacity-100 transition-opacity">
+                                            <div className="relative group">
+                                                <button className="px-8 py-3 rounded-xl text-xs font-black uppercase transition-all flex items-center gap-2 bg-slate-100 text-slate-500 hover:bg-brand-primary hover:text-white border border-slate-200 hover:border-brand-primary shadow-sm hover:shadow-lg hover:-translate-y-1">
+                                                    <Copy size={16} /> 导出原文 / 下载 <ChevronRight size={14} className="rotate-90" />
+                                                </button>
+                                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-48 bg-white border border-slate-200 rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 p-2 space-y-1">
+                                                    <button onClick={handleExportMarkdown} className="w-full text-left px-4 py-3 hover:bg-slate-50 rounded-xl text-xs font-bold text-slate-700 flex items-center gap-3">
+                                                        <FileText size={14} className="text-blue-500" /> Markdown
+                                                    </button>
+                                                    <button onClick={handleExportHTML} className="w-full text-left px-4 py-3 hover:bg-slate-50 rounded-xl text-xs font-bold text-slate-700 flex items-center gap-3">
+                                                        <Code size={14} className="text-emerald-500" /> HTML 网页
+                                                    </button>
+                                                    <button onClick={handleExportPDF} className="w-full text-left px-4 py-3 hover:bg-slate-50 rounded-xl text-xs font-bold text-slate-700 flex items-center gap-3">
+                                                        <ImageIcon size={14} className="text-purple-500" /> PDF 打印
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 )}
 
@@ -1208,6 +1253,83 @@ export default function GEOWriterPage() {
                                             {JSON.stringify(finalResult?.schema || {}, null, 2)}
                                             {(!finalResult && streamResult.completion) ? "\n/* Schema will be generated after content completion */" : ""}
                                         </pre>
+                                    </div>
+                                )}
+
+                                {viewMode === 'distribution' && (
+                                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
+                                        {/* Twitter Thread */}
+                                        {finalResult?.distribution?.twitter ? (
+                                            <Card className="p-8 bg-white border-2 border-slate-100 rounded-2xl relative overflow-hidden">
+                                                <div className="flex items-center gap-3 mb-6">
+                                                    <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center text-white">
+                                                        <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="text-xl font-black text-slate-800">Viral Thread</h3>
+                                                        <p className="text-xs text-slate-400 font-bold">已优化钩子(Hook)与完读率</p>
+                                                    </div>
+                                                    <Button variant="outline" size="sm" className="ml-auto" onClick={() => copyToClipboard(finalResult.distribution.twitter.thread.join('\n\n'))}>
+                                                        <Copy size={12} className="mr-2" /> 复制全部
+                                                    </Button>
+                                                </div>
+                                                <div className="space-y-4 relative">
+                                                    <div className="absolute left-4 top-4 bottom-4 w-0.5 bg-slate-200" />
+                                                    {finalResult.distribution.twitter.thread.map((tweet: string, i: number) => (
+                                                        <div key={i} className="pl-10 relative">
+                                                            <div className="absolute left-[-5px] top-6 w-3 h-3 rounded-full bg-black border-2 border-white ring-1 ring-slate-200" />
+                                                            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 text-sm text-slate-700 leading-relaxed font-medium hover:border-slate-300 transition-colors">
+                                                                {tweet}
+                                                            </div>
+                                                            <div className="mt-2 flex items-center gap-2">
+                                                                <button className="text-[10px] text-slate-400 font-bold hover:text-brand-primary flex items-center gap-1" onClick={() => copyToClipboard(tweet)}>
+                                                                    <Copy size={10} /> 复制此条
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                <div className="mt-6 flex flex-wrap gap-2 pl-10">
+                                                    {finalResult.distribution.twitter.hashtags?.map((tag: string, i: number) => (
+                                                        <span key={i} className="text-xs text-brand-primary font-bold">{tag}</span>
+                                                    ))}
+                                                </div>
+                                            </Card>
+                                        ) : (
+                                            <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-3xl bg-slate-50">
+                                                <h3 className="text-sm font-black text-slate-400">Twitter Thread 尚未生成</h3>
+                                            </div>
+                                        )}
+
+                                        {/* LinkedIn Post */}
+                                        {finalResult?.distribution?.linkedin ? (
+                                            <Card className="p-8 bg-white border-2 border-blue-100 rounded-2xl">
+                                                <div className="flex items-center gap-3 mb-6">
+                                                    <div className="w-10 h-10 bg-[#0077b5] rounded-lg flex items-center justify-center text-white">
+                                                        <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current"><circle cx="4.983" cy="4.983" r="4.983" /><path d="M9.237 8.855v12.139h3.769v-6.003c0-1.584.268-3.451 2.866-3.451 2.581 0 2.842 2.308 2.842 3.48v5.974h3.717v-6.421c0-3.153-1.711-4.661-4.01-4.661-1.85 0-2.651.983-3.086 1.706h-.04v-1.425h-3.483l.025 8.163h3.48v-8.163z" /></svg>
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="text-xl font-black text-slate-800">LinkedIn Post</h3>
+                                                        <p className="text-xs text-slate-400 font-bold">PAS 框架 · 专业影响力</p>
+                                                    </div>
+                                                    <Button variant="outline" size="sm" className="ml-auto" onClick={() => copyToClipboard(finalResult.distribution.linkedin.post)}>
+                                                        <Copy size={12} className="mr-2" /> 复制全文
+                                                    </Button>
+                                                </div>
+                                                <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 text-sm text-slate-800 leading-relaxed whitespace-pre-wrap font-medium">
+                                                    {finalResult.distribution.linkedin.post}
+                                                </div>
+                                                <div className="mt-4 flex flex-wrap gap-2">
+                                                    {finalResult.distribution.linkedin.hashtags?.map((tag: string, i: number) => (
+                                                        <span key={i} className="text-xs text-[#0077b5] font-bold bg-blue-50 px-2 py-1 rounded-md">{tag}</span>
+                                                    ))}
+                                                </div>
+                                            </Card>
+                                        ) : (
+                                            <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-3xl bg-slate-50">
+                                                <h3 className="text-sm font-black text-slate-400">LinkedIn Post 尚未生成</h3>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </Card>

@@ -176,11 +176,18 @@ export function EditableSection({ section, onSave, onRegenerate, className = "" 
                             autoFocus
                         />
                         <Button
+                            onClick={() => setIsRegenOpen(false)}
+                            variant="ghost"
+                            className="text-purple-400 hover:text-purple-600 hover:bg-purple-100 px-3 rounded-lg"
+                        >
+                            取消
+                        </Button>
+                        <Button
                             onClick={handleRegenerateSubmit}
                             disabled={isRegenerating || !regenInstruction}
-                            className="bg-purple-600 hover:bg-purple-700 text-white px-4 rounded-lg"
+                            className="bg-purple-600 hover:bg-purple-700 text-white px-4 rounded-lg shadow-purple-200 shadow-md"
                         >
-                            {isRegenerating ? <RefreshCw size={14} className="animate-spin" /> : '生成'}
+                            {isRegenerating ? <RefreshCw size={14} className="animate-spin" /> : '开始重写'}
                         </Button>
                     </div>
                 </div>

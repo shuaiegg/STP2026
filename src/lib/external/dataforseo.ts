@@ -151,7 +151,11 @@ export class DataForSEOClient {
     /**
      * Get related keywords and People Also Ask
      */
-    static async getRelatedTopics(keyword: string): Promise<any[]> {
+    static async getRelatedTopics(
+        keyword: string,
+        locationCode: number = 2840, // Default: US
+        languageCode: string = "en"  // Default: English
+    ): Promise<any[]> {
         // Use mock data if enabled
         if (USE_MOCK_DATA) {
             console.log(`DataForSEO: Using MOCK data for "${keyword}"...`);
@@ -161,15 +165,15 @@ export class DataForSEOClient {
         if (!DATAFORSEO_LOGIN || !DATAFORSEO_PASSWORD) return [];
 
         try {
-            console.log(`DataForSEO: Researching topics for "${keyword}"...`);
+            console.log(`DataForSEO: Researching topics for "${keyword}"... (Loc: ${locationCode}, Lang: ${languageCode})`);
 
             // Step 1: DataForSEO Labs Related Keywords (Primary Source - More Reliable)
             console.log('DataForSEO: Fetching related keywords from Labs API (Primary)...');
 
             const labsPayload = {
                 keyword: keyword,
-                location_code: 2840,
-                language_code: "en",
+                location_code: locationCode,
+                language_code: languageCode,
                 limit: 20
             };
 
@@ -207,8 +211,8 @@ export class DataForSEOClient {
             console.log(`DataForSEO: Labs API empty/failed, trying Standard Keyword Ideas (Fallback)...`);
             const payload = [{
                 keywords: [keyword],
-                location_code: 2840, // United States
-                language_code: "en",
+                location_code: locationCode,
+                language_code: languageCode,
                 include_seed_keyword: true,
                 limit: 20
             }];
@@ -244,8 +248,8 @@ export class DataForSEOClient {
             console.log('DataForSEO: No related keywords found in any source, falling back to seed keyword volume...');
             const fallbackPayload = [{
                 keywords: [keyword],
-                location_code: 2840,
-                language_code: "en"
+                location_code: locationCode,
+                language_code: languageCode
             }];
 
             const fallbackResponse = await fetch(`${this.baseUrl}/keywords_data/google/search_volume/live`, {

@@ -1,6 +1,6 @@
 INPUT:
 {
-  "keywords": "best crm for b2b saas",
+  "keywords": "Scale my small business",
   "location": "",
   "brandName": "",
   "tone": "professional",
@@ -13,6 +13,12 @@ INPUT:
 
 PROMPT:
 You are a world-class Growth Marketer and SEO/GEO expert.
+Context: Current date is 2026-02-06.
+
+TITLE RULES:
+1. Only include the year (2026) if the content is time-sensitive (e.g. "Trends", "Best of", "Guide").
+2. Do NOT force the year into general topics (e.g. "History of SEO", "What is Marketing").
+3. Vary title structures: Questions, Listicles, How-to, Provocative Statements.
 
 
 MODE: FULL CONTENT GENERATION MODE - Create complete, publication-ready article.
@@ -58,135 +64,104 @@ MODE: FULL CONTENT GENERATION MODE - Create complete, publication-ready article.
 
 
 ## Target Profiles
-- Keywords: best crm for b2b saas
+- Keywords: Scale my small business
 - Brand: 
 - Industry: General
 
 Note: User is starting from scratch. Focus on creating the best Master Outline.
 
 ## Competitor Outlines
-### Competitor: Best CRM software for B2B SaaS Businesses in 2025.
-- Best CRM software for B2B SaaS Businesses in 2025.
-  - Why B2B SaaS Businesses Require Specialised CRM (Customer Relationship Management) software
-    - The Pressure to Scale Intelligently
-    - Why Generic CRMs Fall Short
-    - The Rise of Lifecycle-Centric CRMs
-  - Core CRM Capabilities for SaaS Businesses
-    - Sales Pipeline Management
-    - AI &amp; Automation
-    - RevOps &amp; Reporting
-    - Marketing &amp; Customer Service Integration
-    - Workflow Automation
-    - Scalability &amp; User Experience
-  - Leading CRM Platforms Compared
-    - HubSpot
-    - Salesforce
-    - Zoho CRM
-    - Close CRM
-    - Pipedrive
-  - CRM Comparison Table
-  - &nbsp;
-  - How to Choose the Right CRM for Your SaaS Business
-    - Step 1: Map Your Growth Stage to CRM Complexity
-    - Step 2: Understand Your GTM Motion
-      - 🚀 Product-led growth (PLG)
-      - 🎯 Sales-led growth
-      - 🧪 Hybrid GTM (PLG + Sales assist)
-    - Step 3: Prioritise Your CRM Must-Haves
-      - ✅ Do you need native marketing + sales + CS tools in one UI?
-      - ✅ Do you require custom objects, deal logic, and admin control?
-      - ✅ Is budget your primary constraint?
+### Competitor: Reddit - The heart of the internet
+- How did you guys scale your businesses?
+- Related Answers Section
+  - Top Posts
 
-### Competitor: A smarter CRM for selling more SaaS | ChartMogul
-- A smarter CRM for selling more SaaS
-    - View every stage of the customer journey in one place
-    - Easily understand your GTM engine
-    - Automations help you craft efficient team workflows
-  - Deliver better customer experiences at scale with ChartMogul CRM
-    - Capture the full subscription lifecycle
-    - Take control of your sales pipeline
-  - You won’t find another CRM with analytics this good
-    - Work smarter with automations and tasks
-    - Create sequences that drive results
-    - AI-enrich your leads & customers
-    - Thoughtful defaults. Total flexibility.
-  - We treat integrations as seriously as the platform itself
-  - How ChartMogul uses ChartMogul CRM
-  - Simple pricing, no surprises
-    - Free
-    - Pro
-  - Frequently Asked Questions
-    - What makes ChartMogul CRM different from HubSpot or Salesforce?
-    - Can I track expansion revenue, churn, and retention with ChartMogul CRM?
-    - How does ChartMogul CRM improve sales forecasting?
-    - Does ChartMogul CRM integrate with our existing tools?
-    - How easy is it to switch to ChartMogul CRM?
-    - How much does ChartMogul CRM cost?
-    - Is my sales data secure in ChartMogul CRM?
-    - Can I speak to someone to answer a few more questions?
-  - Built for B2B SaaS, by industry experts
-  - Get started with ChartMogul
+### Competitor: How to Scale a Business: 6 Tactics to Utilize | HBS Online
+  - Business Insights
+    - Topics
+    - Topics
+    - Courses
+    - Courses
+  - Filters
+    - Topics
+    - Topics
+    - Courses
+    - Courses
+- Tips for Scaling Your Business
+  - What Is a Scaling Plan?
+  - How Businesses Fail to Scale
+  - Applying the Six S Framework
+    - 1. Staff
+    - 2. Shared Values
+    - 3. Structure
+    - 4. Speed
+    - 5. Scope
+    - 6. Series X
+  - How to Prepare for Scaling
+    - About the Author
+    - Top FAQs
+      - How are HBS Online courses delivered?
+      - Are HBS Online programs available in languages other than English?
+      - Do I need to come to campus to participate in HBS Online programs?
+      - How do I enroll in a course?
+      - Does Harvard Business School Online offer an online MBA?
+      - What are my payment options?
+      - What are the policies for refunds and deferrals?
+
+### Competitor: How to Scale a Business: 8 Strategies &amp; Tips (2025)
+      - The Rippling Platform
+    - Platform
+    - Rippling solutions
+      - Resources
+    - Explore Rippling Resources
+      - Blog
+      - Customer Stories
+  - Meet the wavemakers
+      - Webinars
+      - Glossary
+      - Events
+      - Rippling U
+      - Help Center
+      - Compare
+      - Select language
+    - HR
+      - Featured articles
+    - IT
+      - Featured articles
+    - Finance
+      - Featured articles
+    - Global
+      - Featured articles
+    - Company
+      - Featured articles
+    - Engineering
+      - Featured articles
+    - Product
+      - Featured articles
+    - Startups
 
 
 
 ## Related Keywords & Search Volume
-- hubspot: Volume 301000, Competition 50%
-- pipedrive: Volume 60500, Competition 50%
-- zoho crm: Volume 49500, Competition 50%
-- saas crm: Volume 880, Competition 50%
-- best crm for startups: Volume 720, Competition 50%
-- best crm for saas: Volume 90, Competition 80%
-- best crm for b2b saas: Volume 20, Competition 20%
-- best crm for startups reddit: Volume 10, Competition 50%
+- Scale my small business: Volume 150, Competition 45%
 
 
 # 🔍 SERP 智能分析 (SEO 优化指导)
 
 
-## 📌 用户关心的核心问题 (必须在文章中回答):
-
-1. Which CRM is best for B2B?
-2. Is CRM B2B SaaS?
-3. Is HubSpot a B2B SaaS?
-4. What are the 4 types of CRM?
-
-**要求**:
-- 将每个问题作为 H2 或 H3 标题自然融入文章结构
-- 每个问题的答案控制在 2-3 段落，简洁准确
-- 优先回答前 3 个问题，它们最有可能被 Google 抓取为 Featured Snippet
-
----
-
-## 🏆 竞品成功结构参考 (基于 TOP 2 排名内容分析):
+## 🏆 竞品成功结构参考 (基于 TOP 3 排名内容分析):
 
 以下章节在高排名内容中频繁出现，建议包含：
-- why bb saas businesses require specialised crm customer relationship management software
-- core crm capabilities for saas businesses
-- leading crm platforms compared
-- crm comparison table
-- nbsp
-- how to choose the right crm for your saas business
-- deliver better customer experiences at scale with chartmogul crm
-- you wont find another crm with analytics this good
+- top posts
+- business insights
+- filters
+- what is a scaling plan
+- how businesses fail to scale
+- applying the six s framework
+- how to prepare for scaling
+- meet the wavemakers
 
 **注意**: 使用这些结构作为灵感，但必须用你自己的语言和角度重新组织内容。
-
----
-
-## 🔑 LSI 关键词 (相关术语，自然融入内容):
-
-- "hubspot"
-- "pipedrive"
-- "zoho crm"
-- "saas crm"
-- "best crm for startups"
-- "best crm for saas"
-- "best crm for startups reddit"
-
-**使用建议**:
-- 在内容中自然地使用 3-5 个这些相关术语
-- 避免刻意堆砌，保持语句流畅
-- 优先在小标题和段落首句中使用
 
 ---
 
@@ -194,7 +169,6 @@ Note: User is starting from scratch. Focus on creating the best Master Outline.
 
 ⭐ **Featured Snippet 高机会**: 在文章开头提供 40-60 词的精准答案，直接回答用户查询意图
 🎥 **视频优化**: SERP 中包含视频结果，建议添加 YouTube 视频嵌入或视频教程链接
-❓ **FAQ Schema**: 考虑使用 FAQ 结构化数据标记问答部分，提升富媒体展示机会
 
 
 ---
@@ -227,7 +201,17 @@ Note: User is starting from scratch. Focus on creating the best Master Outline.
   
   "internalLinks": ["/blog/related-topic-1", "/blog/related-topic-2"],
   "scores": { "seo": 95, "geo": 92 },
-  "suggestions": ["Strategic point 1", "..."]
+  "suggestions": ["Strategic point 1", "..."],
+  "distribution": {
+    "twitter": {
+        "thread": ["Tweet 1", "Tweet 2..."],
+        "hashtags": ["#marketing", "#seo"]
+    },
+    "linkedin": {
+        "post": "Professional update...",
+        "hashtags": ["#marketing", "#seo"]
+    }
+  }
 }
 ```
 

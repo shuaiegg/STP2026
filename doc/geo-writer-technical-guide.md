@@ -1,122 +1,77 @@
-# Geo-Writer (StellarWriter) 技术实现与方案规格说明
+# GEO-Writer 技术方案与核心逻辑指南
 
-## 1. 产品概述
-
-Geo-Writer（内部代号：StellarWriter）是 ScaletoTop 项目的核心内容生成引擎。它不仅是一个 AI 写作工具，更是一个集成了 **实时搜索引擎结果 (SERP) 分析**、**本地实体绑定 (Maps)**、**竞品骨架拆解 (Skeleton Extractor)** 以及 **AI 去痕 (Humanization)** 的高级 SEO/GEO 内容生产工厂。
-
-其核心目标是：**通过实时竞争对手数据和搜索引擎特征，生成能够真正打败搜索结果现有排名、并符合 AI 搜索引擎 (GEO) 引用习惯的高质量内容。**
+本文档旨在介绍 GEO-Writer（及 StellarWriter 引擎）的核心技术实现，包括所有用户输入字段的功能说明以及各项评分（SEO/GEO/Human Score）的计算逻辑与物理原理。
 
 ---
 
-## 2. 核心架构
+## 1. 用户输入字段说明 (User Inputs Guide)
 
-Geo-Writer 采用“前端交互控制层 + 后端技能编排层 + 外部数据服务层”的三层架构。
+GEO-Writer 采用“三步法”智作流程，各阶段输入字段如下：
 
-```mermaid
-graph TD
-    subgraph Frontend [前端控制层 (Next.js)]
-        A[Geo-Writer Page] -->|Phased Request| B[Phase Manager]
-        B -->|1. Discovery| C[Topics List]
-        B -->|2. Deep Analysis| D[Audit Dashboard]
-        B -->|3. Strategy| E[Outline Editor]
-        B -->|4. Generation| F[Content Generator]
-    end
+### 阶段 1：调研与发现 (Market Research)
+- **核心关键词 / 业务主题 (Keywords)**: 
+    - **用途**: 设置文章的主攻方向。系统将基于此关键词拉取 Google 实时搜索数据、竞品大纲。
+    - **原理**: 触发 `DataForSEO` API 进行 SERP 抓取。
+- **目标市场 / 地理位置 (Location)**: 
+    - **用途**: 指定搜索数据的地域来源（如 London, New York）。用于本地化 SEO 优化。
+    - **原理**: 传递给底层搜索 API，模拟特定地区的搜索结果。
+- **目标网站域名 (URL)**: 
+    - **用途**: 提升内链建设的精准度。
+    - **原理**: 系统会执行 `site:domain "keywords"` 搜索，自动检索该网站已有的相关页面，用于在生成内容中插入真实的内部链接。
+- **自动插入配图与图表 (Auto Visuals)**: 
+    - **用途**: 控制内容生成时的富媒体策略。开启后，AI 会在段落间自动标注建议的图片位置及图表描述。
 
-    subgraph Backend [后端编排层 (Skills System)]
-        G[StellarWriterSkill] -->|Fetch| H[Data Layer]
-        G -->|Orchestrate| I[AI Generation Layer]
-    end
-
-    subgraph Data [外部数据层]
-        H -->|SERP API| J[DataForSEO]
-        H -->|Maps API| J
-        H -->|Keywords API| J
-        H -->|HTML Parsing| K[SkeletonExtractor]
-        H -->|Opportunity Analysis| L[SERPAnalyzer]
-    end
-
-    subgraph AI [AI 生成层]
-        I -->|Prompt Enhancer| M[Context Injection]
-        I -->|DeepSeek/Claude| N[LLM Generation]
-        I -->|Humanization| O[Humanize/AI-Detection]
-    end
-```
+### 阶段 2：策略定策 (Content Strategy)
+- **语气语调 (Tone)**: 
+    - **用途**: 控制内容的写作风格（如：专业权威、知识分享、亲切随性）。
+    - **原理**: 映射到 System Prompt 中的 Persona 设定，调整词汇选择及其复杂度。
+- **内容类型 (Type)**: 
+    - **用途**: 决定内容的结构（如：博客文章、产品评测、操作指南、行业研究）。
+    - **原理**: 影响生成时的 Markdown 结构模板及各层级标题的逻辑走向。
+- **原始草稿 (Original Content)**: 
+    - **用途**: 既可以提供已有文字让 AI 优化，也可以作为背景资料。
+    - **原理**: 若提供，系统进入“优化模式”；若为空，则进入“从零创作模式”。
 
 ---
 
-## 3. 实现流程：即时性情报 (Just-in-Time Intelligence)
+## 2. 核心评分系统原理 (Scoring Mechanics)
 
-Geo-Writer 采用 **即时性情报获取 (JIT)** 策略，将复杂的研究流程拆分为两个阶段，以平衡 API 成本、性能和生成质量。
+GEO-Writer 不仅仅生成文字，更通过多个维度量化内容的“竞争力”。
 
-### 阶段 1：话题发现 (Discovery Phase)
-- **目标**: 从用户输入的宽泛关键词中发现高价值、低竞争的具体目标。
-- **技术实现**: 
-    - 触发 `stellar-writer` 的 `discovery` 模式。
-    - 调用 DataForSEO Labs API 获取 20 个相关的长尾关键词。
-    - 计算搜索量与竞争度，帮助用户选择“制胜关键词”。
-- **价值**: 避免在未确定的关键词上浪费昂贵的 SERP API 额度。
+### A. SEO 详细分析分数 (Detailed SEO Score)
+- **计算逻辑**: 由 6 个子维度加权算出：
+    1. **标题优化 (25%)**: 标题是否包含核心词，长度是否适中。
+    2. **元数据描述 (15%)**: Meta-description 的覆盖率。
+    3. **关键词密度 (20%)**: 是否过度堆砌或覆盖不足（基于 TF-IDF 思想）。
+    4. **可读性 (15%)**: 句子长度的多变性及语法复杂度。
+    5. **结构完整性 (20%)**: H1-H3 的逻辑层级及 H-标签的使用密度。
+    6. **富媒体策略 (5%)**: 图片 Alt 标签建议及图表覆盖。
+- **物理原理**: 系统会将生成的 Markdown 与抓取到的 Top 3 竞品 skeleton 进行对比。如果你的 H-标签覆盖了竞品漏掉的“信息增益点”，则结构分更高。
 
-### 阶段 2：深度分析与策略 (Deep Analysis Phase)
-- **目标**: 针对选定的关键词进行全方位的竞争对手拆解。
-- **技术实现**:
-    - **SERP 分析**: 使用 DataForSEO Advanced SERP 端点，获取前 10 名的原始数据。
-    - **特征检测**: `SERPAnalyzer` 识别 Featured Snippet 类型、PAA (People Also Ask) 问题及搜索特征。
-    - **竞品拆解**: `SkeletonExtractor` 实时抓取排名前三网站的 HTML，提取 H1-H3 标题结构。
-    - **本地绑定**: `searchGoogleMaps` 获取地理相关的实体信息。
-    - **策略生成**: AI 综合上述数据，生成一份“大师级大纲 (Master Outline)”，并在前端提供交互式编辑能力。
+### B. GEO (Generative Engine Optimization) 分数
+- **含义**: 生成式引擎优化分数，代表内容被 AI 搜索引擎（如 Perplexity, SearchGPT）引用的概率。
+- **核心因素**:
+    1. **直接回答性 (AEO)**: 核心问题是否在第一段或 H2 下方有明确、简练的回答（Direct Answer First）。
+    2. **实体绑定 (Entity Binding)**: 是否提到了真实的地点、人物、数据指标。系统通过 Step 1 抓取的实体库进行比对。
+    3. **信息增益 (Information Gain)**: 相比竞品，你的内容是否提供了独有的视角或数据（由 `StellarWriter` 引擎通过对比竞品差异点自动注入）。
 
----
-
-## 4. 关键技术组件
-
-### 4.1 SkeletonExtractor (竞品骨架提取器)
-- **原理**: 传统的 AI 写作仅通过 LLM 的训练数据猜测结构，而 SkeletonExtractor 通过实时抓取排名靠前的 URL 的 HTML，使用正则和清理逻辑提取其真实大纲。
-- **价值**: 确保生成的文章结构逻辑优于当前排名第一的对手。
-
-### 4.2 SERP-Enhanced Prompt (SERP 增强提示词)
-- **注入内容**: 
-    - PAA 问题：直接在 H2 中回答用户的真实疑问。
-    - LSI 关键词：提高关键词相关度评分。
-    - 实体信息：增加地理权威性（Local Authority）。
-    - 格式提示：如果 SERP 中有表格，AI 会被要求也生成表格以争取 Featured Snippet。
-
-### 4.3 AI 去痕与人文化 (Humanize & Detection)
-- **技术依据**: 使用自定义的 `humanizeContent` 算法。
-- **策略**: 
-    - 随机化句式长度（打破 AI 常见的节奏性）。
-    - 注入语气词、反问句及基于观点的陈述。
-    - `ai-detection` 模块实时反馈分值，确保内容在搜索引擎的 AI 检测中表现自然。
+### C. 人类真实度分数 (Human Score)
+- **实现原理 (AI Fingerprint Bleaching)**:
+    - 系统内置了 `detectAIPatterns` 逻辑。
+    - **检测项**: 
+        - **套话率**: 检测 "It's worth noting", "Delve into", "In conclusion" 等典型 AI 连接词。
+        - **句长变异系数 (CV)**: 人类写作通常长短句错落有致。如果所有句子长度都在 15-20 词之间，则会被扣分。
+        - **缩写率**: 英文中 contraction (don't, it's) 的使用密度。
+    - **闭环修正**: 如果 `Human Score < 60%`，`StellarWriter` 会触发“二号改稿模型”（Aggressive Humanizer），强制打破 AI 的平稳性，重新引入长短节奏变化。
 
 ---
 
-## 5. 性能与成本优化规划
-
-| 优化维度 | 方案 | 效果 |
-| :--- | :--- | :--- |
-| **API 成本** | JIT 策略：先发现话题，再深度分析。 | 减少 70% 无效 SERP API 调用。 |
-| **生成质量** | 竞品大纲逆向工程 + PAA 注入。 | 确保 100% 覆盖搜索意图。 |
-| **用户体验** | 流式生成 (Streaming) + 分步确认。 | 消除长时间等待的焦虑感。 |
-| **数据重用** | 内存内缓存 (In-memory cache) 策略。 | Step 1 获取的数据流转至 Step 2/3，无重复请求。 |
+## 3. 技术路线图
+- **语言模型**: 采用 DeepSeek-Chat V3 (236B) / Claude 3.5 Sonnet 双模型协同。
+- **数据源**: DataForSEO Google SERP API。
+- **前端架构**: Next.js 14 + TailwindCSS + Lucide Icons。
+- **流式输出**: AI SDK (Vercel) 提供实时打字机体验。
 
 ---
-
-## 6. 关键文件路标
-
-- **整体逻辑编排**: [`stellar-writer.ts`](file:///home/jack/Aladdin/STP2026/src/lib/skills/skills/stellar-writer.ts)
-- **数据研究接口**: [`dataforseo.ts`](file:///home/jack/Aladdin/STP2026/src/lib/external/dataforseo.ts)
-- **SERP 特征分析**: [`serp-analyzer.ts`](file:///home/jack/Aladdin/STP2026/src/lib/external/serp-analyzer.ts)
-- **竞品结构提取**: [`skeleton-extractor.ts`](file:///home/jack/Aladdin/STP2026/src/lib/external/skeleton-extractor.ts)
-- **提示词增强工具**: [`prompt-enhancer.ts`](file:///home/jack/Aladdin/STP2026/src/lib/utils/prompt-enhancer.ts)
-- **前端交互页面**: [`page.tsx`](file:///home/jack/Aladdin/STP2026/src/app/(public)/tools/geo-writer/page.tsx)
-
----
-
-## 7. 版本演进记录
-
-1. **v1.0 (基础版)**: 基于 LlamaIndex 的简单 RAG 写作。
-2. **v2.0 (SEO 专业版)**: 引入 DataForSEO 实时 SERP 集成，能够识别关键词难度和排名结果。
-3. **v2.3 (GEO 进化版)**: 
-   - 实现 **JIT Intelligence** 架构。
-   - 增加 **PAA / Entities / Competitors** 三维数据聚合。
-   - 引入 **AI 去痕 (Humanization)** 与流式大纲编辑。
-   - 升级到 **DataForSEO Advanced SERP** 并支持 `ai_overview` 特征识别。
+> [!NOTE]
+> 每一个“建议内部链接”都是基于您提供的 URL 在 Google 索引中真实存在的页面，而非 AI 幻觉生成的无效链接。

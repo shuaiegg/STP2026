@@ -91,6 +91,19 @@ export class SERPAnalyzer {
             // 1. Fetch SERP data from DataForSEO
             const serpData = await this.fetchSERPData(keyword, location);
 
+            // 2. Analyze
+            return this.analyzeRawData(serpData, keyword);
+        } catch (error) {
+            console.error('SERP Analysis failed:', error);
+            return this.getEmptyAnalysis(keyword);
+        }
+    }
+
+    /**
+     * Analyze existing SERP data (bypass fetch)
+     */
+    public analyzeRawData(serpData: any, keyword: string): SERPAnalysis {
+        try {
             // 2. Parse Featured Snippet
             const featuredSnippet = this.parseFeaturedSnippet(serpData);
 
@@ -100,14 +113,14 @@ export class SERPAnalyzer {
             // 4. Detect SERP features
             const serpFeatures = this.detectSERPFeatures(serpData);
 
-            // 5. Generate recommendations
+            // 5. Generate Recommendations
             const recommendations = this.generateRecommendations(
                 featuredSnippet,
                 peopleAlsoAsk,
                 serpFeatures
             );
 
-            // 6. Analyze metadata
+            // 6. Metadata
             const metadata = this.analyzeMetadata(serpData);
 
             return {
@@ -119,8 +132,7 @@ export class SERPAnalyzer {
                 metadata
             };
         } catch (error) {
-            console.error('SERP Analysis failed:', error);
-            // Return basic analysis on error
+            console.error('Raw SERP Analysis failed:', error);
             return this.getEmptyAnalysis(keyword);
         }
     }
