@@ -4,23 +4,63 @@ import { deepseek } from '@ai-sdk/deepseek';
 import { StellarWriterSkill } from '@/lib/skills/skills/stellar-writer';
 import fs from 'fs';
 import path from 'path';
+import { auth } from '@/lib/auth';
+import { headers } from 'next/headers';
+import { chargeUser } from '@/lib/billing/credits';
+import { TOOL_COSTS } from '@/lib/config/credit-costs';
 
 // Allow streaming responses up to 5 minutes
 export const maxDuration = 300;
 
 export async function POST(req: Request) {
     try {
+        // 1. Authentication Check
+        const session = await auth.api.getSession({
+            headers: await headers()
+        });
+
+        if (!session || !session.user) {
+            return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+                status: 401,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
         const { input, cachedIntelligence } = await req.json();
+
+        // 2. Billing: Check & Deduct Credits
+        const skillName = 'GEO_WRITER_FULL';
+        const chargeResult = await chargeUser(
+            session.user.id,
+            skillName,
+            `GEO Writer Generation: ${input.keywords || 'Untitled'}`
+        );
+
+        if (!chargeResult.success) {
+            return new Response(JSON.stringify({
+                error: chargeResult.error || 'Billing failed', // Show real error
+                details: {
+                    required: chargeResult.required,
+                    current: chargeResult.current
+                }
+            }), {
+                status: 402, // Payment Required
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        console.log(`[Billing] Charged user ${session.user.id} for ${skillName}. Remaining: ${chargeResult.remainingCredits}`);
+
         console.log('Stream Request Input:', JSON.stringify(input, null, 2));
         console.log('Stream Context Keys:', Object.keys(cachedIntelligence || {}));
 
-        // 1. Reconstruct Context from Cached Data (Step 1)
+        // 3. Reconstruct Context from Cached Data (Step 1)
         const entities = cachedIntelligence?.entities || [];
         const topics = cachedIntelligence?.topics || [];
         const serpAnalysis = cachedIntelligence?.serpAnalysis;
         const competitors = cachedIntelligence?.competitors || [];
 
-        // 2. Build the exact same prompt as the full skill
+        // 4. Build the exact same prompt as the full skill
         const systemPrompt = StellarWriterSkill.buildStellarPrompt(
             input,
             entities,

@@ -288,3 +288,17 @@ enum TransactionType {
   REFUND
   BONUS
 }
+
+/// SkillConfig - Dynamic configuration for AI tools
+model SkillConfig {
+  id          String   @id @default(uuid())
+  name        String   @unique // e.g. "GEO_WRITER_FULL"
+  displayName String   // e.g. "Geo Writer (Full)"
+  description String?
+  cost        Int      @default(0)
+  isActive    Boolean  @default(true) // Global kill switch
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive])
+}

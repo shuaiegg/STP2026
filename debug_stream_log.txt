@@ -1,6 +1,6 @@
 INPUT:
 {
-  "keywords": "Scale my small business",
+  "keywords": "嵌入式设备前景",
   "location": "",
   "brandName": "",
   "tone": "professional",
@@ -64,7 +64,7 @@ MODE: FULL CONTENT GENERATION MODE - Create complete, publication-ready article.
 
 
 ## Target Profiles
-- Keywords: Scale my small business
+- Keywords: 嵌入式设备前景
 - Brand: 
 - Industry: General
 
@@ -72,94 +72,58 @@ Note: User is starting from scratch. Focus on creating the best Master Outline.
 
 ## Competitor Outlines
 ### Competitor: Reddit - The heart of the internet
-- How did you guys scale your businesses?
-- Related Answers Section
-  - Top Posts
+  - Thanks for the feedback!
+- 嵌入式在不久的将来真的是一个热门领域吗？
 
-### Competitor: How to Scale a Business: 6 Tactics to Utilize | HBS Online
-  - Business Insights
-    - Topics
-    - Topics
-    - Courses
-    - Courses
-  - Filters
-    - Topics
-    - Topics
-    - Courses
-    - Courses
-- Tips for Scaling Your Business
-  - What Is a Scaling Plan?
-  - How Businesses Fail to Scale
-  - Applying the Six S Framework
-    - 1. Staff
-    - 2. Shared Values
-    - 3. Structure
-    - 4. Speed
-    - 5. Scope
-    - 6. Series X
-  - How to Prepare for Scaling
-    - About the Author
-    - Top FAQs
-      - How are HBS Online courses delivered?
-      - Are HBS Online programs available in languages other than English?
-      - Do I need to come to campus to participate in HBS Online programs?
-      - How do I enroll in a course?
-      - Does Harvard Business School Online offer an online MBA?
-      - What are my payment options?
-      - What are the policies for refunds and deferrals?
-
-### Competitor: How to Scale a Business: 8 Strategies &amp; Tips (2025)
-      - The Rippling Platform
-    - Platform
-    - Rippling solutions
-      - Resources
-    - Explore Rippling Resources
-      - Blog
-      - Customer Stories
-  - Meet the wavemakers
-      - Webinars
-      - Glossary
-      - Events
-      - Rippling U
-      - Help Center
-      - Compare
-      - Select language
-    - HR
-      - Featured articles
-    - IT
-      - Featured articles
-    - Finance
-      - Featured articles
-    - Global
-      - Featured articles
-    - Company
-      - Featured articles
-    - Engineering
-      - Featured articles
-    - Product
-      - Featured articles
-    - Startups
+### Competitor: 2025嵌入式开发前景的几个方向！-电子工程专辑
+- 2025嵌入式开发前景的几个方向！
+  - 报名IIC Shanghai 2026，领五星酒店自助餐券(限工程师领)
+  - 电动汽车侧滑进沟 不到1分钟烧穿乘员舱！路人砸窗连救出3人
+  - 电车起火，路人勇救3人！很遗憾：副驾未救出！
+  - 全球最大矿业合并案告吹
+  - 这家通信芯片厂商，完成近15亿元融资！
+  - 英飞凌、意法、罗姆披露SiC业务近况
+  - 2025中国智能驾驶行业趋势白皮书
+  - 智能模型组别：X-Smart智能车系统
+  - 林雪萍｜四海鲨鱼 全球并购的工软王国（工业软件2026三部曲2）
+  - AD19打开库左边上下分层显示，怎么解决？不要上下分层，很丑，不方便找属性内容
+  - 高精度三轴霍尔效应传感器：TI TMAG5273A1QDBVR全面解析
+  - 详解MOS管的关键参数和工作损耗
+  - MOSFET 失效 Top 原因
+  - 详解半导体材料导电性能与能带理论
+  - 哪个熟悉车灯标准的？如附件的，出口欧美
+  - 晶振倍频率干扰的解决方法
+  - 《基于ANSYS HFSS的无源仿真实例》+仿真学习
+  - 【瑞萨AI挑战赛】+基于瑞萨RT-ThreadRA8P1 Titan Board的门禁系统-智能可视门铃
+  - TVS二极管的实战选型指南和布局技巧
+  - 《基于ANSYS HFSS的无源仿真实例》+我的仿真观
+  - 电动汽车与数据中心如何受益于48V电源系统
+  - 最近文章
+  - 热门文章
+  - 推荐
+    - 最新资讯
+      - 提示！
 
 
 
 ## Related Keywords & Search Volume
-- Scale my small business: Volume 150, Competition 45%
+- 嵌入式设备前景: Volume 150, Competition 45%
 
 
 # 🔍 SERP 智能分析 (SEO 优化指导)
 
 
-## 🏆 竞品成功结构参考 (基于 TOP 3 排名内容分析):
+## 🏆 竞品成功结构参考 (基于 TOP 2 排名内容分析):
 
 以下章节在高排名内容中频繁出现，建议包含：
-- top posts
-- business insights
-- filters
-- what is a scaling plan
-- how businesses fail to scale
-- applying the six s framework
-- how to prepare for scaling
-- meet the wavemakers
+- thanks for the feedback
+- 报名iic shanghai 领五星酒店自助餐券限工程师领
+- 电动汽车侧滑进沟 不到分钟烧穿乘员舱路人砸窗连救出人
+- 电车起火路人勇救人很遗憾副驾未救出
+- 全球最大矿业合并案告吹
+- 这家通信芯片厂商完成近亿元融资
+- 英飞凌意法罗姆披露sic业务近况
+- 中国智能驾驶行业趋势白皮书
 
 **注意**: 使用这些结构作为灵感，但必须用你自己的语言和角度重新组织内容。
 
@@ -168,7 +132,6 @@ Note: User is starting from scratch. Focus on creating the best Master Outline.
 ## 🎯 SERP 优化建议 (基于搜索结果特征):
 
 ⭐ **Featured Snippet 高机会**: 在文章开头提供 40-60 词的精准答案，直接回答用户查询意图
-🎥 **视频优化**: SERP 中包含视频结果，建议添加 YouTube 视频嵌入或视频教程链接
 
 
 ---
