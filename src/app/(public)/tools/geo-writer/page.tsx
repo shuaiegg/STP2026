@@ -30,7 +30,7 @@ import { parseMarkdownToSections, joinSectionsToMarkdown, ContentSection } from 
 import { calculateHumanScore } from '@/lib/utils/ai-detection';
 import { downloadAsMarkdown, downloadAsHTML, triggerPrintPDF } from '@/lib/utils/export-helpers';
 import { saveSnapshot, getVersionHistory, VersionSnapshot } from '@/lib/utils/version-manager';
-
+import posthog from 'posthog-js';
 
 export default function GEOWriterPage() {
     const [step, setStep] = useState(1); // 1: Research, 2: Strategy, 3: Creation
@@ -305,6 +305,13 @@ export default function GEOWriterPage() {
             // Do NOT set AuditResult yet.
             setIsPaid(data.isRepeat || false);
 
+            // POSTHOG: Track Discovery
+            posthog.capture('stellar_writer_discovery_started', {
+                keywords: form.keywords,
+                is_repeat: data.isRepeat || false,
+                remaining_credits: data.remainingCredits
+            });
+
             const topics = outputData.topics || [];
             if (topics.length > 0) {
                 const calculateOpportunityScore = (kw: any) => {
@@ -363,6 +370,13 @@ export default function GEOWriterPage() {
             // Now we have the deep data
             setAuditResult(outputData);
             setEditableOutline(outputData.masterOutline || []);
+
+            // POSTHOG: Track Deep Analysis
+            posthog.capture('stellar_writer_analysis_completed', {
+                selected_keyword: selectedKeyword,
+                competitors_count: outputData.competitors?.length || 0,
+                geo_score: outputData.scores?.geo
+            });
 
             // Cache intelligence data for Step 2/3 reuse
             setCachedIntelligence({
@@ -431,6 +445,15 @@ export default function GEOWriterPage() {
                 imageSuggestions: ["Hero image: Dashboard screenshot", "Diagram: CRM workflow"],
                 distribution: {}
             };
+
+            // POSTHOG: Track Successful Content Generation
+            posthog.capture('stellar_writer_generation_completed', {
+                keyword: selectedKeyword || form.keywords,
+                content_length: result?.length || 0,
+                is_stream: true,
+                auto_visuals: form.autoVisuals
+            });
+
             setFinalResult(finalData);
             setIsPaid(true);
             setLoading(false);

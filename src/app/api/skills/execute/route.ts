@@ -10,6 +10,7 @@ import { SkillInput } from '@/lib/skills/types';
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
+import { TOOL_COSTS } from "@/lib/config/credit-costs";
 
 // Initialize skills on module load
 registerAllSkills();
@@ -18,14 +19,14 @@ registerAllSkills();
  * Get credit cost for a skill
  */
 function getSkillCost(skillName: string, input?: any): number {
-    if (skillName === 'stellar-writer' && input?.auditOnly) {
-        return 0; // Free audit
+    if (skillName === 'stellar-writer') {
+        if (input?.auditOnly) {
+            return TOOL_COSTS.GEO_WRITER_AUDIT;
+        }
+        return TOOL_COSTS.GEO_WRITER_FULL;
     }
     
-    const costs: Record<string, number> = {
-        'stellar-writer': 50,
-    };
-    return costs[skillName] || 10;
+    return 10; // Default cost
 }
 
 /**

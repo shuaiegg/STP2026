@@ -147,8 +147,8 @@ const Footer: React.FC = () => {
                         <div>
                             <h5 className="text-brand-text-primary font-bold text-sm mb-8 tracking-widest uppercase">关于</h5>
                             <ul className="space-y-4 text-sm text-brand-text-secondary">
-                                <li><Link href="/blog" className="hover:text-brand-primary transition-colors">隐私声明</Link></li>
-                                <li><Link href="/blog" className="hover:text-brand-primary transition-colors">服务条款</Link></li>
+                                <li><Link href="/privacy" className="hover:text-brand-primary transition-colors">隐私声明</Link></li>
+                                <li><Link href="/terms" className="hover:text-brand-primary transition-colors">服务条款</Link></li>
                             </ul>
                         </div>
                     </div>

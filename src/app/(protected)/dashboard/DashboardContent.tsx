@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/Badge';
 import { authClient } from "@/lib/auth-client";
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ShieldAlert, ArrowLeft } from 'lucide-react';
+import { ShieldAlert, ArrowLeft, Settings } from 'lucide-react';
 
 export function DashboardContent({ 
     user, 
@@ -63,6 +63,16 @@ export function DashboardContent({
                     <p className="text-brand-text-secondary">欢迎回到 ScaletoTop 数字化作战室。</p>
                 </div>
                 <div className="flex items-center gap-4">
+                    <Link href="/dashboard/settings">
+                        <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="text-brand-text-secondary hover:text-brand-primary font-bold gap-2"
+                        >
+                            <Settings size={16} />
+                            账号设置
+                        </Button>
+                    </Link>
                     <Button 
                         variant="ghost" 
                         size="sm" 

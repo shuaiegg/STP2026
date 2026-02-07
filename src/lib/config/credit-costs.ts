@@ -3,7 +3,7 @@ export const TOOL_COSTS = {
      * Standard GEO Writer (Full Article Generation)
      * Includes: SERP Analysis, Keyword Research, Content Generation, Optimization
      */
-    GEO_WRITER_FULL: 20,
+    GEO_WRITER_FULL: 35,
 
     /**
      * GEO Writer - Audit Only (Step 1)

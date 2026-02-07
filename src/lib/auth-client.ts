@@ -1,5 +1,9 @@
 import { createAuthClient } from "better-auth/react";
+import { emailOTPClient, forgetPasswordClient } from "better-auth/client/plugins";
 
 export const authClient = createAuthClient({
-    // baseURL is optional and defaults to current origin
+    plugins: [
+        emailOTPClient(),
+        forgetPasswordClient()
+    ]
 });

@@ -2,16 +2,53 @@
 
 import posthog from 'posthog-js';
 import { PostHogProvider } from 'posthog-js/react';
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
+import { usePathname, useSearchParams } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
+
+function PostHogAuthAndPageview() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const { data: session } = authClient.useSession();
+
+  // Handle User Identification
+  useEffect(() => {
+    if (session?.user && posthog.__loaded) {
+      posthog.identify(session.user.id, {
+        email: session.user.email,
+        name: session.user.name,
+        role: session.user.role,
+        is_admin: session.user.role === 'ADMIN',
+      });
+    } else if (!session && posthog.__loaded) {
+      posthog.reset();
+    }
+  }, [session]);
+
+  // Handle Pageviews
+  useEffect(() => {
+    if (pathname && posthog.__loaded) {
+      let url = window.origin + pathname;
+      if (searchParams && searchParams.toString()) {
+        url = url + `?${searchParams.toString()}`;
+      }
+      posthog.capture('$pageview', {
+        $current_url: url,
+      });
+    }
+  }, [pathname, searchParams]);
+
+  return null;
+}
 
 export function CSPostHogProvider({ children }: { children: React.ReactNode }) {
+  // Initialize PostHog
   useEffect(() => {
-    // 仅在浏览器环境且非本地开发环境初始化（或者你可以根据需要开启本地追踪）
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_POSTHOG_KEY) {
       posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
         api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com',
-        person_profiles: 'identified_only', // 或者 'always'，根据你的隐私政策决定
-        capture_pageview: false, // 我们会在下面手动处理 Pageview 以适配 Next.js 路由
+        person_profiles: 'identified_only',
+        capture_pageview: false, // Handled manually
         loaded: (ph) => {
           if (process.env.NODE_ENV === 'development') ph.debug();
         },
@@ -19,5 +56,12 @@ export function CSPostHogProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  return <PostHogProvider client={posthog}>{children}</PostHogProvider>;
+  return (
+    <PostHogProvider client={posthog}>
+      <Suspense fallback={null}>
+        <PostHogAuthAndPageview />
+      </Suspense>
+      {children}
+    </PostHogProvider>
+  );
 }
