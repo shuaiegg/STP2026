@@ -2,6 +2,7 @@
  * DataForSEO External API Client
  */
 
+// We need to handle server-side vs script-side env loading
 const DATAFORSEO_LOGIN = process.env.DATAFORSEO_LOGIN;
 const DATAFORSEO_PASSWORD = process.env.DATAFORSEO_PASSWORD;
 const USE_MOCK_DATA = process.env.USE_DATAFORSEO_MOCK === 'true';
@@ -55,7 +56,9 @@ export class DataForSEOClient {
      * Get basic auth header
      */
     private static getAuthHeader(): string {
-        const credentials = Buffer.from(`${DATAFORSEO_LOGIN}:${DATAFORSEO_PASSWORD}`).toString('base64');
+        const login = process.env.DATAFORSEO_LOGIN || DATAFORSEO_LOGIN;
+        const password = process.env.DATAFORSEO_PASSWORD || DATAFORSEO_PASSWORD;
+        const credentials = Buffer.from(`${login}:${password}`).toString('base64');
         return `Basic ${credentials}`;
     }
 
@@ -67,7 +70,9 @@ export class DataForSEOClient {
         locationName?: string,
         limit: number = 5
     ): Promise<MapDataItem[]> {
-        if (!DATAFORSEO_LOGIN || !DATAFORSEO_PASSWORD) return [];
+        const login = process.env.DATAFORSEO_LOGIN || DATAFORSEO_LOGIN;
+        const password = process.env.DATAFORSEO_PASSWORD || DATAFORSEO_PASSWORD;
+        if (!login || !password) return [];
 
         try {
             const payload = [{
@@ -119,7 +124,9 @@ export class DataForSEOClient {
         locationName?: string,
         limit: number = 10
     ): Promise<any[]> {
-        if (!DATAFORSEO_LOGIN || !DATAFORSEO_PASSWORD) return [];
+        const login = process.env.DATAFORSEO_LOGIN || DATAFORSEO_LOGIN;
+        const password = process.env.DATAFORSEO_PASSWORD || DATAFORSEO_PASSWORD;
+        if (!login || !password) return [];
 
         try {
             const payload = [{
@@ -157,12 +164,15 @@ export class DataForSEOClient {
         languageCode: string = "en"  // Default: English
     ): Promise<any[]> {
         // Use mock data if enabled
-        if (USE_MOCK_DATA) {
+        const useMock = process.env.USE_DATAFORSEO_MOCK === 'true' || USE_MOCK_DATA;
+        if (useMock) {
             console.log(`DataForSEO: Using MOCK data for "${keyword}"...`);
             return generateMockKeywordData(keyword);
         }
 
-        if (!DATAFORSEO_LOGIN || !DATAFORSEO_PASSWORD) return [];
+        const login = process.env.DATAFORSEO_LOGIN || DATAFORSEO_LOGIN;
+        const password = process.env.DATAFORSEO_PASSWORD || DATAFORSEO_PASSWORD;
+        if (!login || !password) return [];
 
         try {
             console.log(`DataForSEO: Researching topics for "${keyword}"... (Loc: ${locationCode}, Lang: ${languageCode})`);
@@ -288,7 +298,9 @@ export class DataForSEOClient {
      * Used by SERP analyzer and other custom integrations
      */
     static async post(endpoint: string, payload: any): Promise<any> {
-        if (!DATAFORSEO_LOGIN || !DATAFORSEO_PASSWORD) {
+        const login = process.env.DATAFORSEO_LOGIN || DATAFORSEO_LOGIN;
+        const password = process.env.DATAFORSEO_PASSWORD || DATAFORSEO_PASSWORD;
+        if (!login || !password) {
             throw new Error('DataForSEO credentials not configured');
         }
 

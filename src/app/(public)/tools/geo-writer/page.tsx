@@ -30,11 +30,14 @@ import { parseMarkdownToSections, joinSectionsToMarkdown, ContentSection } from 
 import { calculateHumanScore } from '@/lib/utils/ai-detection';
 import { downloadAsMarkdown, downloadAsHTML, triggerPrintPDF } from '@/lib/utils/export-helpers';
 import { saveSnapshot, getVersionHistory, VersionSnapshot } from '@/lib/utils/version-manager';
+import { saveTrackedArticle } from '@/app/actions/tracked-articles';
 import posthog from 'posthog-js';
 
 export default function GEOWriterPage() {
     const [step, setStep] = useState(1); // 1: Research, 2: Strategy, 3: Creation
     const [loading, setLoading] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isSaved, setIsSaved] = useState(false);
     const [researchData, setResearchData] = useState<any[] | null>(null);
     const [auditResult, setAuditResult] = useState<any>(null);
     const [finalResult, setFinalResult] = useState<any>(null);
@@ -94,6 +97,40 @@ export default function GEOWriterPage() {
 
     const handleExportPDF = () => {
         triggerPrintPDF();
+    };
+
+    const handleSaveToLibrary = async () => {
+        const fullContent = joinSectionsToMarkdown(contentSections) || finalResult?.content || streamResult.completion;
+        if (!fullContent) return toast.error('没有可保存的内容');
+        
+        setIsSaving(true);
+        try {
+            const result = await saveTrackedArticle({
+                title: finalResult?.seoMetadata?.title || selectedKeyword || '未命名文章',
+                summary: finalResult?.seoMetadata?.description || '',
+                keywords: finalResult?.seoMetadata?.keywords || [selectedKeyword],
+                optimizedContent: fullContent,
+                // We don't have a markdown-to-html converter easily available here, 
+                // but we can pass undefined or the raw markdown if needed
+                contentHtml: undefined 
+            });
+
+            if (result.success) {
+                toast.success('已存入你的内容库！');
+                setIsSaved(true);
+                posthog.capture('stellar_writer_saved_to_library', {
+                    article_id: result.data?.id,
+                    keyword: selectedKeyword
+                });
+            } else {
+                toast.error(result.message);
+            }
+        } catch (error) {
+            console.error('Save error:', error);
+            toast.error('保存失败，请检查登录状态');
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     // Initial Human Score Sync
@@ -485,6 +522,7 @@ export default function GEOWriterPage() {
         // Do NOT set global loading state to true, relies on isStreaming
         // setLoading(true);
         setError(null);
+        setIsSaved(false);
         // completion reset is handled by useCompletion automatically
 
         try {
@@ -751,7 +789,7 @@ export default function GEOWriterPage() {
                             )}
 
                             <button
-                                onClick={() => { setStep(1); setAuditResult(null); setFinalResult(null); setResearchData(null); }}
+                                onClick={() => { setStep(1); setAuditResult(null); setFinalResult(null); setResearchData(null); setIsSaved(false); }}
                                 className="w-full text-xs font-bold text-slate-400 hover:text-brand-primary underline transition-colors"
                             >
                                 开启新任务
@@ -1050,7 +1088,20 @@ export default function GEOWriterPage() {
                                     <Share2 size={14} /> 社交分发
                                 </button>
 
+                                <div className="w-px h-6 bg-slate-200 mx-2 self-center" />
 
+                                <button 
+                                    onClick={handleSaveToLibrary} 
+                                    disabled={isSaving || isSaved}
+                                    className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase transition-all flex items-center gap-2 border-2 shadow-sm active:scale-95 ${
+                                        isSaved 
+                                        ? 'bg-emerald-50 border-emerald-200 text-emerald-600' 
+                                        : 'bg-brand-primary border-black text-white hover:shadow-none hover:translate-y-[1px]'
+                                    }`}
+                                >
+                                    {isSaving ? <Loader2 size={14} className="animate-spin" /> : isSaved ? <Check size={14} /> : <Database size={14} />}
+                                    {isSaving ? '正在保存...' : isSaved ? '已存入库' : '存入我的库'}
+                                </button>
 
                                 <button onClick={() => setShowHistory(true)} className="px-8 py-2.5 rounded-xl text-[10px] font-black uppercase transition-all flex items-center gap-2 hover:bg-slate-50 text-slate-400 border border-transparent hover:border-slate-200">
                                     <Undo size={14} /> 历史版本 <Badge className="bg-slate-200 text-slate-500 text-[8px] h-4 min-w-4 flex items-center justify-center p-0">{history.length}</Badge>

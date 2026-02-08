@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import prisma from "./prisma";
-import { emailOTP, forgetPassword } from "better-auth/plugins";
+import { emailOTP } from "better-auth/plugins";
 import { sendEmail } from "./email";
 
 export const auth = betterAuth({
@@ -13,7 +13,7 @@ export const auth = betterAuth({
     },
     plugins: [
         emailOTP({
-            async sendVerificationCode({ email, code }) {
+            async sendVerificationOTP({ email, otp, type }) {
                 await sendEmail({
                     to: email,
                     subject: "ScaletoTop 验证码",
@@ -22,7 +22,7 @@ export const auth = betterAuth({
                             <h1 style="color: #4F46E5;">ScaletoTop</h1>
                             <p style="font-size: 16px; color: #374151;">您的验证码是：</p>
                             <div style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #111827; padding: 20px; background: #F9FAFB; border-radius: 8px; text-align: center; margin: 20px 0;">
-                                ${code}
+                                ${otp}
                             </div>
                             <p style="font-size: 14px; color: #6B7280;">该验证码 5 分钟内有效。</p>
                             <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
@@ -32,6 +32,7 @@ export const auth = betterAuth({
                 });
             },
         }),
+        /*
         forgetPassword({
             async sendResetPassword({ user, url }) {
                 await sendEmail({
@@ -59,6 +60,7 @@ export const auth = betterAuth({
                 });
             },
         }),
+        */
     ],
     user: {
         additionalFields: {
@@ -83,7 +85,21 @@ export const auth = betterAuth({
     trustedOrigins: [
         "http://localhost:3000",
         "http://192.168.1.11:3000",
+        "http://127.0.0.1:3000",
         "https://stp.carpartsluxury.com"
     ],
-    // You can add more advanced settings here like cross-domain cookies if needed
+    rateLimit: {
+        window: 60, // 1 minute
+        max: 5, // 5 requests per window
+        customRules: {
+            "/api/auth/email-otp/verify-email": {
+                window: 60,
+                max: 3,
+            },
+            "/api/auth/sign-in/email-otp": {
+                window: 60,
+                max: 3,
+            },
+        },
+    },
 });

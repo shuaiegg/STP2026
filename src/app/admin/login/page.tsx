@@ -40,51 +40,54 @@ export default function AdminLoginPage() {
 
     return (
         <div className="min-h-screen bg-[#0a0a0b] flex items-center justify-center p-6 relative overflow-hidden">
+            {/* Background Grid Pattern */}
+            <div className="absolute inset-0 grid-bg-dense opacity-10 pointer-events-none" />
+            
             {/* Background Decorative Elements */}
             <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
             <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/10 rounded-full blur-[120px] pointer-events-none" />
 
             <div className="w-full max-w-md relative z-10">
-                <Card className="p-10 bg-slate-900/40 border-slate-800 backdrop-blur-xl shadow-2xl rounded-3xl">
-                    <div className="text-center mb-10">
-                        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 mb-6 shadow-lg shadow-blue-500/20">
-                            <ShieldCheck className="w-7 h-7 text-white" />
-                        </div>
-                        <h1 className="text-2xl font-bold text-white mb-2 tracking-tight">管理员登录</h1>
-                        <p className="text-slate-400 text-sm">请输入凭据访问后台</p>
+                <div className="text-center mb-10 stagger-1 animate-slide-in-up">
+                    <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 mb-6 shadow-lg shadow-blue-500/20">
+                        <ShieldCheck className="w-7 h-7 text-white" />
                     </div>
+                    <h1 className="text-2xl font-bold text-white mb-2 tracking-tight">指挥官登录 / ADMIN</h1>
+                    <p className="text-slate-400 text-sm font-medium">请输入高级凭据访问 STP 控制台</p>
+                </div>
 
+                <Card className="p-10 bg-slate-900/40 border-slate-800 backdrop-blur-xl shadow-2xl rounded-3xl stagger-2 animate-slide-in-up">
                     <form onSubmit={handleLogin} className="space-y-6">
                         {error && (
-                            <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs py-3 px-4 rounded-xl text-center font-medium animate-in fade-in slide-in-from-top-2 duration-300">
+                            <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs py-3 px-4 rounded-xl text-center font-bold animate-in fade-in slide-in-from-top-2 duration-300">
                                 {error}
                             </div>
                         )}
 
                         <div className="space-y-2">
-                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">邮箱地址</label>
+                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">管理员邮箱 / Email</label>
                             <div className="relative group">
                                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-blue-500 transition-colors" />
                                 <input
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full bg-slate-950/50 border-slate-800 rounded-xl py-3 pl-11 pr-4 text-white placeholder:text-slate-700 focus:ring-2 focus:ring-blue-500/30 border-transparent focus:border-blue-500/30 transition-all outline-none text-sm"
-                                    placeholder="admin@example.com"
+                                    className="w-full bg-slate-950/50 border-slate-800 rounded-xl py-3 pl-11 pr-4 text-white placeholder:text-slate-700 focus:ring-2 focus:ring-blue-500/30 border-transparent focus:border-blue-500/30 transition-all outline-none text-sm font-medium"
+                                    placeholder="admin@scaletotop.com"
                                     required
                                 />
                             </div>
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">访问密码</label>
+                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">加密访问密码 / Password</label>
                             <div className="relative group">
                                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-blue-500 transition-colors" />
                                 <input
                                     type="password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full bg-slate-950/50 border-slate-800 rounded-xl py-3 pl-11 pr-4 text-white placeholder:text-slate-700 focus:ring-2 focus:ring-blue-500/30 border-transparent focus:border-blue-500/30 transition-all outline-none text-sm"
+                                    className="w-full bg-slate-950/50 border-slate-800 rounded-xl py-3 pl-11 pr-4 text-white placeholder:text-slate-700 focus:ring-2 focus:ring-blue-500/30 border-transparent focus:border-blue-500/30 transition-all outline-none text-sm font-medium"
                                     placeholder="••••••••"
                                     required
                                 />
@@ -94,23 +97,25 @@ export default function AdminLoginPage() {
                         <Button
                             type="submit"
                             disabled={isPending}
-                            className="w-full h-11 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-sm shadow-lg shadow-blue-600/20 transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 mt-4"
+                            className="w-full h-11 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-black text-sm shadow-lg shadow-blue-600/20 transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 mt-4 group"
                         >
                             {isPending ? (
                                 <Loader2 className="w-4 h-4 animate-spin" />
                             ) : (
                                 <>
-                                    立即登录
-                                    <ArrowRight className="w-4 h-4" />
+                                    认证并登入
+                                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                                 </>
                             )}
                         </Button>
                     </form>
                 </Card>
 
-                <p className="text-center mt-8 text-slate-700 text-[10px] uppercase tracking-widest font-medium">
-                    Secured by Better Auth
-                </p>
+                <div className="text-center mt-8 stagger-3 animate-slide-in-up">
+                    <p className="text-slate-700 text-[10px] uppercase tracking-[0.3em] font-black">
+                        Encrypted Security Channel
+                    </p>
+                </div>
             </div>
         </div>
     );

@@ -22,9 +22,15 @@ export async function middleware(request: NextRequest) {
             const loginPath = isPathAdmin ? "/admin/login" : "/login";
             return NextResponse.redirect(new URL(loginPath, request.url));
         }
+
+        // 4. Role-based protection for /admin
+        // Note: For strict security, we'd fetch the session server-side here.
+        // Since Middleware cannot easily call async auth.api.getSession without external fetch,
+        // we'll rely on a secondary check in the Admin pages themselves for now, 
+        // OR we can perform a fetch to a local API route that returns user role.
     }
 
-    // 4. If it's the login page and user is already logged in, redirect accordingly
+    // 5. If it's the login page and user is already logged in, redirect accordingly
     if (isPathLogin && sessionCookie) {
         const targetPath = isPathAdmin ? "/admin" : "/dashboard";
         return NextResponse.redirect(new URL(targetPath, request.url));

@@ -6,7 +6,7 @@ import { redirect } from 'next/navigation';
 import { DashboardContent } from './DashboardContent';
 
 async function getUserData(userId: string) {
-    const [user, transactions, executions] = await Promise.all([
+    const [user, transactions, executions, articleCount, recentArticles] = await Promise.all([
         prisma.user.findUnique({
             where: { id: userId },
             select: { credits: true, name: true, email: true }
@@ -20,10 +20,18 @@ async function getUserData(userId: string) {
             where: { userId },
             orderBy: { createdAt: 'desc' },
             take: 5
+        }),
+        prisma.trackedArticle.count({
+            where: { userId }
+        }),
+        prisma.trackedArticle.findMany({
+            where: { userId },
+            orderBy: { createdAt: 'desc' },
+            take: 3
         })
     ]);
 
-    return { user, transactions, executions };
+    return { user, transactions, executions, articleCount, recentArticles };
 }
 
 export default async function UserDashboard({ 
@@ -46,7 +54,7 @@ export default async function UserDashboard({
     const isActuallyImpersonating = !!(isAdmin && impersonate && impersonate !== session.user.id);
     const targetUserId = isActuallyImpersonating ? (impersonate as string) : session.user.id;
 
-    const { user, transactions, executions } = await getUserData(targetUserId);
+    const { user, transactions, executions, articleCount, recentArticles } = await getUserData(targetUserId);
 
     return (
         <DashboardContent 
@@ -54,6 +62,8 @@ export default async function UserDashboard({
             transactions={transactions} 
             executions={executions} 
             isImpersonating={isActuallyImpersonating}
+            articleCount={articleCount}
+            recentArticles={recentArticles}
         />
     );
 }

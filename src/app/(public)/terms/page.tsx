@@ -38,11 +38,6 @@ export default function TermsPage() {
             icon: <AlertTriangle className="w-5 h-5 text-brand-primary" />,
             content: "我们持续优化 AI 模型，因此工具的输出风格和定价可能会发生变化。在法律允许的最大范围内，ScaletoTop 不对因使用或无法使用本服务而导致的任何直接、间接或后果性损失负责。"
         }
-Section: {
-            title: "6. 服务变更与责任限制",
-            icon: <AlertTriangle className="w-5 h-5 text-brand-primary" />,
-            content: "我们持续优化 AI 模型，因此工具的输出风格和定价可能会发生变化。在法律允许的最大范围内，ScaletoTop 不对因使用或无法使用本服务而导致的任何直接、间接或后果性损失负责。"
-        }
     ];
 
     return (

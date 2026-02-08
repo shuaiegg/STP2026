@@ -139,9 +139,11 @@ model TrackedArticle {
   id               String    @id @default(uuid())
   userId           String
   title            String
+  summary          String?
   url              String?
   keywords         String[]
   optimizedContent String
+  contentHtml      String?
   status           String    @default("PENDING") // PENDING, CHECKING, CITED, NOT_CITED
   lastCheckedAt    DateTime?
   citationSource   String? // e.g. "Perplexity", "Gemini"

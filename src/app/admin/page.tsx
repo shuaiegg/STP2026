@@ -14,6 +14,9 @@ import {
 import { Card } from '@/components/ui/Card';
 import prisma from '@/lib/prisma';
 import Link from 'next/link';
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 async function getStats() {
     const [
@@ -43,6 +46,15 @@ async function getStats() {
 }
 
 export default async function AdminDashboard() {
+    // 1. Mandatory Security Check
+    const session = await auth.api.getSession({
+        headers: await headers()
+    });
+
+    if (!session || (session.user as any).role !== 'ADMIN') {
+        redirect("/login");
+    }
+
     const stats = await getStats();
 
     return (

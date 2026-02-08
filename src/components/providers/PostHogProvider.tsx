@@ -4,27 +4,18 @@ import posthog from 'posthog-js';
 import { PostHogProvider } from 'posthog-js/react';
 import { useEffect, Suspense } from 'react';
 import { usePathname, useSearchParams } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
+import dynamic from 'next/dynamic';
+// import { authClient } from "@/lib/auth-client"; // Cause of hang with Turbopack
 
-function PostHogAuthAndPageview() {
+const PostHogAuthListener = dynamic(() => import('./PostHogAuthListener').then(mod => mod.PostHogAuthListener), {
+  ssr: false,
+});
+
+
+
+function PostHogPageview() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { data: session } = authClient.useSession();
-
-  // Handle User Identification
-  useEffect(() => {
-    if (session?.user && posthog.__loaded) {
-      posthog.identify(session.user.id, {
-        email: session.user.email,
-        name: session.user.name,
-        role: session.user.role,
-        is_admin: session.user.role === 'ADMIN',
-      });
-    } else if (!session && posthog.__loaded) {
-      posthog.reset();
-    }
-  }, [session]);
-
   // Handle Pageviews
   useEffect(() => {
     if (pathname && posthog.__loaded) {
@@ -59,7 +50,8 @@ export function CSPostHogProvider({ children }: { children: React.ReactNode }) {
   return (
     <PostHogProvider client={posthog}>
       <Suspense fallback={null}>
-        <PostHogAuthAndPageview />
+        <PostHogPageview />
+        <PostHogAuthListener />
       </Suspense>
       {children}
     </PostHogProvider>

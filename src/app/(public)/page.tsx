@@ -30,7 +30,7 @@ function ClientLogos() {
     { name: 'InnovateCo', initial: 'I' },
     { name: 'TradeWin', initial: 'W' },
   ];
-  
+
   return (
     <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12">
       {clients.map((client) => (
@@ -57,7 +57,7 @@ function TestimonialCard({ quote, author, role, company, result }: {
     <div className="border-2 border-brand-border-heavy bg-white p-8 transition-all hover:shadow-[8px_8px_0_0_rgba(10,10,10,1)] hover:translate-x-[-4px] hover:translate-y-[-4px] cursor-pointer">
       <div className="mb-6">
         <svg className="w-10 h-10 text-brand-secondary" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h4v10h-10z"/>
+          <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h4v10h-10z" />
         </svg>
       </div>
       <p className="text-lg text-brand-text-primary mb-6 leading-relaxed font-medium">
@@ -104,6 +104,7 @@ function ProcessStep({ number, title, description, icon }: {
 export default async function Home() {
   const { contents } = await getPublishedContent({}, { limit: 3 });
   const featuredPosts = contents;
+  // const featuredPosts = [];
 
   const formatDate = (date: Date | null) => {
     if (!date) return '未发布';
@@ -125,9 +126,9 @@ export default async function Home() {
         <div className="absolute top-0 right-0 w-96 h-96 opacity-5 pointer-events-none">
           <svg viewBox="0 0 200 200" className="w-full h-full">
             <path d="M20,50 L80,50 L80,80 L120,80 L120,120 L80,120 L80,150 L50,150"
-              stroke="currentColor" strokeWidth="4" fill="none" className="text-brand-primary"/>
+              stroke="currentColor" strokeWidth="4" fill="none" className="text-brand-primary" />
             <path d="M50,20 L120,20 L120,50 L150,50 L150,90 L120,90 L120,120 L90,120"
-              stroke="currentColor" strokeWidth="2" fill="none" className="text-brand-secondary"/>
+              stroke="currentColor" strokeWidth="2" fill="none" className="text-brand-secondary" />
           </svg>
         </div>
 
@@ -164,7 +165,7 @@ export default async function Home() {
                 >
                   查看获客方法
                   <svg className="w-5 h-5 ml-2 inline" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
                 </Button>
               </Link>
@@ -242,7 +243,7 @@ export default async function Home() {
               description="分析你的产品、市场和现有渠道，找出最适合你的获客组合"
               icon={
                 <svg className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                 </svg>
               }
             />
@@ -252,7 +253,7 @@ export default async function Home() {
               description="根据诊断结果，制定广告+内容+工具的组合策略和执行计划"
               icon={
                 <svg className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
                 </svg>
               }
             />
@@ -262,7 +263,7 @@ export default async function Home() {
               description="落地执行获客计划，持续追踪数据，优化转化效果"
               icon={
                 <svg className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                 </svg>
               }
             />
@@ -314,7 +315,7 @@ export default async function Home() {
                 <div className="flex items-center gap-2 text-sm font-mono text-brand-secondary font-bold">
                   <span>即时获客</span>
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd"/>
+                    <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                 </div>
               </div>
@@ -341,7 +342,7 @@ export default async function Home() {
                 <div className="flex items-center gap-2 text-sm font-mono text-brand-secondary font-bold">
                   <span>长期累积</span>
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd"/>
+                    <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                 </div>
               </div>
@@ -368,7 +369,7 @@ export default async function Home() {
                 <div className="flex items-center gap-2 text-sm font-mono text-brand-secondary font-bold">
                   <span>规模放大</span>
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd"/>
+                    <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                 </div>
               </div>
@@ -437,7 +438,7 @@ export default async function Home() {
               >
                 查看全部文章
                 <svg className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
               </Button>
             </Link>
@@ -519,7 +520,7 @@ export default async function Home() {
                 >
                   探索智作工具
                   <svg className="w-5 h-5 ml-2 inline" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
                 </Button>
               </Link>
