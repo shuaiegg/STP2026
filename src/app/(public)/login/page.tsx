@@ -217,10 +217,13 @@ export default function UserLoginPage() {
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         className="w-full bg-brand-surface border-2 border-brand-border rounded-none py-3 pl-11 pr-4 text-brand-text-primary placeholder:text-brand-text-muted focus:border-brand-primary transition-all outline-none text-sm font-medium"
-                                        placeholder="jack@scaletotop.com"
+                                        placeholder="yourname@company.com"
                                         required
                                     />
                                 </div>
+                                <p className="text-[10px] text-brand-text-muted mt-2 ml-1 italic font-medium">
+                                    提示：未登录过的邮箱将自动创建新账户
+                                </p>
                             </div>
 
                             <Button
@@ -230,6 +233,15 @@ export default function UserLoginPage() {
                             >
                                 {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <>进入系统 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></>}
                             </Button>
+
+                            <div className="text-center">
+                                <p className="text-[10px] text-brand-text-muted">
+                                    点击登录即表示您同意我们的{" "}
+                                    <Link href="/terms" className="underline hover:text-brand-primary">服务条款</Link>{" "}
+                                    和{" "}
+                                    <Link href="/privacy" className="underline hover:text-brand-primary">隐私政策</Link>
+                                </p>
+                            </div>
 
                             <div className="relative py-2">
                                 <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-brand-border" /></div>
