@@ -154,7 +154,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
                         <div className="hidden md:flex flex-col items-end">
                             <span className="text-sm font-black text-slate-900">{session?.user?.name || '杰克'}</span>
                             <span className="text-[9px] font-black uppercase tracking-widest text-brand-primary bg-brand-primary/5 px-2 py-0.5 rounded">
-                                {(session?.user as any)?.role === 'ADMIN' ? 'Commander' : 'Standard User'}
+                                {(session?.user as any)?.role === 'ADMIN' ? '管理员' : '普通用户'}
                             </span>
                         </div>
                         <div className="w-12 h-12 rounded-2xl bg-slate-100 border-2 border-white shadow-sm overflow-hidden flex items-center justify-center">

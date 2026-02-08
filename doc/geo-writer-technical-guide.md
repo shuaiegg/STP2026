@@ -69,7 +69,7 @@ GEO-Writer 不仅仅生成文字，更通过多个维度量化内容的“竞争
 ## 3. 技术路线图
 - **语言模型**: 采用 DeepSeek-Chat V3 (236B) / Claude 3.5 Sonnet 双模型协同。
 - **数据源**: DataForSEO Google SERP API。
-- **前端架构**: Next.js 14 + TailwindCSS + Lucide Icons。
+- **前端架构**: Next.js 16 + TailwindCSS + Lucide Icons。
 - **流式输出**: AI SDK (Vercel) 提供实时打字机体验。
 
 ---

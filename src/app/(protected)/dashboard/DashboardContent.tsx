@@ -192,8 +192,8 @@ export function DashboardContent({
                                     <ShieldCheck size={20} />
                                 </div>
                                 <div>
-                                    <div className="text-sm font-black text-emerald-900 leading-none mb-1">身份加固已激活</div>
-                                    <div className="text-[10px] text-emerald-600/70 font-bold uppercase tracking-widest">Better Auth Standard</div>
+                                    <div className="text-sm font-black text-emerald-900 leading-none mb-1">账号安全等级：高</div>
+                                    <div className="text-[10px] text-emerald-600/70 font-bold uppercase tracking-widest">已启用动态验证保护</div>
                                 </div>
                             </div>
                             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -205,8 +205,8 @@ export function DashboardContent({
                                     <TrendingUp size={20} />
                                 </div>
                                 <div>
-                                    <div className="text-sm font-black text-blue-900 leading-none mb-1">GEO 引擎稳定性</div>
-                                    <div className="text-[10px] text-blue-600/70 font-bold uppercase tracking-widest">Status: Operational (100%)</div>
+                                    <div className="text-sm font-black text-blue-900 leading-none mb-1">GEO 引擎状态</div>
+                                    <div className="text-[10px] text-blue-600/70 font-bold uppercase tracking-widest">运行状态：正常 (100%)</div>
                                 </div>
                             </div>
                             <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
@@ -220,14 +220,6 @@ export function DashboardContent({
                                 安全设置 <ArrowUpRight size={10} />
                             </Link>
                         </div>
-                    </Card>
-
-                    <Card className="p-8 bg-gradient-to-br from-slate-900 to-black text-white rounded-3xl relative overflow-hidden">
-                        <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-brand-primary/20 rounded-full blur-[60px]" />
-                        <h4 className="text-xs font-black uppercase tracking-widest text-brand-secondary mb-3">阿拉丁的备忘录</h4>
-                        <p className="text-sm font-medium leading-relaxed text-slate-300">
-                            “杰克，周一开盘前我会为你扫描工程机械板块的雷达信号。同时，目前的 STP 已经非常稳健了，可以尝试大规模录入内容了！”
-                        </p>
                     </Card>
                 </div>
             </div>
