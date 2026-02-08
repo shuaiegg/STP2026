@@ -24,7 +24,7 @@ import { Badge } from '@/components/ui/Badge';
 import { authClient } from "@/lib/auth-client";
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ShieldAlert, ArrowLeft, Settings } from 'lucide-react';
+import { ShieldAlert, ArrowLeft, Settings as SettingsIcon } from 'lucide-react';
 
 export function DashboardContent({ 
     user, 
