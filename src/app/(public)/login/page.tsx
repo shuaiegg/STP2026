@@ -11,16 +11,18 @@ import { translateAuthError } from "@/lib/auth-errors";
 import { toast } from "sonner";
 
 export default function UserLoginPage() {
-    console.log("🧞‍♂️ Aladdin Auth Logic v6.0 (Strict Fetch) Loaded");
+    console.log("🧞‍♂️ Aladdin Auth Logic v6.2 (Unified Flow) Loaded");
     const [email, setEmail] = useState("");
+    const [name, setName] = useState("");
     const [otp, setOtp] = useState("");
     const [password, setPassword] = useState("");
-    const [step, setStep] = useState<"email" | "otp" | "password">("email");
+    const [step, setStep] = useState<"email" | "register_info" | "otp" | "password">("email");
+    const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
     const [isPending, setIsPending] = useState(false);
     const [error, setError] = useState("");
     const router = useRouter();
 
-    // 1. 发送验证码 (使用直连逻辑绕过 kebab-case Bug)
+    // 1. 发送验证码
     const handleSendOTP = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsPending(true);
@@ -28,8 +30,9 @@ export default function UserLoginPage() {
 
         try {
             const cleanEmail = email.trim().toLowerCase();
-            console.log("🚀 Direct Fetch: Sending OTP to", cleanEmail);
+            console.log("🚀 Auth: Routing request for", cleanEmail);
             
+            // 尝试以 sign-in 模式发送
             const response = await fetch(`/api/auth/email-otp/send-verification-otp`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -41,22 +44,22 @@ export default function UserLoginPage() {
 
             const data = await response.json();
 
+            // 如果报错，且包含 "User not found" 或特定错误码
             if (!response.ok || data.error) {
-                // 如果用户不存在，尝试 sign-up 路径
-                if (data.error?.includes("User not found") || data.code === "USER_NOT_FOUND") {
-                    const signUpRes = await fetch(`/api/auth/email-otp/send-verification-otp`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ email: cleanEmail, type: "sign-up" })
-                    });
-                    if (!signUpRes.ok) throw new Error("发送验证码失败");
-                } else {
-                    throw new Error(data.error || "发送验证码失败");
+                const errorMessage = data.error || "";
+                const errorCode = data.code || "";
+                
+                if (errorMessage.includes("User not found") || errorCode === "USER_NOT_FOUND") {
+                    console.log("📝 User not found, switching to sign-up mode...");
+                    setStep("register_info"); // 切换到输入姓名步骤
+                    return;
                 }
+                throw new Error(data.error || "发送验证码失败");
             }
             
             toast.success("验证码已发送至您的邮箱");
             setStep("otp");
+            setMode("sign-in");
         } catch (err: any) {
             setError(translateAuthError(err.message || "发送失败，请检查邮箱"));
         } finally {
@@ -64,7 +67,43 @@ export default function UserLoginPage() {
         }
     };
 
-    // 2. 验证并登录 (使用原生 Fetch 绕过 Client 路径 Bug)
+    // 1b. 新用户提交姓名并发送验证码
+    const handleRegisterSendOTP = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsPending(true);
+        setError("");
+
+        try {
+            const cleanEmail = email.trim().toLowerCase();
+            const cleanName = name.trim();
+            
+            const response = await fetch(`/api/auth/email-otp/send-verification-otp`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    email: cleanEmail,
+                    name: cleanName,
+                    type: "sign-up",
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || data.error) {
+                throw new Error(data.error || "发送验证码失败");
+            }
+            
+            toast.success("欢迎！验证码已发送至您的邮箱");
+            setStep("otp");
+            setMode("sign-up");
+        } catch (err: any) {
+            setError(translateAuthError(err.message || "发送失败"));
+        } finally {
+            setIsPending(false);
+        }
+    };
+
+    // 2. 验证并完成 (登录或注册)
     const handleVerifyOTP = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsPending(true);
@@ -73,28 +112,32 @@ export default function UserLoginPage() {
         try {
             const cleanEmail = email.trim().toLowerCase();
             const cleanOtp = otp.trim();
-            console.log("🚀 Direct Fetch: Verifying OTP for", cleanEmail, "code:", cleanOtp);
-
-            const response = await fetch(`/api/auth/sign-in/email-otp`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    email: cleanEmail,
-                    otp: cleanOtp, // 修正字段名为 otp
-                })
-            });
+            
+            let response;
+            if (mode === "sign-up") {
+                response = await fetch(`/api/auth/sign-up/email-otp`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: cleanEmail, name, code: cleanOtp })
+                });
+            } else {
+                response = await fetch(`/api/auth/sign-in/email-otp`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: cleanEmail, otp: cleanOtp })
+                });
+            }
 
             const data = await response.json();
 
             if (!response.ok || data.error) {
                 throw new Error(data.error || data.message || "验证码错误");
             } else {
-                toast.success("登录成功");
+                toast.success(mode === "sign-up" ? "欢迎加入 ScaletoTop！" : "登录成功");
                 router.push("/dashboard");
                 router.refresh();
             }
         } catch (err: any) {
-            console.error("❌ Verify OTP Error:", err);
             setError(translateAuthError(err.message || "验证码错误"));
         } finally {
             setIsPending(false);
@@ -179,7 +222,7 @@ export default function UserLoginPage() {
                                 disabled={isPending}
                                 className="w-full h-12 bg-brand-primary hover:bg-brand-primary-hover text-brand-text-inverted border-2 border-brand-border-heavy shadow-[4px_4px_0_0_rgba(10,10,10,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all font-bold text-sm flex items-center justify-center gap-2 group"
                             >
-                                {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <>获取登录验证码 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></>}
+                                {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <>进入系统 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></>}
                             </Button>
 
                             <div className="relative py-2">
@@ -193,6 +236,42 @@ export default function UserLoginPage() {
                                 className="w-full py-2 text-[10px] font-black uppercase tracking-widest text-brand-text-secondary hover:text-brand-primary transition-colors flex items-center justify-center gap-2"
                             >
                                 <Lock className="w-3 h-3" /> 使用密码访问
+                            </button>
+                        </form>
+                    )}
+
+                    {step === "register_info" && (
+                        <form onSubmit={handleRegisterSendOTP} className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                            <div className="space-y-2">
+                                <label className="font-mono text-[10px] font-bold text-brand-text-muted uppercase tracking-widest ml-1">欢迎新同学！请输入您的姓名 / Name</label>
+                                <div className="relative group">
+                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-text-muted group-focus-within:text-brand-primary transition-colors" />
+                                    <input
+                                        type="text"
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                        className="w-full bg-brand-surface border-2 border-brand-border rounded-none py-3 pl-11 pr-4 text-brand-text-primary placeholder:text-brand-text-muted focus:border-brand-primary transition-all outline-none text-sm font-medium"
+                                        placeholder="例如：Jack"
+                                        required
+                                        autoFocus
+                                    />
+                                </div>
+                            </div>
+
+                            <Button
+                                type="submit"
+                                disabled={isPending}
+                                className="w-full h-12 bg-brand-secondary hover:bg-brand-secondary-hover text-brand-text-primary border-2 border-brand-border-heavy shadow-[4px_4px_0_0_rgba(10,10,10,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all font-bold text-sm flex items-center justify-center gap-2 group"
+                            >
+                                {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <>获取验证码并领积分 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></>}
+                            </Button>
+
+                            <button
+                                type="button"
+                                onClick={() => setStep("email")}
+                                className="w-full py-2 text-[10px] font-black uppercase tracking-widest text-brand-text-muted hover:text-brand-primary transition-colors flex items-center justify-center gap-2"
+                            >
+                                <ArrowLeft className="w-3 h-3" /> 返回修改邮箱
                             </button>
                         </form>
                     )}
