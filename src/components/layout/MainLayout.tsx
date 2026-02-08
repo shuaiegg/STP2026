@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { Button } from '../ui/Button';
 import { authClient } from '@/lib/auth-client';
 
-const NavIcon: React.FC<{ type: 'home' | 'blog' | 'course' | 'tools' }> = ({ type }) => {
+const NavIcon: React.FC<{ type: 'home' | 'blog' | 'course' | 'tools' | 'pricing' }> = ({ type }) => {
     switch (type) {
         case 'home':
             return (
@@ -30,6 +30,12 @@ const NavIcon: React.FC<{ type: 'home' | 'blog' | 'course' | 'tools' }> = ({ typ
             return (
                 <svg className="w-4 h-4 mr-2 opacity-70 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+            );
+        case 'pricing':
+            return (
+                <svg className="w-4 h-4 mr-2 opacity-70 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3-1.343-3-3-3zM12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z"></path>
                 </svg>
             );
         default:
@@ -72,6 +78,10 @@ const Header: React.FC = () => {
                         <Link href="/tools" className={getLinkClass('/tools')}>
                             <NavIcon type="tools" />
                             效率工具
+                        </Link>
+                        <Link href="/pricing" className={getLinkClass('/pricing')}>
+                            <NavIcon type="pricing" />
+                            定价方案
                         </Link>
                     </nav>
                 </div>
@@ -133,6 +143,7 @@ const Footer: React.FC = () => {
                             <ul className="space-y-4 text-sm text-brand-text-secondary">
                                 <li><Link href="/course" className="hover:text-brand-primary transition-colors">技术型 SEO 课程</Link></li>
                                 <li><Link href="/tools" className="hover:text-brand-primary transition-colors">pSEO 自动化工具</Link></li>
+                                <li><Link href="/pricing" className="hover:text-brand-primary transition-colors">定价方案</Link></li>
                                 <li><Link href="/consultation" className="hover:text-brand-primary transition-colors">增长咨询服务</Link></li>
                             </ul>
                         </div>

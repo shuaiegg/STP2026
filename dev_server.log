@@ -365,3 +365,26 @@ prisma:query COMMIT
 prisma:query SELECT "public"."SkillExecution"."id", "public"."SkillExecution"."skillName", "public"."SkillExecution"."status", "public"."SkillExecution"."input", "public"."SkillExecution"."output", "public"."SkillExecution"."metadata", "public"."SkillExecution"."cost", "public"."SkillExecution"."executionTimeMs", "public"."SkillExecution"."errorMessage", "public"."SkillExecution"."createdAt", "public"."SkillExecution"."modelUsed", "public"."SkillExecution"."provider", "public"."SkillExecution"."tokensUsed", "public"."SkillExecution"."transactionId", "public"."SkillExecution"."userId" FROM "public"."SkillExecution" WHERE "public"."SkillExecution"."userId" = $1 ORDER BY "public"."SkillExecution"."createdAt" DESC LIMIT $2 OFFSET $3
 prisma:query COMMIT
  GET /dashboard 200 in 5.6s (compile: 157ms, proxy.ts: 4ms, render: 5.4s)
+prisma:query SELECT 1
+prisma:query SELECT 1
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query COMMIT
+prisma:query COMMIT
+ GET / 200 in 1288ms (compile: 95ms, render: 1193ms)
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Session"."id", "public"."Session"."userId", "public"."Session"."token", "public"."Session"."expiresAt", "public"."Session"."createdAt", "public"."Session"."ipAddress", "public"."Session"."updatedAt", "public"."Session"."userAgent" FROM "public"."Session" WHERE "public"."Session"."token" = $1 LIMIT $2 OFFSET $3
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."User"."id", "public"."User"."email", "public"."User"."name", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."credits" FROM "public"."User" WHERE "public"."User"."id" = $1 LIMIT $2 OFFSET $3
+prisma:query COMMIT
+ GET /api/auth/get-session 200 in 1656ms (compile: 50ms, proxy.ts: 2ms, render: 1604ms)
+✓ Compiled in 57ms
+✓ Compiled in 64ms
+✓ Compiled in 61ms
