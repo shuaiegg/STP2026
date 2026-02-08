@@ -1,6 +1,6 @@
 INPUT:
 {
-  "keywords": "嵌入式设备前景",
+  "keywords": "海外营销服务公司",
   "location": "",
   "brandName": "",
   "tone": "professional",
@@ -13,7 +13,7 @@ INPUT:
 
 PROMPT:
 You are a world-class Growth Marketer and SEO/GEO expert.
-Context: Current date is 2026-02-06.
+Context: Current date is 2026-02-08.
 
 TITLE RULES:
 1. Only include the year (2026) if the content is time-sensitive (e.g. "Trends", "Best of", "Guide").
@@ -64,66 +64,85 @@ MODE: FULL CONTENT GENERATION MODE - Create complete, publication-ready article.
 
 
 ## Target Profiles
-- Keywords: 嵌入式设备前景
+- Keywords: 海外营销服务公司
 - Brand: 
 - Industry: General
 
 Note: User is starting from scratch. Focus on creating the best Master Outline.
 
 ## Competitor Outlines
-### Competitor: Reddit - The heart of the internet
-  - Thanks for the feedback!
-- 嵌入式在不久的将来真的是一个热门领域吗？
+### Competitor: 飞书深诺|Meetsocial首页_跨境数字化营销服务专家 - 飞书深诺官网
+    - 跨境电商海外营销
+    - 出海电商品牌全域营销
+    - 游戏全球发行服务
+    - 应用软件APP出海
+    - 媒介采购
+    - 策略咨询
+    - 优化运营
+    - 整合营销
+    - 数字技术
+    - 数字创意
+    - 私域增长
+    - Marvy/Adtech
+    - 短剧承制与发行
+    - 金融方案
+    - 跨境服务产品
+    - 知识学习
+    - 行业报告
+    - 近期活动
+    - 汇率查询和换算器
+    - 行业资源中心
+    - 公司介绍
+    - 全球资源
+    - 最新动态
+    - 社会认可
+    - 加入我们
+    - 联系我们
+    - 关于我们
+- 跨境数字化营销服务专家
+- &lt;div&gt;服务费率低至0.2%/15天&lt;/div&gt; &lt;div&gt;原费率为 0.5%/15天&lt;/div&gt;
+    - &lt;img src&#x3D;&quot;https://omo-oss-image.thefastimg.com/portal-saas/ngc202211030002/cms/image/56eee30e-5099-4eba-bfbb-4ccba41221fb.png&quot; alt&#x3D;&quot;飞书深诺集团做的是什么业务&quot;&gt;飞书深诺做什么业务？
 
-### Competitor: 2025嵌入式开发前景的几个方向！-电子工程专辑
-- 2025嵌入式开发前景的几个方向！
-  - 报名IIC Shanghai 2026，领五星酒店自助餐券(限工程师领)
-  - 电动汽车侧滑进沟 不到1分钟烧穿乘员舱！路人砸窗连救出3人
-  - 电车起火，路人勇救3人！很遗憾：副驾未救出！
-  - 全球最大矿业合并案告吹
-  - 这家通信芯片厂商，完成近15亿元融资！
-  - 英飞凌、意法、罗姆披露SiC业务近况
-  - 2025中国智能驾驶行业趋势白皮书
-  - 智能模型组别：X-Smart智能车系统
-  - 林雪萍｜四海鲨鱼 全球并购的工软王国（工业软件2026三部曲2）
-  - AD19打开库左边上下分层显示，怎么解决？不要上下分层，很丑，不方便找属性内容
-  - 高精度三轴霍尔效应传感器：TI TMAG5273A1QDBVR全面解析
-  - 详解MOS管的关键参数和工作损耗
-  - MOSFET 失效 Top 原因
-  - 详解半导体材料导电性能与能带理论
-  - 哪个熟悉车灯标准的？如附件的，出口欧美
-  - 晶振倍频率干扰的解决方法
-  - 《基于ANSYS HFSS的无源仿真实例》+仿真学习
-  - 【瑞萨AI挑战赛】+基于瑞萨RT-ThreadRA8P1 Titan Board的门禁系统-智能可视门铃
-  - TVS二极管的实战选型指南和布局技巧
-  - 《基于ANSYS HFSS的无源仿真实例》+我的仿真观
-  - 电动汽车与数据中心如何受益于48V电源系统
-  - 最近文章
-  - 热门文章
-  - 推荐
-    - 最新资讯
-      - 提示！
+### Competitor: Duffy Agency | 专业的国际市场营销咨询公司，只为立志拓展海外市场的品牌
+- 让您的品牌更上一层楼
+- 专业的国际市场营销战略咨询只为立志拓展海外市场的品牌
+- 让您的品牌更上一层楼
+- 专业的国际市场营销战略咨询只为立志拓展海外市场的品牌
+  - Watch our marketing video guides full of useful insights
+  - Watch Now
+
+### Competitor: 3个你不知道的海外营销机构，TA们能让你的产品爆火 | Payoneer
+- 3个你不知道的海外营销机构，TA们能让你的产品爆火
+    - Related resources
+    - SWIFT电汇转账和当地银行转账：如何选择？
+    - 新功能！直接通过Payoneer向客户收款
+    - US Payment Service资金审核所需材料
+    - Payoneer资金 — 提现到指定银行
+    - Payoneer预付万事达卡®收费标准和使用额度
+    - 离岸开户难？无故被封号？Payoneer外贸e户通重新定义B2B外贸收款
+    - Latest articles
+    - 2025-09-21 欧洲宽松周期已结束，美国将开启降息周期
+    - 2025-09-11 美国境外资金对美国十年期国债需求大增
+    - 2025-09-10 避险情绪推动美元指数短线走强
+    - 2025-09-09 美国10年期国债收益率跌至五个月新低
+    - 必看！美国壕撒万亿补贴，中国卖家也可申请?!
+    - 选择Pinterest的7个理由
+    - Thanks!
 
 
 
 ## Related Keywords & Search Volume
-- 嵌入式设备前景: Volume 150, Competition 45%
+- 海外营销服务公司: Volume 150, Competition 45%
 
 
 # 🔍 SERP 智能分析 (SEO 优化指导)
 
 
-## 🏆 竞品成功结构参考 (基于 TOP 2 排名内容分析):
+## 🏆 竞品成功结构参考 (基于 TOP 3 排名内容分析):
 
 以下章节在高排名内容中频繁出现，建议包含：
-- thanks for the feedback
-- 报名iic shanghai 领五星酒店自助餐券限工程师领
-- 电动汽车侧滑进沟 不到分钟烧穿乘员舱路人砸窗连救出人
-- 电车起火路人勇救人很遗憾副驾未救出
-- 全球最大矿业合并案告吹
-- 这家通信芯片厂商完成近亿元融资
-- 英飞凌意法罗姆披露sic业务近况
-- 中国智能驾驶行业趋势白皮书
+- watch our marketing video guides full of useful insights
+- watch now
 
 **注意**: 使用这些结构作为灵感，但必须用你自己的语言和角度重新组织内容。
 

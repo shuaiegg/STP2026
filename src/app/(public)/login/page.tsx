@@ -152,7 +152,7 @@ export default function UserLoginPage() {
 
                 <Card className="p-8 border-2 border-brand-border-heavy bg-white shadow-[8px_8px_0_0_rgba(10,10,10,1)] stagger-2 animate-slide-in-up">
                     {error && (
-                        <div className="mb-6 bg-brand-accent/5 border-2 border-brand-accent/20 text-brand-accent text-xs py-3 px-4 font-bold text-center animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="mb-6 bg-brand-accent/10 border-2 border-brand-accent text-brand-accent text-xs py-3 px-4 font-black text-center animate-in fade-in slide-in-from-top-2 duration-300">
                             {error}
                         </div>
                     )}
@@ -250,7 +250,7 @@ export default function UserLoginPage() {
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between ml-1">
                                     <label className="font-mono text-[10px] font-bold text-brand-text-muted uppercase tracking-widest">访问密码 / Password</label>
-                                    <Link href="/forgot-password" size="sm" className="text-[10px] font-bold text-brand-accent uppercase hover:underline">
+                                    <Link href="/forgot-password" size="sm" className="text-[10px] font-black text-brand-text-primary uppercase hover:text-brand-accent transition-colors">
                                         忘记密码?
                                     </Link>
                                 </div>
@@ -293,11 +293,6 @@ export default function UserLoginPage() {
                             立即加入并获取 10 积分
                         </Link>
                     </p>
-                    <div className="mt-8 flex items-center justify-center gap-4 text-[10px] font-mono font-bold text-slate-300 uppercase tracking-[0.2em]">
-                        <span>Secure Auth</span>
-                        <span className="w-1 h-1 rounded-full bg-slate-200" />
-                        <span>Logic v6.2</span>
-                    </div>
                 </div>
             </div>
         </div>
