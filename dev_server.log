@@ -1133,3 +1133,60 @@ prisma:query SELECT "public"."User"."id", "public"."User"."email", "public"."Use
 prisma:query COMMIT
 ✓ Compiled in 59ms
 ✓ Compiled in 75ms
+prisma:query SELECT 1
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Session"."id", "public"."Session"."userId", "public"."Session"."token", "public"."Session"."expiresAt", "public"."Session"."createdAt", "public"."Session"."ipAddress", "public"."Session"."updatedAt", "public"."Session"."userAgent" FROM "public"."Session" WHERE "public"."Session"."token" = $1 LIMIT $2 OFFSET $3
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."User"."id", "public"."User"."email", "public"."User"."name", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."credits" FROM "public"."User" WHERE "public"."User"."id" = $1 LIMIT $2 OFFSET $3
+prisma:query COMMIT
+prisma:query SELECT 1
+prisma:query SELECT 1
+prisma:query BEGIN
+prisma:query SELECT 1
+prisma:query SELECT 1
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."CreditTransaction"."id", "public"."CreditTransaction"."userId", "public"."CreditTransaction"."amount", "public"."CreditTransaction"."type"::text, "public"."CreditTransaction"."description", "public"."CreditTransaction"."createdAt" FROM "public"."CreditTransaction" WHERE "public"."CreditTransaction"."userId" = $1 ORDER BY "public"."CreditTransaction"."createdAt" DESC LIMIT $2 OFFSET $3
+prisma:query COMMIT
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."TrackedArticle"."id" FROM "public"."TrackedArticle" WHERE "public"."TrackedArticle"."userId" = $1 OFFSET $2) AS "sub"
+prisma:query SELECT "public"."TrackedArticle"."id", "public"."TrackedArticle"."userId", "public"."TrackedArticle"."title", "public"."TrackedArticle"."summary", "public"."TrackedArticle"."url", "public"."TrackedArticle"."keywords", "public"."TrackedArticle"."optimizedContent", "public"."TrackedArticle"."contentHtml", "public"."TrackedArticle"."status", "public"."TrackedArticle"."lastCheckedAt", "public"."TrackedArticle"."citationSource", "public"."TrackedArticle"."checkCount", "public"."TrackedArticle"."createdAt", "public"."TrackedArticle"."updatedAt" FROM "public"."TrackedArticle" WHERE "public"."TrackedArticle"."userId" = $1 ORDER BY "public"."TrackedArticle"."createdAt" DESC LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."credits", "public"."User"."name", "public"."User"."email" FROM "public"."User" WHERE ("public"."User"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."SkillExecution"."id", "public"."SkillExecution"."skillName", "public"."SkillExecution"."status", "public"."SkillExecution"."input", "public"."SkillExecution"."output", "public"."SkillExecution"."metadata", "public"."SkillExecution"."cost", "public"."SkillExecution"."executionTimeMs", "public"."SkillExecution"."errorMessage", "public"."SkillExecution"."createdAt", "public"."SkillExecution"."modelUsed", "public"."SkillExecution"."provider", "public"."SkillExecution"."tokensUsed", "public"."SkillExecution"."transactionId", "public"."SkillExecution"."userId" FROM "public"."SkillExecution" WHERE "public"."SkillExecution"."userId" = $1 ORDER BY "public"."SkillExecution"."createdAt" DESC LIMIT $2 OFFSET $3
+prisma:query COMMIT
+prisma:query COMMIT
+prisma:query COMMIT
+prisma:query COMMIT
+ GET /dashboard 200 in 3.6s (compile: 268ms, proxy.ts: 7ms, render: 3.3s)
+ GET /dashboard/tools 200 in 965ms (compile: 940ms, proxy.ts: 7ms, render: 18ms)
+ GET /dashboard/tools 200 in 110ms (compile: 3ms, proxy.ts: 2ms, render: 105ms)
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Session"."id", "public"."Session"."userId", "public"."Session"."token", "public"."Session"."expiresAt", "public"."Session"."createdAt", "public"."Session"."ipAddress", "public"."Session"."updatedAt", "public"."Session"."userAgent" FROM "public"."Session" WHERE "public"."Session"."token" = $1 LIMIT $2 OFFSET $3
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."User"."id", "public"."User"."email", "public"."User"."name", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."credits" FROM "public"."User" WHERE "public"."User"."id" = $1 LIMIT $2 OFFSET $3
+prisma:query COMMIT
+ GET /api/auth/get-session 200 in 1716ms (compile: 79ms, proxy.ts: 4ms, render: 1633ms)
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+✓ Compiled in 260ms
+ GET /dashboard/tools 200 in 204ms (compile: 76ms, proxy.ts: 3ms, render: 125ms)
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Session"."id", "public"."Session"."userId", "public"."Session"."token", "public"."Session"."expiresAt", "public"."Session"."createdAt", "public"."Session"."ipAddress", "public"."Session"."updatedAt", "public"."Session"."userAgent" FROM "public"."Session" WHERE "public"."Session"."token" = $1 LIMIT $2 OFFSET $3
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."User"."id", "public"."User"."email", "public"."User"."name", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."credits" FROM "public"."User" WHERE "public"."User"."id" = $1 LIMIT $2 OFFSET $3
+prisma:query COMMIT
+ GET /api/auth/get-session 200 in 3.1s (compile: 78ms, proxy.ts: 2ms, render: 3.0s)
