@@ -245,3 +245,891 @@ prisma:query COMMIT
 prisma:query COMMIT
 prisma:query COMMIT
  GET /dashboard 200 in 3.6s (compile: 260ms, proxy.ts: 3ms, render: 3.4s)
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query COMMIT
+prisma:query COMMIT
+ GET / 200 in 2.7s (compile: 160ms, render: 2.5s)
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Session"."id", "public"."Session"."userId", "public"."Session"."token", "public"."Session"."expiresAt", "public"."Session"."createdAt", "public"."Session"."ipAddress", "public"."Session"."updatedAt", "public"."Session"."userAgent" FROM "public"."Session" WHERE "public"."Session"."token" = $1 LIMIT $2 OFFSET $3
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."User"."id", "public"."User"."email", "public"."User"."name", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."credits" FROM "public"."User" WHERE "public"."User"."id" = $1 LIMIT $2 OFFSET $3
+prisma:query COMMIT
+ GET /api/auth/get-session 200 in 1838ms (compile: 81ms, proxy.ts: 3ms, render: 1754ms)
+prisma:query SELECT 1
+prisma:query SELECT 1
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query COMMIT
+prisma:query COMMIT
+ GET / 200 in 1216ms (compile: 166ms, render: 1050ms)
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query COMMIT
+prisma:query COMMIT
+prisma:query BEGIN
+ GET / 200 in 898ms (compile: 2ms, render: 895ms)
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Session"."id", "public"."Session"."userId", "public"."Session"."token", "public"."Session"."expiresAt", "public"."Session"."createdAt", "public"."Session"."ipAddress", "public"."Session"."updatedAt", "public"."Session"."userAgent" FROM "public"."Session" WHERE "public"."Session"."token" = $1 LIMIT $2 OFFSET $3
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Session"."id", "public"."Session"."userId", "public"."Session"."token", "public"."Session"."expiresAt", "public"."Session"."createdAt", "public"."Session"."ipAddress", "public"."Session"."updatedAt", "public"."Session"."userAgent" FROM "public"."Session" WHERE "public"."Session"."token" = $1 LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Session"."id", "public"."Session"."userId", "public"."Session"."token", "public"."Session"."expiresAt", "public"."Session"."createdAt", "public"."Session"."ipAddress", "public"."Session"."updatedAt", "public"."Session"."userAgent" FROM "public"."Session" WHERE "public"."Session"."token" = $1 LIMIT $2 OFFSET $3
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query COMMIT
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query COMMIT
+prisma:query COMMIT
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query COMMIT
+prisma:query COMMIT
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+ GET / 200 in 2.1s (compile: 39ms, render: 2.1s)
+prisma:query SELECT "public"."Session"."id", "public"."Session"."userId", "public"."Session"."token", "public"."Session"."expiresAt", "public"."Session"."createdAt", "public"."Session"."ipAddress", "public"."Session"."updatedAt", "public"."Session"."userAgent" FROM "public"."Session" WHERE "public"."Session"."token" = $1 LIMIT $2 OFFSET $3
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query COMMIT
+prisma:query BEGIN
+ GET / 200 in 2.3s (compile: 8ms, render: 2.3s)
+prisma:query BEGIN
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query SELECT "public"."User"."id", "public"."User"."email", "public"."User"."name", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."credits" FROM "public"."User" WHERE "public"."User"."id" = $1 LIMIT $2 OFFSET $3
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."User"."id", "public"."User"."email", "public"."User"."name", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."credits" FROM "public"."User" WHERE "public"."User"."id" = $1 LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."email", "public"."User"."name", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."credits" FROM "public"."User" WHERE "public"."User"."id" = $1 LIMIT $2 OFFSET $3
+prisma:query COMMIT
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query COMMIT
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query COMMIT
+prisma:query COMMIT
+ GET / 200 in 898ms (compile: 3ms, render: 895ms)
+prisma:query BEGIN
+prisma:query SELECT "public"."User"."id", "public"."User"."email", "public"."User"."name", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."credits" FROM "public"."User" WHERE "public"."User"."id" = $1 LIMIT $2 OFFSET $3
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."TrackedArticle"."id" FROM "public"."TrackedArticle" WHERE "public"."TrackedArticle"."userId" = $1 OFFSET $2) AS "sub"
+prisma:query SELECT "public"."TrackedArticle"."id", "public"."TrackedArticle"."userId", "public"."TrackedArticle"."title", "public"."TrackedArticle"."summary", "public"."TrackedArticle"."url", "public"."TrackedArticle"."keywords", "public"."TrackedArticle"."optimizedContent", "public"."TrackedArticle"."contentHtml", "public"."TrackedArticle"."status", "public"."TrackedArticle"."lastCheckedAt", "public"."TrackedArticle"."citationSource", "public"."TrackedArticle"."checkCount", "public"."TrackedArticle"."createdAt", "public"."TrackedArticle"."updatedAt" FROM "public"."TrackedArticle" WHERE "public"."TrackedArticle"."userId" = $1 ORDER BY "public"."TrackedArticle"."createdAt" DESC LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."credits", "public"."User"."name", "public"."User"."email" FROM "public"."User" WHERE ("public"."User"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /dashboard 404 in 1192ms (compile: 1167ms, proxy.ts: 3ms, render: 23ms)
+prisma:query SELECT "public"."CreditTransaction"."id", "public"."CreditTransaction"."userId", "public"."CreditTransaction"."amount", "public"."CreditTransaction"."type"::text, "public"."CreditTransaction"."description", "public"."CreditTransaction"."createdAt" FROM "public"."CreditTransaction" WHERE "public"."CreditTransaction"."userId" = $1 ORDER BY "public"."CreditTransaction"."createdAt" DESC LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."CreditTransaction"."id", "public"."CreditTransaction"."userId", "public"."CreditTransaction"."amount", "public"."CreditTransaction"."type"::text, "public"."CreditTransaction"."description", "public"."CreditTransaction"."createdAt" FROM "public"."CreditTransaction" WHERE "public"."CreditTransaction"."userId" = $1 ORDER BY "public"."CreditTransaction"."createdAt" DESC LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."SkillExecution"."id", "public"."SkillExecution"."skillName", "public"."SkillExecution"."status", "public"."SkillExecution"."input", "public"."SkillExecution"."output", "public"."SkillExecution"."metadata", "public"."SkillExecution"."cost", "public"."SkillExecution"."executionTimeMs", "public"."SkillExecution"."errorMessage", "public"."SkillExecution"."createdAt", "public"."SkillExecution"."modelUsed", "public"."SkillExecution"."provider", "public"."SkillExecution"."tokensUsed", "public"."SkillExecution"."transactionId", "public"."SkillExecution"."userId" FROM "public"."SkillExecution" WHERE "public"."SkillExecution"."userId" = $1 ORDER BY "public"."SkillExecution"."createdAt" DESC LIMIT $2 OFFSET $3
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query COMMIT
+prisma:query COMMIT
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."TrackedArticle"."id" FROM "public"."TrackedArticle" WHERE "public"."TrackedArticle"."userId" = $1 OFFSET $2) AS "sub"
+prisma:query COMMIT
+prisma:query SELECT "public"."SkillExecution"."id", "public"."SkillExecution"."skillName", "public"."SkillExecution"."status", "public"."SkillExecution"."input", "public"."SkillExecution"."output", "public"."SkillExecution"."metadata", "public"."SkillExecution"."cost", "public"."SkillExecution"."executionTimeMs", "public"."SkillExecution"."errorMessage", "public"."SkillExecution"."createdAt", "public"."SkillExecution"."modelUsed", "public"."SkillExecution"."provider", "public"."SkillExecution"."tokensUsed", "public"."SkillExecution"."transactionId", "public"."SkillExecution"."userId" FROM "public"."SkillExecution" WHERE "public"."SkillExecution"."userId" = $1 ORDER BY "public"."SkillExecution"."createdAt" DESC LIMIT $2 OFFSET $3
+prisma:query BEGIN
+prisma:query COMMIT
+prisma:query BEGIN
+ GET /dashboard 200 in 4.6s (compile: 392ms, proxy.ts: 77ms, render: 4.1s)
+prisma:query BEGIN
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."TrackedArticle"."id", "public"."TrackedArticle"."userId", "public"."TrackedArticle"."title", "public"."TrackedArticle"."summary", "public"."TrackedArticle"."url", "public"."TrackedArticle"."keywords", "public"."TrackedArticle"."optimizedContent", "public"."TrackedArticle"."contentHtml", "public"."TrackedArticle"."status", "public"."TrackedArticle"."lastCheckedAt", "public"."TrackedArticle"."citationSource", "public"."TrackedArticle"."checkCount", "public"."TrackedArticle"."createdAt", "public"."TrackedArticle"."updatedAt" FROM "public"."TrackedArticle" WHERE "public"."TrackedArticle"."userId" = $1 ORDER BY "public"."TrackedArticle"."createdAt" DESC LIMIT $2 OFFSET $3
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."CreditTransaction"."id", "public"."CreditTransaction"."userId", "public"."CreditTransaction"."amount", "public"."CreditTransaction"."type"::text, "public"."CreditTransaction"."description", "public"."CreditTransaction"."createdAt" FROM "public"."CreditTransaction" WHERE "public"."CreditTransaction"."userId" = $1 ORDER BY "public"."CreditTransaction"."createdAt" DESC LIMIT $2 OFFSET $3
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."User"."id", "public"."User"."credits", "public"."User"."name", "public"."User"."email" FROM "public"."User" WHERE ("public"."User"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query BEGIN
+ GET /dashboard 200 in 3.1s (compile: 15ms, proxy.ts: 6ms, render: 3.0s)
+ GET /dashboard 200 in 4.3s (compile: 7ms, proxy.ts: 3ms, render: 4.3s)
+ GET /dashboard 200 in 4.4s (compile: 13ms, proxy.ts: 4ms, render: 4.3s)
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."TrackedArticle"."id" FROM "public"."TrackedArticle" WHERE "public"."TrackedArticle"."userId" = $1 OFFSET $2) AS "sub"
+prisma:query COMMIT
+prisma:query COMMIT
+prisma:query SELECT "public"."SkillExecution"."id", "public"."SkillExecution"."skillName", "public"."SkillExecution"."status", "public"."SkillExecution"."input", "public"."SkillExecution"."output", "public"."SkillExecution"."metadata", "public"."SkillExecution"."cost", "public"."SkillExecution"."executionTimeMs", "public"."SkillExecution"."errorMessage", "public"."SkillExecution"."createdAt", "public"."SkillExecution"."modelUsed", "public"."SkillExecution"."provider", "public"."SkillExecution"."tokensUsed", "public"."SkillExecution"."transactionId", "public"."SkillExecution"."userId" FROM "public"."SkillExecution" WHERE "public"."SkillExecution"."userId" = $1 ORDER BY "public"."SkillExecution"."createdAt" DESC LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."TrackedArticle"."id", "public"."TrackedArticle"."userId", "public"."TrackedArticle"."title", "public"."TrackedArticle"."summary", "public"."TrackedArticle"."url", "public"."TrackedArticle"."keywords", "public"."TrackedArticle"."optimizedContent", "public"."TrackedArticle"."contentHtml", "public"."TrackedArticle"."status", "public"."TrackedArticle"."lastCheckedAt", "public"."TrackedArticle"."citationSource", "public"."TrackedArticle"."checkCount", "public"."TrackedArticle"."createdAt", "public"."TrackedArticle"."updatedAt" FROM "public"."TrackedArticle" WHERE "public"."TrackedArticle"."userId" = $1 ORDER BY "public"."TrackedArticle"."createdAt" DESC LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."credits", "public"."User"."name", "public"."User"."email" FROM "public"."User" WHERE ("public"."User"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query COMMIT
+prisma:query COMMIT
+prisma:query COMMIT
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+ GET / 200 in 1732ms (compile: 5ms, render: 1727ms)
+prisma:query BEGIN
+prisma:query SELECT "public"."CreditTransaction"."id", "public"."CreditTransaction"."userId", "public"."CreditTransaction"."amount", "public"."CreditTransaction"."type"::text, "public"."CreditTransaction"."description", "public"."CreditTransaction"."createdAt" FROM "public"."CreditTransaction" WHERE "public"."CreditTransaction"."userId" = $1 ORDER BY "public"."CreditTransaction"."createdAt" DESC LIMIT $2 OFFSET $3
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."TrackedArticle"."id" FROM "public"."TrackedArticle" WHERE "public"."TrackedArticle"."userId" = $1 OFFSET $2) AS "sub"
+prisma:query SELECT "public"."SkillExecution"."id", "public"."SkillExecution"."skillName", "public"."SkillExecution"."status", "public"."SkillExecution"."input", "public"."SkillExecution"."output", "public"."SkillExecution"."metadata", "public"."SkillExecution"."cost", "public"."SkillExecution"."executionTimeMs", "public"."SkillExecution"."errorMessage", "public"."SkillExecution"."createdAt", "public"."SkillExecution"."modelUsed", "public"."SkillExecution"."provider", "public"."SkillExecution"."tokensUsed", "public"."SkillExecution"."transactionId", "public"."SkillExecution"."userId" FROM "public"."SkillExecution" WHERE "public"."SkillExecution"."userId" = $1 ORDER BY "public"."SkillExecution"."createdAt" DESC LIMIT $2 OFFSET $3
+prisma:query BEGIN
+prisma:query SELECT "public"."User"."id", "public"."User"."credits", "public"."User"."name", "public"."User"."email" FROM "public"."User" WHERE ("public"."User"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query COMMIT
+prisma:query SELECT "public"."TrackedArticle"."id", "public"."TrackedArticle"."userId", "public"."TrackedArticle"."title", "public"."TrackedArticle"."summary", "public"."TrackedArticle"."url", "public"."TrackedArticle"."keywords", "public"."TrackedArticle"."optimizedContent", "public"."TrackedArticle"."contentHtml", "public"."TrackedArticle"."status", "public"."TrackedArticle"."lastCheckedAt", "public"."TrackedArticle"."citationSource", "public"."TrackedArticle"."checkCount", "public"."TrackedArticle"."createdAt", "public"."TrackedArticle"."updatedAt" FROM "public"."TrackedArticle" WHERE "public"."TrackedArticle"."userId" = $1 ORDER BY "public"."TrackedArticle"."createdAt" DESC LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query COMMIT
+prisma:query SELECT "public"."Session"."id", "public"."Session"."userId", "public"."Session"."token", "public"."Session"."expiresAt", "public"."Session"."createdAt", "public"."Session"."ipAddress", "public"."Session"."updatedAt", "public"."Session"."userAgent" FROM "public"."Session" WHERE "public"."Session"."token" = $1 LIMIT $2 OFFSET $3
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query BEGIN
+prisma:query COMMIT
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query COMMIT
+prisma:query COMMIT
+ GET / 200 in 2.0s (compile: 2ms, render: 2.0s)
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query COMMIT
+ GET / 200 in 1472ms (compile: 4ms, render: 1467ms)
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query COMMIT
+prisma:query COMMIT
+ GET / 200 in 1659ms (compile: 3ms, render: 1655ms)
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query SELECT "public"."User"."id", "public"."User"."email", "public"."User"."name", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."credits" FROM "public"."User" WHERE "public"."User"."id" = $1 LIMIT $2 OFFSET $3
+ GET / 200 in 1707ms (compile: 1906µs, render: 1705ms)
+prisma:query BEGIN
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query BEGIN
+prisma:query COMMIT
+prisma:query BEGIN
+ GET / 200 in 1807ms (compile: 1954µs, render: 1805ms)
+prisma:query BEGIN
+prisma:query COMMIT
+ GET / 200 in 1160ms (compile: 3ms, render: 1158ms)
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query BEGIN
+prisma:query COMMIT
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+ GET / 200 in 1087ms (compile: 3ms, render: 1084ms)
+prisma:query COMMIT
+prisma:query COMMIT
+ GET / 200 in 871ms (compile: 3ms, render: 868ms)
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query SELECT "public"."CreditTransaction"."id", "public"."CreditTransaction"."userId", "public"."CreditTransaction"."amount", "public"."CreditTransaction"."type"::text, "public"."CreditTransaction"."description", "public"."CreditTransaction"."createdAt" FROM "public"."CreditTransaction" WHERE "public"."CreditTransaction"."userId" = $1 ORDER BY "public"."CreditTransaction"."createdAt" DESC LIMIT $2 OFFSET $3
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."TrackedArticle"."id" FROM "public"."TrackedArticle" WHERE "public"."TrackedArticle"."userId" = $1 OFFSET $2) AS "sub"
+prisma:query SELECT "public"."SkillExecution"."id", "public"."SkillExecution"."skillName", "public"."SkillExecution"."status", "public"."SkillExecution"."input", "public"."SkillExecution"."output", "public"."SkillExecution"."metadata", "public"."SkillExecution"."cost", "public"."SkillExecution"."executionTimeMs", "public"."SkillExecution"."errorMessage", "public"."SkillExecution"."createdAt", "public"."SkillExecution"."modelUsed", "public"."SkillExecution"."provider", "public"."SkillExecution"."tokensUsed", "public"."SkillExecution"."transactionId", "public"."SkillExecution"."userId" FROM "public"."SkillExecution" WHERE "public"."SkillExecution"."userId" = $1 ORDER BY "public"."SkillExecution"."createdAt" DESC LIMIT $2 OFFSET $3
+ GET / 200 in 1136ms (compile: 4ms, render: 1132ms)
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query COMMIT
+prisma:query SELECT "public"."User"."id", "public"."User"."credits", "public"."User"."name", "public"."User"."email" FROM "public"."User" WHERE ("public"."User"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query DEALLOCATE ALL
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."TrackedArticle"."id", "public"."TrackedArticle"."userId", "public"."TrackedArticle"."title", "public"."TrackedArticle"."summary", "public"."TrackedArticle"."url", "public"."TrackedArticle"."keywords", "public"."TrackedArticle"."optimizedContent", "public"."TrackedArticle"."contentHtml", "public"."TrackedArticle"."status", "public"."TrackedArticle"."lastCheckedAt", "public"."TrackedArticle"."citationSource", "public"."TrackedArticle"."checkCount", "public"."TrackedArticle"."createdAt", "public"."TrackedArticle"."updatedAt" FROM "public"."TrackedArticle" WHERE "public"."TrackedArticle"."userId" = $1 ORDER BY "public"."TrackedArticle"."createdAt" DESC LIMIT $2 OFFSET $3
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query COMMIT
+prisma:query COMMIT
+ GET / 200 in 1246ms (compile: 3ms, render: 1243ms)
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+ GET /dashboard 200 in 4.1s (compile: 237ms, proxy.ts: 2ms, render: 3.9s)
+prisma:query DEALLOCATE ALL
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query COMMIT
+ GET / 200 in 1460ms (compile: 1602µs, render: 1458ms)
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query BEGIN
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query COMMIT
+ GET / 200 in 1445ms (compile: 1713µs, render: 1443ms)
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query BEGIN
+ GET / 200 in 1522ms (compile: 3ms, render: 1520ms)
+prisma:query COMMIT
+prisma:query COMMIT
+ GET / 200 in 1224ms (compile: 2ms, render: 1222ms)
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query COMMIT
+ GET / 200 in 1138ms (compile: 1953µs, render: 1136ms)
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+ GET / 200 in 1154ms (compile: 4ms, render: 1150ms)
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query BEGIN
+prisma:query COMMIT
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query COMMIT
+prisma:query BEGIN
+ GET / 200 in 997ms (compile: 3ms, render: 995ms)
+prisma:query COMMIT
+prisma:query COMMIT
+prisma:query BEGIN
+ GET / 200 in 1284ms (compile: 4ms, render: 1280ms)
+prisma:query BEGIN
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+ GET / 200 in 1017ms (compile: 3ms, render: 1014ms)
+prisma:query BEGIN
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+ GET / 200 in 1205ms (compile: 4ms, render: 1201ms)
+prisma:query DEALLOCATE ALL
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query BEGIN
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query COMMIT
+ GET / 200 in 1112ms (compile: 2ms, render: 1110ms)
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+ GET / 200 in 1150ms (compile: 3ms, render: 1148ms)
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query COMMIT
+prisma:query BEGIN
+ GET / 200 in 927ms (compile: 1874µs, render: 925ms)
+prisma:query BEGIN
+prisma:query COMMIT
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query BEGIN
+ GET / 200 in 1085ms (compile: 1762µs, render: 1083ms)
+prisma:query COMMIT
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+ GET / 200 in 1110ms (compile: 3ms, render: 1108ms)
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query BEGIN
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query BEGIN
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+ GET / 200 in 1109ms (compile: 3ms, render: 1107ms)
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+ GET / 200 in 927ms (compile: 3ms, render: 924ms)
+prisma:query BEGIN
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+ GET / 200 in 1076ms (compile: 1940µs, render: 1074ms)
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query COMMIT
+ GET / 200 in 1074ms (compile: 3ms, render: 1071ms)
+prisma:query BEGIN
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+ GET / 200 in 1134ms (compile: 3ms, render: 1131ms)
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query COMMIT
+prisma:query COMMIT
+ GET / 200 in 1119ms (compile: 1888µs, render: 1117ms)
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+ GET / 200 in 1205ms (compile: 2ms, render: 1203ms)
+prisma:query COMMIT
+prisma:query COMMIT
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query COMMIT
+ GET / 200 in 1233ms (compile: 1852µs, render: 1231ms)
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query COMMIT
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+ GET / 200 in 1182ms (compile: 2ms, render: 1180ms)
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query COMMIT
+ GET / 200 in 1215ms (compile: 2ms, render: 1213ms)
+prisma:query COMMIT
+prisma:query BEGIN
+ GET / 200 in 984ms (compile: 3ms, render: 981ms)
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query BEGIN
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query COMMIT
+ GET / 200 in 1244ms (compile: 1922µs, render: 1242ms)
+prisma:query COMMIT
+ GET / 200 in 946ms (compile: 1996µs, render: 944ms)
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query BEGIN
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query BEGIN
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query COMMIT
+ GET / 200 in 1086ms (compile: 1858µs, render: 1084ms)
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query COMMIT
+prisma:query BEGIN
+ GET / 200 in 973ms (compile: 3ms, render: 970ms)
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query COMMIT
+ GET / 200 in 1186ms (compile: 3ms, render: 1183ms)
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+ GET / 200 in 1207ms (compile: 1620µs, render: 1205ms)
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query COMMIT
+ GET / 200 in 1030ms (compile: 1800µs, render: 1029ms)
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query COMMIT
+ GET / 200 in 1150ms (compile: 2ms, render: 1148ms)
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+ GET / 200 in 998ms (compile: 2ms, render: 996ms)
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query BEGIN
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+ GET / 200 in 1210ms (compile: 5ms, render: 1205ms)
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query COMMIT
+ GET / 200 in 1014ms (compile: 2ms, render: 1012ms)
+prisma:query COMMIT
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query BEGIN
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query SELECT 1
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query COMMIT
+ GET / 200 in 1025ms (compile: 3ms, render: 1022ms)
+ GET / 200 in 1216ms (compile: 3ms, render: 1213ms)
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query SELECT 1
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query COMMIT
+ GET / 200 in 1205ms (compile: 3ms, render: 1201ms)
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query COMMIT
+prisma:query BEGIN
+ GET / 200 in 1241ms (compile: 1884µs, render: 1239ms)
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query COMMIT
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query COMMIT
+ GET / 200 in 1170ms (compile: 2ms, render: 1168ms)
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query COMMIT
+ GET / 200 in 1051ms (compile: 2ms, render: 1049ms)
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query COMMIT
+prisma:query COMMIT
+prisma:query COMMIT
+ GET / 200 in 1119ms (compile: 3ms, render: 1116ms)
+ GET / 200 in 1156ms (compile: 3ms, render: 1153ms)
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query COMMIT
+prisma:query COMMIT
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query BEGIN
+ GET / 200 in 1039ms (compile: 2ms, render: 1036ms)
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query SELECT 1
+prisma:query SELECT 1
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+ GET / 200 in 1071ms (compile: 2ms, render: 1069ms)
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query BEGIN
+prisma:query SELECT 1
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query SELECT 1
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+ GET / 200 in 1111ms (compile: 1837µs, render: 1109ms)
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query COMMIT
+ GET / 200 in 1147ms (compile: 1611µs, render: 1146ms)
+prisma:query SELECT 1
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query SELECT 1
+prisma:query DEALLOCATE ALL
+prisma:query SELECT 1
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query BEGIN
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query BEGIN
+prisma:query COMMIT
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+ GET / 200 in 1166ms (compile: 3ms, render: 1163ms)
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query BEGIN
+ GET / 200 in 1290ms (compile: 3ms, render: 1287ms)
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query COMMIT
+ GET / 200 in 1186ms (compile: 2ms, render: 1184ms)
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query BEGIN
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+ GET / 200 in 1392ms (compile: 3ms, render: 1389ms)
+prisma:query BEGIN
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query COMMIT
+ GET / 200 in 1260ms (compile: 3ms, render: 1257ms)
+prisma:query BEGIN
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query COMMIT
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+ GET / 200 in 1327ms (compile: 2ms, render: 1324ms)
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query COMMIT
+prisma:query COMMIT
+ GET / 200 in 1025ms (compile: 2ms, render: 1022ms)
+prisma:query BEGIN
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+ GET / 200 in 1306ms (compile: 3ms, render: 1303ms)
+prisma:query COMMIT
+ GET / 200 in 1257ms (compile: 3ms, render: 1254ms)
+prisma:query BEGIN
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query COMMIT
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+prisma:query COMMIT
+prisma:query COMMIT
+prisma:query COMMIT
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."Content"."id" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) OFFSET $3) AS "sub"
+prisma:query SELECT "public"."Content"."id", "public"."Content"."type"::text, "public"."Content"."title", "public"."Content"."slug", "public"."Content"."summary", "public"."Content"."contentMd", "public"."Content"."contentHtml", "public"."Content"."coverImageId", "public"."Content"."status"::text, "public"."Content"."visibility"::text, "public"."Content"."publishedAt", "public"."Content"."notionPageId", "public"."Content"."notionLastEditedAt", "public"."Content"."source"::text, "public"."Content"."categoryId", "public"."Content"."createdAt", "public"."Content"."updatedAt", "public"."Content"."readingTime" FROM "public"."Content" WHERE ("public"."Content"."status" = CAST($1::text AS "public"."ContentStatus") AND "public"."Content"."visibility" = CAST($2::text AS "public"."Visibility")) ORDER BY "public"."Content"."publishedAt" DESC LIMIT $3 OFFSET $4
+prisma:query COMMIT
+ GET / 200 in 1589ms (compile: 3ms, render: 1587ms)
+ GET / 200 in 1296ms (compile: 3ms, render: 1293ms)
+ GET / 200 in 1473ms (compile: 4ms, render: 1469ms)
+prisma:query COMMIT
+ GET / 200 in 1187ms (compile: 4ms, render: 1183ms)
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Session"."id", "public"."Session"."userId", "public"."Session"."token", "public"."Session"."expiresAt", "public"."Session"."createdAt", "public"."Session"."ipAddress", "public"."Session"."updatedAt", "public"."Session"."userAgent" FROM "public"."Session" WHERE "public"."Session"."token" = $1 LIMIT $2 OFFSET $3
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."User"."id", "public"."User"."email", "public"."User"."name", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."credits" FROM "public"."User" WHERE "public"."User"."id" = $1 LIMIT $2 OFFSET $3
+ GET /api/auth/get-session 200 in 2.2s (compile: 520ms, proxy.ts: 4ms, render: 1674ms)
+prisma:query COMMIT
+✓ Compiled in 59ms
+✓ Compiled in 75ms

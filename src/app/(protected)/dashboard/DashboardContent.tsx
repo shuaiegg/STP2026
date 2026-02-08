@@ -75,13 +75,6 @@ export function DashboardContent({
                     <h1 className="font-display text-4xl font-black text-brand-text-primary italic leading-none mb-4">概览中心</h1>
                     <p className="text-brand-text-secondary font-medium">欢迎回来，{user?.name || '杰克'}。系统一切就绪。</p>
                 </div>
-                <div className="flex items-center gap-3">
-                    <Link href="/tools/geo-writer">
-                        <Button className="bg-brand-primary text-white font-black px-6 py-6 border-2 border-black shadow-[4px_4px_0_0_rgba(10,10,10,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all uppercase tracking-tighter">
-                            ✨ 开启内容侦察
-                        </Button>
-                    </Link>
-                </div>
             </div>
 
             {/* Core Stats Grid */}
@@ -121,15 +114,15 @@ export function DashboardContent({
                 {/* Quick Link Card */}
                 <Card className="p-8 border-none bg-brand-primary text-white shadow-xl shadow-brand-primary/20 flex flex-col justify-between">
                     <div>
-                        <h3 className="text-xl font-black italic mb-2 tracking-tight">智作加速</h3>
+                        <h3 className="text-xl font-black italic mb-2 tracking-tight">快速工具箱</h3>
                         <p className="text-white/70 text-xs font-medium leading-relaxed">
-                            输入关键词并执行 GEO 增益，<br />
-                            让您的内容在 2026 年的搜索环境中脱颖而出。
+                            访问专业营销工具箱，<br />
+                            获取全网竞争数据并执行内容 GEO 增益。
                         </p>
                     </div>
-                    <Link href="/tools/geo-writer">
+                    <Link href="/dashboard/tools">
                         <Button variant="outline" className="w-full mt-6 bg-white/10 border-white/20 hover:bg-white text-white hover:text-brand-primary font-black text-xs uppercase tracking-tighter transition-all">
-                            立即开始 <ArrowRight className="ml-2" size={14} />
+                            立即访问 <ArrowRight className="ml-2" size={14} />
                         </Button>
                     </Link>
                 </Card>
@@ -175,7 +168,7 @@ export function DashboardContent({
                                     <FileText size={32} />
                                 </div>
                                 <p className="text-slate-400 font-bold text-sm italic">尚未发现创作记录</p>
-                                <Link href="/tools/geo-writer">
+                                <Link href="/dashboard/tools">
                                     <Button size="sm" className="mt-6 font-black bg-brand-primary/10 text-brand-primary hover:bg-brand-primary hover:text-white border-2 border-brand-primary/20 transition-all">
                                         点亮第一盏神灯
                                     </Button>

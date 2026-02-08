@@ -57,7 +57,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
     const navItems = [
         { href: '/dashboard', icon: LayoutDashboard, label: '控制面板 (Overview)' },
         { href: '/dashboard/library', icon: Library, label: '内容资产库' },
-        { href: '/tools/geo-writer', icon: Zap, label: '智作优化器' },
+        { href: '/dashboard/tools', icon: Zap, label: '营销工具箱' },
         { href: '/dashboard/billing', icon: BarChart3, label: '流量与账单' },
     ];
 
