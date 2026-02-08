@@ -831,7 +831,7 @@ export default function GEOWriterPage() {
                             </div>
                             <h3 className="text-2xl font-black text-brand-text-muted mb-4 font-display">分析面板</h3>
                             <p className="text-brand-text-muted max-w-md text-sm leading-relaxed">
-                                输入关键词并点击侦察，我们将连接 Google 实时数据库，<br />
+                                输入关键词并点击分析，我们将连接 Google 实时数据库，<br />
                                 探测竞争对手、热门话题及流量机会。
                             </p>
                         </div>

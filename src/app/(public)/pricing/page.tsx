@@ -13,10 +13,10 @@ export default function PricingPage() {
             name: "入门探索包",
             price: "9.9",
             credits: "100",
-            description: "深度体验营销侦察，约可生成 3 篇大师级长文",
+            description: "深度体验营销分析，约可生成 3 篇大师级长文",
             features: [
                 "100 个 AI 积分",
-                "全量市场侦察功能 (Step 1)",
+                "全量市场分析功能 (Step 1)",
                 "StellarWriter 大师级写作",
                 "包含 GEO 实体绑定",
                 "永久有效，永不过期",

@@ -290,3 +290,78 @@ prisma:query COMMIT
  GET /dashboard 200 in 3.3s (compile: 9ms, proxy.ts: 6ms, render: 3.2s)
 ✓ Compiled in 80ms
 ✓ Compiled in 64ms
+prisma:query SELECT 1
+prisma:query BEGIN
+prisma:query SELECT 1
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Session"."id", "public"."Session"."userId", "public"."Session"."token", "public"."Session"."expiresAt", "public"."Session"."createdAt", "public"."Session"."ipAddress", "public"."Session"."updatedAt", "public"."Session"."userAgent" FROM "public"."Session" WHERE "public"."Session"."token" = $1 LIMIT $2 OFFSET $3
+prisma:query COMMIT
+prisma:query SELECT "public"."Session"."id", "public"."Session"."userId", "public"."Session"."token", "public"."Session"."expiresAt", "public"."Session"."createdAt", "public"."Session"."ipAddress", "public"."Session"."updatedAt", "public"."Session"."userAgent" FROM "public"."Session" WHERE "public"."Session"."token" = $1 LIMIT $2 OFFSET $3
+prisma:query BEGIN
+prisma:query COMMIT
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."User"."id", "public"."User"."email", "public"."User"."name", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."credits" FROM "public"."User" WHERE "public"."User"."id" = $1 LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."email", "public"."User"."name", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."credits" FROM "public"."User" WHERE "public"."User"."id" = $1 LIMIT $2 OFFSET $3
+prisma:query COMMIT
+ GET /api/auth/get-session 200 in 1885ms (compile: 53ms, proxy.ts: 3ms, render: 1829ms)
+prisma:query COMMIT
+prisma:query SELECT 1
+prisma:query SELECT 1
+prisma:query BEGIN
+prisma:query SELECT 1
+prisma:query SELECT 1
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."CreditTransaction"."id", "public"."CreditTransaction"."userId", "public"."CreditTransaction"."amount", "public"."CreditTransaction"."type"::text, "public"."CreditTransaction"."description", "public"."CreditTransaction"."createdAt" FROM "public"."CreditTransaction" WHERE "public"."CreditTransaction"."userId" = $1 ORDER BY "public"."CreditTransaction"."createdAt" DESC LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."credits", "public"."User"."name", "public"."User"."email" FROM "public"."User" WHERE ("public"."User"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query COMMIT
+prisma:query SELECT "public"."SkillExecution"."id", "public"."SkillExecution"."skillName", "public"."SkillExecution"."status", "public"."SkillExecution"."input", "public"."SkillExecution"."output", "public"."SkillExecution"."metadata", "public"."SkillExecution"."cost", "public"."SkillExecution"."executionTimeMs", "public"."SkillExecution"."errorMessage", "public"."SkillExecution"."createdAt", "public"."SkillExecution"."modelUsed", "public"."SkillExecution"."provider", "public"."SkillExecution"."tokensUsed", "public"."SkillExecution"."transactionId", "public"."SkillExecution"."userId" FROM "public"."SkillExecution" WHERE "public"."SkillExecution"."userId" = $1 ORDER BY "public"."SkillExecution"."createdAt" DESC LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."TrackedArticle"."id", "public"."TrackedArticle"."userId", "public"."TrackedArticle"."title", "public"."TrackedArticle"."summary", "public"."TrackedArticle"."url", "public"."TrackedArticle"."keywords", "public"."TrackedArticle"."optimizedContent", "public"."TrackedArticle"."contentHtml", "public"."TrackedArticle"."status", "public"."TrackedArticle"."lastCheckedAt", "public"."TrackedArticle"."citationSource", "public"."TrackedArticle"."checkCount", "public"."TrackedArticle"."createdAt", "public"."TrackedArticle"."updatedAt" FROM "public"."TrackedArticle" WHERE "public"."TrackedArticle"."userId" = $1 ORDER BY "public"."TrackedArticle"."createdAt" DESC LIMIT $2 OFFSET $3
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."TrackedArticle"."id" FROM "public"."TrackedArticle" WHERE "public"."TrackedArticle"."userId" = $1 OFFSET $2) AS "sub"
+prisma:query COMMIT
+prisma:query COMMIT
+prisma:query COMMIT
+prisma:query COMMIT
+ GET /dashboard 200 in 3.7s (compile: 208ms, proxy.ts: 3ms, render: 3.5s)
+✓ Compiled in 50ms
+✓ Compiled in 53ms
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Session"."id", "public"."Session"."userId", "public"."Session"."token", "public"."Session"."expiresAt", "public"."Session"."createdAt", "public"."Session"."ipAddress", "public"."Session"."updatedAt", "public"."Session"."userAgent" FROM "public"."Session" WHERE "public"."Session"."token" = $1 LIMIT $2 OFFSET $3
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."User"."id", "public"."User"."email", "public"."User"."name", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."credits" FROM "public"."User" WHERE "public"."User"."id" = $1 LIMIT $2 OFFSET $3
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."CreditTransaction"."id", "public"."CreditTransaction"."userId", "public"."CreditTransaction"."amount", "public"."CreditTransaction"."type"::text, "public"."CreditTransaction"."description", "public"."CreditTransaction"."createdAt" FROM "public"."CreditTransaction" WHERE "public"."CreditTransaction"."userId" = $1 ORDER BY "public"."CreditTransaction"."createdAt" DESC LIMIT $2 OFFSET $3
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."TrackedArticle"."id", "public"."TrackedArticle"."userId", "public"."TrackedArticle"."title", "public"."TrackedArticle"."summary", "public"."TrackedArticle"."url", "public"."TrackedArticle"."keywords", "public"."TrackedArticle"."optimizedContent", "public"."TrackedArticle"."contentHtml", "public"."TrackedArticle"."status", "public"."TrackedArticle"."lastCheckedAt", "public"."TrackedArticle"."citationSource", "public"."TrackedArticle"."checkCount", "public"."TrackedArticle"."createdAt", "public"."TrackedArticle"."updatedAt" FROM "public"."TrackedArticle" WHERE "public"."TrackedArticle"."userId" = $1 ORDER BY "public"."TrackedArticle"."createdAt" DESC LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."credits", "public"."User"."name", "public"."User"."email" FROM "public"."User" WHERE ("public"."User"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."TrackedArticle"."id" FROM "public"."TrackedArticle" WHERE "public"."TrackedArticle"."userId" = $1 OFFSET $2) AS "sub"
+prisma:query COMMIT
+prisma:query COMMIT
+prisma:query COMMIT
+prisma:query SELECT "public"."SkillExecution"."id", "public"."SkillExecution"."skillName", "public"."SkillExecution"."status", "public"."SkillExecution"."input", "public"."SkillExecution"."output", "public"."SkillExecution"."metadata", "public"."SkillExecution"."cost", "public"."SkillExecution"."executionTimeMs", "public"."SkillExecution"."errorMessage", "public"."SkillExecution"."createdAt", "public"."SkillExecution"."modelUsed", "public"."SkillExecution"."provider", "public"."SkillExecution"."tokensUsed", "public"."SkillExecution"."transactionId", "public"."SkillExecution"."userId" FROM "public"."SkillExecution" WHERE "public"."SkillExecution"."userId" = $1 ORDER BY "public"."SkillExecution"."createdAt" DESC LIMIT $2 OFFSET $3
+prisma:query COMMIT
+ GET /dashboard 200 in 5.6s (compile: 157ms, proxy.ts: 4ms, render: 5.4s)

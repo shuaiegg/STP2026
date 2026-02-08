@@ -163,7 +163,7 @@ export function EditableSection({ section, onSave, onRegenerate, className = "" 
             {isRegenOpen && (
                 <div className="mb-6 p-4 bg-purple-50 rounded-xl border border-purple-100 animate-in fade-in slide-in-from-top-2">
                     <div className="flex items-center gap-2 mb-2 text-purple-700 font-bold text-xs uppercase tracking-widest">
-                        <Wand2 size={12} /> AI 指令
+                        <Wand2 size={12} /> AI 生成建议
                     </div>
                     <div className="flex gap-2">
                         <input

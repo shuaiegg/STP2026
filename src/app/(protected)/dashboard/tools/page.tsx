@@ -30,7 +30,7 @@ const tools = [
     },
     {
         id: 'keyword-recon',
-        name: '关键词情报侦察',
+        name: '关键词数据调研',
         description: '深度挖掘利基市场关键词，分析搜索量、竞争难度与流量潜力。',
         icon: Search,
         href: '#',

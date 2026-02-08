@@ -151,7 +151,7 @@ export default async function Home() {
             </h1>
 
             <p className="text-xl md:text-2xl text-brand-text-secondary leading-relaxed mb-10 max-w-3xl opacity-0 animate-slide-in-up stagger-2 font-normal">
-              不再依赖随机的运气。通过<span className="font-semibold text-brand-text-primary">广告侦察 + AI内容矩阵 + 自动化流</span>，
+              不再依赖随机的运气。通过<span className="font-semibold text-brand-text-primary">广告分析 + AI内容矩阵 + 自动化流</span>，
               帮助中国企业构建可持续、可预测的海外询盘增长引擎。
             </p>
 

@@ -96,7 +96,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
 
                     {/* Navigation */}
                     <nav className="flex-1 space-y-2">
-                        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-6 ml-4">Command Tower</div>
+                        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-6 ml-4">系统控制中心</div>
                         {navItems.map((item) => (
                             <NavItem 
                                 key={item.href}
