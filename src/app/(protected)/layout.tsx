@@ -69,7 +69,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
                     <div className="w-12 h-12 bg-brand-primary rounded-2xl flex items-center justify-center text-white animate-bounce shadow-xl">
                         <Zap size={24} />
                     </div>
-                    <span className="text-xs font-black uppercase tracking-[0.2em] text-brand-text-muted">指令同步中...</span>
+                    <span className="text-xs font-black uppercase tracking-[0.2em] text-brand-text-muted">登录中...</span>
                 </div>
             </div>
         );

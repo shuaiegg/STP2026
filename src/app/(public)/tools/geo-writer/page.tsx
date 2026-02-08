@@ -649,7 +649,7 @@ export default function GEOWriterPage() {
                                     type="submit"
                                     className="w-full py-8 text-lg bg-brand-primary text-white border-b-4 border-black hover:translate-y-[2px] hover:border-b-0 transition-all font-black uppercase tracking-widest shadow-[8px_8px_0_0_rgba(0,0,0,1)] hover:shadow-none"
                                 >
-                                    {loading ? <><Loader2 className="animate-spin mr-2" /> 正在侦察全网情报...</> : "开启侦察与诊断"}
+                                    {loading ? <><Loader2 className="animate-spin mr-2" /> 正在分析全网数据...</> : "开启分析与诊断"}
                                 </Button>
                             </form>
                         </div>
@@ -679,7 +679,7 @@ export default function GEOWriterPage() {
                                         </div>
                                         <div>
                                             <h4 className="text-sm font-black text-brand-text-primary">准备好见证奇迹了吗？</h4>
-                                            <p className="text-[10px] text-brand-text-secondary">AI 将基于右侧的竞争情报进行降维打击。</p>
+                                            <p className="text-[10px] text-brand-text-secondary">AI 将基于右侧的竞争数据生成专业内容建议。</p>
                                         </div>
                                     </div>
 
@@ -829,7 +829,7 @@ export default function GEOWriterPage() {
                             <div className="w-24 h-24 bg-white border-2 border-brand-border flex items-center justify-center text-brand-border mb-8 rotate-3 shadow-sm">
                                 <Search size={48} className="text-slate-200" />
                             </div>
-                            <h3 className="text-2xl font-black text-brand-text-muted mb-4 font-display">情报中心待命</h3>
+                            <h3 className="text-2xl font-black text-brand-text-muted mb-4 font-display">分析面板</h3>
                             <p className="text-brand-text-muted max-w-md text-sm leading-relaxed">
                                 输入关键词并点击侦察，我们将连接 Google 实时数据库，<br />
                                 探测竞争对手、热门话题及流量机会。

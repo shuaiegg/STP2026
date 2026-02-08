@@ -67,7 +67,7 @@ export default function PricingPage() {
                     按需充值，<span className="text-brand-primary">即买即用</span>
                 </h1>
                 <p className="text-xl text-brand-text-secondary max-w-2xl mx-auto leading-relaxed">
-                    无需订阅。9.9 美金开启您的全网情报驱动的 AI 写作引擎。
+                    无需订阅。9.9 美金开启您的全网数据驱动的 AI 写作引擎。
                 </p>
             </div>
 
