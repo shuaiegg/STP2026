@@ -83,9 +83,6 @@ export function ArticleList({ initialArticles }: { initialArticles: any[] }) {
                                         <Edit3 size={16} />
                                     </button>
                                 </Link>
-                                <button className="p-2 hover:bg-white hover:text-brand-secondary hover:shadow-sm rounded-md transition-all text-slate-400" title="分享">
-                                    <Share2 size={16} />
-                                </button>
                                 <div className="w-px h-4 bg-slate-200 mx-1" />
                                 <button 
                                     onClick={() => handleDelete(article.id)}
@@ -99,7 +96,7 @@ export function ArticleList({ initialArticles }: { initialArticles: any[] }) {
                             
                             <Link href={`/dashboard/library/edit/${article.id}`}>
                                 <Button variant="outline" className="ml-2 border-2 border-slate-100 hover:border-brand-primary hover:bg-brand-primary/5 rounded-xl group/btn h-11 w-11 p-0 flex items-center justify-center">
-                                    <ChevronRight size={20} className="text-slate-300 group-hover/btn:text-brand-primary group-hover/btn:translate-x-0.5 transition-all" />
+                                    <ChevronRight size={20} className="text-slate-600 group-hover/btn:text-brand-primary group-hover/btn:translate-x-0.5 transition-all" />
                                 </Button>
                             </Link>
                         </div>
