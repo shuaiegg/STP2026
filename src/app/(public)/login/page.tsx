@@ -126,7 +126,7 @@ export default function UserLoginPage() {
                     body: JSON.stringify({ 
                         email: cleanEmail, 
                         name: name.trim() || email.split("@")[0], // 兜底使用邮箱前缀
-                        code: cleanOtp 
+                        otp: cleanOtp 
                     })
                 });
             } else {
