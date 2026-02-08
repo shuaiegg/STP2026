@@ -115,12 +115,18 @@ export default function UserLoginPage() {
             
             let response;
             if (mode === "sign-up") {
+                console.log("🚀 Auth: Finalizing Registration for", cleanEmail, "with name:", name);
                 response = await fetch(`/api/auth/sign-up/email-otp`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email: cleanEmail, name, code: cleanOtp })
+                    body: JSON.stringify({ 
+                        email: cleanEmail, 
+                        name: name.trim() || email.split("@")[0], // 兜底使用邮箱前缀
+                        code: cleanOtp 
+                    })
                 });
             } else {
+                console.log("🚀 Auth: Finalizing Login for", cleanEmail);
                 response = await fetch(`/api/auth/sign-in/email-otp`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
