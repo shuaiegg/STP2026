@@ -24,11 +24,11 @@ function AnimatedCounter({ value, suffix = '', label }: { value: number; suffix?
 // Client logo component
 function ClientLogos() {
   const clients = [
-    { name: 'TechCorp', initial: 'T' },
-    { name: 'GlobalMfg', initial: 'G' },
-    { name: 'SmartExport', initial: 'S' },
-    { name: 'InnovateCo', initial: 'I' },
-    { name: 'TradeWin', initial: 'W' },
+    { name: 'IndustrialAI', initial: 'AI' },
+    { name: 'SmartTrade', initial: 'ST' },
+    { name: 'ExportPro', initial: 'EP' },
+    { name: 'GlobalSync', initial: 'GS' },
+    { name: 'NeoMarket', initial: 'NM' },
   ];
 
   return (
@@ -36,9 +36,9 @@ function ClientLogos() {
       {clients.map((client) => (
         <div
           key={client.name}
-          className="w-16 h-16 border-2 border-brand-border flex items-center justify-center bg-white/50 font-display text-2xl font-bold text-brand-text-muted hover:text-brand-primary hover:border-brand-border-heavy transition-all cursor-default"
+          className="px-6 py-4 border-2 border-brand-border flex items-center justify-center bg-white/50 font-display text-lg font-black italic tracking-tighter text-brand-text-muted hover:text-brand-primary hover:border-brand-border-heavy transition-all cursor-default grayscale hover:grayscale-0"
         >
-          {client.initial}
+          {client.name.toUpperCase()}
         </div>
       ))}
     </div>
@@ -141,18 +141,18 @@ export default async function Home() {
             </div>
 
             <h1 className="font-display text-5xl md:text-[5rem] font-black leading-[0.95] mb-8 tracking-tight opacity-0 animate-slide-in-up stagger-1">
-              <span className="text-brand-text-primary">让你的产品</span>
+              <span className="text-brand-text-primary">建立你的</span>
               <br />
               <span className="relative inline-block text-brand-text-primary mt-2">
                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-brand-secondary via-brand-accent to-brand-secondary bg-[length:200%_auto] animate-gradient-x">
-                  稳定获取海外询盘
+                  全自动海外获客系统
                 </span>
               </span>
             </h1>
 
             <p className="text-xl md:text-2xl text-brand-text-secondary leading-relaxed mb-10 max-w-3xl opacity-0 animate-slide-in-up stagger-2 font-normal">
-              通过<span className="font-semibold text-brand-text-primary">广告投放 + SEO内容 + 自动化工具</span>的组合策略，
-              帮助中国企业建立可持续、可复制的海外获客系统
+              不再依赖随机的运气。通过<span className="font-semibold text-brand-text-primary">广告侦察 + AI内容矩阵 + 自动化流</span>，
+              帮助中国企业构建可持续、可预测的海外询盘增长引擎。
             </p>
 
             <div className="flex flex-col sm:flex-row gap-5 mb-12 opacity-0 animate-slide-in-up stagger-3">
@@ -163,8 +163,8 @@ export default async function Home() {
                   size="lg"
                   className="w-full sm:w-auto text-base bg-brand-secondary hover:bg-brand-secondary-hover text-brand-text-primary border-2 border-brand-border-heavy shadow-[4px_4px_0_0_rgba(10,10,10,1)] hover:shadow-[6px_6px_0_0_rgba(10,10,10,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all font-bold cursor-pointer"
                 >
-                  查看获客方法
-                  <svg className="w-5 h-5 ml-2 inline" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  获取我的增长方案
+                  <svg className="w-5 h-5 ml-2 inline transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
                 </Button>
@@ -394,24 +394,24 @@ export default async function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <TestimonialCard
               quote="从完全不懂海外营销，到现在每月稳定收到20+询盘，ScaletoTop 帮我们建立了完整的获客流程"
-              author="王明"
+              author="陈先生"
               role="创始人"
-              company="某工业设备公司"
-              result="询盘+280%"
+              company="华东某智能制造企业"
+              result="询盘 +280%"
             />
             <TestimonialCard
-              quote="最有价值的是他们不只是帮我们投广告，而是真正教会了我们团队如何持续获客"
-              author="李华"
-              role="市场总监"
-              company="某电子元器件企业"
+              quote="最有价值的是他们不只是帮我们投广告，而是真正通过 AI 智作工具，让我们具备了低成本规模化产出的能力"
+              author="Sarah"
+              role="市场负责人"
+              company="某跨境电商独立站"
               result="ROI 4.2x"
             />
             <TestimonialCard
-              quote="SEO内容策略让我们的网站流量半年内增长了5倍，现在自然流量带来的询盘占了一半"
-              author="张强"
-              role="VP Marketing"
-              company="某新材料公司"
-              result="流量+500%"
+              quote="SEO内容矩阵让我们在半年内拿下了 30 多个核心词的前三名，现在的询盘大多来自精准的自然流量"
+              author="张总"
+              role="CEO"
+              company="深圳某新材料出海品牌"
+              result="流量 +500%"
             />
           </div>
         </div>
@@ -516,10 +516,10 @@ export default async function Home() {
                   as="span"
                   variant="primary"
                   size="lg"
-                  className="w-full sm:w-auto text-lg bg-brand-secondary hover:bg-brand-secondary-hover text-brand-text-primary border-2 border-brand-border-heavy shadow-[4px_4px_0_0_rgba(255,255,255,0.3)] hover:shadow-[6px_6px_0_0_rgba(255,255,255,0.3)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all font-bold cursor-pointer px-10 py-4"
+                  className="w-full sm:w-auto text-lg bg-brand-secondary hover:bg-brand-secondary-hover text-brand-text-primary border-2 border-brand-border-heavy shadow-[4px_4px_0_0_rgba(255,255,255,0.3)] hover:shadow-[6px_6px_0_0_rgba(255,255,255,0.3)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all font-bold cursor-pointer px-10 py-4 group"
                 >
-                  探索智作工具
-                  <svg className="w-5 h-5 ml-2 inline" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  立即开启增长
+                  <svg className="w-5 h-5 ml-2 inline transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
                 </Button>
