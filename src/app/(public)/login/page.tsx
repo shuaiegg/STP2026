@@ -217,7 +217,7 @@ export default function UserLoginPage() {
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         className="w-full bg-brand-surface border-2 border-brand-border rounded-none py-3 pl-11 pr-4 text-brand-text-primary placeholder:text-brand-text-muted focus:border-brand-primary transition-all outline-none text-sm font-medium"
-                                        placeholder="yourname@company.com"
+                                        placeholder="请输入您的电子邮件"
                                         required
                                     />
                                 </div>

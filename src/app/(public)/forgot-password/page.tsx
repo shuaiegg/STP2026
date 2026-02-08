@@ -56,10 +56,10 @@ export default function ForgotPasswordPage() {
                         </div>
                     </Link>
                     <h1 className="font-display text-3xl font-black text-brand-text-primary mb-2 tracking-tight">
-                        {isSent ? "检查您的收件箱" : "找回指挥权"}
+                        {isSent ? "检查您的收件箱" : "找回密码"}
                     </h1>
                     <p className="text-brand-text-secondary text-sm font-medium">
-                        {isSent ? `我们已将加密重置链接发送至 ${email}` : "我们将通过邮件协助您重设访问凭证"}
+                        {isSent ? `我们已将重置链接发送至 ${email}` : "我们将通过邮件协助您重设访问凭证"}
                     </p>
                 </div>
 
@@ -72,7 +72,7 @@ export default function ForgotPasswordPage() {
                             </div>
                             <div className="space-y-3">
                                 <p className="text-sm text-brand-text-primary leading-relaxed font-bold">
-                                    安全链接已投递。
+                                    重置链接已投递。
                                 </p>
                                 <p className="text-xs text-brand-text-secondary leading-relaxed">
                                     请点击邮件中的链接来设置您的新密码。如果没有收到，请检查垃圾邮件箱。
@@ -105,7 +105,7 @@ export default function ForgotPasswordPage() {
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         className="w-full bg-brand-surface border-2 border-brand-border rounded-none py-3 pl-11 pr-4 text-brand-text-primary placeholder:text-brand-text-muted focus:border-brand-primary transition-all outline-none text-sm font-medium"
-                                        placeholder="yourname@company.com"
+                                        placeholder="请输入您的电子邮件"
                                         required
                                     />
                                 </div>
@@ -118,7 +118,7 @@ export default function ForgotPasswordPage() {
                             >
                                 {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : (
                                     <>
-                                        发送加密链接 
+                                        发送重置链接 
                                         <Sparkles className="w-4 h-4 group-hover:rotate-12 transition-transform" />
                                     </>
                                 )}
@@ -129,7 +129,7 @@ export default function ForgotPasswordPage() {
 
                 <div className="mt-8 text-center stagger-3 animate-slide-in-up">
                     <Link href="/login" className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-brand-text-secondary hover:text-brand-primary transition-colors">
-                        <ArrowLeft size={14} /> 返回身份验证
+                        <ArrowLeft size={14} /> 返回登录
                     </Link>
                 </div>
             </div>
