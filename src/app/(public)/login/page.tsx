@@ -22,7 +22,7 @@ export default function UserLoginPage() {
     const [error, setError] = useState("");
     const router = useRouter();
 
-    // 1. 发送验证码
+    // 1. 发送验证码 (核心逻辑：老用户直接发，新用户切步骤)
     const handleSendOTP = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsPending(true);
@@ -48,14 +48,11 @@ export default function UserLoginPage() {
             if (!response.ok || data.error) {
                 const errorMessage = data.error || "";
                 const errorCode = data.code || "";
-                
-                // 修正：增加对 data.message 的检查，并放宽匹配条件
                 const fullErrorText = (errorMessage + errorCode + (data.message || "")).toLowerCase();
-                console.log("📝 Auth Error Context:", fullErrorText);
-
+                
                 if (fullErrorText.includes("user not found") || fullErrorText.includes("user_not_found")) {
-                    console.log("📝 User not found, switching to sign-up mode...");
-                    setStep("register_info"); // 切换到输入姓名步骤
+                    console.log("📝 User not found, switching to register info step...");
+                    setStep("register_info"); 
                     return;
                 }
                 throw new Error(data.error || "发送验证码失败");
@@ -71,7 +68,7 @@ export default function UserLoginPage() {
         }
     };
 
-    // 1b. 新用户提交姓名并发送验证码
+    // 1b. 新用户提交姓名并发送验证码 (核心修复：使用 authClient 插件方法确保发码)
     const handleRegisterSendOTP = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsPending(true);
@@ -80,22 +77,16 @@ export default function UserLoginPage() {
         try {
             const cleanEmail = email.trim().toLowerCase();
             const cleanName = name.trim();
+            console.log("🚀 Auth: Registering new user", cleanEmail, cleanName);
             
-            const response = await fetch(`/api/auth/email-otp/send-verification-otp`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    email: cleanEmail,
-                    name: cleanName,
-                    type: "sign-up",
-                })
+            // 使用 authClient 直接调用，这样能确保进入 Better Auth 的 sign-up 插件逻辑
+            const { error: authError } = await authClient.emailOTP.sendVerificationCode({
+                email: cleanEmail,
+                name: cleanName,
+                type: "sign-up",
             });
 
-            const data = await response.json();
-
-            if (!response.ok || data.error) {
-                throw new Error(data.error || "发送验证码失败");
-            }
+            if (authError) throw new Error(authError.message);
             
             toast.success("欢迎！验证码已发送至您的邮箱");
             setStep("otp");
@@ -117,36 +108,27 @@ export default function UserLoginPage() {
             const cleanEmail = email.trim().toLowerCase();
             const cleanOtp = otp.trim();
             
-            let response;
             if (mode === "sign-up") {
-                console.log("🚀 Auth: Finalizing Registration for", cleanEmail, "with name:", name);
-                response = await fetch(`/api/auth/sign-up/email-otp`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ 
-                        email: cleanEmail, 
-                        name: name.trim() || email.split("@")[0], // 兜底使用邮箱前缀
-                        otp: cleanOtp 
-                    })
+                const { error: authError } = await authClient.signUp.emailOTP({
+                    email: cleanEmail,
+                    name: name.trim() || email.split("@")[0],
+                    code: cleanOtp
                 });
+                if (authError) throw new Error(authError.message);
             } else {
-                console.log("🚀 Auth: Finalizing Login for", cleanEmail);
-                response = await fetch(`/api/auth/sign-in/email-otp`, {
+                // 登录依然使用 Fetch 绕过可能的 client 字段名 bug
+                const response = await fetch(`/api/auth/sign-in/email-otp`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ email: cleanEmail, otp: cleanOtp })
                 });
+                const data = await response.json();
+                if (!response.ok || data.error) throw new Error(data.error || data.message || "验证码错误");
             }
 
-            const data = await response.json();
-
-            if (!response.ok || data.error) {
-                throw new Error(data.error || data.message || "验证码错误");
-            } else {
-                toast.success(mode === "sign-up" ? "欢迎加入 ScaletoTop！" : "登录成功");
-                router.push("/dashboard");
-                router.refresh();
-            }
+            toast.success(mode === "sign-up" ? "欢迎加入 ScaletoTop！" : "登录成功");
+            router.push("/dashboard");
+            router.refresh();
         } catch (err: any) {
             setError(translateAuthError(err.message || "验证码错误"));
         } finally {
@@ -181,10 +163,7 @@ export default function UserLoginPage() {
 
     return (
         <div className="min-h-screen bg-brand-surface flex items-center justify-center p-6 relative overflow-hidden">
-            {/* Background Grid Pattern */}
             <div className="absolute inset-0 grid-bg opacity-40 pointer-events-none" />
-            
-            {/* Dynamic Mesh Gradients for Premium Feel */}
             <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-brand-secondary/5 rounded-full blur-[120px] pointer-events-none" />
             <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-brand-accent/5 rounded-full blur-[120px] pointer-events-none" />
 
