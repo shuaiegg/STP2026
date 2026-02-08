@@ -43,7 +43,7 @@ export default function PricingPage() {
             name: "团队扩张包",
             price: "99",
             credits: "1500",
-            description: "规模化作战武器，约可生成 43 篇长文",
+            description: "专业创作方案，约可生成 43 篇长文",
             features: [
                 "1500 个 AI 积分 (极致性价比)",
                 "包含‘专业包’所有功能",

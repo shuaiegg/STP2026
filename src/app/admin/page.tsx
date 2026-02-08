@@ -61,7 +61,7 @@ export default async function AdminDashboard() {
         <div className="space-y-8">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-900 mb-2 font-display">指挥部概览</h1>
+                    <h1 className="text-3xl font-bold text-slate-900 mb-2 font-display">系统管理概览</h1>
                     <p className="text-slate-500">实时监控 STP 平台的增长指标、财务状况与工具运行效率。</p>
                 </div>
                 <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100">

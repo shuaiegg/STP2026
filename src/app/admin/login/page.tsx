@@ -52,7 +52,7 @@ export default function AdminLoginPage() {
                     <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 mb-6 shadow-lg shadow-blue-500/20">
                         <ShieldCheck className="w-7 h-7 text-white" />
                     </div>
-                    <h1 className="text-2xl font-bold text-white mb-2 tracking-tight">指挥官登录 / ADMIN</h1>
+                    <h1 className="text-2xl font-bold text-white mb-2 tracking-tight">管理后台登录 / ADMIN</h1>
                     <p className="text-slate-400 text-sm font-medium">请输入高级凭据访问 STP 控制台</p>
                 </div>
 

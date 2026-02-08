@@ -72,7 +72,7 @@ export function DashboardContent({
 
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
-                    <h1 className="font-display text-4xl font-black text-brand-text-primary italic leading-none mb-4">作战指挥室</h1>
+                    <h1 className="font-display text-4xl font-black text-brand-text-primary italic leading-none mb-4">概览中心</h1>
                     <p className="text-brand-text-secondary font-medium">欢迎回来，{user?.name || '杰克'}。系统一切就绪。</p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -174,7 +174,7 @@ export function DashboardContent({
                                 <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-200 mx-auto mb-4 rotate-6">
                                     <FileText size={32} />
                                 </div>
-                                <p className="text-slate-400 font-bold text-sm italic">指挥中心尚未发现智作记录</p>
+                                <p className="text-slate-400 font-bold text-sm italic">尚未发现创作记录</p>
                                 <Link href="/tools/geo-writer">
                                     <Button size="sm" className="mt-6 font-black bg-brand-primary/10 text-brand-primary hover:bg-brand-primary hover:text-white border-2 border-brand-primary/20 transition-all">
                                         点亮第一盏神灯

@@ -55,7 +55,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
     };
 
     const navItems = [
-        { href: '/dashboard', icon: LayoutDashboard, label: '作战室 (Overview)' },
+        { href: '/dashboard', icon: LayoutDashboard, label: '控制面板 (Overview)' },
         { href: '/dashboard/library', icon: Library, label: '内容资产库' },
         { href: '/tools/geo-writer', icon: Zap, label: '智作优化器' },
         { href: '/dashboard/billing', icon: BarChart3, label: '流量与账单' },
@@ -122,7 +122,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
                             className="justify-start gap-3 px-4 py-3 h-auto rounded-2xl text-red-400 hover:bg-red-50 hover:text-red-600 transition-all font-bold text-sm"
                         >
                             <LogOut size={20} />
-                            <span>撤离作战室</span>
+                            <span>退出登录</span>
                         </Button>
                     </div>
                 </div>
