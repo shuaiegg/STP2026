@@ -14,7 +14,8 @@ export const auth = betterAuth({
     plugins: [
         emailOTP({
             async sendVerificationOTP({ email, otp, type }) {
-                await sendEmail({
+                console.log(`📧 [DEBUG] Attempting to send ${type} OTP to ${email}`);
+                const result = await sendEmail({
                     to: email,
                     subject: "ScaletoTop 验证码",
                     html: `
@@ -30,6 +31,7 @@ export const auth = betterAuth({
                         </div>
                     `
                 });
+                console.log(`📧 [DEBUG] Resend result for ${email}:`, JSON.stringify(result));
             },
         }),
         /*
