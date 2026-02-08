@@ -126,6 +126,7 @@ export default function PricingPage() {
 
                             <Link href="/dashboard" className="block mt-auto">
                                 <Button 
+                                    variant={pack.popular ? "primary" : "outline"}
                                     className={`w-full py-6 font-black uppercase tracking-widest text-xs border-2 flex gap-2 ${
                                         pack.popular 
                                         ? 'bg-brand-primary text-white border-brand-primary shadow-xl shadow-brand-primary/20' 
