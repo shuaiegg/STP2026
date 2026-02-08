@@ -49,7 +49,11 @@ export default function UserLoginPage() {
                 const errorMessage = data.error || "";
                 const errorCode = data.code || "";
                 
-                if (errorMessage.includes("User not found") || errorCode === "USER_NOT_FOUND") {
+                // 修正：增加对 data.message 的检查，并放宽匹配条件
+                const fullErrorText = (errorMessage + errorCode + (data.message || "")).toLowerCase();
+                console.log("📝 Auth Error Context:", fullErrorText);
+
+                if (fullErrorText.includes("user not found") || fullErrorText.includes("user_not_found")) {
                     console.log("📝 User not found, switching to sign-up mode...");
                     setStep("register_info"); // 切换到输入姓名步骤
                     return;
@@ -347,7 +351,7 @@ export default function UserLoginPage() {
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between ml-1">
                                     <label className="font-mono text-[10px] font-bold text-brand-text-muted uppercase tracking-widest">访问密码 / Password</label>
-                                    <Link href="/forgot-password" size="sm" className="text-[10px] font-black text-brand-text-primary uppercase hover:text-brand-accent transition-colors">
+                                    <Link href="/forgot-password" className="text-[10px] font-black text-brand-text-primary uppercase hover:text-brand-accent transition-colors">
                                         忘记密码?
                                     </Link>
                                 </div>
