@@ -1,11 +1,11 @@
 "use client";
 
 import React from 'react';
-import { 
-    Coins, 
-    Zap, 
-    History, 
-    CreditCard, 
+import {
+    Coins,
+    Zap,
+    History,
+    CreditCard,
     LogOut,
     Library,
     ArrowRight,
@@ -26,17 +26,17 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ShieldAlert, ArrowLeft, Settings as SettingsIcon } from 'lucide-react';
 
-export function DashboardContent({ 
-    user, 
-    transactions, 
+export function DashboardContent({
+    user,
+    transactions,
     executions,
     isImpersonating = false,
     articleCount = 0,
     recentArticles = []
-}: { 
-    user: any; 
-    transactions: any[]; 
-    executions: any[]; 
+}: {
+    user: any;
+    transactions: any[];
+    executions: any[];
     isImpersonating?: boolean;
     articleCount?: number;
     recentArticles?: any[];
@@ -128,6 +128,94 @@ export function DashboardContent({
                 </Card>
             </div>
 
+            {/* Usage & Execution Details */}
+            <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                    <h3 className="font-display text-2xl font-black text-brand-text-primary italic flex items-center gap-3">
+                        <TrendingUp size={24} className="text-brand-accent" />
+                        能量与执行轨迹
+                    </h3>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* Credit Transactions */}
+                    <Card className="p-0 border-2 border-slate-100 bg-white rounded-3xl overflow-hidden shadow-sm">
+                        <div className="p-6 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
+                            <div className="text-sm font-black text-slate-900 flex items-center gap-2">
+                                <Coins size={16} className="text-brand-secondary" /> 最近扣费记录
+                            </div>
+                            <Link href="/dashboard/billing" className="text-[10px] font-black text-brand-primary hover:underline uppercase tracking-tighter">
+                                全部账单
+                            </Link>
+                        </div>
+                        <div className="divide-y divide-slate-50">
+                            {transactions.length > 0 ? (
+                                transactions.map((t) => (
+                                    <div key={t.id} className="p-5 flex items-center justify-between hover:bg-slate-50/50 transition-colors">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center text-orange-500 font-bold text-xs">
+                                                -{t.amount}
+                                            </div>
+                                            <div>
+                                                <div className="text-sm font-bold text-slate-800">{t.description}</div>
+                                                <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">
+                                                    {new Date(t.createdAt).toLocaleString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <Badge variant="muted" className="text-[9px] font-black border-slate-200 text-slate-500">{t.type}</Badge>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="p-10 text-center text-slate-400 text-sm italic font-medium">无扣费记录</div>
+                            )}
+                        </div>
+                    </Card>
+
+                    {/* Skill Executions */}
+                    <Card className="p-0 border-2 border-slate-100 bg-white rounded-3xl overflow-hidden shadow-sm">
+                        <div className="p-6 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
+                            <div className="text-sm font-black text-slate-900 flex items-center gap-2">
+                                <Zap size={16} className="text-brand-accent" /> 工具调用轨迹
+                            </div>
+                            <Link href="/dashboard/tools" className="text-[10px] font-black text-brand-primary hover:underline uppercase tracking-tighter">
+                                进入工具箱
+                            </Link>
+                        </div>
+                        <div className="divide-y divide-slate-50">
+                            {executions.length > 0 ? (
+                                executions.map((e) => (
+                                    <div key={e.id} className="p-5 flex items-center justify-between hover:bg-slate-50/50 transition-colors">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500">
+                                                <Zap size={14} />
+                                            </div>
+                                            <div>
+                                                <div className="text-sm font-bold text-slate-800">{e.skillName}</div>
+                                                <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">
+                                                    {new Date(e.createdAt).toLocaleString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <Badge
+                                            variant="muted"
+                                            className={`text-[9px] font-black ${e.status === 'success' || e.status === 'SUCCESS' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                                e.status === 'failed' || e.status === 'FAILED' ? 'bg-rose-50 text-rose-600 border-rose-100' :
+                                                    'bg-blue-50 text-blue-600 border-blue-100'
+                                                }`}
+                                        >
+                                            {e.status}
+                                        </Badge>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="p-10 text-center text-slate-400 text-sm italic font-medium">无调用记录</div>
+                            )}
+                        </div>
+                    </Card>
+                </div>
+            </div>
+
             {/* Bottom Content Area */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                 {/* Recent Articles Stream */}
@@ -184,7 +272,7 @@ export function DashboardContent({
                         <ShieldCheck size={24} className="text-brand-primary" />
                         系统安全与状态
                     </h3>
-                    
+
                     <Card className="p-8 bg-white border-2 border-slate-100 rounded-3xl space-y-6">
                         <div className="flex items-center justify-between p-4 bg-emerald-50/50 rounded-2xl border border-emerald-100 group hover:border-emerald-200 transition-all cursor-default">
                             <div className="flex items-center gap-4">

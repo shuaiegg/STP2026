@@ -87,8 +87,8 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
                     {/* Brand */}
                     <div className="flex items-center gap-3 mb-12 px-2">
                         <Link href="/" className="flex items-center gap-3 group">
-                            <div className="w-10 h-10 bg-brand-primary rounded-xl flex items-center justify-center text-white font-black shadow-lg shadow-brand-primary/20 group-hover:rotate-12 transition-transform">
-                                S
+                            <div className="w-10 h-10 transition-transform group-hover:rotate-12">
+                                <img src="/assets/images/logo.svg" alt="STP Logo" className="w-full h-full" />
                             </div>
                             <span className="text-xl font-black italic tracking-tighter text-slate-900 font-display">STP 2026</span>
                         </Link>
