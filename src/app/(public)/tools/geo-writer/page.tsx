@@ -490,13 +490,13 @@ export default function GEOWriterPage() {
             const finalData = {
                 content: result,
                 summary: "AI Generated Content",
-                seoMetadata: {
+                seoMetadata: auditResult?.seoMetadata || {
                     title: selectedKeyword || form.keywords,
                     description: "AI Generated Guide to " + (selectedKeyword || form.keywords),
                     keywords: [selectedKeyword || form.keywords, "guide", new Date().getFullYear().toString()],
                     slug: (selectedKeyword || form.keywords).toLowerCase().replace(/\s+/g, '-')
                 },
-                schema: {
+                schema: auditResult?.schema || {
                     "@context": "https://schema.org",
                     "@type": "Article",
                     "headline": selectedKeyword || form.keywords,
@@ -509,22 +509,12 @@ export default function GEOWriterPage() {
                 topics: cachedIntelligence?.topics || [],
                 competitors: cachedIntelligence?.competitors || [],
                 serpAnalysis: cachedIntelligence?.serpAnalysis || null,
-                scores: { seo: 88, geo: 92 },
-                detailedSEOScore: {
-                    overall: 88,
-                    breakdown: {
-                        title: { score: 95, weight: 0.25, status: 'excellent', issues: [], suggestions: [] },
-                        description: { score: 90, weight: 0.15, status: 'excellent', issues: [], suggestions: [] },
-                        keywords: { score: 85, weight: 0.20, status: 'good', issues: ["Keyword density slightly low"], suggestions: ["Increase keyword frequency"] },
-                        readability: { score: 92, weight: 0.15, status: 'excellent', issues: [], suggestions: [] },
-                        structure: { score: 80, weight: 0.20, status: 'good', issues: ["Add more images"], suggestions: ["Include 2 more images"] },
-                        images: { score: 70, weight: 0.05, status: 'good', issues: ["Missing Alt text"], suggestions: ["Add Alt text to images"] }
-                    }
-                },
-                suggestions: ["Add more internal links", "Include an FAQ schema"],
-                internalLinks: ["related-post-1", "service-page-crm"],
-                imageSuggestions: ["Hero image: Dashboard screenshot", "Diagram: CRM workflow"],
-                distribution: {}
+                scores: auditResult?.scores || { seo: 88, geo: 92 },
+                detailedSEOScore: auditResult?.detailedSEOScore || null,
+                suggestions: auditResult?.suggestions || [],
+                internalLinks: auditResult?.internalLinks || [],
+                imageSuggestions: auditResult?.imageSuggestions || [],
+                distribution: auditResult?.distribution || {}
             };
 
             // POSTHOG: Track Successful Content Generation
