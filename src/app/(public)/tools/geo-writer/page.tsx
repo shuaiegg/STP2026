@@ -47,6 +47,7 @@ export default function GEOWriterPage() {
     const [liveHumanScore, setLiveHumanScore] = useState<number | null>(null);
     const [history, setHistory] = useState<VersionSnapshot[]>([]);
     const [showHistory, setShowHistory] = useState(false);
+    const [isLoadingMetadata, setIsLoadingMetadata] = useState(false);
 
     // NEW Phase 2 states
     const [viewMode, setViewMode] = useState<'preview' | 'markdown' | 'schema' | 'article' | 'distribution'>('preview');
@@ -65,6 +66,49 @@ export default function GEOWriterPage() {
         url: '', // Target domain for internal linking
         autoVisuals: false // Default to false: Auto-insert visuals into content
     });
+
+    const fetchRealMetadata = async (generatedContent: string) => {
+        setIsLoadingMetadata(true);
+        try {
+            console.log('🔍 Extracting real metadata from generated content...');
+            const response = await fetch('/api/skills/execute', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    skillName: 'stellar-writer',
+                    input: {
+                        ...form,
+                        keywords: selectedKeyword || form.keywords,
+                        originalContent: generatedContent, // Use the NEWLY generated content
+                        auditOnly: true,
+                        researchMode: 'audit' 
+                    }
+                })
+            });
+
+            const data = await response.json();
+            if (data.success && data.output?.data) {
+                const meta = data.output.data;
+                setFinalResult((prev: any) => ({
+                    ...prev,
+                    seoMetadata: meta.seoMetadata || prev.seoMetadata,
+                    schema: meta.schema?.article || prev.schema,
+                    internalLinks: meta.internalLinks || prev.internalLinks,
+                    imageSuggestions: meta.imageSuggestions || prev.imageSuggestions,
+                    scores: {
+                        ...prev.scores,
+                        geo: meta.scores?.geo || prev.scores.geo,
+                        seo: meta.scores?.seo || prev.scores.seo
+                    }
+                }));
+                console.log('✅ Real metadata injected.');
+            }
+        } catch (err) {
+            console.error('Metadata extraction failed:', err);
+        } finally {
+            setIsLoadingMetadata(false);
+        }
+    };
 
     // Automatically parse content into sections when finalResult is updated
     useEffect(() => {
@@ -446,13 +490,13 @@ export default function GEOWriterPage() {
             const finalData = {
                 content: result,
                 summary: "AI Generated Content",
-                seoMetadata: {
+                seoMetadata: auditResult?.seoMetadata || {
                     title: selectedKeyword || form.keywords,
                     description: "AI Generated Guide to " + (selectedKeyword || form.keywords),
                     keywords: [selectedKeyword || form.keywords, "guide", new Date().getFullYear().toString()],
                     slug: (selectedKeyword || form.keywords).toLowerCase().replace(/\s+/g, '-')
                 },
-                schema: {
+                schema: auditResult?.schema || {
                     "@context": "https://schema.org",
                     "@type": "Article",
                     "headline": selectedKeyword || form.keywords,
@@ -465,22 +509,12 @@ export default function GEOWriterPage() {
                 topics: cachedIntelligence?.topics || [],
                 competitors: cachedIntelligence?.competitors || [],
                 serpAnalysis: cachedIntelligence?.serpAnalysis || null,
-                scores: { seo: 88, geo: 92 },
-                detailedSEOScore: {
-                    overall: 88,
-                    breakdown: {
-                        title: { score: 95, weight: 0.25, status: 'excellent', issues: [], suggestions: [] },
-                        description: { score: 90, weight: 0.15, status: 'excellent', issues: [], suggestions: [] },
-                        keywords: { score: 85, weight: 0.20, status: 'good', issues: ["Keyword density slightly low"], suggestions: ["Increase keyword frequency"] },
-                        readability: { score: 92, weight: 0.15, status: 'excellent', issues: [], suggestions: [] },
-                        structure: { score: 80, weight: 0.20, status: 'good', issues: ["Add more images"], suggestions: ["Include 2 more images"] },
-                        images: { score: 70, weight: 0.05, status: 'good', issues: ["Missing Alt text"], suggestions: ["Add Alt text to images"] }
-                    }
-                },
-                suggestions: ["Add more internal links", "Include an FAQ schema"],
-                internalLinks: ["related-post-1", "service-page-crm"],
-                imageSuggestions: ["Hero image: Dashboard screenshot", "Diagram: CRM workflow"],
-                distribution: {}
+                scores: auditResult?.scores || { seo: 88, geo: 92 },
+                detailedSEOScore: auditResult?.detailedSEOScore || null,
+                suggestions: auditResult?.suggestions || [],
+                internalLinks: auditResult?.internalLinks || [],
+                imageSuggestions: auditResult?.imageSuggestions || [],
+                distribution: auditResult?.distribution || {}
             };
 
             // POSTHOG: Track Successful Content Generation
@@ -495,6 +529,9 @@ export default function GEOWriterPage() {
             setIsPaid(true);
             setLoading(false);
             setStep(3); // Explicitly move to step 3
+
+            // Start extracting real metadata in background
+            fetchRealMetadata(result);
 
             // Auto-save snapshot on initial generation (Moved from useEffect)
             if (selectedKeyword || form.keywords) {
@@ -1320,10 +1357,19 @@ export default function GEOWriterPage() {
                                                 </div>
                                             </div>
                                             <Button size="sm" onClick={() => finalResult?.schema && copyToClipboard(finalResult.schema)} className="bg-violet-600 hover:bg-violet-700 font-black shadow-lg shadow-violet-200 text-xs">
+                                                {isLoadingMetadata ? <RefreshCw size={12} className="animate-spin mr-2" /> : null}
                                                 复制 JSON-LD
                                             </Button>
                                         </div>
-                                        <pre className="p-8 bg-slate-900 text-violet-300 font-mono text-xs rounded-2xl overflow-auto h-[450px] shadow-inner">
+                                        <pre className="p-8 bg-slate-900 text-violet-300 font-mono text-xs rounded-2xl overflow-auto h-[450px] shadow-inner relative">
+                                            {isLoadingMetadata && (
+                                                <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-10 rounded-2xl">
+                                                    <div className="flex flex-col items-center gap-3">
+                                                        <Loader2 className="animate-spin text-violet-400" size={32} />
+                                                        <span className="text-violet-400 font-bold animate-pulse">正在提取真实 Schema...</span>
+                                                    </div>
+                                                </div>
+                                            )}
                                             {JSON.stringify(finalResult?.schema || {}, null, 2)}
                                             {(!finalResult && streamResult.completion) ? "\n/* Schema will be generated after content completion */" : ""}
                                         </pre>
@@ -1429,8 +1475,17 @@ export default function GEOWriterPage() {
                                 <Card className="p-10 border-2 border-brand-border bg-white rounded-3xl relative overflow-hidden shadow-sm">
                                     <h3 className="text-xs font-black text-brand-text-muted uppercase tracking-widest mb-8 flex items-center gap-3">
                                         <LinkIcon className="text-brand-primary" size={20} /> 建议内部链接
+                                        {isLoadingMetadata && <RefreshCw size={14} className="animate-spin text-brand-primary ml-auto" />}
                                     </h3>
-                                    <div className="space-y-4">
+                                    <div className="space-y-4 relative min-h-[100px]">
+                                        {isLoadingMetadata && (
+                                            <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex items-center justify-center z-10 rounded-xl">
+                                                <div className="flex items-center gap-2">
+                                                    <Loader2 className="animate-spin text-brand-primary" size={16} />
+                                                    <span className="text-[10px] font-black text-brand-primary uppercase">正在通过 AI 匹配真实内链...</span>
+                                                </div>
+                                            </div>
+                                        )}
                                         {finalResult?.internalLinks?.map((link: string, i: number) => (
                                             <div key={i} className="flex items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-2xl hover:border-brand-primary transition-all group">
                                                 <div className="flex items-center gap-3 truncate">

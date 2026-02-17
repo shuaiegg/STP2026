@@ -10,8 +10,14 @@ export const authClient = createAuthClient({
         onError(context) {
             console.error("Better Auth Client Error:", context.error);
         },
-        // Force the path prefix if the client library generates it incorrectly
-        // The logs showed the client requesting email-o-t-p
+        // Hack: Better Auth client sometimes requests email-o-t-p instead of email-otp
+        // We force rewrite the path if this happens
+        onRequest(context) {
+            if (context.path.includes("email-o-t-p")) {
+                context.path = context.path.replace("email-o-t-p", "email-otp");
+            }
+            return context;
+        },
         onResponse(context) {
             return context.response;
         }
