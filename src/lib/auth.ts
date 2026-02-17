@@ -88,7 +88,9 @@ export const auth = betterAuth({
         "http://localhost:3000",
         "http://192.168.1.11:3000",
         "http://127.0.0.1:3000",
-        "https://stp.carpartsluxury.com"
+        "https://stp.carpartsluxury.com",
+        "https://dev.scaletotop.com",
+        "https://www.scaletotop.com"
     ],
     rateLimit: {
         window: 60, // 1 minute
