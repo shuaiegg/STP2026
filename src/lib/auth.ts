@@ -34,35 +34,6 @@ export const auth = betterAuth({
                 console.log(`📧 [DEBUG] Resend result for ${email}:`, JSON.stringify(result));
             },
         }),
-        /*
-        forgetPassword({
-            async sendResetPassword({ user, url }) {
-                await sendEmail({
-                    to: user.email,
-                    subject: "重置您的 ScaletoTop 密码",
-                    html: `
-                        <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px; max-width: 500px; margin: 0 auto;">
-                            <h1 style="color: #4F46E5;">ScaletoTop</h1>
-                            <p style="font-size: 16px; color: #374151;">您好 ${user.name || '用户'},</p>
-                            <p style="font-size: 14px; color: #4B5563; line-height: 1.6;">
-                                我们收到了重置您账户密码的请求。如果您确定要设置新密码，请点击下方的按钮：
-                            </p>
-                            <div style="text-align: center; margin: 30px 0;">
-                                <a href="${url}" style="background: #4F46E5; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: bold; display: inline-block;">
-                                    重置密码
-                                </a>
-                            </div>
-                            <p style="font-size: 12px; color: #9CA3AF;">
-                                该链接 1 小时内有效。如果您没有申请重置，请忽略此邮件，您的账号积分依然安全。
-                            </p>
-                            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
-                            <p style="font-size: 12px; color: #9CA3AF;">若按钮无法点击，请复制此链接至浏览器：<br/>${url}</p>
-                        </div>
-                    `
-                });
-            },
-        }),
-        */
     ],
     user: {
         additionalFields: {
@@ -86,9 +57,6 @@ export const auth = betterAuth({
     },
     trustedOrigins: [
         "http://localhost:3000",
-        "http://192.168.1.11:3000",
-        "http://127.0.0.1:3000",
-        "https://stp.carpartsluxury.com",
         "https://dev.scaletotop.com",
         "https://www.scaletotop.com"
     ],
