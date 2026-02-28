@@ -219,7 +219,7 @@ export class StellarWriterSkill extends BaseSkill {
             console.log(`🧐 [Audit Mode] Analyzing existing content for "${keywords}"...`);
             const provider = getProvider(this.preferredProvider);
             const prompt = StellarWriterSkill.buildStellarPrompt(stellarInput, [], [], [], undefined, []);
-            
+
             const { response, cost } = await this.generateWithAI(provider, prompt, {
                 model: this.preferredModel,
                 temperature: 0.3,
@@ -384,7 +384,7 @@ export class StellarWriterSkill extends BaseSkill {
             // Continue execution, just without rich data
         }
 
-        const perf: any = { start: Date.now() };
+
 
         // Helper function to check if cached data is fresh (< 1 hour old)
         const isDataFresh = (timestamp: number, maxAgeMinutes: number = 60): boolean => {
@@ -395,8 +395,7 @@ export class StellarWriterSkill extends BaseSkill {
 
         const useCachedData = cachedIntelligence && isDataFresh(cachedIntelligence.timestamp);
 
-        // Default mode is generate if not specified
-        const mode = stellarInput.researchMode || 'generate';
+        // mode is already defined above (line 215)
 
         if (mode === 'discovery') {
             console.log(`🔍 [Discovery Mode] Fetching only related topics for "${keywords}"...`);

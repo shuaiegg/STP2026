@@ -13,7 +13,7 @@ export const authClient = createAuthClient({
         // Hack: Better Auth client sometimes requests email-o-t-p instead of email-otp
         // We force rewrite the path if this happens
         onRequest(context) {
-            if (context.path.includes("email-o-t-p")) {
+            if (context.path?.includes("email-o-t-p")) {
                 context.path = context.path.replace("email-o-t-p", "email-otp");
             }
             return context;

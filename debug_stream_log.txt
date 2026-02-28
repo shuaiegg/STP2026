@@ -1,6 +1,6 @@
 INPUT:
 {
-  "keywords": "海外营销服务公司",
+  "keywords": "AI时代的数字营销",
   "location": "",
   "brandName": "",
   "tone": "professional",
@@ -13,7 +13,7 @@ INPUT:
 
 PROMPT:
 You are a world-class Growth Marketer and SEO/GEO expert.
-Context: Current date is 2026-02-08.
+Context: Current date is 2026-02-28.
 
 TITLE RULES:
 1. Only include the year (2026) if the content is time-sensitive (e.g. "Trends", "Best of", "Guide").
@@ -64,89 +64,38 @@ MODE: FULL CONTENT GENERATION MODE - Create complete, publication-ready article.
 
 
 ## Target Profiles
-- Keywords: 海外营销服务公司
+- Keywords: AI时代的数字营销
 - Brand: 
 - Industry: General
 
 Note: User is starting from scratch. Focus on creating the best Master Outline.
 
 ## Competitor Outlines
-### Competitor: 飞书深诺|Meetsocial首页_跨境数字化营销服务专家 - 飞书深诺官网
-    - 跨境电商海外营销
-    - 出海电商品牌全域营销
-    - 游戏全球发行服务
-    - 应用软件APP出海
-    - 媒介采购
-    - 策略咨询
-    - 优化运营
-    - 整合营销
-    - 数字技术
-    - 数字创意
-    - 私域增长
-    - Marvy/Adtech
-    - 短剧承制与发行
-    - 金融方案
-    - 跨境服务产品
-    - 知识学习
-    - 行业报告
-    - 近期活动
-    - 汇率查询和换算器
-    - 行业资源中心
-    - 公司介绍
-    - 全球资源
-    - 最新动态
-    - 社会认可
-    - 加入我们
-    - 联系我们
-    - 关于我们
-- 跨境数字化营销服务专家
-- &lt;div&gt;服务费率低至0.2%/15天&lt;/div&gt; &lt;div&gt;原费率为 0.5%/15天&lt;/div&gt;
-    - &lt;img src&#x3D;&quot;https://omo-oss-image.thefastimg.com/portal-saas/ngc202211030002/cms/image/56eee30e-5099-4eba-bfbb-4ccba41221fb.png&quot; alt&#x3D;&quot;飞书深诺集团做的是什么业务&quot;&gt;飞书深诺做什么业务？
+### Competitor: 开局2026|从搜索点击到AI推荐 数字营销GEO开辟新战场-新华网
+- 开局2026|从搜索点击到AI推荐 数字营销GEO开辟新战场
+- 开局2026|从搜索点击到AI推荐 数字营销GEO开辟新战场
 
-### Competitor: Duffy Agency | 专业的国际市场营销咨询公司，只为立志拓展海外市场的品牌
-- 让您的品牌更上一层楼
-- 专业的国际市场营销战略咨询只为立志拓展海外市场的品牌
-- 让您的品牌更上一层楼
-- 专业的国际市场营销战略咨询只为立志拓展海外市场的品牌
-  - Watch our marketing video guides full of useful insights
-  - Watch Now
+### Competitor: SEO与GEO深度解析：AI时代数字营销的迭代与共生-艾媒网-全球领先的新经济行业数据分析报告发布平台
+    - 订阅邮件
+      - 行业大类选择我们将会根据您的喜好为您定向推送内容。
+      - 邮箱我们将会根据您的喜好为您定向推送内容。
+- SEO与GEO深度解析：AI时代数字营销的迭代与共生
+    - 本周热点
+    - 相关推荐
+    - 艾媒咨询公众号
+    - 订阅邮件
 
-### Competitor: 3个你不知道的海外营销机构，TA们能让你的产品爆火 | Payoneer
-- 3个你不知道的海外营销机构，TA们能让你的产品爆火
-    - Related resources
-    - SWIFT电汇转账和当地银行转账：如何选择？
-    - 新功能！直接通过Payoneer向客户收款
-    - US Payment Service资金审核所需材料
-    - Payoneer资金 — 提现到指定银行
-    - Payoneer预付万事达卡®收费标准和使用额度
-    - 离岸开户难？无故被封号？Payoneer外贸e户通重新定义B2B外贸收款
-    - Latest articles
-    - 2025-09-21 欧洲宽松周期已结束，美国将开启降息周期
-    - 2025-09-11 美国境外资金对美国十年期国债需求大增
-    - 2025-09-10 避险情绪推动美元指数短线走强
-    - 2025-09-09 美国10年期国债收益率跌至五个月新低
-    - 必看！美国壕撒万亿补贴，中国卖家也可申请?!
-    - 选择Pinterest的7个理由
-    - Thanks!
+### Competitor: AI时代数字营销的底层重构：于磊老师深度解析Geo未来发展趋势展望-阿里云开发者社区
+- AI时代数字营销的底层重构：于磊老师深度解析Geo未来发展趋势展望
 
 
 
 ## Related Keywords & Search Volume
-- 海外营销服务公司: Volume 150, Competition 45%
+- AI时代的数字营销: Volume 150, Competition 45%
 
 
 # 🔍 SERP 智能分析 (SEO 优化指导)
 
-
-## 🏆 竞品成功结构参考 (基于 TOP 3 排名内容分析):
-
-以下章节在高排名内容中频繁出现，建议包含：
-- watch our marketing video guides full of useful insights
-- watch now
-
-**注意**: 使用这些结构作为灵感，但必须用你自己的语言和角度重新组织内容。
-
----
 
 ## 🎯 SERP 优化建议 (基于搜索结果特征):
 

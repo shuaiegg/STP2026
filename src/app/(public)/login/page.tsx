@@ -184,7 +184,7 @@ export default function UserLoginPage() {
 
                 <Card className="p-8 border-2 border-brand-border-heavy bg-white shadow-[8px_8px_0_0_rgba(10,10,10,1)] stagger-2 animate-slide-in-up">
                     {error && (
-                        <div className="mb-6 bg-brand-accent/10 border-2 border-brand-accent text-brand-accent text-xs py-3 px-4 font-black text-center animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="mb-6 bg-brand-error/10 border-2 border-brand-error text-brand-error text-xs py-3 px-4 font-black text-center animate-in fade-in slide-in-from-top-2 duration-300">
                             {error}
                         </div>
                     )}
