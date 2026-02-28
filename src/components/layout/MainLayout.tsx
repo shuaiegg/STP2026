@@ -56,11 +56,8 @@ const Header: React.FC = () => {
         <header className="sticky top-0 z-50 glass-effect border-b border-brand-border/50">
             <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
                 <div className="flex items-center gap-16">
-                    <Link href="/" className="flex items-center gap-2.5 group">
-                        <div className="w-9 h-9 bg-gradient-brand rounded-xl flex items-center justify-center text-white shadow-lg shadow-brand-primary/20 transition-transform group-hover:rotate-6">
-                            <span className="text-lg font-black font-display tracking-tighter">S</span>
-                        </div>
-                        <span className="text-xl font-bold tracking-tight text-brand-text-primary">ScaletoTop</span>
+                    <Link href="/" className="flex items-center gap-3 group">
+                        <img src="/logo.svg" alt="ScaleToTop Logo" className="h-9 w-auto transition-transform group-hover:scale-105" />
                     </Link>
                     <nav className="hidden md:flex items-center gap-8">
                         <Link href="/" className={getLinkClass('/')}>
@@ -118,10 +115,7 @@ const Footer: React.FC = () => {
                 <div className="flex flex-col md:flex-row justify-between items-start gap-20">
                     <div className="max-w-sm">
                         <div className="flex items-center gap-3 mb-8">
-                            <div className="w-8 h-8 bg-brand-primary/10 rounded-lg flex items-center justify-center text-brand-primary">
-                                <span className="text-sm font-black font-display tracking-tighter">S</span>
-                            </div>
-                            <span className="text-base font-bold tracking-tight text-brand-text-primary">ScaletoTop</span>
+                            <img src="/logo.svg" alt="ScaleToTop Logo" className="h-8 w-auto opacity-80" />
                         </div>
                         <p className="text-brand-text-secondary text-base leading-relaxed mb-8">
                             引领数字营销的工程化革命。通过技术深度驱动持续、可量化的业务增长。
