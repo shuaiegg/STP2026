@@ -211,6 +211,37 @@ export class StellarWriterSkill extends BaseSkill {
             location = 'United States';
         }
 
+        const perf: any = { start: Date.now() };
+        const mode = stellarInput.researchMode || 'generate';
+
+        // 🎯 QUICK EXIT: Audit Mode (No need for heavy intelligence gathering)
+        if (mode === 'audit') {
+            console.log(`🧐 [Audit Mode] Analyzing existing content for "${keywords}"...`);
+            const provider = getProvider(this.preferredProvider);
+            const prompt = StellarWriterSkill.buildStellarPrompt(stellarInput, [], [], [], undefined, []);
+            
+            const { response, cost } = await this.generateWithAI(provider, prompt, {
+                model: this.preferredModel,
+                temperature: 0.3,
+            });
+
+            if (!response || !response.content) {
+                throw new Error('AI Engine returned an empty response during audit');
+            }
+
+            const result = this.parseResponse(response.content, [], [], [], undefined, keywords);
+            return {
+                data: result,
+                metadata: {
+                    modelUsed: response.model,
+                    provider: this.preferredProvider,
+                    tokensUsed: (response.inputTokens || 0) + (response.outputTokens || 0),
+                    cost,
+                    executionTime: Date.now() - perf.start
+                }
+            };
+        }
+
         // Full mock mode - return complete mock data without any API calls
         if (process.env.USE_FULL_MOCK === 'true') {
             console.log(`🎭 FULL MOCK MODE: Generating mock output for "${keywords}"...`);
