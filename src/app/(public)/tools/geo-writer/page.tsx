@@ -81,7 +81,7 @@ export default function GEOWriterPage() {
                         keywords: selectedKeyword || form.keywords,
                         originalContent: generatedContent, // Use the NEWLY generated content
                         auditOnly: true,
-                        researchMode: 'audit' 
+                        researchMode: 'audit'
                     }
                 })
             });
@@ -146,7 +146,7 @@ export default function GEOWriterPage() {
     const handleSaveToLibrary = async () => {
         const fullContent = joinSectionsToMarkdown(contentSections) || finalResult?.content || streamResult.completion;
         if (!fullContent) return toast.error('没有可保存的内容');
-        
+
         setIsSaving(true);
         try {
             const result = await saveTrackedArticle({
@@ -156,7 +156,7 @@ export default function GEOWriterPage() {
                 optimizedContent: fullContent,
                 // We don't have a markdown-to-html converter easily available here, 
                 // but we can pass undefined or the raw markdown if needed
-                contentHtml: undefined 
+                contentHtml: undefined
             });
 
             if (result.success) {
@@ -560,6 +560,9 @@ export default function GEOWriterPage() {
         // setLoading(true);
         setError(null);
         setIsSaved(false);
+        setViewMode('preview'); // Always land on the stream preview, not any previous tab
+        setContentSections([]); // Clear stale sections so live stream lines render immediately
+        setFinalResult(null); // Clear previous result to avoid flashing old content
         // completion reset is handled by useCompletion automatically
 
         try {
@@ -1127,14 +1130,13 @@ export default function GEOWriterPage() {
 
                                 <div className="w-px h-6 bg-slate-200 mx-2 self-center" />
 
-                                <button 
-                                    onClick={handleSaveToLibrary} 
+                                <button
+                                    onClick={handleSaveToLibrary}
                                     disabled={isSaving || isSaved}
-                                    className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase transition-all flex items-center gap-2 border-2 shadow-sm active:scale-95 ${
-                                        isSaved 
-                                        ? 'bg-emerald-50 border-emerald-200 text-emerald-600' 
-                                        : 'bg-brand-primary border-black text-white hover:shadow-none hover:translate-y-[1px]'
-                                    }`}
+                                    className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase transition-all flex items-center gap-2 border-2 shadow-sm active:scale-95 ${isSaved
+                                            ? 'bg-emerald-50 border-emerald-200 text-emerald-600'
+                                            : 'bg-brand-primary border-black text-white hover:shadow-none hover:translate-y-[1px]'
+                                        }`}
                                 >
                                     {isSaving ? <Loader2 size={14} className="animate-spin" /> : isSaved ? <Check size={14} /> : <Database size={14} />}
                                     {isSaving ? '正在保存...' : isSaved ? '已存入库' : '存入我的库'}

@@ -46,7 +46,7 @@ export interface StellarWriterInput extends Omit<SkillInput, 'keywords'> {
     /** Whether to perform deep competitor analysis */
     analyzeCompetitors?: boolean;
     /** Research Mode: 'discovery' (Topics only) | 'deep' (SERP/Competitors) | 'generate' (Full) | 'section_regenerate' */
-    researchMode?: 'discovery' | 'deep_analysis' | 'generate' | 'section_regenerate';
+    researchMode?: 'discovery' | 'deep_analysis' | 'generate' | 'section_regenerate' | 'audit';
     /** For section_regenerate: The heading of the section */
     sectionHeading?: string;
     /** For section_regenerate: The existing content of the section */
@@ -324,67 +324,7 @@ export class StellarWriterSkill extends BaseSkill {
         let topics: any[] = [];
         let competitorSkeletons: ContentSkeleton[] = [];
         let serpAnalysis; // Declare outside for proper scope
-
-        try {
-            // DETECT LANGUAGE & LOCATION
-            const { lang: detectedLang, loc: detectedLoc } = this.detectLanguageAndLocation(keywords);
-            console.log(`🌍 Detected Context: Lang=${detectedLang}, Loc=${detectedLoc} (based on "${keywords}")`);
-
-            // Parallel Execution: Fetch SERP Analysis AND Related Keywords
-            const promises: Promise<any>[] = [];
-
-            // 1. SERP Analysis Task
-            if (!auditOnly || input.researchMode === 'discovery' || input.researchMode === 'deep_analysis') {
-                const searchLocation = (location && location !== 'United States') ? location : this.getLocationNameFromCode(detectedLoc);
-                console.log('🔍 Starting SERP Analysis...', { keywords, location: searchLocation });
-
-                promises.push(
-                    DataForSEOClient.searchGoogleSERP(keywords, searchLocation)
-                        .then(async (results) => {
-                            if (results && results.length > 0) {
-                                const analyzer = new SERPAnalyzer();
-                                serpAnalysis = analyzer.analyzeRawData(results, keywords);
-                                competitorSkeletons = await extractCompetitorSkeletons(results);
-                            }
-                            return results;
-                        })
-                        .catch(err => console.error('SERP Analysis failed:', err))
-                );
-            } else {
-                promises.push(Promise.resolve(null));
-            }
-
-            // 2. Related Keywords Task
-            if (!auditOnly || input.researchMode === 'discovery' || input.researchMode === 'deep_analysis') {
-                console.log('📊 Fetching Related Keywords...');
-                promises.push(
-                    DataForSEOClient.getRelatedTopics(keywords, detectedLoc, detectedLang)
-                        .then(data => { topics = data; return data; })
-                        .catch(err => console.error('Keyword fetch failed:', err))
-                );
-            } else {
-                promises.push(Promise.resolve(null));
-            }
-
-            // 3. Map Entities Task (Optional)
-            if (!auditOnly || input.researchMode === 'deep_analysis') {
-                const searchLocation = (location && location !== 'United States') ? location : this.getLocationNameFromCode(detectedLoc);
-                promises.push(
-                    DataForSEOClient.searchGoogleMaps(keywords, searchLocation)
-                        .then(data => { entities = data; return data; })
-                        .catch(err => console.error('Maps fetch failed:', err))
-                );
-            }
-
-            // Wait for all intelligence gathering to complete
-            await Promise.all(promises);
-
-        } catch (error) {
-            console.error('Intelligence gathering failed:', error);
-            // Continue execution, just without rich data
-        }
-
-
+        let internalContentInventory: any[] = []; // Declare outside for proper scope
 
         // Helper function to check if cached data is fresh (< 1 hour old)
         const isDataFresh = (timestamp: number, maxAgeMinutes: number = 60): boolean => {
@@ -395,8 +335,7 @@ export class StellarWriterSkill extends BaseSkill {
 
         const useCachedData = cachedIntelligence && isDataFresh(cachedIntelligence.timestamp);
 
-        // mode is already defined above (line 215)
-
+        // 🔍 Discovery Mode: Only fetch related topics, return early
         if (mode === 'discovery') {
             console.log(`🔍 [Discovery Mode] Fetching only related topics for "${keywords}"...`);
             const t1 = Date.now();
@@ -418,123 +357,109 @@ export class StellarWriterSkill extends BaseSkill {
                 },
                 metadata: {
                     executionTime: perf.topics,
-                    cost: 0 // Topics API cost is negligible/free usually or we ignore tracking for now
+                    cost: 0
                 }
             };
         }
 
         if (useCachedData) {
-            console.log('♻️  Using cached intelligence data from Step 1 (age: ' +
+            console.log('♻️  Using cached intelligence data (age: ' +
                 Math.round((Date.now() - cachedIntelligence!.timestamp) / 1000 / 60) + ' minutes)');
             entities = cachedIntelligence!.entities || [];
             topics = cachedIntelligence!.topics || [];
             serpAnalysis = cachedIntelligence!.serpAnalysis;
             competitorSkeletons = cachedIntelligence!.competitors || [];
+            internalContentInventory = (cachedIntelligence as any).internalContent || [];
         } else {
-            // Check if we are in 'deep_analysis' mode OR if this is a fresh generation run
-            // If mode is 'deep_analysis', we fetch everything.
-            // If mode is 'generate' but no cache, we fetch everything (fallback).
-
+            // Fresh fetch: all API calls run in parallel via Promise.all
             if (cachedIntelligence && !isDataFresh(cachedIntelligence.timestamp)) {
                 console.log('⚠️  Cached data is stale (> 60 minutes), fetching fresh data');
             } else {
                 console.log('🆕 No cached data available, fetching fresh intelligence');
             }
 
+            const { lang: detectedLang, loc: detectedLoc } = this.detectLanguageAndLocation(keywords);
+            const searchLocation = (location && location !== 'United States') ? location : this.getLocationNameFromCode(detectedLoc);
+            console.log(`🌍 Detected Context: Lang=${detectedLang}, Loc=${detectedLoc} (based on "${keywords}")`);
+
             try {
-                // If we are in deep_analysis, we might NOT need to re-fetch topics if they were passed in?
-                // But typically we just re-fetch or use what we have. 
-                // To keep it simple, we'll fetch everything needed for deep analysis.
+                const tIntel = Date.now();
 
-                // 1. Topics (Optional in deep mode if we trust the user's selection, but good to have context)
-                // We'll skip topics if in deep_analysis to save time, unless we have none.
-                if (mode === 'generate') {
-                    const t1 = Date.now();
-                    console.log(`Step 2: Fetching topics data for ${keywords}...`);
-                    topics = await DataForSEOClient.getRelatedTopics(keywords);
-                    perf.topics = Date.now() - t1;
-                }
+                // 🚀 Parallel fetch: Topics + Maps + SERP + Site search (all concurrent)
+                const siteSearchPromise = (stellarInput.url && stellarInput.url.trim() !== '')
+                    ? (() => {
+                        const domain = stellarInput.url!.replace(/^https?:\/\//, '').replace(/\/$/, '');
+                        console.log(`🔗 [Site Search] Firing in parallel for ${domain}...`);
+                        return DataForSEOClient.searchGoogleSERP(`site:${domain} "${keywords}"`, location, 10)
+                            .catch(err => { console.warn('Site search failed:', err); return []; });
+                    })()
+                    : Promise.resolve([]);
 
-                const t0 = Date.now();
-                console.log(`Step 1: Fetching maps data for ${keywords}...`);
-                entities = await DataForSEOClient.searchGoogleMaps(keywords, location, 5);
-                perf.maps = Date.now() - t0;
+                const [topicsResult, mapsResult, serpResult, siteResult] = await Promise.all([
+                    DataForSEOClient.getRelatedTopics(keywords, detectedLoc, detectedLang)
+                        .catch(err => { console.error('Keyword fetch failed:', err); return []; }),
+                    DataForSEOClient.searchGoogleMaps(keywords, searchLocation, 5)
+                        .catch(err => { console.error('Maps fetch failed:', err); return []; }),
+                    DataForSEOClient.searchGoogleSERP(keywords, searchLocation, 10)
+                        .catch(err => { console.error('SERP fetch failed:', err); return []; }),
+                    siteSearchPromise,
+                ]);
 
-                // SERP Analysis - identify SEO opportunities
-                const t2 = Date.now();
-                console.log(`Step 2.5: Analyzing SERP features for "${keywords}"...`);
-                try {
-                    const analyzer = new SERPAnalyzer();
-                    serpAnalysis = await analyzer.analyzeSERP(keywords, location);
-                    console.log('✅ SERP Analysis completed successfully:', {
-                        hasData: !!serpAnalysis,
-                        featuredSnippet: serpAnalysis.featuredSnippet?.exists,
-                        opportunity: serpAnalysis.featuredSnippet?.opportunity,
-                        paaCount: serpAnalysis.peopleAlsoAsk.length,
-                        recommendationsCount: serpAnalysis.recommendations.length,
-                        features: serpAnalysis.serpFeatures
-                    });
-                } catch (error) {
-                    console.error('❌ SERP analysis failed with error:', error);
-                    serpAnalysis = undefined;
-                }
-                perf.serp = Date.now() - t2;
+                topics = topicsResult || [];
+                entities = mapsResult || [];
+                perf.parallelFetch = Date.now() - tIntel;
+                console.log(`✅ Parallel intelligence fetch completed in ${perf.parallelFetch}ms`);
 
-                if (analyzeCompetitors || mode === 'deep_analysis') {
-                    const t3 = Date.now();
-                    console.log(`🔍 Step 3: Fetching SERP data for competitor analysis...`);
-                    console.log(`   - analyzeCompetitors: ${analyzeCompetitors}`);
-                    console.log(`   - mode: ${mode}`);
-                    const serp = await DataForSEOClient.searchGoogleSERP(keywords, location, 5);
-                    console.log(`   - SERP results count: ${serp.length}`);
-                    const competitorUrls = serp
-                        .filter(item => item.type === 'organic')
-                        .map(item => item.url)
-                        .filter(Boolean);
-                    console.log(`   - Organic URLs found: ${competitorUrls.length}`);
-                    console.log(`   - URLs: ${JSON.stringify(competitorUrls.slice(0, 3))}`);
-
-                    if (competitorUrls.length > 0) {
-                        console.log(`   - Extracting skeletons from top ${Math.min(3, competitorUrls.length)} competitors...`);
-                        competitorSkeletons = await SkeletonExtractor.batchExtract(competitorUrls.slice(0, 3));
-                        console.log(`   ✅ Extracted ${competitorSkeletons.length} competitor skeletons`);
-                    } else {
-                        console.log(`   ⚠️ No organic URLs found in SERP results`);
+                // Reuse SERP results for analysis (no extra API call)
+                // NOTE: searchGoogleSERP returns a flat items[], but analyzeRawData expects { items: any[] }
+                // Wrap the flat array into the shape analyzeRawData expects
+                if (serpResult && serpResult.length > 0) {
+                    try {
+                        const analyzer = new SERPAnalyzer();
+                        serpAnalysis = analyzer.analyzeRawData({ items: serpResult }, keywords);
+                        console.log('✅ SERP Analysis completed:', {
+                            hasData: !!serpAnalysis,
+                            featuredSnippet: serpAnalysis.featuredSnippet?.exists,
+                            paaCount: serpAnalysis.peopleAlsoAsk.length,
+                        });
+                    } catch (error) {
+                        console.error('❌ SERP analysis failed:', error);
+                        serpAnalysis = undefined;
                     }
-                    perf.competitors = Date.now() - t3;
+
+                    // Reuse same SERP results for competitor skeleton extraction (no extra API call)
+                    if (analyzeCompetitors || mode === 'deep_analysis') {
+                        const tComp = Date.now();
+                        const competitorUrls = serpResult
+                            .filter((item: any) => item.type === 'organic')
+                            .map((item: any) => item.url)
+                            .filter(Boolean);
+                        console.log(`🔍 Extracting competitor skeletons from ${competitorUrls.length} organic URLs...`);
+
+                        if (competitorUrls.length > 0) {
+                            competitorSkeletons = await SkeletonExtractor.batchExtract(competitorUrls.slice(0, 3));
+                            console.log(`   ✅ Extracted ${competitorSkeletons.length} competitor skeletons`);
+                        }
+                        perf.competitors = Date.now() - tComp;
+                    }
                 }
-            } catch (e) {
-                console.error('Intelligence phase partial failure', e);
-            }
 
-            // Proceed to Generation Phase to create Master Outline and Strategy
-            console.log('🧠 [Deep Analysis] Proceeding to AI Strategy Generation...');
-        }
-
-        // 6. Internal Content Search (if domain provided)
-        let internalContentInventory: any[] = [];
-        // Check cache first
-        if (cachedIntelligence && (cachedIntelligence as any).internalContent) {
-            internalContentInventory = (cachedIntelligence as any).internalContent;
-        }
-        // Otherwise search if URL provided
-        else if (stellarInput.url && stellarInput.url.trim() !== '') {
-            try {
-                const domain = stellarInput.url.replace(/^https?:\/\//, '').replace(/\/$/, '');
-                console.log(`🔗 [Site Search] Searching internal content for ${domain}...`);
-                const siteQuery = `site:${domain} "${keywords}"`;
-                const siteSerp = await DataForSEOClient.searchGoogleSERP(siteQuery, location, 10);
-                internalContentInventory = siteSerp
-                    .filter(item => item.type === 'organic')
-                    .map(item => ({
+                // Process parallel site search results (internal link inventory)
+                internalContentInventory = (siteResult || [])
+                    .filter((item: any) => item.type === 'organic')
+                    .map((item: any) => ({
                         title: item.title,
                         url: item.url,
                         snippet: item.description
                     }));
-                console.log(`   ✅ Found ${internalContentInventory.length} internal pages`);
-            } catch (err) {
-                console.warn('Site search failed:', err);
+                if (internalContentInventory.length > 0) {
+                    console.log(`   ✅ Found ${internalContentInventory.length} internal pages (parallel)`);
+                }
+            } catch (e) {
+                console.error('Intelligence phase partial failure:', e);
             }
+
+            console.log('🧠 Proceeding to AI Strategy Generation...');
         }
 
         // >>> NEW: Section Regeneration Mode
