@@ -9,6 +9,9 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "ScaletoTop | Digital Marketing Engineering",
   description: "Digital Marketing Engineering Platform",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({
