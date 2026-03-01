@@ -33,7 +33,6 @@ function PostHogPageview() {
 }
 
 export function CSPostHogProvider({ children }: { children: React.ReactNode }) {
-  // Initialize PostHog
   useEffect(() => {
     if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_POSTHOG_KEY) {
       posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
@@ -42,6 +41,12 @@ export function CSPostHogProvider({ children }: { children: React.ReactNode }) {
         capture_pageview: false, // Handled manually
         loaded: (ph) => {
           if (process.env.NODE_ENV === 'development') ph.debug();
+          // TAGGING: Mark every event with environment info
+          const isProd = window.location.hostname === 'www.scaletotop.com' || window.location.hostname === 'scaletotop.com';
+          ph.register({
+            environment: isProd ? 'production' : 'development',
+            host_type: window.location.hostname === 'localhost' ? 'local' : 'remote'
+          });
         },
       });
     }

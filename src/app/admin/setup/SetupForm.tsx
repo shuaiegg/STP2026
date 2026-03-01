@@ -21,13 +21,14 @@ export default function SetupForm() {
         setError("");
 
         try {
+            // @ts-ignore - allow passing role during initial setup
             const { error: authError } = await authClient.signUp.email({
                 email,
                 password,
                 name,
                 // Passing role as part of the signUp. 
                 // Note: Better Auth needs to be configured to accept additional fields.
-                role: "ADMIN" as any,
+                role: "ADMIN",
             });
 
             if (authError) {

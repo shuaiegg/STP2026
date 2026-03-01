@@ -355,6 +355,60 @@ export function evaluateImages(images: any[], keyword: string): ScoreItem {
 }
 
 /**
+ * 计算 GEO (Generative Engine Optimization) 分数
+ * 衡量 AI Answer Engines (Perplexity, SearchGPT) 的友好度
+ */
+export function calculateGEOScore(content: string, entities: string[] = [], topics: string[] = []): ScoreItem {
+    let score = 100;
+    const issues: string[] = [];
+    const suggestions: string[] = [];
+
+    // 1. 实体覆盖率检查 (Entity Coverage)
+    if (entities.length > 0) {
+        const foundEntities = entities.filter(e => content.toLowerCase().includes(e.toLowerCase()));
+        const coverage = (foundEntities.length / Math.min(entities.length, 10)) * 100;
+        if (coverage < 40) {
+            score -= 20;
+            issues.push(`关键实体覆盖不足 (${foundEntities.length}/${entities.length})`);
+            suggestions.push('添加更多行业核心名词、品牌或特定专业术语');
+        }
+    } else {
+        score -= 5; // 缺乏外部实体参考
+    }
+
+    // 2. 引言与数据检查 (Citations & Data)
+    const hasData = /\d+%|\d+\s?million|\d+\s?k/i.test(content);
+    if (!hasData) {
+        score -= 15;
+        issues.push('缺乏具体数据支持');
+        suggestions.push('添加统计数据、百分比或具体的行业数字以提升权威感');
+    }
+
+    // 3. 结构化程度 (Bullet points / Tables for AI ingestion)
+    const hasLists = content.includes('- ') || content.includes('* ');
+    const hasTables = content.includes('|');
+    if (!hasLists || !hasTables) {
+        score -= 10;
+        suggestions.push('使用表格或列表，这有助于 AI 提取核心信息');
+    }
+
+    // 4. 信息增益 (Information Gain - 简单判定)
+    if (content.length < 1500) {
+        score -= 10;
+        issues.push('内容篇幅可能不足以提供高信息增益');
+    }
+
+    return {
+        score: Math.max(0, score),
+        weight: 1,
+        status: score >= 85 ? 'excellent' : score >= 65 ? 'good' : score >= 45 ? 'needs-improvement' : 'critical',
+        issues,
+        suggestions,
+        metrics: { entitiesFound: entities.length, hasData }
+    };
+}
+
+/**
  * 计算详细的SEO评分
  */
 export function calculateDetailedSEOScore(

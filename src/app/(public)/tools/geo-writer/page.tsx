@@ -49,6 +49,10 @@ export default function GEOWriterPage() {
     const [showHistory, setShowHistory] = useState(false);
     const [isLoadingMetadata, setIsLoadingMetadata] = useState(false);
 
+    // Refs for UX enhancements
+    const researchPanelRef = React.useRef<HTMLDivElement>(null);
+    const resultPanelRef = React.useRef<HTMLDivElement>(null);
+
     // NEW Phase 2 states
     const [viewMode, setViewMode] = useState<'preview' | 'markdown' | 'schema' | 'article' | 'distribution'>('preview');
     const [showOriginal, setShowOriginal] = useState(false);
@@ -71,34 +75,32 @@ export default function GEOWriterPage() {
         setIsLoadingMetadata(true);
         try {
             console.log('🔍 Extracting real metadata from generated content...');
-            const response = await fetch('/api/skills/execute', {
+            const response = await fetch('/api/generate-enrich', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    skillName: 'stellar-writer',
-                    input: {
-                        ...form,
-                        keywords: selectedKeyword || form.keywords,
-                        originalContent: generatedContent, // Use the NEWLY generated content
-                        auditOnly: true,
-                        researchMode: 'audit'
-                    }
+                    content: generatedContent,
+                    title: finalResult?.seoMetadata?.title || selectedKeyword || form.keywords,
+                    description: finalResult?.seoMetadata?.description || '',
+                    keyword: selectedKeyword || form.keywords,
+                    entities: cachedIntelligence?.entities || [],
+                    relatedTopics: researchData?.map((t: any) => t.keyword) || []
                 })
             });
 
             const data = await response.json();
-            if (data.success && data.output?.data) {
-                const meta = data.output.data;
+            if (data && !data.error) {
                 setFinalResult((prev: any) => ({
                     ...prev,
-                    seoMetadata: meta.seoMetadata || prev.seoMetadata,
-                    schema: meta.schema?.article || prev.schema,
-                    internalLinks: meta.internalLinks || prev.internalLinks,
-                    imageSuggestions: meta.imageSuggestions || prev.imageSuggestions,
+                    schema: data.schema || prev?.schema,
+                    internalLinks: data.internalLinks?.map((l: any) => l.url) || prev?.internalLinks,
+                    social: data.social,
+                    detailedSEOScore: data.breakdown,
                     scores: {
-                        ...prev.scores,
-                        geo: meta.scores?.geo || prev.scores.geo,
-                        seo: meta.scores?.seo || prev.scores.seo
+                        ...prev?.scores,
+                        geo: data.scores?.geo || prev?.scores?.geo,
+                        seo: data.scores?.seo || prev?.scores?.seo,
+                        human: data.scores?.human || prev?.scores?.human
                     }
                 }));
                 console.log('✅ Real metadata injected.');
@@ -109,6 +111,7 @@ export default function GEOWriterPage() {
             setIsLoadingMetadata(false);
         }
     };
+
 
     // Automatically parse content into sections when finalResult is updated
     useEffect(() => {
@@ -342,11 +345,23 @@ export default function GEOWriterPage() {
     // 1. DISCOVERY PHASE (Step 1 Input -> Step 1 Results)
     const handleDiscovery = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        if (!form.keywords || form.keywords.trim() === '') {
+            toast.error('请输入核心关键词');
+            return;
+        }
+
         setLoading(true);
+
         setError(null);
         setResearchData(null);
         setAuditResult(null); // Clear previous deep analysis
         setEditableOutline([]); // Clear previous outline
+
+        // UX: Scroll to research panel on mobile/desktop
+        setTimeout(() => {
+            researchPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
 
         try {
             // Check if we should use Mock or Real
@@ -687,10 +702,13 @@ export default function GEOWriterPage() {
                                 <Button
                                     disabled={loading}
                                     type="submit"
-                                    className="w-full py-8 text-lg bg-brand-primary text-white border-b-4 border-black hover:translate-y-[2px] hover:border-b-0 transition-all font-black uppercase tracking-widest shadow-[8px_8px_0_0_rgba(0,0,0,1)] hover:shadow-none"
+                                    className="w-full py-8 text-lg bg-brand-primary text-white border-b-4 border-black hover:translate-y-[2px] hover:border-b-0 transition-all font-black uppercase tracking-widest shadow-[8px_8px_0_0_rgba(0,0,0,1)] hover:shadow-none disabled:opacity-50 disabled:shadow-none"
                                 >
-                                    {loading ? <><Loader2 className="animate-spin mr-2" /> 正在分析全网数据...</> : "开启分析与诊断"}
+                                    {loading ? <><Loader2 className="animate-spin mr-2" /> 正在执行全网调研...</> : "开始市场研究"}
                                 </Button>
+
+
+
                             </form>
                         </div>
                     )}
@@ -846,7 +864,7 @@ export default function GEOWriterPage() {
                 </div>
 
                 {/* Right Side: Display Area */}
-                <div className="lg:col-span-8">
+                <div className="lg:col-span-8" ref={researchPanelRef}>
                     {/* Only show Big Loader for Step 1 Research */}
                     {loading && step === 1 && !finalResult && (
                         <div className="flex flex-col items-center justify-center h-full min-h-[600px] text-center space-y-8 animate-pulse bg-brand-surface/20 rounded-3xl border-2 border-dashed border-brand-border">

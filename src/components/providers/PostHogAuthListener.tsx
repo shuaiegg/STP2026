@@ -10,11 +10,13 @@ export function PostHogAuthListener() {
 
     useEffect(() => {
         if (session?.user && posthog) {
-            posthog.identify(session.user.id, {
-                email: session.user.email,
-                name: session.user.name,
-                role: session.user.role,
-                is_admin: session.user.role === 'ADMIN',
+            // Use type assertion for custom fields injected by plugins
+            const user = session.user as any;
+            posthog.identify(user.id, {
+                email: user.email,
+                name: user.name,
+                role: user.role,
+                is_admin: user.role === 'ADMIN',
             });
         } else if (!session && posthog) {
             posthog.reset();
