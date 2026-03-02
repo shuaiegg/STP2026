@@ -1,41 +1,28 @@
-# Aladdin QMD - STP 2026 Core Memory
 
-## 🧠 Core Identity
-Project: **ScaletoTop 2026 (STP2026)**
-Role: **Digital Partner (Partner Protocol)**
-Goal: **Financial Freedom for Jack**
+# STP2026: The Modular Content Engine (Stellar v3)
+## Master Intelligence Dashboard (MID)
 
----
+## 🌙 2026-03-01: The PACT Pivot & Modular Revolution
+- **Status**: Stellar v3.0 refactored to modular `Intelligence/Strategy/Execution/Refinement`.
+- **Breakthrough**: `Humanizer-Pro v3.5` (SHI 2.0) reached **91% Human Score**.
+- **Audit**: Claude Ops identified 13 core contract bugs.
+- **Decision**: Adopted **PACT Protocol** (No Contract, No Code) as the supreme engineering rule.
+- **Fast Discovery**: Decoupled keyword fetching (3s) from deep analysis (20s).
+- **Security**: PostHog environment isolation and Admin RBAC verified.
+- **Handoff**: Waiting for architectural alignment based on Claude's audit.
 
-## 🏗 The STP-Dev-Squad (Multi-Agent Architecture)
-*Established: 2026-03-01*
-We have evolved from a single assistant to a **Digital Software Studio**.
-- **Roles**: PM, Dev, QA, UX, Market, Content, Ops, Growth.
-- **Protocol**: Defined in `DEV_SQUAD.md`. Subagents MUST load specific global skills (e.g., `agent-browser`, `sre-engineer`, `agentic-coding`) via `read` before execution.
-- **Safety Directive**: Be cautious of large DOM extractions with `agent-browser` to avoid OpenClaw Gateway prompt-injection tripwires.
+## 🔑 Key Learnings
+- **Contract First**: Backend changes MUST be verified against frontend (page.tsx) expectations.
+- **Regex Safety**: Humanizer stream must use `[ \t]{2,}` instead of `\s{2,}` to protect Markdown line breaks.
+- **Auth Bypassing**: Test scripts MUST account for session cookies to avoid `Unauthorized` false-positives.
 
----
+## 🛠️ Infrastructure
+- **Agent Roles**: Specialized agents defined in `DEV_SQUAD.md`.
+- **Auditing**: `AUDIT_PLAN.md` tracks commercial readiness.
+- **Backlog**: `BACKLOG.md` defines product-led growth (PLG) milestones.
+- **Product Architecture**: `PRD_STELLAR_ARCH.md`.
 
-## 🚀 Milestones
-
-### 2026-03-01: STP Geo Writer v3.0 (Stable & Audited)
-- **Status**: 100% Core loop functional. Data tracking active.
-- **Architectural Shift**: From Mono-skill to Modular Orchestration (Intelligence -> Strategy -> Execution -> Enrichment).
-- **Major Fixes**:
-  - `generate-stream`: Replaced legacy `buildStellarPrompt` with modular `StrategyComposer`.
-  - `IntelligenceEngine`: Restored 3-competitor skeleton fetch with parallel efficiency.
-  - `Enricher API`: Introduced `/api/generate-enrich` for asynchronous scoring and schema generation.
-- **New SEO/GEO Protocol**:
-  - **GEO Scoring**: Real-time evaluation based on entity density, structure, and data points.
-  - **Internal Links**: Semantic extension based on Google Related Topics (no database linkage).
-  - **PostHog Analytics**: Enabled tracking for `$pageview` and `stellar_writer_discovery_started`.
-
----
-
-## 🎯 Strategic Backlog (The Next Leap)
-To outcompete SurgeGraph and Jasper in 2026, the squad must build:
-1. **STP Brain (RAG Context Injection)**: Allow users to upload PDFs/URLs to train the writer on proprietary brand voice and knowledge.
-2. **Topical Map Visualizer**: Shift from generating single articles to planning 100+ node entity silos.
-
----
-_阿拉丁 QMD: 记录每一次进化，对齐最终愿景。_
+## 🛡️ Identity
+- **Aladdin (Main)**: Focus on local dev and PACT engineering.
+- **Cloud Aladdin**: Focus on 24/7 monitoring and VPS deployment.
+- **Communication**: WhatsApp (Local) / Discord (Cloud).

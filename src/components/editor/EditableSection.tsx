@@ -51,7 +51,7 @@ export function EditableSection({ section, onSave, onRegenerate, className = "" 
     };
 
     const handleCopy = () => {
-        const textToCopy = section.heading === 'Intro'
+        const textToCopy = section.heading === '__intro__'
             ? section.body
             : `## ${section.heading}\n\n${section.body}`;
 
@@ -74,7 +74,7 @@ export function EditableSection({ section, onSave, onRegenerate, className = "" 
     };
 
     // If it's the specific "Intro" section, we might style it differently or just generic
-    const isIntro = section.heading === 'Intro';
+    const isIntro = section.heading === '__intro__';
 
     return (
         <div className={`group relative rounded-2xl transition-all duration-300 ${isEditing || isRegenOpen
@@ -91,9 +91,11 @@ export function EditableSection({ section, onSave, onRegenerate, className = "" 
                             H2
                         </span>
                     )}
-                    <h3 className={`font-black text-slate-800 ${isIntro ? 'text-lg italic text-slate-400' : 'text-xl'}`}>
-                        {section.heading === 'Intro' ? 'Introduction' : section.heading}
-                    </h3>
+                    {!isIntro && (
+                        <h3 className="font-black text-slate-800 text-xl">
+                            {section.heading}
+                        </h3>
+                    )}
                 </div>
 
                 <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">

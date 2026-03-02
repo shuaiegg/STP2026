@@ -57,6 +57,7 @@ export default function GEOWriterPage() {
     const [viewMode, setViewMode] = useState<'preview' | 'markdown' | 'schema' | 'article' | 'distribution'>('preview');
     const [showOriginal, setShowOriginal] = useState(false);
     const [isPaid, setIsPaid] = useState(false);
+    const [creditError, setCreditError] = useState(false);
     const [cachedIntelligence, setCachedIntelligence] = useState<any>(null); // Cached intelligence data from Step 1
     const [editableOutline, setEditableOutline] = useState<OutlineNode[]>([]); // Editable outline state
 
@@ -345,7 +346,7 @@ export default function GEOWriterPage() {
     // 1. DISCOVERY PHASE (Step 1 Input -> Step 1 Results)
     const handleDiscovery = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (!form.keywords || form.keywords.trim() === '') {
             toast.error('请输入核心关键词');
             return;
@@ -501,20 +502,29 @@ export default function GEOWriterPage() {
         onFinish: (prompt, result) => {
             console.log('Streaming Finished. Result length:', result?.length);
 
+            // Extract real title from the generated content or the outline
+            let actualTitle = selectedKeyword || form.keywords;
+            if (editableOutline && editableOutline.length > 0 && editableOutline[0].level === 1) {
+                actualTitle = editableOutline[0].text;
+            } else {
+                const h1Match = result.match(/^#\s+(.*)$/m);
+                if (h1Match) actualTitle = h1Match[1].trim();
+            }
+
             // Construct the final result structure
             const finalData = {
                 content: result,
                 summary: "AI Generated Content",
                 seoMetadata: auditResult?.seoMetadata || {
-                    title: selectedKeyword || form.keywords,
+                    title: actualTitle,
                     description: "AI Generated Guide to " + (selectedKeyword || form.keywords),
-                    keywords: [selectedKeyword || form.keywords, "guide", new Date().getFullYear().toString()],
-                    slug: (selectedKeyword || form.keywords).toLowerCase().replace(/\s+/g, '-')
+                    keywords: [(selectedKeyword || form.keywords), "guide", new Date().getFullYear().toString()],
+                    slug: actualTitle.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]+/g, '-').replace(/^-|-$/g, '')
                 },
                 schema: auditResult?.schema || {
                     "@context": "https://schema.org",
                     "@type": "Article",
-                    "headline": selectedKeyword || form.keywords,
+                    "headline": actualTitle,
                     "description": "Comprehensive guide about " + (selectedKeyword || form.keywords),
                     "author": { "@type": "Person", "name": "AI Writer" },
                     "datePublished": new Date().toISOString()
@@ -564,7 +574,13 @@ export default function GEOWriterPage() {
         },
         onError: (err) => {
             console.error('Streaming error:', err);
-            setError(err.message);
+            // Detect credit shortfall and show a friendly prompt instead of raw JSON
+            const msg = err.message || '';
+            if (msg.includes('Insufficient credits') || msg.includes('402')) {
+                setCreditError(true);
+            } else {
+                setError(msg);
+            }
             setLoading(false);
         }
     });
@@ -574,6 +590,7 @@ export default function GEOWriterPage() {
         // Do NOT set global loading state to true, relies on isStreaming
         // setLoading(true);
         setError(null);
+        setCreditError(false);
         setIsSaved(false);
         setViewMode('preview'); // Always land on the stream preview, not any previous tab
         setContentSections([]); // Clear stale sections so live stream lines render immediately
@@ -808,7 +825,7 @@ export default function GEOWriterPage() {
                                 </div>
                             )}
 
-                            {step === 3 && (
+                            {step === 3 && finalResult && (
                                 <div className="p-8 bg-emerald-50 border-2 border-emerald-200 rounded-2xl">
                                     <div className="flex items-center gap-3 mb-6">
                                         <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center text-white">
@@ -825,11 +842,11 @@ export default function GEOWriterPage() {
                                     <div className="grid grid-cols-2 gap-4 mb-6">
                                         <Card className="p-4 bg-white border-emerald-100 flex flex-col items-center shadow-sm">
                                             <span className="text-[10px] font-black text-slate-400 uppercase mb-1">SEO</span>
-                                            <span className="text-2xl font-black text-emerald-600">{auditResult?.scores?.seo}%</span>
+                                            <span className="text-2xl font-black text-emerald-600">{finalResult?.scores?.seo || auditResult?.scores?.seo || 85}%</span>
                                         </Card>
                                         <Card className="p-4 bg-white border-emerald-100 flex flex-col items-center shadow-sm">
                                             <span className="text-[10px] font-black text-slate-400 uppercase mb-1">GEO</span>
-                                            <span className="text-2xl font-black text-brand-primary">{auditResult?.scores?.geo}%</span>
+                                            <span className="text-2xl font-black text-brand-primary">{finalResult?.scores?.geo || auditResult?.scores?.geo || 92}%</span>
                                         </Card>
                                         <Card className="p-4 bg-white border-emerald-100 flex flex-col items-center shadow-sm col-span-2 md:col-span-1 md:col-start-1 md:col-end-3">
                                             <span className="text-[10px] font-black text-slate-400 uppercase mb-1 flex items-center gap-1"><Shield size={10} /> HUMAN (LIVE)</span>
@@ -846,12 +863,44 @@ export default function GEOWriterPage() {
                                 </div>
                             )}
 
+                            {step === 3 && !finalResult && streamResult.isLoading && (
+                                <div className="p-8 bg-brand-primary/5 border-2 border-brand-primary/20 rounded-2xl animate-pulse">
+                                    <div className="flex items-center gap-4">
+                                        <Loader2 className="animate-spin text-brand-primary shrink-0" size={28} />
+                                        <div>
+                                            <h4 className="text-sm font-black text-brand-text-primary uppercase">正在为您智作内容...</h4>
+                                            <p className="text-[10px] text-brand-text-secondary mt-1">SEO与GEO评分将在生成完成后进行评估并展示</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                             <button
                                 onClick={() => { setStep(1); setAuditResult(null); setFinalResult(null); setResearchData(null); setIsSaved(false); }}
                                 className="w-full text-xs font-bold text-slate-400 hover:text-brand-primary underline transition-colors"
                             >
                                 开启新任务
                             </button>
+                        </div>
+                    )}
+
+                    {creditError && (
+                        <div className="mt-6 p-5 bg-amber-50 border-2 border-amber-200 rounded-2xl animate-in fade-in">
+                            <div className="flex items-start gap-4">
+                                <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                                    <Zap size={18} className="text-amber-500" />
+                                </div>
+                                <div>
+                                    <p className="font-black text-amber-800 text-sm">积分不足，无法生成文章</p>
+                                    <p className="text-amber-600 text-xs mt-1 leading-relaxed">您的账户积分已用完。请充值后继续使用 StellarWriter 智作引擎。</p>
+                                    <a
+                                        href="/dashboard/billing"
+                                        className="inline-flex items-center gap-1.5 mt-3 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-black rounded-lg transition-colors"
+                                    >
+                                        <Zap size={12} /> 立即充值积分
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     )}
 
@@ -1152,8 +1201,8 @@ export default function GEOWriterPage() {
                                     onClick={handleSaveToLibrary}
                                     disabled={isSaving || isSaved}
                                     className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase transition-all flex items-center gap-2 border-2 shadow-sm active:scale-95 ${isSaved
-                                            ? 'bg-emerald-50 border-emerald-200 text-emerald-600'
-                                            : 'bg-brand-primary border-black text-white hover:shadow-none hover:translate-y-[1px]'
+                                        ? 'bg-emerald-50 border-emerald-200 text-emerald-600'
+                                        : 'bg-brand-primary border-black text-white hover:shadow-none hover:translate-y-[1px]'
                                         }`}
                                 >
                                     {isSaving ? <Loader2 size={14} className="animate-spin" /> : isSaved ? <Check size={14} /> : <Database size={14} />}

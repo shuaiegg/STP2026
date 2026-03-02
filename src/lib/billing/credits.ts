@@ -88,6 +88,9 @@ export async function chargeUser(
                 remainingCredits: updatedUser.credits,
                 transactionId: transaction.id
             };
+        }, {
+            maxWait: 10000,
+            timeout: 15000,
         });
     } catch (error: any) {
 

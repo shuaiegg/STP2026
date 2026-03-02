@@ -1,5 +1,5 @@
 
-import { humanizeContent } from '@/lib/utils/humanize';
+// humanizeContent removed — unused and not exported from humanize.ts
 import { detectAIPatterns, calculateHumanScore } from '@/lib/utils/ai-detection';
 import { calculateDetailedSEOScore } from '@/lib/utils/seo-scoring';
 import { GenerationAsset } from './types';
@@ -13,11 +13,11 @@ export class RefiningStudio {
 
         let currentContent = asset.content;
         let currentScore = calculateHumanScore(currentContent);
-        
+
         // 1. Humanize Loop (Limit to 1 pass for baseline)
         if (currentScore < 60) {
             console.log(`   ⚠️ Score too low (${currentScore.toFixed(1)}). Triggering Aggressive Editor...`);
-            
+
             const bleedPrompt = `You are an aggressive "Humanizer" editor. 
             Rewrite the following text to be 100% human-sounding. 
             Vary sentence length, use contractions, and remove AI tropes.

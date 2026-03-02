@@ -24,7 +24,7 @@ export function parseMarkdownToSections(markdown: string): ContentSection[] {
     const sections: ContentSection[] = [];
 
     let currentId = crypto.randomUUID();
-    let currentHeading = "Intro";
+    let currentHeading = "__intro__";
     let currentBuffer: string[] = [];
 
     // Check if the first line is NOT a heading (e.g. Intro text)
@@ -38,12 +38,12 @@ export function parseMarkdownToSections(markdown: string): ContentSection[] {
         // Found a new H2 heading
         if (line.startsWith('## ') && !line.startsWith('### ')) {
             // Push previous section if it has content
-            if (currentBuffer.length > 0 || currentHeading !== "Intro") {
+            if (currentBuffer.length > 0 || currentHeading !== "__intro__") {
                 sections.push({
                     id: currentId,
                     heading: currentHeading,
                     body: currentBuffer.join('\n').trim(),
-                    fullText: (currentHeading === "Intro" ? "" : `## ${currentHeading}\n\n`) + currentBuffer.join('\n').trim()
+                    fullText: (currentHeading === "__intro__" ? "" : `## ${currentHeading}\n\n`) + currentBuffer.join('\n').trim()
                 });
             }
 
@@ -57,12 +57,12 @@ export function parseMarkdownToSections(markdown: string): ContentSection[] {
     }
 
     // Push the final section
-    if (currentBuffer.length > 0 || currentHeading !== "Intro") {
+    if (currentBuffer.length > 0 || currentHeading !== "__intro__") {
         sections.push({
             id: currentId,
             heading: currentHeading,
             body: currentBuffer.join('\n').trim(),
-            fullText: (currentHeading === "Intro" ? "" : `## ${currentHeading}\n\n`) + currentBuffer.join('\n').trim()
+            fullText: (currentHeading === "__intro__" ? "" : `## ${currentHeading}\n\n`) + currentBuffer.join('\n').trim()
         });
     }
 

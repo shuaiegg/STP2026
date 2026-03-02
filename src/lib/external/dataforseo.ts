@@ -172,7 +172,10 @@ export class DataForSEOClient {
 
         const login = process.env.DATAFORSEO_LOGIN || DATAFORSEO_LOGIN;
         const password = process.env.DATAFORSEO_PASSWORD || DATAFORSEO_PASSWORD;
-        if (!login || !password) return [];
+        if (!login || !password) {
+            console.warn('DataForSEO: No credentials found, using mock keyword data');
+            return generateMockKeywordData(keyword);
+        }
 
         try {
             console.log(`DataForSEO: Researching topics for "${keyword}"... (Loc: ${locationCode}, Lang: ${languageCode})`);

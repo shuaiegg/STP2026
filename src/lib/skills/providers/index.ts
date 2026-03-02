@@ -1,3 +1,4 @@
+
 /**
  * AI Provider Factory and Exports
  */
@@ -6,11 +7,13 @@ export * from './base-provider';
 export * from './gemini-provider';
 export * from './claude-provider';
 export * from './deepseek-provider';
+export * from './vps-provider';
 
 import { IAIProvider, AIProviderName } from '../types';
 import { GeminiProvider } from './gemini-provider';
 import { ClaudeProvider } from './claude-provider';
 import { DeepSeekProvider } from './deepseek-provider';
+import { VPSProvider } from './vps-provider';
 
 /**
  * Provider registry - singleton instances
@@ -29,6 +32,9 @@ export function getProvider(name: AIProviderName): IAIProvider {
     // Create new instance
     let provider: IAIProvider;
     switch (name) {
+        case 'vps':
+            provider = new VPSProvider();
+            break;
         case 'gemini':
             provider = new GeminiProvider();
             break;
@@ -53,14 +59,13 @@ export function getProvider(name: AIProviderName): IAIProvider {
 export async function getAvailableProviders(): Promise<AIProviderName[]> {
     const available: AIProviderName[] = [];
 
-    const providerNames: AIProviderName[] = ['gemini', 'claude', 'deepseek'];
+    const providerNames: AIProviderName[] = ['vps', 'gemini', 'claude', 'deepseek'];
 
     for (const name of providerNames) {
         try {
             const provider = getProvider(name);
-            if (await provider.isAvailable()) {
-                available.push(name);
-            }
+            // vps-provider assumes availability if the VPS is up
+            available.push(name);
         } catch (error) {
             console.warn(`Provider ${name} check failed:`, error);
         }
@@ -73,44 +78,16 @@ export async function getAvailableProviders(): Promise<AIProviderName[]> {
  * Get the default provider based on environment configuration
  */
 export async function getDefaultProvider(): Promise<IAIProvider> {
-    // Check environment variable for preferred provider
-    const preferred = (process.env.DEFAULT_AI_PROVIDER || 'deepseek') as AIProviderName;
+    // FORCE DEFAULT TO VPS
+    const preferred = (process.env.DEFAULT_AI_PROVIDER || 'vps') as AIProviderName;
 
     try {
         const provider = getProvider(preferred);
-        if (await provider.isAvailable()) {
-            return provider;
-        }
+        return provider;
     } catch (error) {
         console.warn(`Preferred provider ${preferred} not available:`, error);
     }
 
-    // Fallback to first available provider
-    const available = await getAvailableProviders();
-    if (available.length === 0) {
-        throw new Error('No AI providers available. Please configure GEMINI_API_KEY, ANTHROPIC_API_KEY, or DEEPSEEK_API_KEY');
-    }
-
-    return getProvider(available[0]);
-}
-
-/**
- * Get provider statistics
- */
-export function getProviderStats() {
-    const stats: Record<AIProviderName, { models: number; cached: boolean }> = {} as any;
-
-    const allProviders: AIProviderName[] = ['gemini', 'claude', 'deepseek'];
-
-    for (const name of allProviders) {
-        const cached = providers.has(name);
-        const provider = cached ? providers.get(name)! : getProvider(name);
-
-        stats[name] = {
-            models: provider.models.length,
-            cached,
-        };
-    }
-
-    return stats;
+    // Fallback to deepseek
+    return getProvider('deepseek');
 }

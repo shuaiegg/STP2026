@@ -25,7 +25,7 @@ function getSkillCost(skillName: string, input?: any): number {
         }
         return TOOL_COSTS.GEO_WRITER_FULL;
     }
-    
+
     return 10; // Default cost
 }
 
@@ -94,13 +94,13 @@ export async function POST(request: NextRequest) {
             select: { input: true }
         });
 
-        const isRepeat = executions.some(exe => 
-            (exe.input as any)?.keywords === (input as any).keywords && 
+        const isRepeat = executions.some(exe =>
+            (exe.input as any)?.keywords === (input as any).keywords &&
             !(input as any).auditOnly
         );
 
         const cost = isRepeat ? 0 : getSkillCost(skillName, input);
-        
+
         if (user.credits < cost) {
             return NextResponse.json(
                 { error: `Insufficient credits. This tool requires ${cost} credits, but you have ${user.credits}.` },
@@ -156,6 +156,9 @@ export async function POST(request: NextRequest) {
             });
 
             return { updatedUser, execution };
+        }, {
+            maxWait: 10000,  // max time to wait for a connection (10s)
+            timeout: 15000,  // max time for the transaction to complete (15s)
         });
 
         return NextResponse.json({

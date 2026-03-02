@@ -387,9 +387,12 @@ export function calculateGEOScore(content: string, entities: string[] = [], topi
     // 3. 结构化程度 (Bullet points / Tables for AI ingestion)
     const hasLists = content.includes('- ') || content.includes('* ');
     const hasTables = content.includes('|');
-    if (!hasLists || !hasTables) {
-        score -= 10;
-        suggestions.push('使用表格或列表，这有助于 AI 提取核心信息');
+    if (!hasLists && !hasTables) {
+        score -= 15;
+        suggestions.push('使用列表或表格，这有助于 AI 提取核心信息');
+    } else if (!hasTables) {
+        score -= 3;
+        suggestions.push('考虑添加比较表格，进一步提升 AI 引用友好度');
     }
 
     // 4. 信息增益 (Information Gain - 简单判定)
