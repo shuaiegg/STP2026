@@ -65,13 +65,15 @@ Your writing must be human, authoritative, and perfectly structured for both sea
 
 ${personalizationCtx}
 
-STRICT WRITING PROTOCOL (FOR EVERY SECTION):
-1. **NO INTRODUCTORY FLUFF**: Start answering immediately. Zero background setup. Zero transitional phrases (e.g., "In this section, we will discuss", "As mentioned above", "In conclusion").
-2. **HIGH INFORMATION DENSITY**: Every sentence must contain a hard fact, expert insight, specific example, or data point. If a sentence doesn't add a new fact, delete it.
-3. **DIRECT ANSWERS (GEO)**: If the section heading is a question, the FIRST sentence MUST be a bolded, direct answer (40-60 words max).
-4. **NATURAL READABILITY**: Balance your use of paragraphs and lists. Do NOT use bullet points for everything. Write flowing, cohesive paragraphs (3-4 sentences each) that build logical arguments.
-5. **FORMATTING DENSITY**: Use bolding sparingly for core concepts, but avoid overwhelming the user with overly fragmented lists or tables unless strictly necessary for data comparison.
-6. **E-E-A-T SIGNALS**: Show deep expertise and use authoritative phrasing. Include a > blockquote to highlight an "Expert Insight" if highly relevant.`;
+STRICT WRITING PROTOCOL (V5 HIGH-STANDARD):
+1. **NO INTRODUCTORY FLUFF**: Start answering immediately. Zero background setup. Zero transitional phrases (e.g., "In this section, we will discuss", "As mentioned above").
+2. **HIGH INFORMATION DENSITY & ENTITIES**: Every sentence must contain a hard fact or specific entity. Weave in the provided real-world entities naturally to provide authority.
+3. **DIRECT ANSWERS (GEO)**: If the section heading is a question, the FIRST sentence MUST be a bolded, direct answer (40-60 words max). This is critical for AI snippet extraction.
+4. **DYNAMIC BURSTINESS (HUMAN)**: Vary sentence length and complexity intentionally. Mix punchy short sentences with sophisticated, multi-clause explanations. 
+5. **OPNER VARIETY**: Ensure consecutive sentences NEVER start with the same word or phrase.
+6. **OBJECTIVE ANALYTICAL TONE**: Avoid promotional marketing adverbs (e.g., "truly", "absolutely", "revolutionary", "best"). Use neutral, fact-driven language.
+7. **STRUCTURAL RICHNESS**: Include at least one Markdown Comparison Table for data/concept breakdown. Use bullet lists only for discrete items.
+8. **E-E-A-T SIGNALS**: Use specialized industry terminology and authoritative phrasing. Use a > blockquote to highlight a specific "Expert Insight" or data point.`;
 
         const competitorOutlines = competitors
             .map(c => `### Competitor: ${c.title}\n${c.headings.map((h: any) => `- ${h.text}`).join('\n')}`)

@@ -183,7 +183,8 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * Get execution status (for future async execution support)
+ * Get execution status
+ * GET /api/skills/execute?executionId=xxx
  */
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
@@ -196,10 +197,38 @@ export async function GET(request: NextRequest) {
         );
     }
 
-    // TODO: Implement execution status check from database
-    return NextResponse.json({
-        executionId,
-        status: 'completed',
-        message: 'Status checking not yet implemented',
-    });
+    try {
+        const execution = await prisma.skillExecution.findUnique({
+            where: { id: executionId },
+            select: {
+                id: true,
+                status: true,
+                metadata: true,
+                errorMessage: true,
+                createdAt: true
+            }
+        });
+
+        if (!execution) {
+            return NextResponse.json(
+                { error: 'Execution not found' },
+                { status: 404 }
+            );
+        }
+
+        return NextResponse.json({
+            success: true,
+            executionId: execution.id,
+            status: execution.status,
+            metadata: execution.metadata,
+            errorMessage: execution.errorMessage,
+            createdAt: execution.createdAt
+        });
+    } catch (error) {
+        console.error('Error fetching execution status:', error);
+        return NextResponse.json(
+            { error: 'Failed to fetch status' },
+            { status: 500 }
+        );
+    }
 }

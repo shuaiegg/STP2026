@@ -74,7 +74,7 @@ export function evaluateTitle(title: string, keyword: string): ScoreItem {
         status: score >= 90 ? 'excellent' : score >= 70 ? 'good' : score >= 50 ? 'needs-improvement' : 'critical',
         issues,
         suggestions,
-        metrics: { length, keywordPosition: keywordIndex }
+        metrics: { length, keywordPosition: keywordIndex, text: title }
     };
 }
 
@@ -117,7 +117,7 @@ export function evaluateDescription(description: string, keyword: string): Score
         status: score >= 85 ? 'excellent' : score >= 65 ? 'good' : score >= 45 ? 'needs-improvement' : 'critical',
         issues,
         suggestions,
-        metrics: { length }
+        metrics: { length, text: description }
     };
 }
 
@@ -134,46 +134,92 @@ function countSyllables(word: string): number {
 }
 
 /**
+ * 语言检测 (简单判断是否包含大量中文字符)
+ */
+function isChineseContent(content: string): boolean {
+    const chineseChars = content.match(/[\u4e00-\u9fa5]/g);
+    if (!chineseChars) return false;
+    // 如果中文字符占总字符数超过10%，则认为是中文内容
+    return (chineseChars.length / content.length) > 0.1;
+}
+
+/**
  * 评估可读性
  */
 export function evaluateReadability(content: string): ScoreItem {
-    const sentences = content.split(/[.!?]+/).filter(s => s.trim());
-    const words = content.split(/\s+/).filter(w => w.trim());
-    const syllables = words.reduce((sum, word) => sum + countSyllables(word), 0);
-
-    // Flesch Reading Ease公式
-    const avgSentenceLength = words.length / sentences.length;
-    const avgSyllablesPerWord = syllables / words.length;
-    const fleschScore = 206.835 - 1.015 * avgSentenceLength - 84.6 * avgSyllablesPerWord;
-
     const issues: string[] = [];
     const suggestions: string[] = [];
     let score = 100;
 
-    // Flesch分数解读
-    if (fleschScore < 30) {
-        score -= 30;
-        issues.push('内容难度过高，适合大学水平');
-        suggestions.push('使用更简单的词汇和更短的句子');
-    } else if (fleschScore < 50) {
-        score -= 15;
-        issues.push('内容难度较高');
-        suggestions.push('简化部分复杂句子');
-    } else if (fleschScore > 80) {
-        score -= 10;
-        issues.push('内容过于简单，可能缺乏深度');
-        suggestions.push('适当增加专业术语和详细解释');
+    const isChinese = isChineseContent(content);
+    let avgSentenceLength = 0;
+    let metrics: any = { isChinese };
+
+    if (isChinese) {
+        // 中文可读性简单评估
+        const sentences = content.split(/[。！？\n]+/).filter(s => s.trim().length > 0);
+        const chars = content.replace(/\s+/g, '').length;
+        avgSentenceLength = sentences.length > 0 ? chars / sentences.length : 0;
+
+        if (avgSentenceLength > 40) {
+            score -= 15;
+            issues.push(`平均句长过长：${Math.round(avgSentenceLength)}字符`);
+            suggestions.push('将长句拆分为短句，提升中文阅读体验');
+        } else if (avgSentenceLength < 10) {
+            score -= 5;
+            issues.push('句子过短，可能显得生硬');
+            suggestions.push('适当合并部分短句');
+        }
+        metrics.avgSentenceLength = avgSentenceLength.toFixed(1);
+    } else {
+        // 英文 Flesch Reading Ease公式
+        const sentences = content.split(/[.!?\n]+/).filter(s => s.trim());
+        const words = content.split(/\s+/).filter(w => w.trim());
+        const syllables = words.reduce((sum, word) => sum + countSyllables(word), 0);
+
+        avgSentenceLength = sentences.length > 0 ? words.length / sentences.length : 0;
+        const avgSyllablesPerWord = words.length > 0 ? syllables / words.length : 0;
+        const fleschScore = 206.835 - 1.015 * avgSentenceLength - 84.6 * avgSyllablesPerWord;
+
+        if (fleschScore < 30) {
+            score -= 30;
+            issues.push('内容难度过高，适合大学水平');
+            suggestions.push('使用更简单的词汇和更短的句子');
+        } else if (fleschScore < 50) {
+            score -= 15;
+            issues.push('内容难度较高');
+            suggestions.push('简化部分复杂句子');
+        } else if (fleschScore > 80) {
+            score -= 10;
+            issues.push('内容过于简单，可能缺乏深度');
+            suggestions.push('适当增加专业术语和详细解释');
+        }
+
+        if (avgSentenceLength > 25) {
+            score -= 10;
+            issues.push(`平均句长过长：${avgSentenceLength.toFixed(1)}词`);
+            suggestions.push('将长句拆分为短句');
+        }
+
+        metrics.fleschScore = Math.round(fleschScore);
+        metrics.avgSentenceLength = avgSentenceLength.toFixed(1);
+        metrics.avgSyllablesPerWord = avgSyllablesPerWord.toFixed(2);
     }
 
-    // 句长检查
-    if (avgSentenceLength > 25) {
-        score -= 10;
-        issues.push(`平均句长过长：${avgSentenceLength.toFixed(1)}词`);
-        suggestions.push('将长句拆分为短句');
-    } else if (avgSentenceLength < 10) {
-        score -= 5;
-        issues.push('句子过短，可能显得生硬');
-        suggestions.push('适当合并部分短句');
+    // 段落长度拦截 (Wall of Text Penalty)
+    const paragraphs = content.split(/\n\s*\n/).filter(p => p.trim());
+    let longParagraphsCount = 0;
+    paragraphs.forEach(p => {
+        const wordsOrChars = isChinese ? p.replace(/\s+/g, '').length : p.split(/\s+/).length;
+        if ((isChinese && wordsOrChars > 300) || (!isChinese && wordsOrChars > 150)) {
+            longParagraphsCount++;
+        }
+    });
+
+    if (longParagraphsCount > 0) {
+        score -= min(15, longParagraphsCount * 5); // 最多扣15分
+        issues.push(`存在 ${longParagraphsCount} 个超长段落 (Wall of Text)`);
+        suggestions.push('将超长段落拆分成短段落，提升移动端阅读体验');
     }
 
     return {
@@ -182,56 +228,83 @@ export function evaluateReadability(content: string): ScoreItem {
         status: score >= 80 ? 'excellent' : score >= 60 ? 'good' : score >= 40 ? 'needs-improvement' : 'critical',
         issues,
         suggestions,
-        metrics: {
-            fleschScore: Math.round(fleschScore),
-            avgSentenceLength: avgSentenceLength.toFixed(1),
-            avgSyllablesPerWord: avgSyllablesPerWord.toFixed(2)
-        }
+        metrics
     };
 }
 
+// 辅助函数
+function min(a: number, b: number): number {
+    return a < b ? a : b;
+}
+
 /**
- * 评估关键词使用
+ * 评估关键词使用 (包含 LSI 关键词分析)
  */
-export function evaluateKeywordUsage(content: string, keyword: string, title: string): ScoreItem {
+export function evaluateKeywordUsage(content: string, keyword: string, title: string, relatedTopics: string[] = []): ScoreItem {
     const issues: string[] = [];
     const suggestions: string[] = [];
     let score = 100;
 
-    // 密度检查（2-3%理想）
-    const wordCount = content.split(/\s+/).length;
-    const keywordCount = (content.match(new RegExp(keyword, 'gi')) || []).length;
-    const density = (keywordCount / wordCount) * 100;
+    // 获取纯文本（移除 Markdown 符号进行更准的统计）
+    const plainText = content.replace(/[*_#`\[\]]/g, ' ');
+    const isChinese = isChineseContent(plainText);
 
-    if (density < 1) {
+    // 密度检查（2-3%理想）
+    const wordCount = isChinese ? plainText.replace(/\s+/g, '').length : plainText.split(/\s+/).length;
+    // 使用正则时注意处理可能的正则特殊字符
+    const safeKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const keywordCount = (plainText.match(new RegExp(safeKeyword, 'gi')) || []).length;
+
+    // 中文计算密度时，如果关键词很长，占比会失真，但这里使用简单的次数*长度估算
+    const keywordCharLength = isChinese ? keyword.length : 1;
+    const density = wordCount > 0 ? ((keywordCount * keywordCharLength) / wordCount) * 100 : 0;
+
+    if (density < 0.5) {
         score -= 20;
-        issues.push(`关键词密度过低：${density.toFixed(2)}%`);
-        suggestions.push(`增加关键词"${keyword}"的使用（目标2-3%）`);
-    } else if (density > 4) {
+        issues.push(`主关键词密度过低：${density.toFixed(2)}%`);
+        suggestions.push(`增加关键词"${keyword}"的自然露出`);
+    } else if (density > 5) {
         score -= 30;
         issues.push(`关键词堆砌风险：${density.toFixed(2)}%`);
-        suggestions.push('减少关键词使用，避免过度优化');
+        suggestions.push('减少主关键词重复，改用同义词 (LSI keywords)');
     }
 
     // 首段检查
-    const firstParagraph = content.substring(0, content.indexOf('\n\n') || 200);
+    const firstParagraph = plainText.substring(0, plainText.indexOf('\n\n') || 250);
     const inFirstPara = firstParagraph.toLowerCase().includes(keyword.toLowerCase());
     if (!inFirstPara) {
         score -= 15;
-        issues.push('首段未包含关键词');
-        suggestions.push('在开头段落中自然融入关键词');
+        issues.push('首段未包含主关键词');
+        suggestions.push('在开篇迅速点题，自然融入主关键词');
     }
 
     // H2标题中的使用
     const h2Count = (content.match(/^## .+$/gm) || []).length;
-    const h2WithKeyword = (content.match(new RegExp(`^## .*${keyword}.*$`, 'gmi')) || []).length;
+    const h2WithKeyword = (content.match(new RegExp(`^## .*${safeKeyword}.*$`, 'gmi')) || []).length;
     if (h2WithKeyword === 0 && h2Count > 0) {
         score -= 10;
-        suggestions.push('在至少一个H2标题中包含关键词');
+        suggestions.push('尝试在至少一个 H2 标题中包含主关键词');
+    }
+
+    // LSI (相关维度/话题) 覆盖率检查
+    let lsiCoverage = 0;
+    let foundLsiCount = 0;
+    if (relatedTopics && relatedTopics.length > 0) {
+        const foundLSI = relatedTopics.filter(t => plainText.toLowerCase().includes(t.toLowerCase()));
+        foundLsiCount = foundLSI.length;
+        lsiCoverage = (foundLsiCount / Math.min(relatedTopics.length, 5)) * 100; // 最多考察5个核心长尾词
+
+        if (lsiCoverage < 40) {
+            score -= 10;
+            issues.push(`语义相关词 (LSI) 覆盖率低: 只提到了 ${foundLsiCount} 个相关话题`);
+            suggestions.push(`自然地融入这些相关话题语境: ${relatedTopics.slice(0, 3).join(', ')}`);
+        } else {
+            score += 5; // Semantic SEO 奖励分
+        }
     }
 
     return {
-        score: Math.max(0, score),
+        score: Math.min(100, Math.max(0, score)),
         weight: 0.20,
         status: score >= 85 ? 'excellent' : score >= 65 ? 'good' : score >= 45 ? 'needs-improvement' : 'critical',
         issues,
@@ -240,63 +313,159 @@ export function evaluateKeywordUsage(content: string, keyword: string, title: st
             density: density.toFixed(2) + '%',
             count: keywordCount,
             inFirstParagraph: inFirstPara,
-            inHeadings: h2WithKeyword
+            lsiCoverageScore: lsiCoverage.toFixed(0) + '%'
         }
     };
 }
 
 /**
- * 评估结构完整性
+ * 评估精选摘要 (Featured Snippet) 准备程度 (V5 High Standard)
+ * 检查问句标题后的段落是否提供了直接、简洁的答案
  */
-export function evaluateStructure(content: string, images: any[]): ScoreItem {
+export function evaluateSnippetReadiness(content: string): { score: number; count: number; issues: string[]; suggestions: string[] } {
     const issues: string[] = [];
     const suggestions: string[] = [];
     let score = 100;
 
-    // H1检查
-    const h1Count = (content.match(/^# .+$/gm) || []).length;
-    if (h1Count === 0) {
-        score -= 30;
-        issues.push('缺少H1标题');
-        suggestions.push('添加一个主H1标题');
-    } else if (h1Count > 1) {
-        score -= 20;
-        issues.push(`H1标题过多：${h1Count}个`);
-        suggestions.push('保留唯一的H1标题');
+    // 搜索以问号结尾的 H2/H3
+    const questionHeaderRegex = /^#{2,3}\s+(.*?[?？])$/gm;
+    let match;
+    let questionCount = 0;
+    let goodAnswerCount = 0;
+
+    while ((match = questionHeaderRegex.exec(content)) !== null) {
+        questionCount++;
+        const headerIndex = match.index;
+        const remainingContent = content.substring(headerIndex + match[0].length).trim();
+        const firstParagraph = remainingContent.split('\n\n')[0].trim();
+
+        if (firstParagraph) {
+            const wordCount = firstParagraph.split(/\s+/).length;
+            const isDirect = /^(Yes,|No,|It is|They are|To|By|The)\b|\*\*/i.test(firstParagraph);
+
+            // Google 偏好 40-60 词的答案片段 (英文) 或 100-150 左右的中文字
+            const isChinese = isChineseContent(firstParagraph);
+            const length = isChinese ? firstParagraph.length : wordCount;
+            const idealMin = isChinese ? 80 : 40;
+            const idealMax = isChinese ? 200 : 70;
+
+            if (length >= idealMin && length <= idealMax && isDirect) {
+                goodAnswerCount++;
+            }
+        }
     }
 
-    // H2检查
-    const h2Count = (content.match(/^## .+$/gm) || []).length;
-    if (h2Count < 3) {
-        score -= 15;
-        issues.push(`H2标题过少：${h2Count}个`);
-        suggestions.push('增加H2标题以改善内容结构');
+    if (questionCount === 0) {
+        score = 0;
+        suggestions.push('添加至少一个以问号结尾的 H2/H3 标题，并提供直接回答以争取 Featured Snippet');
+    } else {
+        const ratio = goodAnswerCount / questionCount;
+        score = Math.round(ratio * 100);
+        if (ratio < 0.5) {
+            issues.push(`问答段落的“直接性”不足 (${goodAnswerCount}/${questionCount})`);
+            suggestions.push('确保问题标题后的第一段话直接回答问题，并保持在 40-70 词之间');
+        }
     }
+
+    return { score, count: questionCount, issues, suggestions };
+}
+
+/**
+ * 评估结构完整性 & 排版丰富度 (Formatting Variety)
+ */
+export function evaluateStructure(content: string, images: any[], keyword: string = ''): ScoreItem {
+    const issues: string[] = [];
+    const suggestions: string[] = [];
+    let score = 100;
+
+    // H1、H2 检查
+    const h1Count = (content.match(/^# .+$/gm) || []).length;
+    const h2Count = (content.match(/^## .+$/gm) || []).length;
+    const h3Count = (content.match(/^### .+$/gm) || []).length;
+
+    // 强制层级验证
+    const headers = [...content.matchAll(/^(#{1,6})\s+(.+)$/gm)].map(m => m[1].length);
+    let hasHierarchyIssue = false;
+    for (let i = 1; i < headers.length; i++) {
+        if (headers[i] - headers[i - 1] > 1) {
+            hasHierarchyIssue = true;
+            break;
+        }
+    }
+
+    if (h1Count === 0) {
+        score -= 30;
+        issues.push('缺少主标题 (H1)');
+        suggestions.push('添加一个唯一的 H1 标题');
+    } else if (h1Count > 1) {
+        score -= 15;
+        issues.push(`H1标题过多：${h1Count}个`);
+        suggestions.push('保留唯一的 H1 主标题，其余降级为 H2');
+    }
+
+    if (h2Count < 2) {
+        score -= 15;
+        issues.push(`内容结构单薄，仅有 ${h2Count} 个 H2`);
+        suggestions.push('增加 H2 子标题来划分核心章节');
+    }
+
+    if (hasHierarchyIssue) {
+        score -= 10;
+        issues.push('标题层级断层 (Heading Hierarchy Error)');
+        suggestions.push('修复标题跳级问题，例如避免从 H2 跳过 H3 直接使用 H4');
+    }
+
+    // 排版丰富度审计 (Formatting Variety)
+    const hasBold = /\*\*(.*?)\*\*/.test(content);
+    const hasItalic = /\*(.*?)\*/.test(content) || /_(.*?)_/.test(content);
+    const hasLists = /^[-*•]\s+/gm.test(content) || /^\d+\.\s+/gm.test(content);
+    const hasBlockquote = /^>\s+/gm.test(content);
+
+    let formattingBonus = 0;
+    if (!hasLists) {
+        score -= 10;
+        suggestions.push('添加无序或有序列表以提升可扫描性');
+    }
+    if (!hasBold) {
+        score -= 5;
+        suggestions.push('尝试使用加粗 (**bold**) 来突出核心概念或结论');
+    } else {
+        formattingBonus += 2;
+    }
+    if (hasBlockquote) formattingBonus += 3;
 
     // 图片检查
     const wordCount = content.split(/\s+/).length;
-    const recommendedImages = Math.ceil(wordCount / 500);  // 每500词1张图
-    if (images.length < recommendedImages) {
+    const recommendedImages = Math.max(1, Math.ceil(wordCount / 600));
+    if (images.length < recommendedImages && images.length > 0) {
+        score -= 5;
+        suggestions.push(`还可以再丰富一些配图（当前 ${images.length} 张，建议 ${recommendedImages} 张）`);
+    } else if (images.length === 0) {
+        // Let evaluateImages handle the 0 image case entirely to avoid double strict penalization
+        suggestions.push('强烈建议配图以消除文本疲劳感');
+    }
+
+    // V5: Snippet Readiness 集成
+    const snippetAudit = evaluateSnippetReadiness(content);
+    if (snippetAudit.score < 50 && snippetAudit.count > 0) {
         score -= 10;
-        suggestions.push(`建议添加${recommendedImages - images.length}张图片（当前${images.length}张）`);
+        issues.push(...snippetAudit.issues);
+        suggestions.push(...snippetAudit.suggestions);
+    } else if (snippetAudit.score >= 80) {
+        formattingBonus += 5; // Snippet 准备充分奖励
     }
 
-    // Alt文本检查
-    const imagesWithoutAlt = images.filter(img => !img.alt || img.alt.trim() === '').length;
-    if (imagesWithoutAlt > 0) {
-        score -= 15;
-        issues.push(`${imagesWithoutAlt}张图片缺少Alt文本`);
-        suggestions.push('为所有图片添加描述性Alt文本');
-    }
-
-    // 列表检查
-    const hasLists = /^[-*•]\s+/gm.test(content) || /^\d+\.\s+/gm.test(content);
-    if (!hasLists) {
-        suggestions.push('考虑添加项目列表以提升可读性');
+    // V5: Intent Alignment 检查 (基础版)
+    const isGuide = /how to|guide|tutorial|教程|指南|如何/i.test(keyword);
+    const hasNumberedList = /^\d+\.\s+/m.test(content);
+    if (isGuide && !hasNumberedList) {
+        score -= 10;
+        issues.push('指南类内容缺少步骤列表 (Numbered List)');
+        suggestions.push('将操作流程转化为数字列表，更符合用户搜索“如何做”的意图');
     }
 
     return {
-        score: Math.max(0, score),
+        score: Math.min(100, Math.max(0, score + formattingBonus)),
         weight: 0.20,
         status: score >= 85 ? 'excellent' : score >= 65 ? 'good' : score >= 45 ? 'needs-improvement' : 'critical',
         issues,
@@ -304,8 +473,10 @@ export function evaluateStructure(content: string, images: any[]): ScoreItem {
         metrics: {
             h1Count,
             h2Count,
-            imageCount: images.length,
-            imagesWithAlt: images.length - imagesWithoutAlt
+            h3Count,
+            hasLists: hasLists ? 'Yes' : 'No',
+            hasEmphasis: hasBold ? 'Yes' : 'No',
+            snippetScore: `${snippetAudit.score}%`
         }
     };
 }
@@ -319,25 +490,24 @@ export function evaluateImages(images: any[], keyword: string): ScoreItem {
     let score = 100;
 
     if (images.length === 0) {
-        score -= 30;
-        issues.push('内容中没有图片');
-        suggestions.push('添加相关图片以增强视觉吸引力');
+        score -= 20;
+        issues.push('文章中没有嵌入图片');
+        suggestions.push('添加高质量配图以降低跳出率');
     } else {
-        // Alt文本检查（已在structure中检查，这里可以更详细）
-        const withoutAlt = images.filter(img => !img.alt).length;
+        const withoutAlt = images.filter(img => !img.alt || img.alt.trim() === '').length;
         if (withoutAlt > 0) {
-            score -= 20;
-            issues.push(`${withoutAlt}/${images.length} 图片缺少Alt文本`);
-            suggestions.push('为所有图片添加包含关键词的Alt文本');
+            score -= (withoutAlt * 10);
+            issues.push(`${withoutAlt} 张图片缺失 Alt 文本`);
+            suggestions.push('为所有图片补充描述性 Alt 文本');
         }
 
-        // Alt文本中是否包含关键词
         const withKeyword = images.filter(img =>
             img.alt && img.alt.toLowerCase().includes(keyword.toLowerCase())
         ).length;
 
         if (withKeyword === 0 && images.length > 0) {
-            suggestions.push(`在至少一个图片的Alt文本中包含"${keyword}"`);
+            score -= 5;
+            suggestions.push(`至少在一张图片的 Alt 中融入焦点词 "${keyword}"`);
         }
     }
 
@@ -349,65 +519,121 @@ export function evaluateImages(images: any[], keyword: string): ScoreItem {
         suggestions,
         metrics: {
             total: images.length,
-            withAlt: images.filter(img => img.alt).length
+            withValidAlt: images.filter(img => img.alt && img.alt.trim() !== '').length
         }
     };
 }
 
 /**
  * 计算 GEO (Generative Engine Optimization) 分数
- * 衡量 AI Answer Engines (Perplexity, SearchGPT) 的友好度
+ * 融入进阶高分规则：实体挖掘、外部引用(Citations)、Q&A片段提取、反营销排雷。
  */
 export function calculateGEOScore(content: string, entities: string[] = [], topics: string[] = []): ScoreItem {
     let score = 100;
     const issues: string[] = [];
     const suggestions: string[] = [];
 
-    // 1. 实体覆盖率检查 (Entity Coverage)
+    // 1. 实体覆盖率与密度检查 (Entity Coverage & Density) - V5 High Standard
+    const plainText = content.replace(/[*_#`\[\]]/g, ' ');
+    const isChinese = isChineseContent(plainText);
+    const wordCount = isChinese ? plainText.replace(/\s+/g, '').length : plainText.split(/\s+/).length;
+
+    let foundCount = 0;
     if (entities.length > 0) {
-        const foundEntities = entities.filter(e => content.toLowerCase().includes(e.toLowerCase()));
-        const coverage = (foundEntities.length / Math.min(entities.length, 10)) * 100;
-        if (coverage < 40) {
-            score -= 20;
-            issues.push(`关键实体覆盖不足 (${foundEntities.length}/${entities.length})`);
-            suggestions.push('添加更多行业核心名词、品牌或特定专业术语');
+        entities.forEach(entity => {
+            if (content.toLowerCase().includes(entity.toLowerCase())) {
+                foundCount++;
+            }
+        });
+
+        // 实体密度 (每100词/字符的活跃实体数)
+        const entityDensity = (foundCount / (wordCount / (isChinese ? 300 : 100)));
+        if (entityDensity < 1.5) {
+            score -= 10;
+            issues.push(`实体密度较低 (当前: ${entityDensity.toFixed(1)} 实体/100词)`);
+            suggestions.push('增加行业名词、具体地点或专业实体的提及频率，强化“专家身份” (E-E-A-T)');
+        } else if (entityDensity > 5) {
+            score += 5; // 实体丰富度奖励
         }
-    } else {
-        score -= 5; // 缺乏外部实体参考
     }
 
-    // 2. 引言与数据检查 (Citations & Data)
-    const hasData = /\d+%|\d+\s?million|\d+\s?k/i.test(content);
+    // 2. 引言与外部链接权重审计 (Citation Authority) - V5 High Standard
+    const hasData = /\d+(?:\.\d+)?%|\d+\s*(?:million|billion|k\b)/i.test(content);
+    const externalLinks = content.match(/\[.*?\]\((https?:\/\/[^)]+)\)/g) || [];
+    const externalLinksCount = externalLinks.length;
+
+    let authorityBonus = 0;
+    const highAuthorityTLDs = ['.gov', '.edu', '.org'];
+    const highAuthorityDomains = ['wikipedia.org', 'nytimes.com', 'reuters.com', 'bloomberg.com', 'forbes.com', 'bbc.com', 'wsj.com', 'hbr.org', 'nature.com'];
+
+    externalLinks.forEach(link => {
+        const urlMatch = link.match(/\((https?:\/\/[^)]+)\)/);
+        if (urlMatch) {
+            const url = urlMatch[1].toLowerCase();
+            const isHighTLD = highAuthorityTLDs.some(tld => url.includes(tld));
+            const isHighDomain = highAuthorityDomains.some(domain => url.includes(domain));
+            if (isHighTLD || isHighDomain) {
+                authorityBonus += 5;
+            }
+        }
+    });
+
     if (!hasData) {
-        score -= 15;
-        issues.push('缺乏具体数据支持');
-        suggestions.push('添加统计数据、百分比或具体的行业数字以提升权威感');
-    }
-
-    // 3. 结构化程度 (Bullet points / Tables for AI ingestion)
-    const hasLists = content.includes('- ') || content.includes('* ');
-    const hasTables = content.includes('|');
-    if (!hasLists && !hasTables) {
-        score -= 15;
-        suggestions.push('使用列表或表格，这有助于 AI 提取核心信息');
-    } else if (!hasTables) {
-        score -= 3;
-        suggestions.push('考虑添加比较表格，进一步提升 AI 引用友好度');
-    }
-
-    // 4. 信息增益 (Information Gain - 简单判定)
-    if (content.length < 1500) {
         score -= 10;
-        issues.push('内容篇幅可能不足以提供高信息增益');
+        issues.push('缺乏客观的量化数据支持');
+        suggestions.push('插入具体数字（百分比、统计数据），提升 AI 引擎的信任分');
+    }
+
+    if (externalLinksCount === 0) {
+        score -= 15;
+        issues.push('无外部权威引用 (Citations)');
+        suggestions.push('引用一到两个权威来源（如行业百科、新闻源或政府报告）来背书');
+    } else {
+        score += Math.min(10, authorityBonus + externalLinksCount);
+    }
+
+    // 3. Q&A 结构探测 (Direct Answer Snippets)
+    const questionHeaders = (content.match(/^#{2,3}\s+.*?[?？]$/gm) || []).length;
+    if (questionHeaders > 0) {
+        score += 5;
+    } else {
+        score -= 10;
+        suggestions.push('尝试将部分 H2/H3 设为提问形式，有助于被 AI 引擎提取为直接答案片段');
+    }
+
+    // 4. 结构化程度 (Bullet points / Tables)
+    const hasLists = content.includes('- ') || content.includes('* ') || /^\d+\.\s/m.test(content);
+    const hasTables = content.includes('|');
+    if (!hasLists) {
+        score -= 10;
+    }
+    if (!hasTables) {
+        score -= 5;
+        suggestions.push('添加一个核心对比表格 (Markdown Table)，AI 引擎极度偏好表格化的数据总结');
+    }
+
+    // 5. 客观语调审计 (Promotional Language Penalty)
+    const promoWordsRegex = /(?:best ever|revolutionary|buy now|absolute best|guaranteed to|miracle|click here|破局|最强|第一|颠覆|秒杀)/gi;
+    const promoMatches = content.match(promoWordsRegex) || [];
+    if (promoMatches.length > 3) {
+        score -= (promoMatches.length * 5);
+        issues.push(`侦测到过多主观营销词汇 (${promoMatches.length} 处)`);
+        suggestions.push('使用更加中立、客观的第三方语气，减少极端修饰词');
     }
 
     return {
-        score: Math.max(0, score),
+        score: Math.min(100, Math.max(0, score)),
         weight: 1,
         status: score >= 85 ? 'excellent' : score >= 65 ? 'good' : score >= 45 ? 'needs-improvement' : 'critical',
         issues,
         suggestions,
-        metrics: { entitiesFound: entities.length, hasData }
+        metrics: {
+            citations: externalLinksCount,
+            hasData,
+            entityFound: foundCount,
+            promoWords: promoMatches.length,
+            authorityBonus: `+${authorityBonus}`
+        }
     };
 }
 
@@ -419,13 +645,14 @@ export function calculateDetailedSEOScore(
     description: string,
     content: string,
     keyword: string,
-    images: any[] = []
+    images: any[] = [],
+    relatedTopics: string[] = [] // 传递 LSI 关键词
 ): DetailedSEOScore {
     const titleScore = evaluateTitle(title, keyword);
     const descScore = evaluateDescription(description, keyword);
-    const keywordScore = evaluateKeywordUsage(content, keyword, title);
+    const keywordScore = evaluateKeywordUsage(content, keyword, title, relatedTopics);
     const readabilityScore = evaluateReadability(content);
-    const structureScore = evaluateStructure(content, images);
+    const structureScore = evaluateStructure(content, images, keyword);
     const imagesScore = evaluateImages(images, keyword);
 
     // 加权计算总分
@@ -450,3 +677,4 @@ export function calculateDetailedSEOScore(
         }
     };
 }
+

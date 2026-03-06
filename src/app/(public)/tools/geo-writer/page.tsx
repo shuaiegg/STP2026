@@ -58,6 +58,8 @@ export default function GEOWriterPage() {
     const [showOriginal, setShowOriginal] = useState(false);
     const [isPaid, setIsPaid] = useState(false);
     const [creditError, setCreditError] = useState(false);
+    const [progressMsg, setProgressMsg] = useState<string>('');
+    const [activeExecutionId, setActiveExecutionId] = useState<string | null>(null);
     const [cachedIntelligence, setCachedIntelligence] = useState<any>(null); // Cached intelligence data from Step 1
     const [editableOutline, setEditableOutline] = useState<OutlineNode[]>([]); // Editable outline state
 
@@ -72,7 +74,7 @@ export default function GEOWriterPage() {
         autoVisuals: false // Default to false: Auto-insert visuals into content
     });
 
-    const fetchRealMetadata = async (generatedContent: string) => {
+    const fetchRealMetadata = async (generatedContent: string, forcedTitle?: string) => {
         setIsLoadingMetadata(true);
         try {
             console.log('🔍 Extracting real metadata from generated content...');
@@ -81,8 +83,11 @@ export default function GEOWriterPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     content: generatedContent,
-                    title: finalResult?.seoMetadata?.title || selectedKeyword || form.keywords,
-                    description: finalResult?.seoMetadata?.description || '',
+                    title: forcedTitle || finalResult?.seoMetadata?.title || selectedKeyword || form.keywords,
+                    // If description is just the placeholder, send empty to trigger backend paragraph extraction
+                    description: (finalResult?.seoMetadata?.description?.startsWith('AI Generated Guide') || !finalResult?.seoMetadata?.description)
+                        ? ''
+                        : finalResult.seoMetadata.description,
                     keyword: selectedKeyword || form.keywords,
                     entities: cachedIntelligence?.entities || [],
                     relatedTopics: researchData?.map((t: any) => t.keyword) || []
@@ -231,6 +236,37 @@ export default function GEOWriterPage() {
         setShowHistory(false);
     };
 
+    // --- REAL-TIME PROGRESS POLLING ---
+    useEffect(() => {
+        let pollInterval: NodeJS.Timeout;
+
+        const fetchProgress = async () => {
+            if (!activeExecutionId) return;
+            try {
+                const res = await fetch(`/api/skills/execute?executionId=${activeExecutionId}`);
+                const data = await res.json();
+                if (data.success && data.metadata?.progress) {
+                    setProgressMsg(data.metadata.progress);
+                }
+                // Stop polling if execution is no longer processing
+                if (data.status === 'success' || data.status === 'failed') {
+                    setActiveExecutionId(null);
+                }
+            } catch (err) {
+                console.warn('Progress poll failed:', err);
+            }
+        };
+
+        if (activeExecutionId) {
+            pollInterval = setInterval(fetchProgress, 2500);
+            fetchProgress(); // Initial fetch
+        }
+
+        return () => {
+            if (pollInterval) clearInterval(pollInterval);
+        };
+    }, [activeExecutionId]);
+
     // Handle saving a manual edit
     const handleSectionSave = (id: string, newBody: string) => {
         const updatedSections = contentSections.map(s =>
@@ -242,6 +278,10 @@ export default function GEOWriterPage() {
         const newMarkdown = joinSectionsToMarkdown(updatedSections);
         setFinalResult((prev: any) => prev ? { ...prev, content: newMarkdown } : null);
 
+        // Detect if H1 changed
+        const h1Match = newMarkdown.match(/^#\s+(.*?)\s*$/m);
+        const newTitle = h1Match ? h1Match[1].replace(/\*\*/g, '').trim() : finalResult?.seoMetadata?.title;
+
         // Auto-save snapshot on manual edit
         if (selectedKeyword) {
             const newHistory = saveSnapshot(
@@ -249,7 +289,7 @@ export default function GEOWriterPage() {
                 newMarkdown,
                 updatedSections.length,
                 {
-                    title: finalResult?.seoMetadata?.title || 'Manual Edit',
+                    title: newTitle || 'Manual Edit',
                     humanScore: liveHumanScore || 0
                 }
             );
@@ -257,6 +297,9 @@ export default function GEOWriterPage() {
         }
 
         toast.success('段落已更新 (已自动保存快照)');
+
+        // Background re-audit
+        fetchRealMetadata(newMarkdown, newTitle);
     };
 
     // Handle AI Regeneration of a section
@@ -312,6 +355,12 @@ export default function GEOWriterPage() {
             }
 
             toast.success('段落重写完成！', { id: loadingId });
+
+            // Background re-audit
+            const h1Match = newMarkdown.match(/^#\s+(.*?)\s*$/m);
+            const newTitle = h1Match ? h1Match[1].replace(/\*\*/g, '').trim() : finalResult?.seoMetadata?.title;
+            fetchRealMetadata(newMarkdown, newTitle);
+
             return true;
         } catch (error: any) {
             console.error('Section regen error:', error);
@@ -507,8 +556,9 @@ export default function GEOWriterPage() {
             if (editableOutline && editableOutline.length > 0 && editableOutline[0].level === 1) {
                 actualTitle = editableOutline[0].text;
             } else {
-                const h1Match = result.match(/^#\s+(.*)$/m);
-                if (h1Match) actualTitle = h1Match[1].trim();
+                // Better regex to find first # title anywhere in the results (trimmed of formatting)
+                const h1Match = result.match(/^#\s+(.*?)\s*$/m);
+                if (h1Match) actualTitle = h1Match[1].replace(/\*\*/g, '').trim();
             }
 
             // Construct the final result structure
@@ -556,7 +606,7 @@ export default function GEOWriterPage() {
             setStep(3); // Explicitly move to step 3
 
             // Start extracting real metadata in background
-            fetchRealMetadata(result);
+            fetchRealMetadata(result, actualTitle);
 
             // Auto-save snapshot on initial generation (Moved from useEffect)
             if (selectedKeyword || form.keywords) {
@@ -602,9 +652,15 @@ export default function GEOWriterPage() {
 
             setStep(3); // Move to result view immediately to show stream
 
+            // Generate a unique execution ID for tracking progress
+            const executionId = `exec_lp_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+            setActiveExecutionId(executionId);
+            setProgressMsg('🚀 Starting Galactic Content Engine...');
+
             // Trigger the stream
             streamResult.complete('', {
                 body: {
+                    executionId,
                     input: {
                         ...form,
                         keywords: selectedKeyword || form.keywords,
@@ -1300,7 +1356,35 @@ export default function GEOWriterPage() {
                                                     return <p key={i}>{line}</p>;
                                                 })
                                             )}
-                                            {!finalResult && streamResult.isLoading && (
+                                            {/* Progress Indicator when loading */}
+                                            {!finalResult && streamResult.isLoading && !streamResult.completion && (
+                                                <div className="flex flex-col items-center justify-center py-20 bg-slate-50/50 rounded-3xl border-2 border-dashed border-brand-primary/10 animate-in fade-in zoom-in duration-500">
+                                                    <div className="relative mb-6">
+                                                        <div className="w-16 h-16 rounded-2xl bg-brand-primary/10 flex items-center justify-center text-brand-primary animate-bounce">
+                                                            <Sparkles size={32} />
+                                                        </div>
+                                                        <div className="absolute -top-1 -right-1">
+                                                            <span className="relative flex h-4 w-4">
+                                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-primary opacity-75"></span>
+                                                                <span className="relative inline-flex rounded-full h-4 w-4 bg-brand-primary"></span>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-center space-y-2">
+                                                        <div className="text-xl font-black text-brand-text-primary italic animate-pulse">
+                                                            {progressMsg || '正在连接智行引擎...'}
+                                                        </div>
+                                                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                                                            V5 High-Standard Content Orchestration
+                                                        </div>
+                                                    </div>
+                                                    <div className="mt-8 w-48 h-1 bg-slate-100 rounded-full overflow-hidden">
+                                                        <div className="h-full bg-brand-primary animate-progress-fast shadow-[0_0_8px_rgba(151,71,255,0.5)]" style={{ width: '40%' }}></div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {!finalResult && streamResult.isLoading && streamResult.completion && (
                                                 <div className="flex items-center gap-2 text-brand-primary animate-pulse pt-4">
                                                     <span className="w-2 h-2 rounded-full bg-brand-primary"></span>
                                                     <span className="text-xs font-black uppercase tracking-widest">Writing...</span>

@@ -7,6 +7,7 @@ import { humanizePro } from '@/lib/utils/humanize';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { chargeUser } from '@/lib/billing/credits';
+import prisma from "@/lib/prisma";
 
 export const maxDuration = 300;
 
@@ -54,11 +55,11 @@ function createHumanizerStream(readable: ReadableStream) {
                     if (done) {
                         if (buffer) {
                             // Process remaining buffer
-                            const line = buffer;
-                            if (line.trim().startsWith('#')) {
-                                controller.enqueue(encoder.encode(line));
+                            const text = buffer;
+                            if (text.trim().startsWith('#')) {
+                                controller.enqueue(encoder.encode(text));
                             } else {
-                                controller.enqueue(encoder.encode(humanizePro(line)));
+                                controller.enqueue(encoder.encode(humanizePro(text)));
                             }
                         }
                         controller.close();
@@ -67,19 +68,40 @@ function createHumanizerStream(readable: ReadableStream) {
 
                     buffer += decoder.decode(value, { stream: true });
 
-                    // Process line by line to protect headings
-                    let newlineIndex;
-                    while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
-                        const line = buffer.slice(0, newlineIndex + 1); // keep the newline
-                        buffer = buffer.slice(newlineIndex + 1);
+                    // OPTIMIZATION: Chunk by sentences or length to avoid waiting for newlines
+                    // But we must protect markdown headings (which start with # at the beginning of a line)
 
-                        // If it's a markdown heading, bypass humanizer entirely
-                        if (line.trim().startsWith('#')) {
-                            controller.enqueue(encoder.encode(line));
-                        } else {
-                            // Only humanize body text
-                            controller.enqueue(encoder.encode(humanizePro(line)));
+                    let lastProcessedIndex = 0;
+                    for (let i = 0; i < buffer.length; i++) {
+                        // Look for sentence enders followed by space or newline
+                        const char = buffer[i];
+                        const nextChar = buffer[i + 1] || '';
+
+                        // Condition: End of sentence (. ! ?) or Newline
+                        if (char === '\n' || ((char === '.' || char === '!' || char === '?') && (nextChar === ' ' || nextChar === '\n' || nextChar === ''))) {
+                            const chunk = buffer.slice(lastProcessedIndex, i + 1);
+
+                            // If it's a heading line, it must be the very first thing in a "line"
+                            const isAtLineStart = lastProcessedIndex === 0 || buffer[lastProcessedIndex - 1] === '\n';
+
+                            if (isAtLineStart && chunk.trim().startsWith('#')) {
+                                controller.enqueue(encoder.encode(chunk));
+                            } else {
+                                controller.enqueue(encoder.encode(humanizePro(chunk)));
+                            }
+                            lastProcessedIndex = i + 1;
                         }
+
+                        // Fallback: If chunk gets too large (e.g. 300 chars) without a sentence ender, flush it
+                        if (i - lastProcessedIndex > 300) {
+                            const chunk = buffer.slice(lastProcessedIndex, i + 1);
+                            controller.enqueue(encoder.encode(humanizePro(chunk)));
+                            lastProcessedIndex = i + 1;
+                        }
+                    }
+
+                    if (lastProcessedIndex > 0) {
+                        buffer = buffer.slice(lastProcessedIndex);
                     }
                 }
             } catch (e) { controller.error(e); }
@@ -92,11 +114,25 @@ export async function POST(req: Request) {
         const session = await auth.api.getSession({ headers: await headers() });
         if (!session || !session.user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
 
-        const { input, cachedIntelligence } = await req.json();
+        const { input, cachedIntelligence, executionId: providedId } = await req.json();
 
         // Billing check
         const chargeResult = await chargeUser(session.user.id, 'GEO_WRITER_FULL', `GEO Writer: ${input.keywords}`);
         if (!chargeResult.success) return new Response(JSON.stringify({ error: chargeResult.error }), { status: 402 });
+
+        // 1.5 INITIAL LOGGING (Ensure "background data" exists immediately)
+        const executionId = providedId || `exec_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+        const initialLog = await prisma.skillExecution.create({
+            data: {
+                id: executionId,
+                skillName: 'stellar-writer',
+                userId: session.user.id,
+                status: 'processing',
+                input: input as any,
+                transactionId: chargeResult.transactionId,
+            }
+        });
+        console.log(`📝 [Stream] Created initial execution log: ${executionId}`);
 
         const intelligenceContext: IntelligenceContext = {
             keywords: input.keywords || 'SaaS Growth',
@@ -123,9 +159,20 @@ export async function POST(req: Request) {
             async start(controller) {
                 const encoder = new TextEncoder();
                 try {
+                    // Update progress: Initializing
+                    await prisma.skillExecution.update({
+                        where: { id: executionId },
+                        data: { metadata: { progress: '🔍 Initializing GEO content strategy...' } as any }
+                    });
+
                     const outline = cachedIntelligence?.masterOutline;
 
                     if (!outline || outline.length === 0) {
+                        // Update progress: No outline fallback
+                        await prisma.skillExecution.update({
+                            where: { id: executionId },
+                            data: { metadata: { progress: '📋 Crafting custom outline from keywords...' } as any }
+                        });
                         // Fallback to giant prompt if no outline is available
                         const fallbackPrompt = strategy.buildFullArticlePrompt([{ level: 1, text: input.keywords || 'Article' }]);
                         const result = await streamText({
@@ -146,14 +193,40 @@ export async function POST(req: Request) {
 
                     const fullArticlePrompt = strategy.buildFullArticlePrompt(outline);
 
+                    // Update progress: Generating
+                    await prisma.skillExecution.update({
+                        where: { id: executionId },
+                        data: { metadata: { progress: '✍️ Writing full-scale article sections (Gemini 3.1 Pro)...' } as any }
+                    });
+
                     const result = await streamText({
                         model: vpsProxy(targetModelId),
                         system: strategy.systemPrompt,
                         messages: [{ role: 'user', content: fullArticlePrompt }],
                         temperature: 0.7,
+                        onFinish: async ({ text, usage }) => {
+                            // Update the log on success
+                            try {
+                                await prisma.skillExecution.update({
+                                    where: { id: executionId },
+                                    data: {
+                                        status: 'success',
+                                        output: { content: text } as any,
+                                        executionTimeMs: Date.now() - timestamp,
+                                        tokensUsed: usage.totalTokens,
+                                        modelUsed: targetModelId,
+                                        provider: 'vps-proxy'
+                                    }
+                                });
+                                console.log(`✅ [Stream-Log] Updated execution log: ${executionId}`);
+                            } catch (logErr) {
+                                console.error('Failed to update execution log:', logErr);
+                            }
+                        }
                     });
 
                     // Pipe the entire stream directly to the client
+                    const timestamp = Date.now();
                     for await (const chunk of result.textStream) {
                         controller.enqueue(encoder.encode(chunk));
                     }
@@ -162,6 +235,16 @@ export async function POST(req: Request) {
                     console.log(`✅ [Stream] Completed Single-Shot Article Streaming!`);
                 } catch (e) {
                     console.error('[Stream] Orchestration error:', e);
+                    // Update log on error
+                    try {
+                        await prisma.skillExecution.update({
+                            where: { id: executionId },
+                            data: {
+                                status: 'failed',
+                                errorMessage: e instanceof Error ? e.message : 'Unknown streaming error'
+                            }
+                        });
+                    } catch (ignore) { }
                     controller.error(e);
                 }
             }
@@ -175,6 +258,7 @@ export async function POST(req: Request) {
                 'Content-Type': 'text/event-stream',
                 'Cache-Control': 'no-cache',
                 'Connection': 'keep-alive',
+                'x-execution-id': executionId,
             },
         });
 

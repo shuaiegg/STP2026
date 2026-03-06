@@ -1,11 +1,11 @@
 import prisma from '@/lib/prisma';
-import { ContentStatus, Visibility, Content } from '@prisma/client';
+import { ContentStatus, Visibility, Content, ContentType } from '@prisma/client';
 
 export interface ContentFilters {
     status?: ContentStatus;
     visibility?: Visibility;
     categoryId?: string;
-    type?: 'BLOG' | 'PAGE' | 'COURSE';
+    type?: ContentType;
 }
 
 export interface PaginationOptions {
@@ -24,37 +24,42 @@ export async function getPublishedContent(
     const limit = pagination?.limit || 10;
     const skip = (page - 1) * limit;
 
-    const where = {
-        status: ContentStatus.PUBLISHED,
-        visibility: Visibility.PUBLIC,
+    const where: any = {
+        status: filters?.status || ContentStatus.PUBLISHED,
+        visibility: filters?.visibility || Visibility.PUBLIC,
         ...(filters?.categoryId && { categoryId: filters.categoryId }),
         ...(filters?.type && { type: filters.type }),
     };
 
-    const [contents, total] = await Promise.all([
-        prisma.content.findMany({
-            where,
-            include: {
-                category: true,
-                coverImage: true,
-                seo: true,
-            },
-            orderBy: { publishedAt: 'desc' },
-            take: limit,
-            skip,
-        }),
-        prisma.content.count({ where }),
-    ]);
+    try {
+        const [contents, total] = await Promise.all([
+            prisma.content.findMany({
+                where,
+                include: {
+                    category: true,
+                    coverImage: true,
+                    seo: true,
+                },
+                orderBy: { publishedAt: 'desc' },
+                take: limit,
+                skip,
+            }),
+            prisma.content.count({ where }),
+        ]);
 
-    return {
-        contents,
-        pagination: {
-            page,
-            limit,
-            total,
-            totalPages: Math.ceil(total / limit),
-        },
-    };
+        return {
+            contents,
+            pagination: {
+                page,
+                limit,
+                total,
+                totalPages: Math.ceil(total / limit),
+            },
+        };
+    } catch (error) {
+        console.error('Error in getPublishedContent:', error);
+        throw error;
+    }
 }
 
 /**

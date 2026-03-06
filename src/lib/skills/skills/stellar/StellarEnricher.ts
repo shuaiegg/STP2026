@@ -36,8 +36,30 @@ export class StellarEnricher {
             contentImages.push({ alt: imgMatch[1], src: imgMatch[2] });
         }
 
-        // 1. Calculate SEO Score (pass extracted images instead of [])
-        const seoDetail = calculateDetailedSEOScore(title, description, content, keyword, contentImages);
+        // 0.5 Fallback description extraction
+        let finalDescription = description;
+        const isPlaceholder = !finalDescription ||
+            finalDescription.trim().length === 0 ||
+            finalDescription.includes('AI Generated Guide') ||
+            finalDescription.includes('Comprehensive guide about');
+
+        if (isPlaceholder) {
+            // Extract the first non-heading paragraph as fallback
+            // We look for the first paragraph that isn't a header and has significant length
+            const paragraphs = content.split('\n')
+                .map(p => p.trim())
+                .filter(p => p.length > 30 && !p.startsWith('#'));
+
+            if (paragraphs.length > 0) {
+                finalDescription = paragraphs[0];
+            }
+        }
+
+        // Clean title of any accidental markdown formatting (like **Title**)
+        const cleanTitle = title.replace(/\*\*/g, '').trim();
+
+        // 1. Calculate SEO Score (pass extracted images and related topics for LSI check)
+        const seoDetail = calculateDetailedSEOScore(cleanTitle, finalDescription, content, keyword, contentImages, relatedTopics);
 
         // 2. Calculate GEO Score
         const geoDetail = calculateGEOScore(content, entities, relatedTopics);
@@ -48,8 +70,8 @@ export class StellarEnricher {
         // 4. Generate JSON-LD (Schema.org)
         const articleSchema: any = {
             "@type": "Article",
-            "headline": title,
-            "description": description,
+            "headline": cleanTitle,
+            "description": finalDescription,
             "author": {
                 "@type": "Person",
                 "name": authorName
@@ -90,7 +112,7 @@ export class StellarEnricher {
         const social = {
             twitter: `🚀 New Article: ${title}\n\nCheck out the full guide on ${keyword}! #SEO #GEO #${keyword.replace(/\s+/g, '')}`,
             linkedin: `I just published a deep dive into ${keyword}. Read the full analysis: ${title}`,
-            meta: `${description}`
+            meta: `${finalDescription || description}`
         };
 
         // 5. SMART INTERNAL LINKS

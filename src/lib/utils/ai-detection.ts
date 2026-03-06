@@ -61,6 +61,42 @@ function calculateContractionRate(text: string): number {
 }
 
 /**
+ * 检测句首重复性 (V5 High Standard)
+ */
+function detectSentenceOpenerRepetition(text: string): { repeatedRatio: number; commonOpeners: string[] } {
+    const sentences = text.match(/[^.!?]+[.!?]+/g) || [];
+    if (sentences.length < 5) return { repeatedRatio: 0, commonOpeners: [] };
+
+    const openers = sentences.map(s => {
+        const words = s.trim().split(/\s+/).slice(0, 3).join(' ').toLowerCase();
+        return words;
+    });
+
+    const openerCounts: Record<string, number> = {};
+    openers.forEach(o => {
+        if (o.length > 5) { // 忽略太短的词组
+            openerCounts[o] = (openerCounts[o] || 0) + 1;
+        }
+    });
+
+    const totalSentences = sentences.length;
+    let repeatedSentences = 0;
+    const commonOpeners: string[] = [];
+
+    Object.entries(openerCounts).forEach(([opener, count]) => {
+        if (count > 2) {
+            repeatedSentences += count;
+            commonOpeners.push(opener);
+        }
+    });
+
+    return {
+        repeatedRatio: repeatedSentences / totalSentences,
+        commonOpeners: commonOpeners.slice(0, 3)
+    };
+}
+
+/**
  * 检测学术词汇密度
  */
 function calculateAcademicWordDensity(text: string): number {
@@ -163,6 +199,26 @@ export function detectAIPatterns(text: string): AIDetectionResult {
         totalScore += 5;
     }
 
+    // 6. V5: 检测句首重复度 (High standard)
+    const { repeatedRatio, commonOpeners } = detectSentenceOpenerRepetition(text);
+    if (repeatedRatio > 0.15) {
+        flags.push({
+            pattern: 'repeated_sentence_openers',
+            count: commonOpeners.length,
+            severity: 'high',
+            description: `句首重复率过高 (${(repeatedRatio * 100).toFixed(0)}%): 常用开头如 "${commonOpeners.join('", "')}"`
+        });
+        totalScore += 15 * (repeatedRatio / 0.15);
+    }
+
+    // 7. V5: 爆发性/节奏感增强 (High standard)
+    // 如果 CV 极高 (由于混合了极短和极长句)，则给予人类化奖励
+    if (sentenceCV > 0.8) {
+        totalScore -= 10; // 奖励，降低 AI 嫌疑
+    } else if (sentenceCV < 0.25) {
+        totalScore += 10; // 节奏过于单一
+    }
+
     // 计算最终分数（0-100）
     const finalScore = Math.min(100, totalScore);
 
@@ -197,6 +253,14 @@ export function detectAIPatterns(text: string): AIDetectionResult {
 
     if (academicDensity > 0.05) {
         suggestions.push('减少学术词汇，使用更日常的表达');
+    }
+
+    if (repeatedRatio > 0.15) {
+        suggestions.push('增加句首多样性，避免连续使用类似的词组开头');
+    }
+
+    if (sentenceCV > 0.8) {
+        suggestions.push('✨ 节奏感非常出色，长短句结合自然');
     }
 
     if (finalScore < 20) {

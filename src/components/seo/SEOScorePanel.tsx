@@ -99,13 +99,25 @@ function ScoreDetailCard({ label, icon, item }: ScoreDetailCardProps) {
 
             {/* 具体指标 */}
             {item.metrics && Object.keys(item.metrics).length > 0 && (
-                <div className="flex flex-wrap gap-4 mb-4 p-3 bg-slate-50 rounded-lg">
-                    {Object.entries(item.metrics).map(([key, value]) => (
-                        <div key={key} className="flex items-center gap-2 text-xs">
-                            <span className="text-slate-400 font-semibold">{formatMetricKey(key)}:</span>
-                            <span className="font-bold text-slate-700">{String(value)}</span>
+                <div className="flex flex-col gap-3 mb-4 p-4 bg-slate-50 rounded-lg">
+                    {/* Key Metrics Row */}
+                    <div className="flex flex-wrap gap-4 border-b border-slate-200 pb-2 mb-1">
+                        {Object.entries(item.metrics).filter(([key]) => key !== 'text').map(([key, value]) => (
+                            <div key={key} className="flex items-center gap-2 text-[10px] uppercase tracking-wider">
+                                <span className="text-slate-400 font-bold">{formatMetricKey(key)}:</span>
+                                <span className="font-black text-slate-700">{String(value)}</span>
+                            </div>
+                        ))}
+                    </div>
+                    {/* Audited Text Row (if exists) */}
+                    {item.metrics.text && (
+                        <div className="space-y-1.5">
+                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">审计对象:</span>
+                            <div className="text-xs text-slate-600 font-medium leading-relaxed italic bg-white/50 p-2 rounded border border-slate-100 italic">
+                                "{String(item.metrics.text)}"
+                            </div>
                         </div>
-                    ))}
+                    )}
                 </div>
             )}
 

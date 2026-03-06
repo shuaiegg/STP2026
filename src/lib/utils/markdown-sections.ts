@@ -74,7 +74,7 @@ export function parseMarkdownToSections(markdown: string): ContentSection[] {
  */
 export function joinSectionsToMarkdown(sections: ContentSection[]): string {
     return sections.map(s => {
-        if (s.heading === 'Intro') return s.body;
+        if (s.heading === 'Intro' || s.heading === '__intro__') return s.body;
         return `## ${s.heading}\n\n${s.body}`;
     }).join('\n\n');
 }
