@@ -184,6 +184,29 @@ function markdownToNotionBlocks(markdown: string): any[] {
                 type: 'heading_3',
                 heading_3: { rich_text: [{ type: 'text', text: { content: line.slice(4) } }] },
             });
+        } else if (line.trim().match(/^!\[(.*?)\]\((.*?)\)$/)) {
+            // Image handling: ![Alt Text](https://images.unsplash.com/...)
+            const match = line.trim().match(/^!\[(.*?)\]\((.*?)\)$/);
+            if (match && match[2]) {
+                const url = match[2];
+                // Notion API has strict URL validations. If it's a valid remote URL, treat as image block.
+                if (url.startsWith('http')) {
+                    blocks.push({
+                        object: 'block',
+                        type: 'image',
+                        image: {
+                            type: 'external',
+                            external: { url }
+                        }
+                    });
+                } else {
+                    blocks.push({
+                        object: 'block',
+                        type: 'paragraph',
+                        paragraph: { rich_text: [{ type: 'text', text: { content: line } }] },
+                    });
+                }
+            }
         } else if (line.startsWith('- ') || line.startsWith('* ')) {
             blocks.push({
                 object: 'block',

@@ -266,16 +266,16 @@ export function EditForm({ article }: { article: Article }) {
                         title: data.seoMetadata.title || formData.title,
                         slug: data.seoMetadata.slug || formData.slug,
                         summary: data.summary || formData.summary,
-                        contentMd: data.optimizedContent || formData.contentMd,
+                        contentMd: data.content || formData.contentMd,
                     },
                     seoData: {
                         metaTitle: data.seoMetadata.title || seoData.metaTitle,
                         metaDescription: data.seoMetadata.description || seoData.metaDescription,
                         keywords: data.seoMetadata.keywords?.join(', ') || seoData.keywords,
-                        schemaJson: data.schema?.article ? JSON.stringify(data.schema.article, null, 2) : seoData.schemaJson,
-                        snippetLinkedIn: data.distributionSnippets?.linkedin || seoData.snippetLinkedIn,
-                        snippetReddit: data.distributionSnippets?.reddit || seoData.snippetReddit,
-                        snippetTwitter: data.distributionSnippets?.twitter || seoData.snippetTwitter,
+                        schemaJson: data.schema ? JSON.stringify(data.schema, null, 2) : seoData.schemaJson,
+                        snippetLinkedIn: data.distribution?.linkedin?.post || seoData.snippetLinkedIn,
+                        snippetReddit: seoData.snippetReddit,
+                        snippetTwitter: data.distribution?.twitter?.thread?.join('\\n\\n') || seoData.snippetTwitter,
                     }
                 };
 
@@ -310,7 +310,7 @@ export function EditForm({ article }: { article: Article }) {
                     title: newAiSnapshot.formData.title,
                     slug: newAiSnapshot.formData.slug,
                     summary: newAiSnapshot.formData.summary,
-                    contentMd: newAiSnapshot.formData.contentMd, // 默认应用优化后的正文
+                    contentMd: newAiSnapshot.formData.contentMd,
                 }));
 
                 setOptimizationResult(data);
@@ -474,15 +474,15 @@ export function EditForm({ article }: { article: Article }) {
                     onClick={() => setSeoExpanded(!seoExpanded)}
                     className="w-full p-6 flex items-center justify-between hover:bg-slate-50 transition-colors"
                 >
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-200">
-                                <Sparkles size={20} className="text-white" />
-                            </div>
-                            <div className="text-left">
-                                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">智作 (StellarWriter) 引擎</h3>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase">AI 驱动的 SEO & GEO 深度优化</p>
-                            </div>
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-200">
+                            <Sparkles size={20} className="text-white" />
                         </div>
+                        <div className="text-left">
+                            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">智作 (StellarWriter) 引擎</h3>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase">AI 驱动的 SEO & GEO 深度优化</p>
+                        </div>
+                    </div>
                     {seoExpanded ? <ChevronUp size={20} className="text-slate-400" /> : <ChevronDown size={20} className="text-slate-400" />}
                 </button>
 

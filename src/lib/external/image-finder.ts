@@ -15,13 +15,18 @@ export class ImageFinder {
         const cleanKeyword = encodeURIComponent(keyword.trim());
         const timestamp = Date.now();
 
-        // We use the direct Source-like URL pattern which is handled by Unsplash CDN
-        // Adding random seeds to ensure different images if requested
-        return Array.from({ length: count }).map((_, i) => ({
-            url: `https://images.unsplash.com/photo-${timestamp + i}?auto=format&fit=crop&q=80&w=1200&sig=${i}&ixlib=rb-4.0.3&utm_source=scaletotop`,
-            thumb: `https://source.unsplash.com/featured/400x300?${cleanKeyword}&sig=${i}`,
-            alt: `${keyword} - Image Suggestion ${i + 1}`,
-            credit: "Unsplash"
-        }));
+        // Since source.unsplash.com is deprecated, we will use a reliable high-res placeholder service
+        // in combination with search terms for demonstration until an API key is connected.
+        return Array.from({ length: count }).map((_, i) => {
+            // Using placeholder.com or similar reliable services that still allow keyword seeds
+            // Note: Unsplash requires an API Key for proper keyword search now. 
+            // We use a robust fallback for the demo.
+            return {
+                url: `https://loremflickr.com/1200/800/${cleanKeyword}?lock=${timestamp + i}`,
+                thumb: `https://loremflickr.com/400/300/${cleanKeyword}?lock=${timestamp + i}`,
+                alt: `${keyword} - Contextual Image ${i + 1}`,
+                credit: "LoremFlickr (Unsplash Alternative)"
+            };
+        });
     }
 }

@@ -273,7 +273,7 @@ RULES:
             );
 
             const finalOutput: StellarWriterOutput = {
-                content: refinedAsset.content,
+                content: enrichment.content || refinedAsset.content,
                 summary: refinedAsset.summary,
                 seoMetadata: {
                     title: refinedAsset.metadata.title || keywords,
@@ -285,7 +285,7 @@ RULES:
                 entities: intelligence.entities,
                 topics: intelligence.topics,
                 competitors: intelligence.competitors,
-                internalLinks: enrichment.internalLinks?.map(l => l.url) || [],
+                internalLinks: enrichment.internalLinks?.map(l => l.anchor) || [],
                 imageSuggestions: enrichment.imageSuggestions?.map((img: any) => img.description || img.alt || img.url || String(img)) || [],
                 distribution: {
                     twitter: {

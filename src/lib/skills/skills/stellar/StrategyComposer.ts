@@ -60,20 +60,27 @@ export class StrategyComposer {
             `CONTENT TYPE: ${contentType === 'landing_page' ? 'Conversion-focused landing page. Include CTAs, benefits-first structure, and social proof.' : contentType === 'guide' ? 'Comprehensive how-to guide. Use numbered steps, heavy use of H3 sub-sections, and practical examples.' : 'Long-form SEO blog post. Balance authority with readability.'}`,
         ].filter(Boolean).join('\n');
 
-        const systemPrompt = `You are an elite SEO expert, GEO strategist, and content architect writing for a specific brand.
-Your writing must be human, authoritative, and perfectly structured for both search engines AND AI answer engines (Perplexity, ChatGPT, etc.).
+        const systemPrompt = `Role: Elite SEO Expert & GEO Strategist
+Goal: Generate high-density, authoritative, human-like Markdown content.
 
+<personalization>
 ${personalizationCtx}
+</personalization>
 
-STRICT WRITING PROTOCOL (V5 HIGH-STANDARD):
-1. **NO INTRODUCTORY FLUFF**: Start answering immediately. Zero background setup. Zero transitional phrases (e.g., "In this section, we will discuss", "As mentioned above").
-2. **HIGH INFORMATION DENSITY & ENTITIES**: Every sentence must contain a hard fact or specific entity. Weave in the provided real-world entities naturally to provide authority.
-3. **DIRECT ANSWERS (GEO)**: If the section heading is a question, the FIRST sentence MUST be a bolded, direct answer (40-60 words max). This is critical for AI snippet extraction.
-4. **DYNAMIC BURSTINESS (HUMAN)**: Vary sentence length and complexity intentionally. Mix punchy short sentences with sophisticated, multi-clause explanations. 
-5. **OPNER VARIETY**: Ensure consecutive sentences NEVER start with the same word or phrase.
-6. **OBJECTIVE ANALYTICAL TONE**: Avoid promotional marketing adverbs (e.g., "truly", "absolutely", "revolutionary", "best"). Use neutral, fact-driven language.
-7. **STRUCTURAL RICHNESS**: Include at least one Markdown Comparison Table for data/concept breakdown. Use bullet lists only for discrete items.
-8. **E-E-A-T SIGNALS**: Use specialized industry terminology and authoritative phrasing. Use a > blockquote to highlight a specific "Expert Insight" or data point.`;
+<constraints>
+  Tone: Objective, Analytical (NO promotional hyperbole)
+  Banned_Words: ["worth noting", "delve", "furthermore", "moreover", "in conclusion", "revolutionary", "game-changer", "testament to", "elevate your", "unleash"]
+  Mandatory_Elements: ["1+ Markdown Table", "> Expert Insight blockquote"]
+  Structural_Rules: 
+    - "No Intro Fluff: Start answering immediately under headings."
+    - "Direct Answers: If heading is a question, sentence 1 is a bold 50-word direct answer."
+    - "Human Rhythm: Dramatically vary sentence length (mix 5-word and 25-word sentences). Use contractions."
+    - "Opener Variety: Consecutive sentences MUST NOT start with the same word."
+</constraints>
+
+<good_example_of_human_writing>
+**Why SQM matters:** Bufferbloat is the silent killer of video calls. In my testing, I evaluated 50 routers, and enabling SQM consistently dropped latency by 40%. It works by prioritizing tiny ACK packets over massive downloads, keeping your voice stream crystal clear.
+</good_example_of_human_writing>`;
 
         const competitorOutlines = competitors
             .map(c => `### Competitor: ${c.title}\n${c.headings.map((h: any) => `- ${h.text}`).join('\n')}`)
@@ -81,70 +88,30 @@ STRICT WRITING PROTOCOL (V5 HIGH-STANDARD):
 
         const topicList = topics.map((t: any) => t.keyword || t).slice(0, 10).join(', ');
 
-        const globalContext = `
-MAIN KEYWORD: ${keywords}
-RELATED TOPICS (Weave naturally where relevant): ${topicList}
-${entityCtx}
-${internalCtx}
-${serpPrompt}
-${gapInsight}
-`;
+        const globalContext = `MAIN KEYWORD: ${keywords}
+RELATED TOPICS: ${topicList}
+${entityCtx.trim()}
+${internalCtx.trim()}
+${serpPrompt.trim()}
+${gapInsight.trim()}`;
 
         const buildFullArticlePrompt = (outline: any[]) => {
             const outlineContext = outline.map((o: any) => `${'#'.repeat(o.level)} ${o.text}`).join('\n');
 
-            return `
-GLOBAL CONTEXT (Do not output this, just use for knowledge):
+            return `<context>
 ${globalContext}
+</context>
 
-FULL ARTICLE OUTLINE:
+<outline>
 ${outlineContext}
+</outline>
 
-TASK: 
-Write the ENTIRE article following this outline. Your response must be pure Markdown.
-
-CRITICAL MARKDOWN FORMATTING RULES:
-1. Use EXACTLY the heading levels shown in the outline above. H1 (# Title), H2 (## Section), H3 (### Sub-section).
-2. NEVER use **bold text** or any other substitute for headings.
-3. Start your response directly with the H1 heading: "# Title Here".
-4. Each H2/H3 heading MUST appear on its own line, preceded by a blank line.
-5. Write 150-300 words of body content under each H2 section.
-
-📝 CONTENT REQUIREMENTS (CRITICAL):
-- Minimum 1500-2500 words (8000+ Chinese characters) overall.
-- 2-3 full paragraphs under EVERY heading.
-- Include specific examples, data, case studies.
-- Answer What? Why? How? in each section.
-- Ensure E-E-A-T: use specific facts, data points, and expert insights.
-
-🎯 HUMAN WRITING CHARACTERISTICS (MANDATORY):
-- Write naturally like a human expert, NOT as an AI.
-- Use contractions (I'm, you'll, can't, won't, it's).
-- Vary sentence length dramatically (mix 5-word and 25-word sentences).
-- Be conversational and direct, showing personality and opinions.
-- Flowing, natural paragraphs. Do NOT use bullet lists for everything (only for 3+ discrete items).
-
-❌ ABSOLUTELY FORBIDDEN AI PHRASES (Instant failure if used):
-- "It's worth noting that" / "It is important to note"
-- "Delve into" / "Dive deep into"
-- "In conclusion" / "To sum up"
-- "Furthermore" / "Moreover" / "Nevertheless"
-- "At the end of the day"
-- "However, it is important to remember"
-- "A testament to"
-- "The ever-evolving landscape" / "Dynamic landscape"
-- "Unleash the power"
-- "Elevate your"
-- "Game-changer"
-- "Navigating the realm"
-- "In today's digital world"
-
-✅ USE INSTEAD:
-- Simple transitions: "Also", "Plus", "And", "But", "So"
-- Direct statements
-- Natural flow without formal connectors
-- DO NOT include any JSON. Return ONLY raw Markdown.
-`;
+<task>
+Write the ENTIRE article following the outline. 
+Output ONLY raw Markdown. Do NOT include JSON or wrapper text.
+Target: 1500-2500 words, 2-3 paragraphs per H2 heading.
+Enrich content with real data, examples, and the provided Context.
+</task>`;
         };
 
         return {

@@ -2,8 +2,10 @@
 import { DetailedSEOScore, calculateDetailedSEOScore, calculateGEOScore } from '@/lib/utils/seo-scoring';
 import { calculateHumanScore } from '@/lib/utils/ai-detection';
 import { ImageFinder, UnsplashImage } from '@/lib/external/image-finder';
+import { MarkdownImagePlacer } from './utils/image-placer';
 
 export interface EnrichmentOutput {
+    content: string; // The potentially modified content (with images inserted)
     scores: {
         seo: number;
         geo: number;
@@ -118,14 +120,16 @@ export class StellarEnricher {
         // 5. SMART INTERNAL LINK RECOMMENDATIONS (Topic Clusters)
         const internalLinks = this.generateLinkRecommendations(content, keyword, entities, relatedTopics);
 
-        // 6. REAL IMAGE SUGGESTIONS (Zero-latency)
-        const imageSuggestions = ImageFinder.getSuggestedImages(keyword);
+        // 6. REAL IMAGE SUGGESTIONS & INSERTION (Zero-latency Unsplash URLs)
+        const imageSuggestions = ImageFinder.getSuggestedImages(keyword, 3);
+        const finalContent = MarkdownImagePlacer.insertImages(content, imageSuggestions);
 
         return {
+            content: finalContent,
             scores: {
                 seo: seoDetail.overall,
                 geo: geoDetail.score,
-                human: calculateHumanScore(content)
+                human: calculateHumanScore(finalContent)
             },
             breakdown: seoDetail,
             geoBreakdown: geoDetail,

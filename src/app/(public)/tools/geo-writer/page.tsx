@@ -98,6 +98,7 @@ export default function GEOWriterPage() {
             if (data && !data.error) {
                 setFinalResult((prev: any) => ({
                     ...prev,
+                    content: data.content || prev?.content,
                     schema: data.schema || prev?.schema,
                     internalLinks: data.internalLinks?.map((l: any) => l.url) || prev?.internalLinks,
                     social: data.social,
