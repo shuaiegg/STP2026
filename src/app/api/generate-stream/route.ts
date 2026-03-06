@@ -1,6 +1,6 @@
 
 import { streamText } from 'ai';
-import { createOpenAI } from '@ai-sdk/openai'; // <--- CORRECT IMPORT
+import { streamWithFallback, MODEL_CHAIN } from '@/lib/vps-proxy';
 import { StrategyComposer } from '@/lib/skills/skills/stellar/StrategyComposer';
 import { IntelligenceContext } from '@/lib/skills/skills/stellar/types';
 import { humanizePro } from '@/lib/utils/humanize';
@@ -11,32 +11,7 @@ import prisma from "@/lib/prisma";
 
 export const maxDuration = 300;
 
-// 1. CONFIGURE CLOUD PROXY CLIENT
-const vpsProxy = createOpenAI({
-    baseURL: "http://154.12.243.94:8317/v1",
-    apiKey: "sk-5DLE3ByOrXqKOkE5i",
-});
 
-/**
- * FAILOVER MODEL RESOLVER
- * Attempts to find a working model before starting the stream
- */
-async function resolveWorkingModel(models: string[]) {
-    // Note: We probe the models endpoint to check VPS connectivity
-    try {
-        const probe = await fetch("http://154.12.243.94:8317/v1/models", {
-            headers: { 'Authorization': `Bearer sk-5DLE3ByOrXqKOkE5i` }
-        });
-        if (!probe.ok) throw new Error("VPS Gateway Down");
-
-        // If gateway is up, we trust the model list for now or pick the first candidate
-        // In a real prod env, we'd probe each specific model
-        return models[0];
-    } catch (e) {
-        console.warn(`⚠️ [Stream-Failover] Gateway probe failed. Falling back to next candidate.`);
-        return models[1] || models[0];
-    }
-}
 
 /**
  * LIVE HUMANIZER INTERCEPTOR
@@ -148,10 +123,8 @@ export async function POST(req: Request) {
 
         const strategy = StrategyComposer.compose(intelligenceContext, input);
 
-        // 2. RESOLVE BEST AVAILABLE MODEL (Auto-Failover Choice)
-        const candidates = ['gemini-3.1-pro-high', 'claude-opus-4-5-20251101', 'gpt-oss-120b-medium'];
-        const targetModelId = await resolveWorkingModel(candidates);
-        console.log(`🚀 [Stream-Start] Selected Backbone: ${targetModelId}`);
+        // 2. SELECT MODEL CHAIN (Auto-Failover across providers)
+        console.log(`🚀 [Stream-Start] Using model chain: ${MODEL_CHAIN.premium.join(' → ')}`);
 
         // 3. TRIGGER CLOUD PROXY GENERATION
         // We implement a custom ReadableStream to orchestrate section-by-section streaming
@@ -175,8 +148,7 @@ export async function POST(req: Request) {
                         });
                         // Fallback to giant prompt if no outline is available
                         const fallbackPrompt = strategy.buildFullArticlePrompt([{ level: 1, text: input.keywords || 'Article' }]);
-                        const result = await streamText({
-                            model: vpsProxy(targetModelId),
+                        const result = await streamWithFallback(MODEL_CHAIN.premium, {
                             system: strategy.systemPrompt,
                             messages: [{ role: 'user', content: fallbackPrompt }],
                             temperature: 0.7,
@@ -199,13 +171,11 @@ export async function POST(req: Request) {
                         data: { metadata: { progress: '✍️ Writing full-scale article sections (Gemini 3.1 Pro)...' } as any }
                     });
 
-                    const result = await streamText({
-                        model: vpsProxy(targetModelId),
+                    const result = await streamWithFallback(MODEL_CHAIN.premium, {
                         system: strategy.systemPrompt,
                         messages: [{ role: 'user', content: fullArticlePrompt }],
                         temperature: 0.7,
                         onFinish: async ({ text, usage }) => {
-                            // Update the log on success
                             try {
                                 await prisma.skillExecution.update({
                                     where: { id: executionId },
@@ -214,7 +184,7 @@ export async function POST(req: Request) {
                                         output: { content: text } as any,
                                         executionTimeMs: Date.now() - timestamp,
                                         tokensUsed: usage.totalTokens,
-                                        modelUsed: targetModelId,
+                                        modelUsed: MODEL_CHAIN.premium[0],
                                         provider: 'vps-proxy'
                                     }
                                 });

@@ -7,6 +7,8 @@ import { StrategyComposer } from './stellar/StrategyComposer';
 import { ExecutionAgent } from './stellar/ExecutionAgent';
 import { RefiningStudio } from './stellar/RefiningStudio';
 import { StellarEnricher } from './stellar/StellarEnricher';
+import { StellarAuditor } from './stellar/StellarAuditor';
+import { StellarEditor } from './stellar/StellarEditor';
 import { StellarWriterOutput, StellarWriterInput, IntelligenceContext } from './stellar/types';
 import { StellarParser } from './stellar/utils/parser';
 
@@ -122,7 +124,8 @@ OUTPUT FORMAT: Return ONLY markdown headings, one per line. No descriptions, no 
                     const ktIndex = masterOutline.findIndex(item => item.text.toLowerCase().includes('takeaway') || item.text.toLowerCase().includes('conclusion'));
                     const insertIndex = ktIndex !== -1 ? ktIndex : masterOutline.length;
 
-                    masterOutline.splice(insertIndex, 0, { text: 'Frequently Asked Questions', level: 2 });
+                    const fqTitle = /[\u4e00-\u9fa5]/.test(keywords) ? '常见问题解答 (FAQ)' : 'Frequently Asked Questions';
+                    masterOutline.splice(insertIndex, 0, { text: fqTitle, level: 2 });
 
                     paaQuestions.forEach((paa: any, i: number) => {
                         masterOutline.splice(insertIndex + 1 + i, 0, { text: paa.question, level: 3 });
@@ -140,7 +143,7 @@ OUTPUT FORMAT: Return ONLY markdown headings, one per line. No descriptions, no 
                         { text: 'How It Works', level: 2 },
                         { text: 'Best Practices', level: 2 },
                         { text: 'Common Mistakes to Avoid', level: 2 },
-                        { text: 'Frequently Asked Questions', level: 2 },
+                        { text: /[\u4e00-\u9fa5]/.test(keywords) ? '常见问题解答 (FAQ)' : 'Frequently Asked Questions', level: 2 },
                         { text: 'Key Takeaways', level: 2 }
                     ];
                 }
@@ -248,7 +251,8 @@ RULES:
                 ];
 
                 if (intelligence.serpAnalysis?.peopleAlsoAsk && intelligence.serpAnalysis.peopleAlsoAsk.length > 0) {
-                    finalOutline!.push({ text: 'Frequently Asked Questions', level: 2 });
+                    const fqTitle = /[\u4e00-\u9fa5]/.test(keywords) ? '常见问题解答 (FAQ)' : 'Frequently Asked Questions';
+                    finalOutline!.push({ text: fqTitle, level: 2 });
                     intelligence.serpAnalysis.peopleAlsoAsk.slice(0, 2).forEach((paa: any) => {
                         finalOutline!.push({ text: paa.question, level: 3 });
                     });
@@ -260,32 +264,88 @@ RULES:
 
             if (!asset) throw new Error("Execution Phase failed.");
 
-            const refinedAsset = await RefiningStudio.refine(asset, keywords, provider, this);
+            let currentContent = asset;
+            let currentRefinedAsset = await RefiningStudio.refine(currentContent, keywords, provider, this);
+            let enrichment: any;
 
-            // Run enrichment for real scores, schema, social, links, images
-            const enrichment = await StellarEnricher.enrich(
-                refinedAsset.content,
-                refinedAsset.metadata.title || keywords,
-                refinedAsset.metadata.description || '',
-                keywords,
-                intelligence.entities?.map((e: any) => e.title || e.name || e) || [],
-                intelligence.topics?.map((t: any) => t.keyword || t) || []
+            // MULTI-AGENT AUDITOR LOOP (Max 2 Iterations, 60s Timeout)
+            const AUDITOR_TIMEOUT_MS = 60_000;
+            const auditLoop = async () => {
+                const MAX_ITERATIONS = 2;
+                for (let i = 0; i < MAX_ITERATIONS; i++) {
+                    console.log(`\n⏳ [StellarWriter] Multi-Agent Audit Loop - Iteration ${i + 1}/${MAX_ITERATIONS}`);
+
+                    // 1. Enrich & Score the current draft
+                    enrichment = await StellarEnricher.enrich(
+                        currentRefinedAsset.content,
+                        currentRefinedAsset.metadata.title || keywords,
+                        currentRefinedAsset.metadata.description || '',
+                        keywords,
+                        intelligence.entities?.map((e: any) => e.title || e.name || e) || [],
+                        intelligence.topics?.map((t: any) => t.keyword || t) || []
+                    );
+
+                    // 2. Analyst Agent checks the content
+                    const auditReport = StellarAuditor.evaluate(
+                        enrichment.content,
+                        currentRefinedAsset.metadata.title || keywords,
+                        currentRefinedAsset.metadata.description || '',
+                        intelligence
+                    );
+
+                    if (!auditReport.needsRevision || i === MAX_ITERATIONS - 1) {
+                        if (i === MAX_ITERATIONS - 1 && auditReport.needsRevision) {
+                            console.log("⚠️ [StellarWriter] Max iterations reached. Proceeding with current best draft.");
+                        } else {
+                            console.log("✨ [StellarWriter] Auditor approved the content! Scores:", auditReport.scores);
+                        }
+                        break;
+                    }
+
+                    // 3. Editor Agent revises the content based on feedback
+                    console.log(`🚨 [StellarWriter] Auditor found weaknesses: ${auditReport.weaknesses.length} issues. Triggering Editor...`);
+                    const revisedContent = await StellarEditor.revise(enrichment.content, auditReport, intelligence);
+
+                    // Update the asset for the next iteration
+                    currentRefinedAsset.content = revisedContent;
+                }
+            };
+
+            const timeoutPromise = new Promise<void>((_, reject) =>
+                setTimeout(() => reject(new Error('Auditor loop timed out after 60s')), AUDITOR_TIMEOUT_MS)
             );
 
+            try {
+                await Promise.race([auditLoop(), timeoutPromise]);
+            } catch (auditError: any) {
+                console.warn(`⚠️ [StellarWriter] Auditor loop skipped: ${auditError.message}. Using last enriched draft.`);
+                // Ensure enrichment is populated even if loop was skipped entirely
+                if (!enrichment) {
+                    enrichment = await StellarEnricher.enrich(
+                        currentRefinedAsset.content,
+                        currentRefinedAsset.metadata.title || keywords,
+                        currentRefinedAsset.metadata.description || '',
+                        keywords,
+                        intelligence.entities?.map((e: any) => e.title || e.name || e) || [],
+                        intelligence.topics?.map((t: any) => t.keyword || t) || []
+                    );
+                }
+            }
+
             const finalOutput: StellarWriterOutput = {
-                content: enrichment.content || refinedAsset.content,
-                summary: refinedAsset.summary,
+                content: enrichment.content,
+                summary: currentRefinedAsset.summary,
                 seoMetadata: {
-                    title: refinedAsset.metadata.title || keywords,
-                    description: refinedAsset.metadata.description || '',
+                    title: currentRefinedAsset.metadata.title || keywords,
+                    description: currentRefinedAsset.metadata.description || '',
                     keywords: [keywords],
-                    slug: refinedAsset.metadata.slug || keywords.toLowerCase().replace(/\s+/g, '-')
+                    slug: currentRefinedAsset.metadata.slug || keywords.toLowerCase().replace(/\s+/g, '-')
                 },
                 schema: enrichment.schema || {},
                 entities: intelligence.entities,
                 topics: intelligence.topics,
                 competitors: intelligence.competitors,
-                internalLinks: enrichment.internalLinks?.map(l => l.anchor) || [],
+                internalLinks: enrichment.internalLinks || [],
                 imageSuggestions: enrichment.imageSuggestions?.map((img: any) => img.description || img.alt || img.url || String(img)) || [],
                 distribution: {
                     twitter: {
@@ -298,10 +358,10 @@ RULES:
                     }
                 },
                 scores: {
-                    seo: enrichment.scores?.seo || refinedAsset.scores.seo,
-                    geo: enrichment.scores?.geo || refinedAsset.scores.geo
+                    seo: enrichment.scores?.seo || currentRefinedAsset.scores.seo,
+                    geo: enrichment.scores?.geo || currentRefinedAsset.scores.geo
                 },
-                humanScore: refinedAsset.scores.human,
+                humanScore: currentRefinedAsset.scores.human,
                 suggestions: []
             };
 

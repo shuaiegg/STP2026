@@ -111,6 +111,7 @@ Write the ENTIRE article following the outline.
 Output ONLY raw Markdown. Do NOT include JSON or wrapper text.
 Target: 1500-2500 words, 2-3 paragraphs per H2 heading.
 Enrich content with real data, examples, and the provided Context.
+CRITICAL FOR FAQs: If the outline contains a "Frequently Asked Questions" or "常见问题解答 (FAQ)" section, you MUST write detailed, 2-3 sentence answers for EVERY question listed under it. NEVER just list the questions without answers.
 </task>`;
         };
 

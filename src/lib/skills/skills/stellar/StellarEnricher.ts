@@ -27,7 +27,16 @@ export class StellarEnricher {
     /**
      * Performs post-generation enrichment: Scoring, Schema, Social, and Images.
      */
-    static async enrich(content: string, title: string, description: string, keyword: string, entities: string[] = [], relatedTopics: string[] = [], authorName: string = 'ScaleToTop'): Promise<EnrichmentOutput> {
+    static async enrich(
+        content: string,
+        title: string,
+        description: string,
+        keyword: string,
+        entities: string[] = [],
+        relatedTopics: string[] = [],
+        authorName: string = 'ScaleToTop',
+        autoVisuals: boolean = true
+    ): Promise<EnrichmentOutput> {
         console.log("💎 [StellarEnricher] Starting post-generation enrichment...");
 
         // 0. Extract images from markdown content
@@ -122,7 +131,7 @@ export class StellarEnricher {
 
         // 6. REAL IMAGE SUGGESTIONS & INSERTION (Zero-latency Unsplash URLs)
         const imageSuggestions = ImageFinder.getSuggestedImages(keyword, 3);
-        const finalContent = MarkdownImagePlacer.insertImages(content, imageSuggestions);
+        const finalContent = autoVisuals ? MarkdownImagePlacer.insertImages(content, imageSuggestions) : content;
 
         return {
             content: finalContent,
@@ -191,38 +200,89 @@ export class StellarEnricher {
         return faqs.slice(0, 8); // Cap at 8 to keep schema reasonable
     }
     /**
-     * Generates semantic link recommendations based on content gaps and entities.
+     * Generates semantic internal link recommendations (topic cluster strategy).
+     * Produces 3–5 reliable article suggestions regardless of input language.
      */
     private static generateLinkRecommendations(content: string, keyword: string, entities: string[], relatedTopics: string[]): { anchor: string; topic: string; reason: string }[] {
+        const isChinese = /[\u4e00-\u9fa5]/.test(keyword);
         const recommendations: { anchor: string; topic: string; reason: string }[] = [];
-        const plainText = content.replace(/[*_#`\[\]]/g, ' ');
 
-        // 1. Primary Entity Anchor
-        if (entities.length > 0) {
-            const topEntity = entities[0];
-            if (plainText.toLowerCase().includes(topEntity.toLowerCase())) {
-                recommendations.push({
-                    anchor: topEntity,
-                    topic: `${topEntity} Advanced Implementation`,
-                    reason: `Provides technical depth for the primary entity "${topEntity}" identified in this post.`
-                });
-            }
-        }
-
-        // 2. Related Topic / Concept Gap
-        const concepts = relatedTopics.length > 0 ? relatedTopics : [`Benefits of ${keyword}`, `Future of ${keyword}`];
-        concepts.slice(0, 2).forEach(topic => {
-            // Find a generic anchor word if the specific topic isn't mentioned
-            const commonWords = ['best practices', 'benefits', 'challenges', 'future', 'guide', 'solutions'];
-            const foundAnchor = commonWords.find(word => plainText.toLowerCase().includes(word));
-
-            recommendations.push({
-                anchor: foundAnchor || keyword,
-                topic: topic,
-                reason: `Strengthens the topic cluster for ${keyword} by linking to complementary ${topic} details.`
-            });
+        // --- Template 1: In-Depth Guide (always applicable) ---
+        const guideTitle = isChinese
+            ? `${keyword}完整指南：从入门到精通`
+            : `The Complete Guide to ${keyword}: From Beginner to Expert`;
+        recommendations.push({
+            anchor: keyword,
+            topic: guideTitle,
+            reason: isChinese
+                ? `作为主题集群中心页，覆盖 ${keyword} 的全流程知识，为读者提供深度参考。`
+                : `Serves as the pillar page for the ${keyword} topic cluster, covering end-to-end knowledge.`
         });
 
-        return recommendations.slice(0, 3);
+        // --- Template 2: Common Mistakes / Pitfalls ---
+        const mistakesTitle = isChinese
+            ? `${keyword}常见错误：新手必须避开的10个坑`
+            : `10 Common ${keyword} Mistakes to Avoid (Beginner to Pro)`;
+        recommendations.push({
+            anchor: isChinese ? `${keyword}误区` : `${keyword} mistakes`,
+            topic: mistakesTitle,
+            reason: isChinese
+                ? `从反面角度切入，补充本文未覆盖的风险防范视角，留住中途跳出的读者。`
+                : `Covers the risk-prevention angle not addressed in this post, reducing bounce rate by answering "what to avoid".`
+        });
+
+        // --- Template 3: Use relatedTopics if available, else use Tools/Comparison template ---
+        if (relatedTopics.length > 0) {
+            const relatedKeyword = relatedTopics[0];
+            const relatedTitle = isChinese
+                ? `${relatedKeyword}与${keyword}：深度对比与选择指南`
+                : `${relatedKeyword} vs ${keyword}: In-Depth Comparison Guide`;
+            recommendations.push({
+                anchor: typeof relatedKeyword === 'string' ? relatedKeyword : keyword,
+                topic: relatedTitle,
+                reason: isChinese
+                    ? `覆盖读者在搜索 ${keyword} 时高频出现的对比类意图，强化话题权威性。`
+                    : `Covers the comparative search intent frequently paired with ${keyword} queries, boosting topical authority.`
+            });
+        } else {
+            const toolsTitle = isChinese
+                ? `${keyword}最佳工具推荐：${new Date().getFullYear()}年完整测评`
+                : `Best ${keyword} Tools in ${new Date().getFullYear()}: Complete Review`;
+            recommendations.push({
+                anchor: isChinese ? `${keyword}工具` : `${keyword} tools`,
+                topic: toolsTitle,
+                reason: isChinese
+                    ? `工具类文章搜索量大、转化高，是 ${keyword} 话题集群不可缺少的支柱页之一。`
+                    : `Tool roundups drive high-intent traffic and complement informational content in the ${keyword} cluster.`
+            });
+        }
+
+        // --- Template 4: Use top entity or Case Study ---
+        if (entities.length > 0) {
+            const entity = entities[0];
+            const caseTitle = isChinese
+                ? `${entity}成功案例：${keyword}的真实落地实践`
+                : `${entity} Case Study: Real-World ${keyword} Implementation`;
+            recommendations.push({
+                anchor: entity,
+                topic: caseTitle,
+                reason: isChinese
+                    ? `真实案例能大幅提升 E-E-A-T 可信度，让读者从理论走向实践。`
+                    : `Real-world case studies boost E-E-A-T signals and help readers bridge theory-to-practice gaps.`
+            });
+        } else {
+            const howToTitle = isChinese
+                ? `${keyword}实操教程：一步一步带你做出效果`
+                : `How to ${keyword}: A Step-by-Step Tutorial That Actually Works`;
+            recommendations.push({
+                anchor: isChinese ? `${keyword}教程` : `${keyword} tutorial`,
+                topic: howToTitle,
+                reason: isChinese
+                    ? `操作型内容是话题集群中搜索量最高的类型之一，补充读者"怎么做"的核心需求。`
+                    : `How-to content captures the highest-volume "how to" search intent within the ${keyword} cluster.`
+            });
+        }
+
+        return recommendations;
     }
 }

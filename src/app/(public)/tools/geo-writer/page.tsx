@@ -90,7 +90,8 @@ export default function GEOWriterPage() {
                         : finalResult.seoMetadata.description,
                     keyword: selectedKeyword || form.keywords,
                     entities: cachedIntelligence?.entities || [],
-                    relatedTopics: researchData?.map((t: any) => t.keyword) || []
+                    relatedTopics: researchData?.map((t: any) => t.keyword) || [],
+                    autoVisuals: form.autoVisuals
                 })
             });
 
@@ -100,7 +101,7 @@ export default function GEOWriterPage() {
                     ...prev,
                     content: data.content || prev?.content,
                     schema: data.schema || prev?.schema,
-                    internalLinks: data.internalLinks?.map((l: any) => l.url) || prev?.internalLinks,
+                    internalLinks: data.internalLinks || prev?.internalLinks,
                     social: data.social,
                     detailedSEOScore: data.breakdown,
                     scores: {
@@ -1520,7 +1521,7 @@ export default function GEOWriterPage() {
                                                 <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-10 rounded-2xl">
                                                     <div className="flex flex-col items-center gap-3">
                                                         <Loader2 className="animate-spin text-violet-400" size={32} />
-                                                        <span className="text-violet-400 font-bold animate-pulse">正在提取真实 Schema...</span>
+                                                        <span className="text-violet-400 font-bold animate-pulse">AI Agent 严格审查及强化中...</span>
                                                     </div>
                                                 </div>
                                             )}
@@ -1636,19 +1637,32 @@ export default function GEOWriterPage() {
                                             <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex items-center justify-center z-10 rounded-xl">
                                                 <div className="flex items-center gap-2">
                                                     <Loader2 className="animate-spin text-brand-primary" size={16} />
-                                                    <span className="text-[10px] font-black text-brand-primary uppercase">正在通过 AI 匹配真实内链...</span>
+                                                    <span className="text-[10px] font-black text-brand-primary uppercase">主编 Agent 正在深度重写优化...</span>
                                                 </div>
                                             </div>
                                         )}
-                                        {finalResult?.internalLinks?.map((link: string, i: number) => (
-                                            <div key={i} className="flex items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-2xl hover:border-brand-primary transition-all group">
-                                                <div className="flex items-center gap-3 truncate">
-                                                    <div className="w-1.5 h-1.5 rounded-full bg-brand-primary group-hover:scale-150 transition-transform" />
-                                                    <span className="text-xs font-mono font-bold text-slate-600 truncate">/{link}</span>
+                                        {finalResult?.internalLinks?.filter(Boolean).map((link: any, i: number) => {
+                                            const topic = typeof link === 'string' ? link : link.topic;
+                                            const anchor = typeof link === 'string' ? link : link.anchor;
+                                            const reason = typeof link === 'string' ? null : link.reason;
+                                            return (
+                                                <div key={i} className="p-4 bg-slate-50 border border-slate-100 rounded-2xl hover:border-brand-primary transition-all group">
+                                                    <div className="flex items-start gap-3">
+                                                        <div className="w-6 h-6 rounded-full bg-brand-primary text-white flex items-center justify-center shrink-0 text-[10px] font-black mt-0.5">{i + 1}</div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-sm font-bold text-slate-800 leading-snug">{topic}</p>
+                                                            {reason && <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">{reason}</p>}
+                                                            {anchor && (
+                                                                <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 bg-brand-primary/10 rounded-md">
+                                                                    <LinkIcon size={10} className="text-brand-primary" />
+                                                                    <span className="text-[10px] font-mono font-bold text-brand-primary">{anchor}</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <ChevronRight size={14} className="text-slate-300" />
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                         {!finalResult?.internalLinks?.length && (
                                             <div className="text-slate-400 text-xs italic">智作完成后显示内链建议...</div>
                                         )}
