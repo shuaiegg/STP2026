@@ -58,6 +58,21 @@ export function SEOScorePanel({ score }: SEOScorePanelProps) {
                     icon={<ImageIcon size={20} />}
                     item={score.breakdown.images}
                 />
+                <ScoreDetailCard
+                    label="EEAT (经验与权威)"
+                    icon={<CheckCircle2 size={20} />}
+                    item={score.breakdown.eeat}
+                />
+                <ScoreDetailCard
+                    label="信息价值密度"
+                    icon={<TrendingUp size={20} />}
+                    item={score.breakdown.valueDensity}
+                />
+                <ScoreDetailCard
+                    label="情感与偏见 (Sentiment)"
+                    icon={<AlertCircle size={20} />}
+                    item={score.breakdown.sentiment}
+                />
             </div>
         </div>
     );
@@ -211,7 +226,12 @@ function formatMetricKey(key: string): string {
         imageCount: '图片数量',
         imagesWithAlt: 'Alt文本',
         total: '总计',
-        withAlt: '已优化'
+        withAlt: '已优化',
+        experienceSignals: '经验信号',
+        pointDensity: '价值密度',
+        fillerCount: '套话数量',
+        biasWords: '偏见词汇',
+        posNegRatio: '情感均衡比'
     };
     return map[key] || key;
 }

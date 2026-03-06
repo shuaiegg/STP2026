@@ -17,7 +17,7 @@ export interface EnrichmentOutput {
         linkedin: string;
         meta: string;
     };
-    internalLinks: { url: string; title: string }[];
+    internalLinks: { anchor: string; topic: string; reason: string }[];
     imageSuggestions: UnsplashImage[];
 }
 
@@ -59,7 +59,7 @@ export class StellarEnricher {
         const cleanTitle = title.replace(/\*\*/g, '').trim();
 
         // 1. Calculate SEO Score (pass extracted images and related topics for LSI check)
-        const seoDetail = calculateDetailedSEOScore(cleanTitle, finalDescription, content, keyword, contentImages, relatedTopics);
+        const seoDetail = calculateDetailedSEOScore(cleanTitle, finalDescription, content, keyword, contentImages, relatedTopics, authorName);
 
         // 2. Calculate GEO Score
         const geoDetail = calculateGEOScore(content, entities, relatedTopics);
@@ -115,15 +115,8 @@ export class StellarEnricher {
             meta: `${finalDescription || description}`
         };
 
-        // 5. SMART INTERNAL LINKS
-        const internalLinks = (relatedTopics.length > 0 ? relatedTopics : [
-            `${keyword} maintenance`,
-            `future of ${keyword}`,
-            `${keyword} vs traditional solutions`
-        ]).slice(0, 3).map(topic => ({
-            url: `/articles/${topic.toLowerCase().replace(/\s+/g, '-')}`,
-            title: topic.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
-        }));
+        // 5. SMART INTERNAL LINK RECOMMENDATIONS (Topic Clusters)
+        const internalLinks = this.generateLinkRecommendations(content, keyword, entities, relatedTopics);
 
         // 6. REAL IMAGE SUGGESTIONS (Zero-latency)
         const imageSuggestions = ImageFinder.getSuggestedImages(keyword);
@@ -192,5 +185,40 @@ export class StellarEnricher {
         }
 
         return faqs.slice(0, 8); // Cap at 8 to keep schema reasonable
+    }
+    /**
+     * Generates semantic link recommendations based on content gaps and entities.
+     */
+    private static generateLinkRecommendations(content: string, keyword: string, entities: string[], relatedTopics: string[]): { anchor: string; topic: string; reason: string }[] {
+        const recommendations: { anchor: string; topic: string; reason: string }[] = [];
+        const plainText = content.replace(/[*_#`\[\]]/g, ' ');
+
+        // 1. Primary Entity Anchor
+        if (entities.length > 0) {
+            const topEntity = entities[0];
+            if (plainText.toLowerCase().includes(topEntity.toLowerCase())) {
+                recommendations.push({
+                    anchor: topEntity,
+                    topic: `${topEntity} Advanced Implementation`,
+                    reason: `Provides technical depth for the primary entity "${topEntity}" identified in this post.`
+                });
+            }
+        }
+
+        // 2. Related Topic / Concept Gap
+        const concepts = relatedTopics.length > 0 ? relatedTopics : [`Benefits of ${keyword}`, `Future of ${keyword}`];
+        concepts.slice(0, 2).forEach(topic => {
+            // Find a generic anchor word if the specific topic isn't mentioned
+            const commonWords = ['best practices', 'benefits', 'challenges', 'future', 'guide', 'solutions'];
+            const foundAnchor = commonWords.find(word => plainText.toLowerCase().includes(word));
+
+            recommendations.push({
+                anchor: foundAnchor || keyword,
+                topic: topic,
+                reason: `Strengthens the topic cluster for ${keyword} by linking to complementary ${topic} details.`
+            });
+        });
+
+        return recommendations.slice(0, 3);
     }
 }

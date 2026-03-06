@@ -21,6 +21,9 @@ export interface DetailedSEOScore {
         readability: ScoreItem;
         structure: ScoreItem;
         images: ScoreItem;
+        eeat: ScoreItem;
+        valueDensity: ScoreItem;
+        sentiment: ScoreItem;
     };
 }
 
@@ -638,6 +641,134 @@ export function calculateGEOScore(content: string, entities: string[] = [], topi
 }
 
 /**
+ * 评估 EEAT (Experience, Expertise, Authoritativeness, Trustworthiness)
+ * V5 Advanced: 侧重于识别“第一人称经验”和“专业背书”
+ */
+export function calculateEEATScore(content: string, authorName: string = ''): ScoreItem {
+    const issues: string[] = [];
+    const suggestions: string[] = [];
+    let score = 80; // 基础分
+
+    // 1. 经验检测 (Experience - 核心 GEO 权重)
+    // 搜索“我测试过”、“在我们的实验中”等第一人称行动词
+    const experienceRegex = /(?:in my testing|I tested|we discovered|after analyzing|based on our research|经过我们的测试|实际测试发现|在我的实践中|笔者认为)/gi;
+    const expMatches = content.match(experienceRegex) || [];
+    if (expMatches.length >= 2) {
+        score += 15;
+    } else {
+        score -= 10;
+        suggestions.push('增加第一人称的“实操经验”描述（如“经过测试发现”），提升 GEO 引擎的信任分');
+    }
+
+    // 2. 权威背景词 (Expertise)
+    const expertiseWords = /(?:expert|certified|professional|years of experience|specialist|权威|认证|资深|多年经验)/gi;
+    if (expertiseWords.test(content) || (authorName && authorName !== 'ScaleToTop')) {
+        score += 5;
+    } else {
+        suggestions.push('提及作者的专业资质或相关领域的从业经验');
+    }
+
+    // 3. 信任信号 (Trust - 外部引用已在 calculateGEOScore 处理，此处侧重免责或更新时间)
+    const trustSignals = /(?:disclaimer|updated as of|last verified|免责声明|版本更新于|数据截止至)/gi;
+    if (trustSignals.test(content)) {
+        score += 5;
+    } else {
+        suggestions.push('添加内容更新时间或免责声明等信任信号');
+    }
+
+    return {
+        score: Math.min(100, Math.max(0, score)),
+        weight: 0.1,
+        status: score >= 90 ? 'excellent' : score >= 70 ? 'good' : score >= 50 ? 'needs-improvement' : 'critical',
+        issues,
+        suggestions,
+        metrics: { experienceSignals: expMatches.length }
+    };
+}
+
+/**
+ * 评估信息价值密度 (Value Density)
+ * 检查“废话率”和“干货输出率”
+ */
+export function calculateValueDensity(content: string): ScoreItem {
+    const issues: string[] = [];
+    const suggestions: string[] = [];
+    let score = 100;
+
+    const isChinese = isChineseContent(content);
+    const wordCount = isChinese ? content.replace(/\s+/g, '').length : content.split(/\s+/).length;
+
+    // 1. 结构化元素密度 (核心观点包装)
+    const lists = (content.match(/^[-*•]\s+|^\d+\.\s+/gm) || []).length;
+    const tables = (content.match(/\|/g) || []).length / 3; // 估算行数
+    const bolds = (content.match(/\*\*(.*?)\*\*/g) || []).length;
+
+    const pointDensity = ((lists + tables + bolds) / (wordCount / 500)) * 10;
+    if (pointDensity < 15) {
+        score -= 20;
+        issues.push(`信息承载密度较低 (WPKT: ${pointDensity.toFixed(1)})`);
+        suggestions.push('使用更多列表、表格和加粗关键词来浓缩核心观点，减少大段铺垫');
+    }
+
+    // 2. 废话/套话检测 (Filler detection)
+    const fillerRegex = /(?:it is important to note that|as we have seen|as mentioned before|generally speaking|可以说是|从某种意义上说|不得不说|众所周知)/gi;
+    const fillers = (content.match(fillerRegex) || []).length;
+    if (fillers > (wordCount / 200)) {
+        score -= min(30, fillers * 5);
+        issues.push(`侦测到过多过渡套话 (${fillers} 处)`);
+        suggestions.push('删减“综上所述”、“众所周知”等无其实际含义的填充词');
+    }
+
+    return {
+        score: Math.min(100, Math.max(0, score)),
+        weight: 0.1,
+        status: score >= 85 ? 'excellent' : score >= 65 ? 'good' : score >= 45 ? 'needs-improvement' : 'critical',
+        issues,
+        suggestions,
+        metrics: { pointDensity: pointDensity.toFixed(1), fillerCount: fillers }
+    };
+}
+
+/**
+ * 评估情感与偏见 (Sentiment & Bias)
+ * 检查内容是否过于主观或含有偏激词汇
+ */
+export function calculateSentimentScore(content: string): ScoreItem {
+    const issues: string[] = [];
+    const suggestions: string[] = [];
+    let score = 100;
+
+    // 1. 极端/夸张词汇检测 (Hyperbole detection)
+    const biasRegex = /(?:absolute best|revolutionary|miracle|guaranteed|unbelievable|must buy|life-changing|最强|第一|颠覆|神级|必须买|唯一)/gi;
+    const biasMatches = content.match(biasRegex) || [];
+    if (biasMatches.length > 3) {
+        score -= (biasMatches.length * 5);
+        issues.push(`侦测到过多主观夸张词汇 (${biasMatches.length} 处)`);
+        suggestions.push('使用更加中立、客观的第三方语气，减少极端修饰词以提升 GEO 信任度');
+    }
+
+    // 2. 情感色彩平衡 (基本判断)
+    const positiveWords = /(?:great|excellent|amazing|good|positive|优势|优点|提升)/gi;
+    const negativeWords = /(?:bad|poor|awful|issue|problem|negative|缺点|问题|风险)/gi;
+    const posCount = (content.match(positiveWords) || []).length;
+    const negCount = (content.match(negativeWords) || []).length;
+
+    if (posCount > 0 && negCount === 0) {
+        score -= 10;
+        suggestions.push('考虑加入适当的“局限性”或“风险提示”分析，使内容显得更客观、全面');
+    }
+
+    return {
+        score: Math.min(100, Math.max(0, score)),
+        weight: 0.05,
+        status: score >= 90 ? 'excellent' : score >= 75 ? 'good' : score >= 50 ? 'needs-improvement' : 'critical',
+        issues,
+        suggestions,
+        metrics: { biasWords: biasMatches.length, posNegRatio: negCount === 0 ? posCount : (posCount / negCount).toFixed(1) }
+    };
+}
+
+/**
  * 计算详细的SEO评分
  */
 export function calculateDetailedSEOScore(
@@ -646,7 +777,8 @@ export function calculateDetailedSEOScore(
     content: string,
     keyword: string,
     images: any[] = [],
-    relatedTopics: string[] = [] // 传递 LSI 关键词
+    relatedTopics: string[] = [],
+    authorName: string = ''
 ): DetailedSEOScore {
     const titleScore = evaluateTitle(title, keyword);
     const descScore = evaluateDescription(description, keyword);
@@ -654,15 +786,21 @@ export function calculateDetailedSEOScore(
     const readabilityScore = evaluateReadability(content);
     const structureScore = evaluateStructure(content, images, keyword);
     const imagesScore = evaluateImages(images, keyword);
+    const eeatScore = calculateEEATScore(content, authorName);
+    const valueDensityScore = calculateValueDensity(content);
+    const sentimentScore = calculateSentimentScore(content);
 
-    // 加权计算总分
+    // 加权计算总分 (调整权重分配)
     const overall = Math.round(
-        titleScore.score * titleScore.weight +
-        descScore.score * descScore.weight +
-        keywordScore.score * keywordScore.weight +
-        readabilityScore.score * readabilityScore.weight +
-        structureScore.score * structureScore.weight +
-        imagesScore.score * imagesScore.weight
+        titleScore.score * 0.15 +
+        descScore.score * 0.10 +
+        keywordScore.score * 0.20 +
+        readabilityScore.score * 0.10 +
+        structureScore.score * 0.15 +
+        imagesScore.score * 0.05 +
+        eeatScore.score * 0.10 +
+        valueDensityScore.score * 0.10 +
+        sentimentScore.score * 0.05
     );
 
     return {
@@ -673,7 +811,10 @@ export function calculateDetailedSEOScore(
             keywords: keywordScore,
             readability: readabilityScore,
             structure: structureScore,
-            images: imagesScore
+            images: imagesScore,
+            eeat: eeatScore,
+            valueDensity: valueDensityScore,
+            sentiment: sentimentScore
         }
     };
 }
