@@ -130,8 +130,112 @@ model User {
   sessions      Session[]
   executions    SkillExecution[]
   trackedArticles TrackedArticle[]
+  sites           Site[]
 
   @@index([email])
+}
+
+/// Site - Managed websites for SEO intelligence
+model Site {
+  id            String   @id @default(uuid())
+  userId        String
+  domain        String
+  name          String?
+  targetMarkets String[]
+  seedKeywords  String[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  audits         SiteAudit[]
+  keywords       SiteKeyword[]
+  competitors    Competitor[]
+  contentPlans   ContentPlan[]
+  gscConnections GscConnection[]
+
+  @@index([userId])
+  @@index([domain])
+}
+
+model SiteAudit {
+  id           String   @id @default(uuid())
+  siteId       String
+  site         Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  status       String   // queued / running / done / failed
+  techScore    Int?
+  contentScore Int?
+  geoScore     Int?
+  report       Json?
+  createdAt    DateTime @default(now())
+
+  @@index([siteId])
+}
+
+model SiteKeyword {
+  id          String   @id @default(uuid())
+  siteId      String
+  site        Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  keyword     String
+  volume      Int?
+  difficulty  Int?
+  position    Int?
+  clicks      Int?
+  impressions Int?
+  language    String?
+  updatedAt   DateTime @updatedAt
+
+  @@index([siteId])
+  @@index([keyword])
+}
+
+model Competitor {
+  id      String   @id @default(uuid())
+  siteId  String
+  site    Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  domain  String
+  topics  String[]
+
+  @@index([siteId])
+}
+
+model ContentPlan {
+  id        String           @id @default(uuid())
+  siteId    String
+  site      Site             @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  title     String
+  articles  PlannedArticle[]
+  createdAt DateTime         @default(now())
+
+  @@index([siteId])
+}
+
+model PlannedArticle {
+  id            String      @id @default(uuid())
+  contentPlanId String
+  contentPlan   ContentPlan @relation(fields: [contentPlanId], references: [id], onDelete: Cascade)
+  title         String
+  keyword       String
+  volume        Int?
+  language      String
+  pillar        Boolean     @default(false)
+  clusterOf     String?
+  priority      Int         @default(0)
+  status        String      @default("planned")
+  articleId     String?
+
+  @@index([contentPlanId])
+}
+
+model GscConnection {
+  id           String    @id @default(uuid())
+  siteId       String
+  site         Site      @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  accessToken  String
+  refreshToken String
+  expiresAt    DateTime
+  lastSyncAt   DateTime?
+
+  @@index([siteId])
 }
 
 /// TrackedArticle - Closed-loop verification for GEO citations

@@ -8,8 +8,21 @@ const globalForPrisma = globalThis as unknown as {
 export const prisma =
     globalForPrisma.prisma ??
     new PrismaClient({
-        log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+        log: process.env.NODE_ENV === 'development' ? [
+            { emit: 'event', level: 'query' },
+            { emit: 'stdout', level: 'error' },
+            { emit: 'stdout', level: 'warn' },
+        ] : ['error'],
     });
+
+if (process.env.NODE_ENV === 'development' && !globalForPrisma.prisma) {
+    (prisma as any).$on('query', (e: any) => {
+        console.log(`[PRISMA QUERY] ${e.query}`);
+        // Log a shortened stack trace to find the origin
+        const stack = new Error().stack?.split('\n').slice(1, 5).join('\n');
+        console.log(`[STACK]\n${stack}\n`);
+    });
+}
 
 if (process.env.NODE_ENV !== 'production') {
     globalForPrisma.prisma = prisma;

@@ -139,6 +139,8 @@ export interface IAIProvider {
     name: AIProviderName;
     /** Available models */
     models: AIModel[];
+    /** Get the default model for the provider */
+    getDefaultModel(): AIModel;
     /** Generate content using AI */
     generateContent(
         prompt: string,
