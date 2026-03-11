@@ -25,12 +25,13 @@ import { AuditHistoryPanel } from './components/AuditHistoryPanel';
 import { PerformanceDashboard } from './components/PerformanceDashboard';
 import { Ga4PerformanceDashboard } from './components/Ga4PerformanceDashboard';
 import { SiteSwitcher } from './components/SiteSwitcher';
+import { StrategyBoard } from './components/StrategyBoard';
 
 export default function SiteDetailsPage({ params }: { params: Promise<{ siteId: string }> }) {
     const { siteId } = use(params);
     const router = useRouter();
     const [site, setSite] = useState<SiteRecord | null>(null);
-    const [activeTab, setActiveTab] = useState<'overview' | 'audits' | 'competitors' | 'performance' | 'traffic' | 'integrations'>('overview');
+    const [activeTab, setActiveTab] = useState<'strategy' | 'overview' | 'audits' | 'competitors' | 'performance' | 'traffic' | 'integrations'>('strategy');
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -71,10 +72,10 @@ export default function SiteDetailsPage({ params }: { params: Promise<{ siteId: 
                                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-tight">技术得分</span>
                                     <div className="flex items-center gap-1.5">
                                         <div className={`w-1.5 h-1.5 rounded-full ${(site.latestAudit.techScore || 0) >= 80 ? 'bg-emerald-500' :
-                                                (site.latestAudit.techScore || 0) >= 50 ? 'bg-amber-500' : 'bg-rose-500'
+                                            (site.latestAudit.techScore || 0) >= 50 ? 'bg-amber-500' : 'bg-rose-500'
                                             }`} />
                                         <span className={`text-sm font-bold font-mono ${(site.latestAudit.techScore || 0) >= 80 ? 'text-emerald-600' :
-                                                (site.latestAudit.techScore || 0) >= 50 ? 'text-amber-600' : 'text-rose-600'
+                                            (site.latestAudit.techScore || 0) >= 50 ? 'text-amber-600' : 'text-rose-600'
                                             }`}>
                                             {site.latestAudit.techScore ?? '--'}
                                         </span>
@@ -110,10 +111,17 @@ export default function SiteDetailsPage({ params }: { params: Promise<{ siteId: 
             {/* Tabs */}
             <div className="flex border-b border-slate-200">
                 <button
+                    onClick={() => setActiveTab('strategy')}
+                    className={`px-4 py-3 text-sm font-black border-b-2 transition-colors flex items-center gap-1.5 ${activeTab === 'strategy' ? 'border-brand-primary text-brand-primary tracking-wide' : 'border-transparent text-slate-500 hover:text-brand-primary/80 hover:border-brand-primary/30'}`}
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2" /><polyline points="2 17 12 22 22 17" /><polyline points="2 12 12 17 22 12" /></svg>
+                    战略枢纽
+                </button>
+                <button
                     onClick={() => setActiveTab('overview')}
                     className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'overview' ? 'border-brand-primary text-brand-primary' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}
                 >
-                    概览
+                    体检概览
                 </button>
                 <button
                     onClick={() => setActiveTab('audits')}
@@ -152,6 +160,10 @@ export default function SiteDetailsPage({ params }: { params: Promise<{ siteId: 
 
             {/* Tab Content */}
             <div className="pt-4">
+                {activeTab === 'strategy' && (
+                    <StrategyBoard siteId={site.id} />
+                )}
+
                 {activeTab === 'overview' && (
                     <OverviewPanel siteId={site.id} domain={site.domain} onSwitchTab={(tab) => setActiveTab(tab as any)} />
                 )}

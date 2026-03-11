@@ -116,19 +116,19 @@ model PreviewToken {
 
 /// User - Admin and editor users for the backend
 model User {
-  id            String              @id @default(uuid())
-  email         String              @unique
-  name          String?
-  role          UserRole            @default(USER)
-  createdAt     DateTime            @default(now())
-  updatedAt     DateTime            @updatedAt
-  emailVerified Boolean             @default(false)
-  image         String?
-  credits       Int                 @default(0)
-  accounts      Account[]
-  transactions  CreditTransaction[]
-  sessions      Session[]
-  executions    SkillExecution[]
+  id              String              @id @default(uuid())
+  email           String              @unique
+  name            String?
+  role            UserRole            @default(USER)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  emailVerified   Boolean             @default(false)
+  image           String?
+  credits         Int                 @default(0)
+  accounts        Account[]
+  transactions    CreditTransaction[]
+  sessions        Session[]
+  executions      SkillExecution[]
   trackedArticles TrackedArticle[]
   sites           Site[]
 
@@ -137,15 +137,15 @@ model User {
 
 /// Site - Managed websites for SEO intelligence
 model Site {
-  id            String   @id @default(uuid())
-  userId        String
-  domain        String
-  name          String?
-  targetMarkets String[]
-  seedKeywords  String[]
-  businessOntology Json?   // Stores extracted coreOfferings, targetAudience, painPoints, idealTopicMap
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id               String   @id @default(uuid())
+  userId           String
+  domain           String
+  name             String?
+  targetMarkets    String[]
+  seedKeywords     String[]
+  businessOntology Json? // Stores extracted coreOfferings, targetAudience, painPoints, idealTopicMap
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   audits         SiteAudit[]
@@ -163,7 +163,7 @@ model SiteAudit {
   id           String   @id @default(uuid())
   siteId       String
   site         Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
-  status       String   // queued / running / done / failed
+  status       String // queued / running / done / failed
   techScore    Int?
   contentScore Int?
   geoScore     Int?
@@ -191,41 +191,66 @@ model SiteKeyword {
 }
 
 model Competitor {
-  id      String   @id @default(uuid())
-  siteId  String
-  site    Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
-  domain  String
-  topics  String[]
+  id     String   @id @default(uuid())
+  siteId String
+  site   Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  domain String
+  topics String[]
 
   @@index([siteId])
 }
 
+enum StrategyStatus {
+  IDEATION // AI suggested, user hasn't approved
+  PLANNED // User approved, active in Kanban
+  IN_PROGRESS // GEO Writer is currently drafting
+  COMPLETED // Article published / Action executed
+  ARCHIVED // Dismissed or no longer relevant
+}
+
+enum TargetChannel {
+  SEO
+  GOOGLE_ADS
+  META_ADS
+}
+
 model ContentPlan {
-  id        String           @id @default(uuid())
-  siteId    String
-  site      Site             @relation(fields: [siteId], references: [id], onDelete: Cascade)
-  title     String
-  articles  PlannedArticle[]
-  createdAt DateTime         @default(now())
+  id          String           @id @default(uuid())
+  siteId      String
+  site        Site             @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  title       String // E.g., The core "Pillar" or "Campaign" name
+  description String? // Context for the AI to understand this entire cluster
+  status      StrategyStatus   @default(IDEATION)
+  theme       String? // e.g., "B2B Automation", "CRM Features"
+  priority    Int              @default(0) // Order of columns in Kanban
+  articles    PlannedArticle[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
 
   @@index([siteId])
 }
 
 model PlannedArticle {
-  id            String      @id @default(uuid())
-  contentPlanId String
-  contentPlan   ContentPlan @relation(fields: [contentPlanId], references: [id], onDelete: Cascade)
-  title         String
-  keyword       String
-  volume        Int?
-  language      String
-  pillar        Boolean     @default(false)
-  clusterOf     String?
-  priority      Int         @default(0)
-  status        String      @default("planned")
-  articleId     String?
+  id             String         @id @default(uuid())
+  contentPlanId  String
+  contentPlan    ContentPlan    @relation(fields: [contentPlanId], references: [id], onDelete: Cascade)
+  title          String // Proposed title
+  keyword        String // Target primary keyword
+  volume         Int?
+  difficulty     Int?
+  language       String
+  pillar         Boolean        @default(false)
+  clusterOf      String? // Parent article ID if this is a sub-cluster
+  kanbanOrder    Int            @default(0) // Vertical order within the Pillar column
+  status         StrategyStatus @default(IDEATION)
+  targetChannel  TargetChannel  @default(SEO)
+  articleId      String? // Link to actual TrackedArticle/Content when generated
+  estimatedValue Float? // E.g., saved CPC cost if SEO replaces Ads
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
 
   @@index([contentPlanId])
+  @@index([status])
 }
 
 model GscConnection {
@@ -415,7 +440,7 @@ enum TransactionType {
 model SkillConfig {
   id          String   @id @default(uuid())
   name        String   @unique // e.g. "GEO_WRITER_FULL"
-  displayName String   // e.g. "Geo Writer (Full)"
+  displayName String // e.g. "Geo Writer (Full)"
   description String?
   cost        Int      @default(0)
   isActive    Boolean  @default(true) // Global kill switch

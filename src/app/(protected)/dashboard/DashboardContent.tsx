@@ -28,15 +28,18 @@ import { ShieldAlert, ArrowLeft, Settings as SettingsIcon } from 'lucide-react';
 
 export function DashboardContent({
     user,
-    transactions,
-    executions,
+    metrics,
     isImpersonating = false,
     articleCount = 0,
     recentArticles = []
 }: {
     user: any;
-    transactions: any[];
-    executions: any[];
+    metrics: {
+        totalSites: number;
+        totalSemanticDebts: number;
+        totalStrengths: number;
+        sitesOptions: Array<{ id: string; domain: string; hasGsc: boolean; hasGa4: boolean; }>;
+    };
     isImpersonating?: boolean;
     articleCount?: number;
     recentArticles?: any[];
@@ -79,237 +82,164 @@ export function DashboardContent({
 
             {/* Core Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {/* Credits Card */}
+                {/* Sites Card */}
                 <Card className="p-8 border-2 border-slate-100 bg-white relative overflow-hidden group hover:border-brand-primary/20 transition-all shadow-sm">
                     <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform">
                         <Coins size={80} className="text-brand-secondary" />
                     </div>
                     <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
-                        <Zap size={12} className="text-brand-secondary" /> 能量储备 (Credits)
+                        <Zap size={12} className="text-brand-secondary" /> 数字资产图谱 (Managed Sites)
                     </div>
                     <div className="text-5xl font-black text-brand-text-primary mb-4 font-display">
-                        {user?.credits?.toLocaleString() || 0}
+                        {metrics.totalSites}
                     </div>
                     <div className="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
-                        足够执行约 <span className="font-black">{(user?.credits || 0) / 35 | 0}</span> 次深度智作优化
+                        其中 <span className="font-black">{metrics.sitesOptions.filter(s => s.hasGsc).length}</span> 个已连接数据仓库
                     </div>
                 </Card>
 
-                {/* Article Card */}
-                <Card className="p-8 border-2 border-slate-100 bg-white relative overflow-hidden group hover:border-brand-primary/20 transition-all shadow-sm">
-                    <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform">
-                        <Library size={80} className="text-brand-primary" />
-                    </div>
-                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
-                        <Library size={12} className="text-brand-primary" /> 已存资产 (Assets)
-                    </div>
-                    <div className="text-5xl font-black text-brand-text-primary mb-4 font-display">
-                        {articleCount}
-                    </div>
-                    <div className="text-[10px] text-slate-400 font-bold">
-                        本周新增 <span className="text-brand-primary font-black">+1</span> 篇
-                    </div>
-                </Card>
+                {/* Debts Card */}
+                <div
+                    onClick={() => {
+                        const firstSiteId = localStorage.getItem('siteIntelligence_firstSiteId');
+                        if (firstSiteId) {
+                            router.push(`/dashboard/site-intelligence/${firstSiteId}`);
+                        } else {
+                            router.push('/dashboard/site-intelligence');
+                        }
+                    }}
+                    className="cursor-pointer h-full"
+                >
+                    <Card className="p-8 border-2 border-slate-100 bg-white relative overflow-hidden group hover:border-brand-primary/20 hover:shadow-lg transition-all shadow-sm h-full">
+                        <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform">
+                            <Library size={80} className="text-rose-500" />
+                        </div>
+                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                            <AlertCircle size={12} className="text-rose-500" /> 全局高优语义债 (Global Semantic Debts)
+                        </div>
+                        <div className="text-5xl font-black text-rose-600 mb-4 font-display">
+                            {metrics.totalSemanticDebts}
+                        </div>
+                        <div className="text-[10px] text-slate-400 font-bold flex items-center gap-1">
+                            跨 {metrics.sitesOptions.length} 个站点累计发现 <span className="text-brand-primary font-black">{metrics.totalSemanticDebts}</span> 个高价值缺口
+                            <ArrowRight size={10} className="ml-1 text-brand-primary group-hover:translate-x-1 transition-transform" />
+                        </div>
+                    </Card>
+                </div>
 
                 {/* Quick Link Card */}
                 <Card className="p-8 border-none bg-brand-primary text-white shadow-xl shadow-brand-primary/20 flex flex-col justify-between">
                     <div>
-                        <h3 className="text-xl font-black italic mb-2 tracking-tight">快速工具箱</h3>
+                        <h3 className="text-xl font-black italic mb-2 tracking-tight">内容生产引擎</h3>
                         <p className="text-white/70 text-xs font-medium leading-relaxed">
-                            访问专业营销工具箱，<br />
-                            获取全网竞争数据并执行内容 GEO 增益。
+                            调用 GEO Writer，<br />
+                            将语义痛点一键转化为高质量内容资产。
                         </p>
                     </div>
                     <Link href="/dashboard/tools">
                         <Button variant="outline" className="w-full mt-6 bg-white/10 border-white/20 hover:bg-white text-white hover:text-brand-primary font-black text-xs uppercase tracking-tighter transition-all">
-                            立即访问 <ArrowRight className="ml-2" size={14} />
+                            启动写作矩阵 <ArrowRight className="ml-2" size={14} />
                         </Button>
                     </Link>
                 </Card>
             </div>
 
-            {/* Usage & Execution Details */}
-            <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                    <h3 className="font-display text-2xl font-black text-brand-text-primary italic flex items-center gap-3">
-                        <TrendingUp size={24} className="text-brand-accent" />
-                        能量与执行轨迹
-                    </h3>
-                </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {/* Credit Transactions */}
-                    <Card className="p-0 border-2 border-slate-100 bg-white rounded-3xl overflow-hidden shadow-sm">
-                        <div className="p-6 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
-                            <div className="text-sm font-black text-slate-900 flex items-center gap-2">
-                                <Coins size={16} className="text-brand-secondary" /> 最近扣费记录
-                            </div>
-                            <Link href="/dashboard/billing" className="text-[10px] font-black text-brand-primary hover:underline uppercase tracking-tighter">
-                                全部账单
-                            </Link>
-                        </div>
-                        <div className="divide-y divide-slate-50">
-                            {transactions.length > 0 ? (
-                                transactions.map((t) => (
-                                    <div key={t.id} className="p-5 flex items-center justify-between hover:bg-slate-50/50 transition-colors">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center text-orange-500 font-bold text-xs">
-                                                -{t.amount}
-                                            </div>
-                                            <div>
-                                                <div className="text-sm font-bold text-slate-800">{t.description}</div>
-                                                <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">
-                                                    {new Date(t.createdAt).toLocaleString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                                </div>
+            <div className="space-y-10 animate-in fade-in duration-500">
+                <div className="space-y-4">
+                    {recentArticles.length > 0 ? (
+                        recentArticles.map((article) => (
+                            <Link key={article.id} href="/dashboard/library" className="block">
+                                <div className="border-2 border-slate-100 p-6 bg-white rounded-2xl flex items-center justify-between group hover:border-brand-primary/30 hover:shadow-lg hover:shadow-brand-primary/5 transition-all">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 group-hover:bg-brand-primary/10 group-hover:text-brand-primary transition-colors shadow-inner">
+                                            <FileText size={24} />
+                                        </div>
+                                        <div>
+                                            <div className="font-bold text-slate-900 group-hover:text-brand-primary transition-colors line-clamp-1">{article.title}</div>
+                                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+                                                {new Date(article.createdAt).toLocaleString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                             </div>
                                         </div>
-                                        <Badge variant="muted" className="text-[9px] font-black border-slate-200 text-slate-500">{t.type}</Badge>
                                     </div>
-                                ))
-                            ) : (
-                                <div className="p-10 text-center text-slate-400 text-sm italic font-medium">无扣费记录</div>
-                            )}
-                        </div>
-                    </Card>
-
-                    {/* Skill Executions */}
-                    <Card className="p-0 border-2 border-slate-100 bg-white rounded-3xl overflow-hidden shadow-sm">
-                        <div className="p-6 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
-                            <div className="text-sm font-black text-slate-900 flex items-center gap-2">
-                                <Zap size={16} className="text-brand-accent" /> 工具调用轨迹
+                                    {getStatusBadge(article.status)}
+                                </div>
+                            </Link>
+                        ))
+                    ) : (
+                        <div className="border-4 border-dashed border-slate-100 p-16 rounded-3xl text-center bg-white/50">
+                            <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-200 mx-auto mb-4 rotate-6">
+                                <FileText size={32} />
                             </div>
-                            <Link href="/dashboard/tools" className="text-[10px] font-black text-brand-primary hover:underline uppercase tracking-tighter">
-                                进入工具箱
+                            <p className="text-slate-400 font-bold text-sm italic">尚未发现创作记录</p>
+                            <Link href="/dashboard/tools">
+                                <Button size="sm" className="mt-6 font-black bg-brand-primary/10 text-brand-primary hover:bg-brand-primary hover:text-white border-2 border-brand-primary/20 transition-all">
+                                    点亮第一盏神灯
+                                </Button>
                             </Link>
                         </div>
-                        <div className="divide-y divide-slate-50">
-                            {executions.length > 0 ? (
-                                executions.map((e) => (
-                                    <div key={e.id} className="p-5 flex items-center justify-between hover:bg-slate-50/50 transition-colors">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500">
-                                                <Zap size={14} />
-                                            </div>
-                                            <div>
-                                                <div className="text-sm font-bold text-slate-800">{e.skillName}</div>
-                                                <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">
-                                                    {new Date(e.createdAt).toLocaleString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <Badge
-                                            variant="muted"
-                                            className={`text-[9px] font-black ${e.status === 'success' || e.status === 'SUCCESS' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                                                e.status === 'failed' || e.status === 'FAILED' ? 'bg-rose-50 text-rose-600 border-rose-100' :
-                                                    'bg-blue-50 text-blue-600 border-blue-100'
-                                                }`}
-                                        >
-                                            {e.status}
-                                        </Badge>
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="p-10 text-center text-slate-400 text-sm italic font-medium">无调用记录</div>
-                            )}
-                        </div>
-                    </Card>
+                    )}
                 </div>
             </div>
 
-            {/* Bottom Content Area */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                {/* Recent Articles Stream */}
-                <div className="space-y-6">
-                    <div className="flex items-center justify-between">
-                        <h3 className="font-display text-2xl font-black text-brand-text-primary italic flex items-center gap-3">
-                            <History size={24} className="text-brand-secondary" />
-                            最近智作轨迹
-                        </h3>
-                        <Link href="/dashboard/library" className="text-xs font-black text-brand-primary hover:underline uppercase tracking-tighter">
-                            查看内容库
+            {/* Account Summary & Updates */}
+            <div className="space-y-6">
+                <h3 className="font-display text-2xl font-black text-brand-text-primary italic flex items-center gap-3">
+                    <ShieldCheck size={24} className="text-brand-primary" />
+                    系统安全与状态
+                </h3>
+
+                <Card className="p-8 bg-white border-2 border-slate-100 rounded-3xl space-y-6">
+                    <div className="flex items-center justify-between p-4 bg-emerald-50/50 rounded-2xl border border-emerald-100 group hover:border-emerald-200 transition-all cursor-default">
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white">
+                                <ShieldCheck size={20} />
+                            </div>
+                            <div>
+                                <div className="text-sm font-black text-emerald-900 leading-none mb-1">账号安全等级：高</div>
+                                <div className="text-[10px] text-emerald-600/70 font-bold uppercase tracking-widest">已启用动态验证保护</div>
+                            </div>
+                        </div>
+                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 bg-blue-50/50 rounded-2xl border border-blue-100 group hover:border-blue-200 transition-all cursor-default">
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center text-white">
+                                <TrendingUp size={20} />
+                            </div>
+                            <div>
+                                <div className="text-sm font-black text-blue-900 leading-none mb-1">GEO 引擎状态</div>
+                                <div className="text-[10px] text-blue-600/70 font-bold uppercase tracking-widest">运行状态：正常 (100%)</div>
+                            </div>
+                        </div>
+                        <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 bg-purple-50/50 rounded-2xl border border-purple-100 group hover:border-purple-200 transition-all cursor-default">
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 bg-purple-500 rounded-xl flex items-center justify-center text-white">
+                                <Library size={20} />
+                            </div>
+                            <div>
+                                <div className="text-sm font-black text-purple-900 leading-none mb-1">站群与连接健康度</div>
+                                <div className="text-[10px] text-purple-600/70 font-bold uppercase tracking-widest">
+                                    GSC ({metrics.sitesOptions.filter(s => s.hasGsc).length}) • GA4 ({metrics.sitesOptions.filter(s => s.hasGa4).length})
+                                </div>
+                            </div>
+                        </div>
+                        <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
+                    </div>
+
+                    <div className="pt-4 border-t border-slate-50 flex items-center justify-between px-2">
+                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                            <Coins size={12} /> 当前剩余能量: <span className="text-brand-primary">{user?.credits?.toLocaleString() || 0} 点</span>
+                        </div>
+                        <Link href="/dashboard/billing" className="text-[10px] font-black text-slate-500 hover:text-brand-primary transition-colors flex items-center gap-1">
+                            能量与账单 <ArrowUpRight size={10} />
                         </Link>
                     </div>
-
-                    <div className="space-y-4">
-                        {recentArticles.length > 0 ? (
-                            recentArticles.map((article) => (
-                                <Link key={article.id} href="/dashboard/library" className="block">
-                                    <div className="border-2 border-slate-100 p-6 bg-white rounded-2xl flex items-center justify-between group hover:border-brand-primary/30 hover:shadow-lg hover:shadow-brand-primary/5 transition-all">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 group-hover:bg-brand-primary/10 group-hover:text-brand-primary transition-colors shadow-inner">
-                                                <FileText size={24} />
-                                            </div>
-                                            <div>
-                                                <div className="font-bold text-slate-900 group-hover:text-brand-primary transition-colors line-clamp-1">{article.title}</div>
-                                                <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
-                                                    {new Date(article.createdAt).toLocaleString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        {getStatusBadge(article.status)}
-                                    </div>
-                                </Link>
-                            ))
-                        ) : (
-                            <div className="border-4 border-dashed border-slate-100 p-16 rounded-3xl text-center bg-white/50">
-                                <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-200 mx-auto mb-4 rotate-6">
-                                    <FileText size={32} />
-                                </div>
-                                <p className="text-slate-400 font-bold text-sm italic">尚未发现创作记录</p>
-                                <Link href="/dashboard/tools">
-                                    <Button size="sm" className="mt-6 font-black bg-brand-primary/10 text-brand-primary hover:bg-brand-primary hover:text-white border-2 border-brand-primary/20 transition-all">
-                                        点亮第一盏神灯
-                                    </Button>
-                                </Link>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Account Summary & Updates */}
-                <div className="space-y-6">
-                    <h3 className="font-display text-2xl font-black text-brand-text-primary italic flex items-center gap-3">
-                        <ShieldCheck size={24} className="text-brand-primary" />
-                        系统安全与状态
-                    </h3>
-
-                    <Card className="p-8 bg-white border-2 border-slate-100 rounded-3xl space-y-6">
-                        <div className="flex items-center justify-between p-4 bg-emerald-50/50 rounded-2xl border border-emerald-100 group hover:border-emerald-200 transition-all cursor-default">
-                            <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white">
-                                    <ShieldCheck size={20} />
-                                </div>
-                                <div>
-                                    <div className="text-sm font-black text-emerald-900 leading-none mb-1">账号安全等级：高</div>
-                                    <div className="text-[10px] text-emerald-600/70 font-bold uppercase tracking-widest">已启用动态验证保护</div>
-                                </div>
-                            </div>
-                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        </div>
-
-                        <div className="flex items-center justify-between p-4 bg-blue-50/50 rounded-2xl border border-blue-100 group hover:border-blue-200 transition-all cursor-default">
-                            <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center text-white">
-                                    <TrendingUp size={20} />
-                                </div>
-                                <div>
-                                    <div className="text-sm font-black text-blue-900 leading-none mb-1">GEO 引擎状态</div>
-                                    <div className="text-[10px] text-blue-600/70 font-bold uppercase tracking-widest">运行状态：正常 (100%)</div>
-                                </div>
-                            </div>
-                            <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                        </div>
-
-                        <div className="pt-4 border-t border-slate-50 flex items-center justify-between px-2">
-                            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                下次流量审计预计: <span className="text-brand-primary">明天 09:00</span>
-                            </div>
-                            <Link href="/dashboard/settings" className="text-[10px] font-black text-slate-500 hover:text-brand-primary transition-colors flex items-center gap-1">
-                                安全设置 <ArrowUpRight size={10} />
-                            </Link>
-                        </div>
-                    </Card>
-                </div>
+                </Card>
             </div>
         </div>
     );
