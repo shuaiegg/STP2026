@@ -153,6 +153,7 @@ model Site {
   competitors    Competitor[]
   contentPlans   ContentPlan[]
   gscConnections GscConnection[]
+  ga4Connections Ga4Connection[]
 
   @@index([userId])
   @@index([domain])
@@ -228,6 +229,19 @@ model PlannedArticle {
 }
 
 model GscConnection {
+  id           String    @id @default(uuid())
+  siteId       String
+  site         Site      @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  accessToken  String
+  refreshToken String
+  propertyId   String?
+  expiresAt    DateTime
+  lastSyncAt   DateTime?
+
+  @@index([siteId])
+}
+
+model Ga4Connection {
   id           String    @id @default(uuid())
   siteId       String
   site         Site      @relation(fields: [siteId], references: [id], onDelete: Cascade)

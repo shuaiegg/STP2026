@@ -12,18 +12,25 @@ interface SiteRecord {
     domain: string;
     name: string | null;
     createdAt: string;
+    latestAudit?: {
+        techScore: number | null;
+        pageCount: number;
+    } | null;
 }
 
 import { CompetitorsPanel } from './components/CompetitorsPanel';
 import { OverviewPanel } from './components/OverviewPanel';
+import { IntegrationsPanel } from './components/IntegrationsPanel';
 import { AuditHistoryPanel } from './components/AuditHistoryPanel';
 import { PerformanceDashboard } from './components/PerformanceDashboard';
+import { Ga4PerformanceDashboard } from './components/Ga4PerformanceDashboard';
+import { SiteSwitcher } from './components/SiteSwitcher';
 
 export default function SiteDetailsPage({ params }: { params: Promise<{ siteId: string }> }) {
     const { siteId } = use(params);
     const router = useRouter();
     const [site, setSite] = useState<SiteRecord | null>(null);
-    const [activeTab, setActiveTab] = useState<'overview' | 'audits' | 'competitors' | 'performance'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'audits' | 'competitors' | 'performance' | 'traffic' | 'integrations'>('overview');
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -55,16 +62,34 @@ export default function SiteDetailsPage({ params }: { params: Promise<{ siteId: 
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                        <Link
-                            href="/dashboard/site-intelligence"
-                            className="flex items-center gap-1 text-slate-500 hover:text-slate-900 transition-colors text-sm font-medium pr-2 border-r border-slate-200"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
-                            返回
-                        </Link>
-                        <h1 className="text-2xl font-bold tracking-tight text-slate-900">{site.domain}</h1>
-                        <Badge variant="default" className="bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20 border-0">管理中</Badge>
+                    <div className="flex items-center gap-4">
+                        <SiteSwitcher currentSiteId={site.id} currentDomain={site.domain} />
+
+                        {site.latestAudit && (
+                            <div className="flex items-center gap-3 pl-4 border-l border-slate-200">
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-tight">技术得分</span>
+                                    <div className="flex items-center gap-1.5">
+                                        <div className={`w-1.5 h-1.5 rounded-full ${(site.latestAudit.techScore || 0) >= 80 ? 'bg-emerald-500' :
+                                                (site.latestAudit.techScore || 0) >= 50 ? 'bg-amber-500' : 'bg-rose-500'
+                                            }`} />
+                                        <span className={`text-sm font-bold font-mono ${(site.latestAudit.techScore || 0) >= 80 ? 'text-emerald-600' :
+                                                (site.latestAudit.techScore || 0) >= 50 ? 'text-amber-600' : 'text-rose-600'
+                                            }`}>
+                                            {site.latestAudit.techScore ?? '--'}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-tight">页面总数</span>
+                                    <span className="text-sm font-bold text-slate-700 font-mono italic">
+                                        {site.latestAudit.pageCount}<span className="text-[10px] ml-0.5 opacity-50 font-sans">P</span>
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+
+                        <Badge variant="default" className="bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20 border-0 ml-1">管理中</Badge>
                     </div>
                     <p className="text-sm text-slate-500">
                         查看站点的表现、审计历史及监控竞争对手
@@ -108,12 +133,27 @@ export default function SiteDetailsPage({ params }: { params: Promise<{ siteId: 
                 >
                     搜索表现
                 </button>
+                <button
+                    onClick={() => setActiveTab('traffic')}
+                    className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 ${activeTab === 'traffic' ? 'border-brand-primary text-brand-primary' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-4" /></svg>
+                    流量表现
+                </button>
+                <div className="flex-1" />
+                <button
+                    onClick={() => setActiveTab('integrations')}
+                    className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 ${activeTab === 'integrations' ? 'border-brand-primary text-brand-primary' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /></svg>
+                    接入与设置
+                </button>
             </div>
 
             {/* Tab Content */}
             <div className="pt-4">
                 {activeTab === 'overview' && (
-                    <OverviewPanel siteId={site.id} domain={site.domain} />
+                    <OverviewPanel siteId={site.id} domain={site.domain} onSwitchTab={(tab) => setActiveTab(tab as any)} />
                 )}
 
                 {activeTab === 'audits' && (
@@ -126,6 +166,14 @@ export default function SiteDetailsPage({ params }: { params: Promise<{ siteId: 
 
                 {activeTab === 'performance' && (
                     <PerformanceDashboard siteId={site.id} />
+                )}
+
+                {activeTab === 'traffic' && (
+                    <Ga4PerformanceDashboard siteId={site.id} />
+                )}
+
+                {activeTab === 'integrations' && (
+                    <IntegrationsPanel siteId={site.id} onUpdate={() => { }} />
                 )}
             </div>
         </div>

@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 interface LatestAudit {
     id: string;
@@ -43,6 +44,8 @@ export default function SiteIntelligencePage() {
     const [sites, setSites] = useState<SiteRecord[]>([]);
     const [loading, setLoading] = useState(true);
 
+    const router = useRouter();
+
     useEffect(() => {
         fetch('/api/dashboard/sites')
             .then(async (r) => {
@@ -58,13 +61,21 @@ export default function SiteIntelligencePage() {
                     throw e;
                 }
             })
-            .then((data) => setSites(data.sites ?? []))
+            .then((data) => {
+                const fetchedSites = data.sites ?? [];
+                setSites(fetchedSites);
+
+                // Auto-redirect to the first site if it exists
+                if (fetchedSites.length > 0) {
+                    router.replace(`/dashboard/site-intelligence/${fetchedSites[0].id}`);
+                }
+            })
             .catch((err) => {
                 console.error("Error fetching sites:", err);
                 setSites([]);
             })
             .finally(() => setLoading(false));
-    }, []);
+    }, [router]);
 
     return (
         <div className="p-6 space-y-8 min-h-screen">

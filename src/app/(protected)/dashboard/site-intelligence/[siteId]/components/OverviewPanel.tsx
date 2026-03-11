@@ -2,16 +2,14 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import Link from 'next/link';
-import { GscPropertySelector } from './GscPropertySelector';
 
-export function OverviewPanel({ siteId, domain }: { siteId: string, domain: string }) {
+export function OverviewPanel({ siteId, domain, onSwitchTab }: { siteId: string, domain: string, onSwitchTab?: (tab: string) => void }) {
     const [latestAudit, setLatestAudit] = useState<any>(null);
     const [semanticData, setSemanticData] = useState<any>(null);
     const [competitorCount, setCompetitorCount] = useState<number>(0);
     const [loading, setLoading] = useState(true);
     const [isExtractingDNA, setIsExtractingDNA] = useState(false);
     const [siteData, setSiteData] = useState<any>(null);
-    const [isConnectingGSC, setIsConnectingGSC] = useState(false);
 
     const [selectedDebt, setSelectedDebt] = useState<any | null>(null);
 
@@ -22,6 +20,8 @@ export function OverviewPanel({ siteId, domain }: { siteId: string, domain: stri
         }
         setSelectedDebt(debt);
     }, [selectedDebt]);
+
+
 
     const fetchData = useCallback(async () => {
         setLoading(true);
@@ -57,23 +57,7 @@ export function OverviewPanel({ siteId, domain }: { siteId: string, domain: stri
         }
     }, [siteId]);
 
-    const handleConnectGSC = async () => {
-        setIsConnectingGSC(true);
-        try {
-            const res = await fetch(`/api/dashboard/sites/${siteId}/gsc-sync/auth`, { method: 'POST' });
-            const data = await res.json();
-            if (data.url) {
-                window.location.href = data.url;
-            } else {
-                alert(data.error || "Failed to initialize GSC connection");
-            }
-        } catch (e) {
-            console.error(e);
-            alert("Error connecting to GSC");
-        } finally {
-            setIsConnectingGSC(false);
-        }
-    };
+
 
     const handleExtractDNA = useCallback(async () => {
         setIsExtractingDNA(true);
@@ -260,28 +244,26 @@ export function OverviewPanel({ siteId, domain }: { siteId: string, domain: stri
                             <h3 className="text-sm font-bold text-rose-900 flex items-center gap-2">
                                 高优语义债 (Semantic Debts)
                             </h3>
-                            {(!siteData?.gscConnections || siteData.gscConnections.length === 0) ? (
+                            {(!siteData?.gscConnections || siteData.gscConnections.length === 0 || !siteData.gscConnections[0].propertyId) ? (
                                 <button
-                                    onClick={handleConnectGSC}
-                                    disabled={isConnectingGSC}
-                                    className="mt-2 text-[10px] font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-md transition-colors flex items-center gap-1"
+                                    onClick={() => onSwitchTab && onSwitchTab('integrations')}
+                                    className="mt-2 text-[10px] font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-md transition-colors flex items-center gap-1 w-fit"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.54 15H17a2 2 0 0 0-2 2v4.54" /><path d="M7 3.34V5a3 3 0 0 0 3 3v0a2 2 0 0 1 2 2v0c0 1.1.9 2 2 2v0a2 2 0 0 0 2-2v0c0-1.1.9-2 2-2h3.17" /><path d="M11 21.95V18a2 2 0 0 0-2-2v0a2 2 0 0 1-2-2v-1a2 2 0 0 0-2-2H2.05" /><circle cx="12" cy="12" r="10" /></svg>
-                                    {isConnectingGSC ? '连接中...' : '接入 GSC 数据，智能算出还债优先级 ✨'}
+                                    前往设置接入 GSC，计算排序优先级 ✨
                                 </button>
-                            ) : !siteData.gscConnections[0].propertyId ? (
-                                <div className="mt-4 mb-4">
-                                    <GscPropertySelector
-                                        siteId={siteId}
-                                        onSelected={() => fetchData()}
-                                    />
-                                </div>
-                            ) : (
-                                <div className="mt-2 text-[10px] text-emerald-600 flex items-center gap-1">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
-                                    已连接 GSC 数据源 ({siteData.gscConnections[0].propertyId})
-                                </div>
-                            )}
+                            ) : null}
+
+                            {/* GA4 Connection Block */}
+                            {(!siteData?.ga4Connections || siteData.ga4Connections.length === 0 || !siteData.ga4Connections[0].propertyId) ? (
+                                <button
+                                    onClick={() => onSwitchTab && onSwitchTab('integrations')}
+                                    className="mt-2 text-[10px] font-bold text-orange-600 bg-orange-50 hover:bg-orange-100 px-2.5 py-1 rounded-md transition-colors flex items-center gap-1 w-fit"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-4" /></svg>
+                                    前往设置接入 GA4，分析站内流量 📈
+                                </button>
+                            ) : null}
                         </div>
                         {semanticData?.semanticDebts?.length > 0 && (
                             <Badge variant="muted" className="bg-white border-rose-200 text-rose-600 text-[10px]">
@@ -331,21 +313,35 @@ export function OverviewPanel({ siteId, domain }: { siteId: string, domain: stri
                                                 {debt.relevance}
                                             </div>
 
-                                            {debt.gscData && (
-                                                <div className="grid grid-cols-2 gap-3">
-                                                    <div className="bg-blue-50/50 p-2 rounded border border-blue-100">
-                                                        <div className="text-[8px] font-bold text-blue-500 tracking-widest uppercase mb-0.5">月曝光走势 (Impressions)</div>
-                                                        <div className="text-sm font-black text-blue-900">{debt.gscData.impressions.toLocaleString()}</div>
+                                            {debt.gscData ? (
+                                                <div className="bg-blue-50/50 p-3 rounded-lg border border-blue-100/50">
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500"><path d="M3 3v18h18" /><path d="m19 9-5 5-4-4-3 3" /></svg>
+                                                        <span className="text-[10px] font-bold text-blue-600 tracking-widest uppercase">30天搜索表现 (GSC)</span>
                                                     </div>
-                                                    <div className="bg-blue-50/50 p-2 rounded border border-blue-100">
-                                                        <div className="text-[8px] font-bold text-blue-500 tracking-widest uppercase mb-0.5">捕获点击 (Clicks)</div>
-                                                        <div className="text-sm font-black text-blue-900">{debt.gscData.clicks.toLocaleString()}</div>
+                                                    <div className="grid grid-cols-2 gap-3 mb-2">
+                                                        <div className="bg-white p-2 rounded border border-blue-50 shadow-sm">
+                                                            <div className="text-[9px] font-bold text-slate-400 uppercase mb-0.5">总曝光 (Impressions)</div>
+                                                            <div className="text-sm font-black text-slate-800 tabular-nums">{debt.gscData.impressions.toLocaleString()}</div>
+                                                        </div>
+                                                        <div className="bg-white p-2 rounded border border-blue-50 shadow-sm">
+                                                            <div className="text-[9px] font-bold text-slate-400 uppercase mb-0.5">捕获点击 (Clicks)</div>
+                                                            <div className="text-sm font-black text-slate-800 tabular-nums">{debt.gscData.clicks.toLocaleString()}</div>
+                                                        </div>
                                                     </div>
                                                     {debt.gscData.matchedKeywords?.length > 0 && (
-                                                        <div className="col-span-2 text-[10px] text-slate-500">
-                                                            触发的搜索词: <span className="font-mono text-slate-700">{debt.gscData.matchedKeywords.join(', ')}</span>
+                                                        <div className="text-[10px] text-slate-500 bg-white/50 px-2 py-1.5 rounded border border-blue-50">
+                                                            热门搜索词: <span className="font-mono text-slate-700 font-medium">{debt.gscData.matchedKeywords.join(', ')}</span>
                                                         </div>
                                                     )}
+                                                </div>
+                                            ) : (
+                                                <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                                                    <div className="flex justify-between items-center mb-1">
+                                                        <span className="text-[10px] font-bold text-slate-500 tracking-widest uppercase">搜索潜力评估</span>
+                                                        <span className="text-[10px] text-slate-400">尚无真实数据</span>
+                                                    </div>
+                                                    <p className="text-[11px] text-slate-500 leading-relaxed">该主题在当前的 GSC 点击流中未获得足够曝光，或您的站点尚未绑定 Google Search Console。</p>
                                                 </div>
                                             )}
 

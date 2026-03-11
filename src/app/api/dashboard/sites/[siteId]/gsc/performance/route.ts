@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
-import { google } from 'googleapis';
+import { getGscClient } from '@/lib/gsc-client';
 
 export async function GET(
     request: Request,
@@ -15,54 +14,12 @@ export async function GET(
 
     const { siteId } = await params;
 
-    const existingAuth = await prisma.gscConnection.findFirst({
-        where: { siteId }
-    });
-
-    if (!existingAuth) {
-        return NextResponse.json({ error: 'OAuth connection not found' }, { status: 404 });
-    }
-
-    if (!existingAuth.propertyId) {
-        return NextResponse.json({ error: 'GSC Property not selected' }, { status: 400 });
-    }
-
-    const clientId = process.env.GOOGLE_CLIENT_ID;
-    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-
-    if (!clientId || !clientSecret) {
-        return NextResponse.json({ error: 'OAuth credentials not set up' }, { status: 500 });
-    }
-
-    const oauth2Client = new google.auth.OAuth2(clientId, clientSecret);
-    oauth2Client.setCredentials({
-        access_token: existingAuth.accessToken,
-        refresh_token: existingAuth.refreshToken,
-    });
-
-    // Check optional token refresh
-    if (new Date() >= existingAuth.expiresAt) {
-        try {
-            const { credentials } = await oauth2Client.refreshAccessToken();
-            await prisma.gscConnection.update({
-                where: { id: existingAuth.id },
-                data: {
-                    accessToken: credentials.access_token!,
-                    refreshToken: credentials.refresh_token || existingAuth.refreshToken,
-                    expiresAt: credentials.expiry_date ? new Date(credentials.expiry_date) : new Date(Date.now() + 3600 * 1000)
-                }
-            });
-        } catch (error) {
-            console.error("Token refresh failed:", error);
-            // Ignore error, API call might still work if we are within a grace period, else it throws
-        }
-    }
-
     try {
-        const searchconsole = google.searchconsole({
-            version: 'v1',
-            auth: oauth2Client,
-        });
+        const { searchconsole, existingAuth } = await getGscClient(siteId);
+
+        if (!existingAuth.propertyId) {
+            return NextResponse.json({ error: 'GSC Property not selected' }, { status: 400 });
+        }
 
         // Calculate dates for the last 30 days
         const endDate = new Date();

@@ -15,12 +15,14 @@ export async function GET(request: Request) {
 
     let userId = null;
     let siteId = null;
+    let connectionType = 'gsc'; // default
 
     if (stateStr) {
         try {
             const state = JSON.parse(stateStr);
             userId = state.userId;
             siteId = state.siteId;
+            if (state.type === 'ga4') connectionType = 'ga4';
         } catch (e) {
             console.error('Error parsing state:', e);
         }
@@ -43,7 +45,7 @@ export async function GET(request: Request) {
     const clientId = process.env.GOOGLE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    const redirectUri = `${appUrl}/api/auth/gsc-callback`;
+    const redirectUri = `${appUrl}/api/auth/google-callback`;
 
     if (!clientId || !clientSecret) {
         return NextResponse.json({ error: 'System not configured for OAuth' }, { status: 500 });
@@ -58,40 +60,65 @@ export async function GET(request: Request) {
     try {
         const { tokens } = await oauth2Client.getToken(code);
 
-        // Save tokens to database
-        const existingAuth = await prisma.gscConnection.findFirst({
-            where: { siteId }
-        });
-
-        // 默认存活设为 1 小时后过期（若没返回expiry_date）
+        // Default expiry is 1 hour if not provided
         const expiryDate = tokens.expiry_date
             ? new Date(tokens.expiry_date)
             : new Date(Date.now() + 3600 * 1000);
 
-        if (existingAuth) {
-            await prisma.gscConnection.update({
-                where: { id: existingAuth.id },
-                data: {
-                    accessToken: tokens.access_token || existingAuth.accessToken,
-                    refreshToken: tokens.refresh_token || existingAuth.refreshToken,
-                    expiresAt: expiryDate,
-                }
+        if (connectionType === 'ga4') {
+            const existingAuth = await prisma.ga4Connection.findFirst({
+                where: { siteId }
             });
+
+            if (existingAuth) {
+                await prisma.ga4Connection.update({
+                    where: { id: existingAuth.id },
+                    data: {
+                        accessToken: tokens.access_token || existingAuth.accessToken,
+                        refreshToken: tokens.refresh_token || existingAuth.refreshToken,
+                        expiresAt: expiryDate,
+                    }
+                });
+            } else {
+                await prisma.ga4Connection.create({
+                    data: {
+                        siteId,
+                        accessToken: tokens.access_token!,
+                        refreshToken: tokens.refresh_token || '',
+                        expiresAt: expiryDate,
+                    }
+                });
+            }
         } else {
-            await prisma.gscConnection.create({
-                data: {
-                    siteId,
-                    accessToken: tokens.access_token!,
-                    refreshToken: tokens.refresh_token || '',
-                    expiresAt: expiryDate,
-                }
+            const existingAuth = await prisma.gscConnection.findFirst({
+                where: { siteId }
             });
+
+            if (existingAuth) {
+                await prisma.gscConnection.update({
+                    where: { id: existingAuth.id },
+                    data: {
+                        accessToken: tokens.access_token || existingAuth.accessToken,
+                        refreshToken: tokens.refresh_token || existingAuth.refreshToken,
+                        expiresAt: expiryDate,
+                    }
+                });
+            } else {
+                await prisma.gscConnection.create({
+                    data: {
+                        siteId,
+                        accessToken: tokens.access_token!,
+                        refreshToken: tokens.refresh_token || '',
+                        expiresAt: expiryDate,
+                    }
+                });
+            }
         }
 
         // Redirect back to overview
         return NextResponse.redirect(`${appUrl}/dashboard/site-intelligence/${siteId}`);
     } catch (error: any) {
-        console.error("GSC Token Auth Error:", error);
+        console.error("Google Token Auth Error:", error);
         return NextResponse.json({ error: 'Failed to authenticate with Google' }, { status: 500 });
     }
 }

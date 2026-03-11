@@ -18,7 +18,8 @@ export async function GET(
         const site = await prisma.site.findUnique({
             where: { id: siteId, userId: session.user.id },
             include: {
-                gscConnections: true
+                gscConnections: true,
+                ga4Connections: true
             }
         });
 

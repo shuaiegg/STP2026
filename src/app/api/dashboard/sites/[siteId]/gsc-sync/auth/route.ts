@@ -17,7 +17,7 @@ export async function POST(
     const clientId = process.env.GOOGLE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    const redirectUri = `${appUrl}/api/auth/gsc-callback`;
+    const redirectUri = `${appUrl}/api/auth/google-callback`; // Updated redirect URI
 
     if (!clientId || !clientSecret) {
         console.error("Missing Google OAuth credentials");
@@ -34,7 +34,7 @@ export async function POST(
     const authorizeUrl = oauth2Client.generateAuthUrl({
         access_type: 'offline', // Need offline to get refresh token
         scope: ['https://www.googleapis.com/auth/webmasters.readonly'],
-        state: JSON.stringify({ siteId, userId: session.user.id }),
+        state: JSON.stringify({ siteId, userId: session.user.id, type: 'gsc' }), // Added type: 'gsc'
         prompt: 'consent' // Force to get refresh token
     });
 

@@ -41,7 +41,25 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
     const pathname = usePathname();
     const router = useRouter();
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [firstSiteId, setFirstSiteId] = useState<string | null>(null);
     const { data: session, isPending } = authClient.useSession();
+
+    React.useEffect(() => {
+        // Try to load from localStorage first for instant rendering
+        const cachedId = localStorage.getItem('last_active_site_id');
+        if (cachedId) setFirstSiteId(cachedId);
+
+        fetch('/api/dashboard/sites')
+            .then(r => r.json())
+            .then(data => {
+                if (data.sites && data.sites.length > 0) {
+                    const newId = data.sites[0].id;
+                    setFirstSiteId(newId);
+                    localStorage.setItem('last_active_site_id', newId);
+                }
+            })
+            .catch(console.error);
+    }, []);
 
     const handleSignOut = async () => {
         await authClient.signOut({
@@ -55,9 +73,13 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
 
     const navItems = [
         { href: '/dashboard', icon: LayoutDashboard, label: '控制面板 (Overview)' },
+        {
+            href: firstSiteId ? `/dashboard/site-intelligence/${firstSiteId}` : '/dashboard/site-intelligence',
+            icon: Zap,
+            label: '站点智能管家'
+        },
         { href: '/dashboard/library', icon: Library, label: '内容资产库' },
         { href: '/dashboard/tools', icon: Zap, label: '营销工具箱' },
-        { href: '/dashboard/site-intelligence', icon: Zap, label: '站点智能管家' },
         { href: '/dashboard/billing', icon: BarChart3, label: '流量与账单' },
     ];
 
@@ -102,7 +124,13 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
                                 href={item.href}
                                 icon={item.icon}
                                 label={item.label}
-                                active={item.href === '/dashboard' ? pathname === '/dashboard' : pathname.startsWith(item.href)}
+                                active={
+                                    item.href === '/dashboard'
+                                        ? pathname === '/dashboard'
+                                        : item.href.includes('/site-intelligence')
+                                            ? pathname.includes('/site-intelligence')
+                                            : pathname.startsWith(item.href)
+                                }
                             />
                         ))}
                     </nav>

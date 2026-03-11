@@ -26,6 +26,23 @@ export const GET = withSiteContext<{ siteId: string }>(async (request, { site: b
         }
 
         const ontology = site.businessOntology as any;
+        const url = new URL(request.url);
+        const searchParams = url.searchParams;
+        const forceRefresh = searchParams.get('refresh') === 'true';
+
+        // 1.5 Check for cached analysis
+        if (ontology.semanticDebts && ontology.ourStrengths && !forceRefresh) {
+            console.log(`[Semantic Gap] Returning cached analysis for ${site.domain}`);
+            return NextResponse.json({
+                success: true,
+                data: {
+                    businessOntology: ontology,
+                    semanticDebts: ontology.semanticDebts,
+                    ourStrengths: ontology.ourStrengths,
+                    isCached: true
+                }
+            });
+        }
         const idealTopics = ontology.idealTopicMap || [];
 
         // 1. Gather our actual topics
@@ -95,7 +112,58 @@ Do NOT wrap it in markdown code blocks like \`\`\`json.
                 ourStrengths = parsed.ourStrengths || [];
 
                 // --- Enrich Semantic Debts with GSC Data ---
-                if (site.keywords && site.keywords.length > 0) {
+                let searchQueries: Array<{ keyword: string, impressions: number, clicks: number, ctr: number }> = [];
+                let gscConnected = false;
+
+                try {
+                    const { getGscClient } = await import('@/lib/gsc-client');
+                    const { searchconsole, existingAuth } = await getGscClient(site.id);
+
+                    if ((existingAuth as any).propertyId) {
+                        gscConnected = true;
+                        const propId = (existingAuth as any).propertyId;
+                        console.log(`[Semantic Gap] Fetching live GSC queries for ${propId}...`);
+
+                        // Calculate dates for the last 30 days
+                        const endDate = new Date();
+                        const startDate = new Date();
+                        startDate.setDate(endDate.getDate() - 30);
+                        const startStr = startDate.toISOString().split('T')[0];
+                        const endStr = endDate.toISOString().split('T')[0];
+
+                        const queriesResponse = await searchconsole.searchanalytics.query({
+                            siteUrl: propId,
+                            requestBody: {
+                                startDate: startStr,
+                                endDate: endStr,
+                                dimensions: ['query'],
+                                rowLimit: 500, // Fetch up to 500 top queries for deeper matching
+                            }
+                        });
+
+                        const rows = queriesResponse.data.rows || [];
+                        searchQueries = rows.map(row => ({
+                            keyword: row.keys ? row.keys[0] : '',
+                            impressions: row.impressions || 0,
+                            clicks: row.clicks || 0,
+                            ctr: row.ctr || 0
+                        }));
+                    }
+                } catch (e: any) {
+                    console.log("[Semantic Gap] GSC Data not available or failed to fetch:", e.message);
+                }
+
+                // Fallback to local DB keywords if GSC is not connected or failed
+                if (searchQueries.length === 0 && site.keywords && site.keywords.length > 0) {
+                    searchQueries = site.keywords.map(kw => ({
+                        keyword: kw.keyword,
+                        impressions: kw.impressions || 0,
+                        clicks: kw.clicks || 0,
+                        ctr: (kw.impressions && kw.impressions > 0) ? (kw.clicks || 0) / kw.impressions : 0
+                    }));
+                }
+
+                if (searchQueries.length > 0) {
                     semanticDebts = semanticDebts.map(debt => {
                         let totalImpressions = 0;
                         let totalClicks = 0;
@@ -105,15 +173,15 @@ Do NOT wrap it in markdown code blocks like \`\`\`json.
                         const debtTerms = Array.from(new Set([
                             ...debt.topic.toLowerCase().split(/[\s\-_]+/),
                             ...(debt.subtopics || []).flatMap(s => s.toLowerCase().split(/[\s\-_]+/))
-                        ])).filter(t => t.length > 3); // ignore small words
+                        ])).filter(t => t.length > 3); // ignore small words like 'the', 'and'
 
-                        site.keywords.forEach(kw => {
-                            const kwLower = kw.keyword.toLowerCase();
+                        searchQueries.forEach(sq => {
+                            const kwLower = sq.keyword.toLowerCase();
                             // If any significant term from the debt is in the GSC keyword
                             if (debtTerms.some(term => kwLower.includes(term))) {
-                                totalImpressions += (kw.impressions || 0);
-                                totalClicks += (kw.clicks || 0);
-                                matchedKeywords.push(kw.keyword);
+                                totalImpressions += sq.impressions;
+                                totalClicks += sq.clicks;
+                                matchedKeywords.push(sq.keyword);
                             }
                         });
 
@@ -133,12 +201,15 @@ Do NOT wrap it in markdown code blocks like \`\`\`json.
                             }
                         }
 
+                        // Remove duplicate matched keywords and limit to top 3
+                        matchedKeywords = Array.from(new Set(matchedKeywords)).slice(0, 3);
+
                         return {
                             ...debt,
                             gscData: totalImpressions > 0 ? {
                                 impressions: totalImpressions,
                                 clicks: totalClicks,
-                                matchedKeywords: matchedKeywords.slice(0, 3)
+                                matchedKeywords: matchedKeywords
                             } : undefined,
                             priorityScore,
                             priorityLabel
@@ -149,6 +220,21 @@ Do NOT wrap it in markdown code blocks like \`\`\`json.
                     semanticDebts.sort((a: any, b: any) => (b.priorityScore || 0) - (a.priorityScore || 0));
                 }
                 // ------------------------------------------
+
+                // 3. Save analysis result back to ontology cache
+                if (semanticDebts.length > 0) {
+                    await prisma.site.update({
+                        where: { id: site.id },
+                        data: {
+                            businessOntology: {
+                                ...ontology,
+                                semanticDebts,
+                                ourStrengths,
+                                lastAnalyzedAt: new Date().toISOString()
+                            }
+                        }
+                    });
+                }
             }
         } catch (error) {
             console.error('[Semantic Gap GET] Analysis failed:', error);
