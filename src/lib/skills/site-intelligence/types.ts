@@ -16,6 +16,13 @@ export interface ScrapedPage {
   topic?: string;
 }
 
+export interface BusinessDna {
+  coreOfferings: string[];
+  targetAudience: string[];
+  painPoints: string[];
+  brandTone: string;
+}
+
 export interface SiteAuditResult {
   domain: string;
   sitemapUrl: string | null;
@@ -23,10 +30,12 @@ export interface SiteAuditResult {
   allUrls?: string[];
   pages: ScrapedPage[];
   averageLoadTime: number;
+  businessDna?: BusinessDna | null;
 }
 
 export type AuditProgressEvent =
   | { type: 'discovery'; urls: string[]; graphData?: import('./graph-generator.service').GraphData; }
+  | { type: 'dna_extracted'; dna: BusinessDna; }
   | { type: 'progress'; scanned: number; total: number; page?: ScrapedPage; }
   | { type: 'done'; scanned: number; total: number; graphData?: import('./graph-generator.service').GraphData; techScore: number | null; }
   | { type: 'error'; error: string; };

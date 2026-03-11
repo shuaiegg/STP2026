@@ -57,6 +57,7 @@ function InstantAuditInner() {
     const [domain, setDomain] = useState(searchParams.get('site') ?? '');
     const [loading, setLoading] = useState(false);
     const [graphData, setGraphData] = useState<GraphData>({ nodes: [], links: [] });
+    const [businessDna, setBusinessDna] = useState<any>(null);
     const [status, setStatus] = useState('READY_FOR_SCAN');
     const [scanned, setScanned] = useState(0);
     const [total, setTotal] = useState(0);
@@ -162,6 +163,7 @@ function InstantAuditInner() {
         setSelectedNode(null);
         setScanned(0);
         setTotal(0);
+        setBusinessDna(null);
         setJustSaved(false);
         setSavedSiteId(null);
         setAuditHistory([]);
@@ -206,6 +208,8 @@ function InstantAuditInner() {
                             }
                             setTotal(event.urls?.length || 0);
                             setStatus('SITE_STRUCTURE_DISCOVERED');
+                        } else if (event.type === 'dna_extracted') {
+                            setBusinessDna(event.dna);
                         } else if (event.type === 'progress') {
                             setScanned(event.scanned);
                             setTotal(event.total);
@@ -246,7 +250,8 @@ function InstantAuditInner() {
                 body: JSON.stringify({
                     domain,
                     graphData,
-                    techScore
+                    techScore,
+                    businessDna
                 })
             });
             const data = await res.json();

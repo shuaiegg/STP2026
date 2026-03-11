@@ -2,8 +2,8 @@
 import { IAIProvider, AIRequestOptions, AIResponse } from './base-provider';
 
 export class VPSProvider implements IAIProvider {
-    private apiBase = "http://154.12.243.94:8317/v1";
-    private apiKey = "sk-5DLE3ByOrXqKOkE5i";
+    private apiBase = process.env.VPS_PROXY_URL || "http://127.0.0.1:8317/v1";
+    private apiKey = process.env.VPS_PROXY_KEY || "";
 
     // CASCADING MODELS (Priority Order)
     private models = [
@@ -14,6 +14,11 @@ export class VPSProvider implements IAIProvider {
 
     async generateContent(prompt: string, options?: AIRequestOptions): Promise<AIResponse> {
         let lastError: Error | null = null;
+
+        // Ensure we have a valid key before attempting
+        if (!this.apiKey && !process.env.VPS_PROXY_KEY) {
+            throw new Error("❌ [VPSProvider] Missing VPS_PROXY_KEY in environment variables.");
+        }
 
         // AUTO-FAILOVER LOOP
         for (const model of this.models) {
@@ -61,6 +66,7 @@ export class VPSProvider implements IAIProvider {
     }
 
     async isAvailable(): Promise<boolean> {
+        if (!this.apiKey) return false;
         try {
             const res = await fetch(`${this.apiBase}/models`, {
                 headers: { 'Authorization': `Bearer ${this.apiKey}` }

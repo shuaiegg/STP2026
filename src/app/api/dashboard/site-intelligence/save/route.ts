@@ -11,7 +11,7 @@ export async function POST(request: Request) {
 
     try {
         const body = await request.json();
-        const { domain, graphData, techScore } = body;
+        const { domain, graphData, techScore, businessDna } = body;
 
         if (!domain || !graphData) {
             return NextResponse.json({ error: '缺失必要字段 (域名或图表数据)' }, { status: 400 });
@@ -23,7 +23,18 @@ export async function POST(request: Request) {
 
         if (!site) {
             site = await prisma.site.create({
-                data: { userId: session.user.id, domain, name: domain },
+                data: {
+                    userId: session.user.id,
+                    domain,
+                    name: domain,
+                    businessOntology: businessDna ? businessDna : undefined
+                },
+            });
+        } else if (businessDna) {
+            // Update existing site with new DNA
+            site = await prisma.site.update({
+                where: { id: site.id },
+                data: { businessOntology: businessDna }
             });
         }
 

@@ -3,6 +3,7 @@ import { fetchHtml } from './crawler/fetcher';
 import { CrawlerParser } from './crawler/parser';
 import { CrawlerStrategy } from './crawler/strategy';
 import { getDefaultProvider } from '@/lib/skills/providers';
+import { BusinessDna } from './types';
 
 /**
  * Site Intelligence Crawler Service (Façade)
@@ -190,6 +191,23 @@ export class CrawlerService {
     // 立即通知已发现的所有链接（骨架图）
     onProgress({ type: 'discovery', urls });
 
+    // Extract Business DNA in the background
+    let businessDna: BusinessDna | undefined;
+
+    // We try to find the homepage and an about page
+    const homeUrl = urls.find(u => u === normalized || u === `${normalized}/`) || urls[0];
+    const aboutUrl = urls.find(u => u.toLowerCase().includes('/about') || u.toLowerCase().includes('about-us'));
+
+    // Fire off the DNA extraction asynchronously so it doesn't block the crawl startup
+    this.extractBusinessDna(homeUrl, aboutUrl).then(dna => {
+      if (dna) {
+        businessDna = dna;
+        onProgress({ type: 'dna_extracted', dna });
+      }
+    }).catch(err => {
+      console.error('[Crawler Service] Failed to extract Business DNA:', err);
+    });
+
     const targetUrls = this.sampleUrls(urls, 100);
     const totalCount = urls.length; // 实际发现的总数
     const scanLimit = targetUrls.length; // 本次实际抓取的限制数
@@ -216,7 +234,77 @@ export class CrawlerService {
       allUrls: urls,
       pages: await this.clusterPages(pages),
       averageLoadTime,
+      businessDna
     };
+  }
+
+  /**
+   * Reads the homepage and about page to extract core business context using LLM
+   */
+  static async extractBusinessDna(homeUrl: string, aboutUrl?: string): Promise<BusinessDna | null> {
+    try {
+      const homePage = await this.scrapePage(homeUrl);
+      let aboutPage = null;
+      if (aboutUrl) {
+        aboutPage = await this.scrapePage(aboutUrl);
+      }
+
+      if (!homePage && !aboutPage) return null;
+
+      const aiProvider = await getDefaultProvider();
+      const defaultModel = aiProvider.getDefaultModel();
+
+      const combinedText = `
+      Homepage Content:
+      Title: ${homePage?.title || ''}
+      Description: ${homePage?.description || ''}
+      H1: ${homePage?.h1 || ''}
+      H2s: ${homePage?.h2.slice(0, 5).join(', ') || ''}
+
+      About Page Content:
+      Title: ${aboutPage?.title || ''}
+      Description: ${aboutPage?.description || ''}
+      H1: ${aboutPage?.h1 || ''}
+      H2s: ${aboutPage?.h2.slice(0, 5).join(', ') || ''}
+      `;
+
+      const prompt = `
+      You are an expert Business Strategist and Product Marketing Manager.
+      Analyze the provided website content (Homepage and About page) and extract the core "Business DNA" for this company.
+
+      CRITICAL INSTRUCTIONS:
+      Return YOUR ANALYSIS as a strict JSON object with EXACTLY these four keys. Do not include markdown formatting or extra text.
+      1. "coreOfferings": Array of strings (What are the 2-4 main products or services they sell?)
+      2. "targetAudience": Array of strings (Who are the 2-4 specific types of customers they are targeting?)
+      3. "painPoints": Array of strings (What are the 2-4 main customer problems they solve?)
+      4. "brandTone": String (A short 3-5 word description of their brand voice, e.g., "Professional B2B Software", "Playful Consumer E-commerce")
+
+      Website Content to analyze:
+      ${combinedText}
+      `.trim();
+
+      const response = await aiProvider.generateContent(prompt, {
+        model: defaultModel.id,
+        temperature: 0.1,
+      });
+
+      if (response.content) {
+        const match = response.content.match(/\\{[\\s\\S]*\\}/);
+        if (match) {
+          const parsed = JSON.parse(match[0]);
+          return {
+            coreOfferings: Array.isArray(parsed.coreOfferings) ? parsed.coreOfferings : [],
+            targetAudience: Array.isArray(parsed.targetAudience) ? parsed.targetAudience : [],
+            painPoints: Array.isArray(parsed.painPoints) ? parsed.painPoints : [],
+            brandTone: parsed.brandTone || 'Professional',
+          };
+        }
+      }
+    } catch (error) {
+      console.error('[Crawler Service] Business DNA extraction failed:', error);
+    }
+
+    return null;
   }
 
   /**
