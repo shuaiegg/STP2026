@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 
-// Refreshed at: 2026-01-15T19:49:00
+// Refreshed at: 2026-03-11T10:09:00
 const globalForPrisma = globalThis as unknown as {
     prisma: PrismaClient | undefined;
 };

@@ -70,15 +70,12 @@ export async function POST(request: Request) {
                 });
 
                 if (siteRecord) {
-                    // 这里我们模拟调用内部 Market Gap 逻辑，或者直接查询已缓存的(如果有)
-                    // 为简化，我们先从已有的竞争对手数据中提取 (Sprint 6 逻辑)
-                    // 或者更直接地：如果该接口由 Dashboard 触发且已知 siteId，我们可以带 siteId 进来。
-                    // 暂时这里由于是域名触发，我们做一次模糊匹配后尝试从现有竞争对手生成。
-                    // 为了演示，我们先假设通过另一个独立的 API 已经计算好了(或者这里实时算一下最简单的)
-                    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/dashboard/sites/${siteRecord.id}/market-gap`);
+                    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/dashboard/sites/${siteRecord.id}/semantic-gap`);
                     if (res.ok) {
                         const gapJson = await res.json();
-                        marketGapsData = gapJson.marketGaps;
+                        if (gapJson.success && gapJson.data?.semanticDebts) {
+                            marketGapsData = gapJson.data.semanticDebts;
+                        }
                     }
                 }
 

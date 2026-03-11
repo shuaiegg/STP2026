@@ -17,12 +17,13 @@ interface SiteRecord {
 import { CompetitorsPanel } from './components/CompetitorsPanel';
 import { OverviewPanel } from './components/OverviewPanel';
 import { AuditHistoryPanel } from './components/AuditHistoryPanel';
+import { PerformanceDashboard } from './components/PerformanceDashboard';
 
 export default function SiteDetailsPage({ params }: { params: Promise<{ siteId: string }> }) {
     const { siteId } = use(params);
     const router = useRouter();
     const [site, setSite] = useState<SiteRecord | null>(null);
-    const [activeTab, setActiveTab] = useState<'overview' | 'audits' | 'competitors'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'audits' | 'competitors' | 'performance'>('overview');
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -101,6 +102,12 @@ export default function SiteDetailsPage({ params }: { params: Promise<{ siteId: 
                 >
                     竞争对手追踪
                 </button>
+                <button
+                    onClick={() => setActiveTab('performance')}
+                    className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'performance' ? 'border-brand-primary text-brand-primary' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}
+                >
+                    搜索表现
+                </button>
             </div>
 
             {/* Tab Content */}
@@ -115,6 +122,10 @@ export default function SiteDetailsPage({ params }: { params: Promise<{ siteId: 
 
                 {activeTab === 'competitors' && (
                     <CompetitorsPanel siteId={site.id} />
+                )}
+
+                {activeTab === 'performance' && (
+                    <PerformanceDashboard siteId={site.id} />
                 )}
             </div>
         </div>

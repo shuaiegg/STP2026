@@ -2,69 +2,53 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import Link from 'next/link';
+import { GscPropertySelector } from './GscPropertySelector';
 
 export function OverviewPanel({ siteId, domain }: { siteId: string, domain: string }) {
     const [latestAudit, setLatestAudit] = useState<any>(null);
-    const [marketGap, setMarketGap] = useState<any>(null);
+    const [semanticData, setSemanticData] = useState<any>(null);
     const [competitorCount, setCompetitorCount] = useState<number>(0);
     const [loading, setLoading] = useState(true);
+    const [isExtractingDNA, setIsExtractingDNA] = useState(false);
+    const [siteData, setSiteData] = useState<any>(null);
+    const [isConnectingGSC, setIsConnectingGSC] = useState(false);
 
-    const [selectedGap, setSelectedGap] = useState<any | null>(null);
-    const [gapProfile, setGapProfile] = useState<any | null>(null);
-    const [isLoadingProfile, setIsLoadingProfile] = useState(false);
+    const [selectedDebt, setSelectedDebt] = useState<any | null>(null);
 
-    const handleGapClick = useCallback(async (gap: any) => {
-        if (!gap.evidence || gap.evidence.length === 0) return;
-
-        if (selectedGap?.topic === gap.topic) {
-            setSelectedGap(null);
-            setGapProfile(null);
+    const handleDebtClick = useCallback((debt: any) => {
+        if (selectedDebt?.topic === debt.topic) {
+            setSelectedDebt(null);
             return;
         }
-
-        setSelectedGap(gap);
-        setGapProfile(null);
-        setIsLoadingProfile(true);
-
-        try {
-            const targetUrl = gap.evidence[0];
-            const res = await fetch(`/api/dashboard/sites/${siteId}/market-gap/profile`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url: targetUrl })
-            });
-            const data = await res.json();
-            if (data.success) {
-                setGapProfile(data.data);
-            }
-        } catch (e) {
-            console.error("Failed to load gap profile", e);
-        } finally {
-            setIsLoadingProfile(false);
-        }
-    }, [siteId, selectedGap]);
+        setSelectedDebt(debt);
+    }, [selectedDebt]);
 
     const fetchData = useCallback(async () => {
         setLoading(true);
         try {
-            const [auditsRes, gapRes, compRes] = await Promise.all([
+            const [auditsRes, gapRes, compRes, siteRes] = await Promise.all([
                 fetch(`/api/dashboard/sites/${siteId}/audits`),
-                fetch(`/api/dashboard/sites/${siteId}/market-gap`),
-                fetch(`/api/dashboard/sites/${siteId}/competitors`)
+                fetch(`/api/dashboard/sites/${siteId}/semantic-gap`),
+                fetch(`/api/dashboard/sites/${siteId}/competitors`),
+                fetch(`/api/dashboard/sites/${siteId}`)
             ]);
 
             const auditsData = await auditsRes.json();
-            const gapData = await gapRes.json();
+            const semanticResData = await gapRes.json();
             const compData = await compRes.json();
+            const siteDataJson = await siteRes.json();
 
             if (auditsData.audits && auditsData.audits.length > 0) {
                 setLatestAudit(auditsData.audits[0]);
             }
-            if (gapData.success) {
-                setMarketGap(gapData.data);
+            if (semanticResData.success) {
+                setSemanticData(semanticResData.data);
             }
             if (compData.success) {
                 setCompetitorCount(compData.competitors.length);
+            }
+            if (siteDataJson.success) {
+                setSiteData(siteDataJson.site);
             }
         } catch (e) {
             console.error('Failed to load overview data:', e);
@@ -72,6 +56,43 @@ export function OverviewPanel({ siteId, domain }: { siteId: string, domain: stri
             setLoading(false);
         }
     }, [siteId]);
+
+    const handleConnectGSC = async () => {
+        setIsConnectingGSC(true);
+        try {
+            const res = await fetch(`/api/dashboard/sites/${siteId}/gsc-sync/auth`, { method: 'POST' });
+            const data = await res.json();
+            if (data.url) {
+                window.location.href = data.url;
+            } else {
+                alert(data.error || "Failed to initialize GSC connection");
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Error connecting to GSC");
+        } finally {
+            setIsConnectingGSC(false);
+        }
+    };
+
+    const handleExtractDNA = useCallback(async () => {
+        setIsExtractingDNA(true);
+        try {
+            const res = await fetch(`/api/dashboard/sites/${siteId}/ontology`, { method: 'POST' });
+            const data = await res.json();
+            if (data.success) {
+                // Refresh the panel data
+                await fetchData();
+            } else {
+                alert(data.error || "提取业务DNA失败");
+            }
+        } catch (error) {
+            console.error(error);
+            alert("发生错误");
+        } finally {
+            setIsExtractingDNA(false);
+        }
+    }, [siteId, fetchData]);
 
     useEffect(() => {
         fetchData();
@@ -174,59 +195,127 @@ export function OverviewPanel({ siteId, domain }: { siteId: string, domain: stri
 
             {/* Strategic Insights */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
-                {/* Our Strengths */}
-                <Card className="p-6 border-emerald-100 bg-emerald-50/20 shadow-sm">
-                    <h3 className="text-sm font-bold text-emerald-900 flex items-center gap-2 mb-4">
-                        核心优势集群 (Our Strengths)
-                    </h3>
-                    {marketGap?.ourStrengths?.length > 0 ? (
-                        <div className="flex flex-wrap gap-2">
-                            {marketGap.ourStrengths.slice(0, 15).map((topic: any, i: number) => (
-                                <Badge key={i} variant="default" className="bg-white border-emerald-200 text-emerald-700 shadow-sm cursor-default">
-                                    {topic.topic}
-                                </Badge>
-                            ))}
-                        </div>
+                {/* Our Strengths & Business DNA */}
+                <div className="space-y-6">
+                    {/* Business DNA */}
+                    {semanticData?.businessOntology ? (
+                        <Card className="p-6 border-indigo-100 bg-indigo-50/30 shadow-sm">
+                            <h3 className="text-sm font-bold text-indigo-900 flex items-center gap-2 mb-3">
+                                🧬 核心业务 DNA
+                            </h3>
+                            <div className="space-y-3">
+                                <div>
+                                    <h4 className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">核心产品/服务</h4>
+                                    <p className="text-xs text-slate-700 mt-1 leading-relaxed">
+                                        {semanticData.businessOntology.coreOfferings?.join(" • ")}
+                                    </p>
+                                </div>
+                                <div>
+                                    <h4 className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">解决痛点</h4>
+                                    <p className="text-xs text-slate-700 mt-1 leading-relaxed">
+                                        {semanticData.businessOntology.painPointsSolved?.join(" • ")}
+                                    </p>
+                                </div>
+                            </div>
+                        </Card>
                     ) : (
-                        <p className="text-xs text-slate-500">星图中尚未发现密集的内容集群。试着丰富您的网站内容或者重新扫描。</p>
+                        <Card className="p-6 border-dashed border-indigo-200 bg-indigo-50/10 shadow-sm flex flex-col items-center justify-center text-center space-y-3">
+                            <span className="text-2xl opacity-50">🧬</span>
+                            <div>
+                                <h3 className="text-sm font-bold text-indigo-900">未提取业务 DNA</h3>
+                                <p className="text-xs text-slate-500 mt-1">提取自身的业务逻辑，系统才能推导出你的"语义债"和核心支柱。</p>
+                            </div>
+                            <button
+                                onClick={handleExtractDNA}
+                                disabled={isExtractingDNA}
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2 text-[11px] font-bold transition-all disabled:opacity-50"
+                            >
+                                {isExtractingDNA ? "正在利用全站数据反推 DNA..." : "立即提取业务 DNA"}
+                            </button>
+                        </Card>
                     )}
-                </Card>
 
-                {/* Top Market Gaps */}
-                <Card className="p-6 border-rose-100 bg-rose-50/20 shadow-sm flex flex-col">
-                    <div className="flex justify-between items-start mb-4">
-                        <h3 className="text-sm font-bold text-rose-900 flex items-center gap-2">
-                            高优市场空白 (Top Market Gaps)
+                    <Card className="p-6 border-emerald-100 bg-emerald-50/20 shadow-sm">
+                        <h3 className="text-sm font-bold text-emerald-900 flex items-center gap-2 mb-4">
+                            权威支柱 (Core Strengths)
                         </h3>
-                        {marketGap?.marketGaps?.length > 0 && (
+                        {semanticData?.ourStrengths?.length > 0 ? (
+                            <div className="flex flex-wrap gap-2">
+                                {semanticData.ourStrengths.slice(0, 15).map((topic: any, i: number) => (
+                                    <Badge key={i} variant="default" className="bg-white border-emerald-200 text-emerald-700 shadow-sm cursor-default">
+                                        {topic.topic}
+                                    </Badge>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-xs text-slate-500">系统中尚未提取到成熟的内容支柱。建议补充业务相关的核心长文。</p>
+                        )}
+                    </Card>
+                </div>
+
+                {/* Top Semantic Debts */}
+                <Card className="p-6 border-rose-100 bg-rose-50/20 shadow-sm flex flex-col h-full">
+                    <div className="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 className="text-sm font-bold text-rose-900 flex items-center gap-2">
+                                高优语义债 (Semantic Debts)
+                            </h3>
+                            {(!siteData?.gscConnections || siteData.gscConnections.length === 0) ? (
+                                <button
+                                    onClick={handleConnectGSC}
+                                    disabled={isConnectingGSC}
+                                    className="mt-2 text-[10px] font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-md transition-colors flex items-center gap-1"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.54 15H17a2 2 0 0 0-2 2v4.54" /><path d="M7 3.34V5a3 3 0 0 0 3 3v0a2 2 0 0 1 2 2v0c0 1.1.9 2 2 2v0a2 2 0 0 0 2-2v0c0-1.1.9-2 2-2h3.17" /><path d="M11 21.95V18a2 2 0 0 0-2-2v0a2 2 0 0 1-2-2v-1a2 2 0 0 0-2-2H2.05" /><circle cx="12" cy="12" r="10" /></svg>
+                                    {isConnectingGSC ? '连接中...' : '接入 GSC 数据，智能算出还债优先级 ✨'}
+                                </button>
+                            ) : !siteData.gscConnections[0].propertyId ? (
+                                <div className="mt-4 mb-4">
+                                    <GscPropertySelector
+                                        siteId={siteId}
+                                        onSelected={() => fetchData()}
+                                    />
+                                </div>
+                            ) : (
+                                <div className="mt-2 text-[10px] text-emerald-600 flex items-center gap-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+                                    已连接 GSC 数据源 ({siteData.gscConnections[0].propertyId})
+                                </div>
+                            )}
+                        </div>
+                        {semanticData?.semanticDebts?.length > 0 && (
                             <Badge variant="muted" className="bg-white border-rose-200 text-rose-600 text-[10px]">
-                                发现 {marketGap.marketGaps.length} 个缺口
+                                发现 {semanticData.semanticDebts.length} 个缺口
                             </Badge>
                         )}
                     </div>
 
-                    {marketGap?.marketGaps?.length > 0 ? (
+                    {semanticData?.semanticDebts?.length > 0 ? (
                         <div className="space-y-3 flex-1">
-                            {marketGap.marketGaps.slice(0, 5).map((gap: any, i: number) => (
+                            {semanticData.semanticDebts.slice(0, 5).map((debt: any, i: number) => (
                                 <div key={i} className="flex flex-col gap-2">
                                     <div
-                                        className={`flex items-center justify-between p-3 rounded-xl border shadow-sm transition-all cursor-pointer ${selectedGap?.topic === gap.topic
+                                        className={`flex items-center justify-between p-3 rounded-xl border shadow-sm transition-all cursor-pointer ${selectedDebt?.topic === debt.topic
                                             ? 'bg-rose-50 border-rose-300 ring-1 ring-rose-200'
                                             : 'bg-white border-rose-100 hover:border-rose-300'
                                             }`}
-                                        onClick={() => handleGapClick(gap)}
+                                        onClick={() => handleDebtClick(debt)}
                                     >
                                         <div>
                                             <p className="font-bold text-slate-800 text-sm flex items-center gap-2">
-                                                {gap.topic}
-                                                <span className="text-[9px] font-mono font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-md">频率: {gap.frequency}</span>
-                                            </p>
-                                            <p className="text-[11px] text-slate-500 mt-0.5">
-                                                对手: {gap.competitors.slice(0, 2).join(', ')}{gap.competitors.length > 2 ? '等' : ''}
+                                                {debt.topic}
+                                                {debt.priorityLabel && (
+                                                    <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-md ${debt.priorityLabel.includes('🔥')
+                                                        ? 'bg-rose-100 text-rose-600'
+                                                        : 'bg-emerald-100 text-emerald-600'
+                                                        }`}>
+                                                        {debt.priorityLabel}
+                                                    </span>
+                                                )}
                                             </p>
                                         </div>
                                         <button className="text-rose-500 opacity-60 hover:opacity-100 transition-opacity">
-                                            {selectedGap?.topic === gap.topic ? (
+                                            {selectedDebt?.topic === debt.topic ? (
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6" /></svg>
                                             ) : (
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
@@ -235,53 +324,46 @@ export function OverviewPanel({ siteId, domain }: { siteId: string, domain: stri
                                     </div>
 
                                     {/* Inline Expansion Pane */}
-                                    {selectedGap?.topic === gap.topic && (
-                                        <div className="mx-2 mb-2 p-4 bg-white rounded-lg border border-rose-100 shadow-inner animate-in slide-in-from-top-1">
-                                            {isLoadingProfile ? (
-                                                <div className="py-6 flex flex-col items-center justify-center space-y-3">
-                                                    <div className="w-5 h-5 border-2 border-rose-500/30 border-t-rose-500 rounded-full animate-spin"></div>
-                                                    <span className="text-[10px] text-slate-400 font-mono tracking-widest uppercase">解构竞品框架...</span>
-                                                </div>
-                                            ) : gapProfile ? (
-                                                <div className="space-y-4">
-                                                    <div className="grid grid-cols-2 gap-3">
-                                                        <div className="bg-slate-50 p-2 rounded border border-slate-100">
-                                                            <div className="text-[8px] font-bold text-slate-400 tracking-widest uppercase mb-0.5">词数</div>
-                                                            <div className="text-sm font-black text-slate-700">{gapProfile.wordCount.toLocaleString()}</div>
-                                                        </div>
-                                                        <div className="bg-slate-50 p-2 rounded border border-slate-100">
-                                                            <div className="text-[8px] font-bold text-slate-400 tracking-widest uppercase mb-0.5">层级</div>
-                                                            <div className="text-sm font-black text-slate-700">{gapProfile.headings.length}</div>
-                                                        </div>
-                                                    </div>
+                                    {selectedDebt?.topic === debt.topic && (
+                                        <div className="mx-2 mb-2 p-4 bg-white rounded-lg border border-rose-100 shadow-inner animate-in slide-in-from-top-1 space-y-4">
+                                            <div className="bg-slate-50 rounded p-3 text-xs leading-relaxed text-slate-700 border border-slate-100">
+                                                <strong className="text-slate-900 block mb-1">为什么这很重要？ (Relevance)</strong>
+                                                {debt.relevance}
+                                            </div>
 
-                                                    <div className="bg-slate-900 rounded p-3 max-h-[200px] overflow-y-auto custom-scrollbar">
-                                                        {gapProfile.headings.length > 0 ? (
-                                                            <ul className="space-y-1 font-mono text-[10px]">
-                                                                {gapProfile.headings.map((h: any, i: number) => (
-                                                                    <li key={i} className={`
-                                                                        ${h.level === 1 ? 'text-white font-bold pb-1' : ''}
-                                                                        ${h.level === 2 ? 'text-blue-300 ml-1.5' : ''}
-                                                                        ${h.level === 3 ? 'text-slate-400 ml-4' : ''}
-                                                                    `}>
-                                                                        <span className="opacity-40 mr-1.5 scale-75 inline-block">&lt;h{h.level}&gt;</span>
-                                                                        {h.text}
-                                                                    </li>
-                                                                ))}
-                                                            </ul>
-                                                        ) : (
-                                                            <p className="text-slate-500 text-[10px] text-center">无清晰标题结构</p>
-                                                        )}
+                                            {debt.gscData && (
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <div className="bg-blue-50/50 p-2 rounded border border-blue-100">
+                                                        <div className="text-[8px] font-bold text-blue-500 tracking-widest uppercase mb-0.5">月曝光走势 (Impressions)</div>
+                                                        <div className="text-sm font-black text-blue-900">{debt.gscData.impressions.toLocaleString()}</div>
                                                     </div>
-                                                    <button className="w-full bg-slate-900 hover:bg-slate-800 text-white rounded-lg py-2 text-[10px] font-bold tracking-widest uppercase transition-colors">
-                                                        进入智能写手 ⚡
-                                                    </button>
-                                                </div>
-                                            ) : (
-                                                <div className="text-[10px] text-rose-500 bg-rose-50/50 p-2 rounded">
-                                                    抓取失败，该页面可能受反爬虫保护。
+                                                    <div className="bg-blue-50/50 p-2 rounded border border-blue-100">
+                                                        <div className="text-[8px] font-bold text-blue-500 tracking-widest uppercase mb-0.5">捕获点击 (Clicks)</div>
+                                                        <div className="text-sm font-black text-blue-900">{debt.gscData.clicks.toLocaleString()}</div>
+                                                    </div>
+                                                    {debt.gscData.matchedKeywords?.length > 0 && (
+                                                        <div className="col-span-2 text-[10px] text-slate-500">
+                                                            触发的搜索词: <span className="font-mono text-slate-700">{debt.gscData.matchedKeywords.join(', ')}</span>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
+
+                                            {debt.subtopics && debt.subtopics.length > 0 && (
+                                                <div className="bg-slate-900 rounded p-3">
+                                                    <div className="text-[10px] text-slate-400 font-mono mb-2">SUGGESTED SUB-TOPICS:</div>
+                                                    <ul className="space-y-1 font-mono text-[11px] text-slate-300 list-disc list-inside">
+                                                        {debt.subtopics.map((sub: string, idx: number) => (
+                                                            <li key={idx}>{sub}</li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
+
+                                            <button className="w-full bg-slate-900 hover:bg-slate-800 text-white rounded-lg py-2.5 text-[11px] font-bold tracking-widest uppercase transition-colors flex justify-center items-center gap-2">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-zap"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
+                                                派发 GEO Writer 任务
+                                            </button>
                                         </div>
                                     )}
                                 </div>
@@ -289,13 +371,12 @@ export function OverviewPanel({ siteId, domain }: { siteId: string, domain: stri
                         </div>
                     ) : (
                         <p className="text-xs text-slate-500 flex-1">
-                            {competitorCount > 0
-                                ? "在当前跟踪的竞品中，尚未发现明显的市场空白。可能是您的内容已全方位覆盖，或者竞品不够激进。"
-                                : "请先添加竞争对手，系统才能扫描并对比出您的市场空白。"}
+                            尚未提取到业务本体数据或未发现明显的语义债。
                         </p>
-                    )}
-                </Card>
-            </div>
-        </div>
+                    )
+                    }
+                </Card >
+            </div >
+        </div >
     );
 }

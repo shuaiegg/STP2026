@@ -143,6 +143,7 @@ model Site {
   name          String?
   targetMarkets String[]
   seedKeywords  String[]
+  businessOntology Json?   // Stores extracted coreOfferings, targetAudience, painPoints, idealTopicMap
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -232,6 +233,7 @@ model GscConnection {
   site         Site      @relation(fields: [siteId], references: [id], onDelete: Cascade)
   accessToken  String
   refreshToken String
+  propertyId   String?
   expiresAt    DateTime
   lastSyncAt   DateTime?
 
