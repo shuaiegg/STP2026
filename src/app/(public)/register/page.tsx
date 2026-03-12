@@ -39,16 +39,16 @@ export default function UnifiedAuthPage() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email })
             });
-            
+
             if (!res.ok) throw new Error("服务器错误，请稍后再试");
-            
+
             const data = await res.json();
-            
+
             if (data.exists) {
                 // EXISITING USER: Save their name from DB for greetings and go straight to sending OTP
                 setName(data.name || "老朋友");
                 setIsNewUser(false);
-                await sendOtpFor("sign-in");
+                await sendOtpFor("sign-in", email.trim().toLowerCase());
             } else {
                 // NEW USER: Ask for their name first
                 setIsNewUser(true);
@@ -68,25 +68,31 @@ export default function UnifiedAuthPage() {
             setError("请输入至少两个字符的称呼");
             return;
         }
-        await sendOtpFor("email-verification", email.trim().toLowerCase(), name.trim());
+        // 统一使用 "sign-in" 类型，支持新用户自动注册
+        await sendOtpFor("sign-in", email.trim().toLowerCase());
     };
 
-    // 3. Centralized OTP Sending Logic
-    const sendOtpFor = async (type: "sign-in" | "email-verification", targetEmail: string, providedName?: string) => {
+    // 3. Centralized OTP Sending Logic (HACK to bypass SDK path bug)
+    const sendOtpFor = async (type: "sign-in" | "email-verification", targetEmail: string) => {
         setIsPending(true);
         setError("");
         try {
-            const payload: any = { email: targetEmail, type };
-            if (type === "email-verification" && providedName) {
-                payload.name = providedName;
+            // MANUAL FETCH to correct endpoint /email-otp/ instead of SDK's broken /email-o-t-p/
+            const response = await fetch(`/api/auth/email-otp/send-verification-otp`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    email: targetEmail,
+                    type: type,
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || data.error) {
+                throw new Error(data.error || data.message || "发送验证码失败");
             }
 
-            const { error: authError } = await authClient.emailOTP.sendVerificationCode(payload);
-
-            if (authError) {
-                throw new Error(authError.message);
-            }
-            
             toast.success("验证码已发送至您的邮箱");
             setStep("enter-otp");
         } catch (err: any) {
@@ -106,18 +112,24 @@ export default function UnifiedAuthPage() {
             let authError = null;
 
             if (isNewUser) {
-                // Registration Flow
-                const res = await authClient.signUp.emailOTP({
+                // Registration Flow: 使用 sign-in 类型触发自动注册
+                const res = await authClient.signIn.emailOtp({
                     email,
-                    name,
-                    code: otp,
+                    otp,
                 });
                 authError = res.error;
+
+                // 注册成功后更新姓名
+                if (!authError && name.trim()) {
+                    await authClient.updateUser({
+                        name: name.trim(),
+                    });
+                }
             } else {
                 // Login Flow
-                const res = await authClient.signIn.emailOTP({
+                const res = await authClient.signIn.emailOtp({
                     email,
-                    code: otp,
+                    otp,
                 });
                 authError = res.error;
             }
@@ -139,7 +151,7 @@ export default function UnifiedAuthPage() {
     return (
         <div className="min-h-screen bg-brand-surface flex items-center justify-center p-6 relative overflow-hidden">
             <div className="absolute inset-0 grid-bg opacity-40 pointer-events-none" />
-            
+
             <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-brand-secondary/5 rounded-full blur-[120px] pointer-events-none" />
             <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-brand-accent/5 rounded-full blur-[120px] pointer-events-none" />
 
@@ -233,7 +245,7 @@ export default function UnifiedAuthPage() {
                                     </>
                                 )}
                             </Button>
-                            
+
                             <button
                                 type="button"
                                 onClick={() => setStep("enter-email")}
@@ -293,7 +305,7 @@ export default function UnifiedAuthPage() {
                 <div className="mt-8 text-center stagger-3 animate-slide-in-up">
                     <p className="text-sm text-brand-text-secondary font-medium">
                         如果您遇到任何登录问题，请联系
-                        <a href="mailto:hi@scaletotop.com" className="font-black text-brand-primary hover:underline underline-offset-4 decoration-2 ml-1">
+                        <a href="mailto:jack@scaletotop.com" className="font-black text-brand-primary hover:underline underline-offset-4 decoration-2 ml-1">
                             技术支持
                         </a>
                     </p>

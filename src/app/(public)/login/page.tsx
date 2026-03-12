@@ -40,11 +40,11 @@ export default function UserLoginPage() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: cleanEmail })
             });
-            
+
             if (!res.ok) throw new Error("服务器错误，请稍后再试");
-            
+
             const data = await res.json();
-            
+
             if (data.exists) {
                 setName(data.name || "老朋友");
                 setIsNewUser(false);
@@ -68,8 +68,9 @@ export default function UserLoginPage() {
             return;
         }
         // 对于新用户，不能直接发送 "sign-up" 验证码，因为 Better Auth 不支持这个 type
-        // 必须发送 "email-verification" 作为注册前奏
-        await sendOtpFor("email-verification", email.trim().toLowerCase());
+        // 曾尝试使用 "email-verification"，但该类型在用户不存在时不会触发验证码发送
+        // 最终方案：统一使用 "sign-in" 类型，它可以触发验证码并在验证成功后自动创建账号
+        await sendOtpFor("sign-in", email.trim().toLowerCase());
     };
 
     // 3. Centralized OTP Sending Logic (HACK to bypass SDK path bug)
@@ -92,7 +93,7 @@ export default function UserLoginPage() {
             if (!response.ok || data.error) {
                 throw new Error(data.error || data.message || "发送验证码失败");
             }
-            
+
             toast.success("验证码已发送至您的邮箱");
             setStep("enter-otp");
         } catch (err: any) {
@@ -114,12 +115,19 @@ export default function UserLoginPage() {
             const cleanOtp = otp.trim();
 
             if (isNewUser) {
-                const res = await authClient.signUp.emailOTP({
+                // 对于新用户，我们使用 signIn.emailOtp，因为它在 type="sign-in" 时能自动创建用户
+                const res = await authClient.signIn.emailOtp({
                     email: cleanEmail,
-                    name: name.trim(),
-                    code: cleanOtp,
+                    otp: cleanOtp,
                 });
                 authError = res.error;
+
+                // 如果登录成功（即账号已自动创建），则立即更新用户的姓名
+                if (!authError && name.trim()) {
+                    await authClient.updateUser({
+                        name: name.trim(),
+                    });
+                }
             } else {
                 // For Sign In, we also use manual fetch to be safe from path issues
                 const response = await fetch(`/api/auth/sign-in/email-otp`, {
@@ -173,7 +181,7 @@ export default function UserLoginPage() {
     return (
         <div className="min-h-screen bg-brand-surface flex items-center justify-center p-6 relative overflow-hidden">
             <div className="absolute inset-0 grid-bg opacity-40 pointer-events-none" />
-            
+
             <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-brand-secondary/5 rounded-full blur-[120px] pointer-events-none" />
             <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-brand-accent/5 rounded-full blur-[120px] pointer-events-none" />
 
