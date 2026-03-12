@@ -9,6 +9,9 @@
     "test": "vitest",
     "lint": "eslint"
   },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "dependencies": {
     "@ai-sdk/deepseek": "^2.0.17",
     "@ai-sdk/openai": "^3.0.25",

@@ -1,7 +1,7 @@
 import { createAuthClient } from "better-auth/react";
 import { emailOTPClient } from "better-auth/client/plugins";
 // Import the server auth type to infer custom fields
-import type { auth } from "./auth"; 
+import type { auth } from "./auth";
 
 export const authClient = createAuthClient({
     baseURL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
@@ -10,7 +10,7 @@ export const authClient = createAuthClient({
     ],
     fetchOptions: {
         onError(context) {
-            console.error("Better Auth Client Error:", context.error);
+            console.error("Better Auth Client Error:", context.error?.message || context.error || "Unknown Error", context.error);
         },
         // Hack: Better Auth client sometimes requests email-o-t-p instead of email-otp
         onRequest(context) {

@@ -76,7 +76,7 @@ export function DashboardContent({
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
                     <h1 className="font-display text-4xl font-black text-brand-text-primary italic leading-none mb-4">概览中心</h1>
-                    <p className="text-brand-text-secondary font-medium">欢迎回来，{user?.name || '杰克'}。系统一切就绪。</p>
+                    <p className="text-brand-text-secondary font-medium">欢迎回来，{user?.name || '用户'}。系统一切就绪。</p>
                 </div>
             </div>
 

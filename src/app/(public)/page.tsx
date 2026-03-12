@@ -102,9 +102,17 @@ function ProcessStep({ number, title, description, icon }: {
 }
 
 export default async function Home() {
-  const { contents } = await getPublishedContent({}, { limit: 3 });
+  let contents: any[] = [];
+  try {
+    const result = await getPublishedContent({}, { limit: 3 });
+    contents = result?.contents || [];
+  } catch (error) {
+    console.error('Failed to fetch published content for home page:', error);
+    // Fallback to empty array to prevent page crash
+    contents = [];
+  }
+  
   const featuredPosts = contents;
-  // const featuredPosts = [];
 
   const formatDate = (date: Date | null) => {
     if (!date) return '未发布';
@@ -446,55 +454,62 @@ export default async function Home() {
         </div>
 
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {featuredPosts.map((post: any, index: number) => {
-              const coverSrc = post.coverImage?.storageUrl || post.coverImage?.originalUrl || 'https://picsum.photos/seed/placeholder/1200/630';
-              return (
-                <Link
-                  key={post.slug}
-                  href={`/blog/${post.slug}`}
-                  className="group block"
-                >
-                  <article className="border-2 border-brand-border-heavy bg-white overflow-hidden transition-all hover:shadow-[8px_8px_0_0_rgba(10,10,10,1)] hover:translate-x-[-4px] hover:translate-y-[-4px] cursor-pointer">
-                    <div className="aspect-[16/10] overflow-hidden bg-brand-surface relative border-b-2 border-brand-border-heavy">
-                      <img
-                        src={coverSrc}
-                        alt={post.title}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      />
-                      {post.category?.name && (
-                        <div className="absolute top-4 left-4">
-                          <Badge
-                            variant="default"
-                            className="bg-white text-brand-text-primary border-2 border-brand-border-heavy font-mono text-xs"
-                          >
-                            {post.category.name}
-                          </Badge>
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-8">
-                      <h3 className="font-display text-2xl font-bold text-brand-text-primary group-hover:text-brand-secondary transition-colors mb-4 leading-tight">
-                        {post.title}
-                      </h3>
-                      <p className="text-brand-text-secondary text-base leading-relaxed mb-6 line-clamp-2">
-                        {post.summary}
-                      </p>
-                      <div className="flex items-center gap-3 pt-6 border-t border-brand-border">
-                        <span className="font-mono text-xs text-brand-text-muted">
-                          {formatDate(post.publishedAt)}
-                        </span>
-                        <div className="w-1 h-1 bg-brand-text-muted rounded-full"></div>
-                        <span className="font-mono text-xs text-brand-text-muted">
-                          {post.readingTime || '5'} 分钟
-                        </span>
+          {featuredPosts.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {featuredPosts.map((post: any, index: number) => {
+                const coverSrc = post.coverImage?.storageUrl || post.coverImage?.originalUrl || 'https://picsum.photos/seed/placeholder/1200/630';
+                return (
+                  <Link
+                    key={post.slug}
+                    href={`/blog/${post.slug}`}
+                    className="group block"
+                  >
+                    <article className="border-2 border-brand-border-heavy bg-white overflow-hidden transition-all hover:shadow-[8px_8px_0_0_rgba(10,10,10,1)] hover:translate-x-[-4px] hover:translate-y-[-4px] cursor-pointer">
+                      <div className="aspect-[16/10] overflow-hidden bg-brand-surface relative border-b-2 border-brand-border-heavy">
+                        <img
+                          src={coverSrc}
+                          alt={post.title}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        />
+                        {post.category?.name && (
+                          <div className="absolute top-4 left-4">
+                            <Badge
+                              variant="default"
+                              className="bg-white text-brand-text-primary border-2 border-brand-border-heavy font-mono text-xs"
+                            >
+                              {post.category.name}
+                            </Badge>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  </article>
-                </Link>
-              );
-            })}
-          </div>
+                      <div className="p-8">
+                        <h3 className="font-display text-2xl font-bold text-brand-text-primary group-hover:text-brand-secondary transition-colors mb-4 leading-tight">
+                          {post.title}
+                        </h3>
+                        <p className="text-brand-text-secondary text-base leading-relaxed mb-6 line-clamp-2">
+                          {post.summary}
+                        </p>
+                        <div className="flex items-center gap-3 pt-6 border-t border-brand-border">
+                          <span className="font-mono text-xs text-brand-text-muted">
+                            {formatDate(post.publishedAt)}
+                          </span>
+                          <div className="w-1 h-1 bg-brand-text-muted rounded-full"></div>
+                          <span className="font-mono text-xs text-brand-text-muted">
+                            {post.readingTime || '5'} 分钟
+                          </span>
+                        </div>
+                      </div>
+                    </article>
+                  </Link>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-12 border-2 border-dashed border-brand-border bg-brand-surface">
+              <h3 className="text-lg font-bold text-brand-text-primary mb-2">即将推出更多内容</h3>
+              <p className="text-brand-text-secondary text-sm">我们的内容团队正在整理实战案例，敬请期待。</p>
+            </div>
+          )}
         </div>
       </section>
 

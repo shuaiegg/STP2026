@@ -3,6 +3,16 @@
 > **Status**: Draft / Vision & Architecture Planning
 > **Core Principle**: Actionable Insights & Human-in-the-Loop Automation
 
+>3. **Registration Flow**: The backend error `Argument where of type VerificationWhereUniqueInput needs at least one of id arguments` is now resolved.
+
+## New Issue: Empty Error Object during Login
+If you see `Better Auth Client Error: {}` or similar in the console, it is because the database reset removed all user accounts.
+
+### How to Fix
+1. **Redo Registration**: Use the registration flow (Enter Email -> Enter Name -> Get OTP) to create a new account.
+2. **Improved Logging**: I have updated `src/lib/auth-client.ts` to log detailed error messages (e.g., `context.error.message`) instead of just the object, which will help avoid "empty error" messages in the future.
+3. **Verify Connection**: The `check-user` API has been verified and will correctly return `exists: false` for your email until you register again.
+
 本文档详细规划了“站点智能管家” (Site Intelligence) 未来的战略演进路线，核心是从“单一的 SEO 洞察工具”跃升为“SEO + SEM 统一的战略指挥中心”。
 
 ---

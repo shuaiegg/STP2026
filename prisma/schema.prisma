@@ -128,32 +128,31 @@ model User {
   accounts        Account[]
   transactions    CreditTransaction[]
   sessions        Session[]
+  sites           Site[]
   executions      SkillExecution[]
   trackedArticles TrackedArticle[]
-  sites           Site[]
 
   @@index([email])
 }
 
 /// Site - Managed websites for SEO intelligence
 model Site {
-  id               String   @id @default(uuid())
+  id               String          @id @default(uuid())
   userId           String
   domain           String
   name             String?
   targetMarkets    String[]
   seedKeywords     String[]
-  businessOntology Json? // Stores extracted coreOfferings, targetAudience, painPoints, idealTopicMap
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-
-  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  audits         SiteAudit[]
-  keywords       SiteKeyword[]
-  competitors    Competitor[]
-  contentPlans   ContentPlan[]
-  gscConnections GscConnection[]
-  ga4Connections Ga4Connection[]
+  businessOntology Json?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  competitors      Competitor[]
+  contentPlans     ContentPlan[]
+  ga4Connections   Ga4Connection[]
+  gscConnections   GscConnection[]
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  audits           SiteAudit[]
+  keywords         SiteKeyword[]
 
   @@index([userId])
   @@index([domain])
@@ -162,13 +161,13 @@ model Site {
 model SiteAudit {
   id           String   @id @default(uuid())
   siteId       String
-  site         Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
-  status       String // queued / running / done / failed
+  status       String
   techScore    Int?
   contentScore Int?
   geoScore     Int?
   report       Json?
   createdAt    DateTime @default(now())
+  site         Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
 
   @@index([siteId])
 }
@@ -176,7 +175,6 @@ model SiteAudit {
 model SiteKeyword {
   id          String   @id @default(uuid())
   siteId      String
-  site        Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
   keyword     String
   volume      Int?
   difficulty  Int?
@@ -185,6 +183,7 @@ model SiteKeyword {
   impressions Int?
   language    String?
   updatedAt   DateTime @updatedAt
+  site        Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
 
   @@index([siteId])
   @@index([keyword])
@@ -193,39 +192,25 @@ model SiteKeyword {
 model Competitor {
   id     String   @id @default(uuid())
   siteId String
-  site   Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
   domain String
   topics String[]
+  site   Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
 
   @@index([siteId])
-}
-
-enum StrategyStatus {
-  IDEATION // AI suggested, user hasn't approved
-  PLANNED // User approved, active in Kanban
-  IN_PROGRESS // GEO Writer is currently drafting
-  COMPLETED // Article published / Action executed
-  ARCHIVED // Dismissed or no longer relevant
-}
-
-enum TargetChannel {
-  SEO
-  GOOGLE_ADS
-  META_ADS
 }
 
 model ContentPlan {
   id          String           @id @default(uuid())
   siteId      String
-  site        Site             @relation(fields: [siteId], references: [id], onDelete: Cascade)
-  title       String // E.g., The core "Pillar" or "Campaign" name
-  description String? // Context for the AI to understand this entire cluster
+  title       String
+  description String?
   status      StrategyStatus   @default(IDEATION)
-  theme       String? // e.g., "B2B Automation", "CRM Features"
-  priority    Int              @default(0) // Order of columns in Kanban
-  articles    PlannedArticle[]
+  theme       String?
+  priority    Int              @default(0)
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
+  site        Site             @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  articles    PlannedArticle[]
 
   @@index([siteId])
 }
@@ -233,21 +218,21 @@ model ContentPlan {
 model PlannedArticle {
   id             String         @id @default(uuid())
   contentPlanId  String
-  contentPlan    ContentPlan    @relation(fields: [contentPlanId], references: [id], onDelete: Cascade)
-  title          String // Proposed title
-  keyword        String // Target primary keyword
+  title          String
+  keyword        String
   volume         Int?
   difficulty     Int?
   language       String
   pillar         Boolean        @default(false)
-  clusterOf      String? // Parent article ID if this is a sub-cluster
-  kanbanOrder    Int            @default(0) // Vertical order within the Pillar column
+  clusterOf      String?
+  kanbanOrder    Int            @default(0)
   status         StrategyStatus @default(IDEATION)
   targetChannel  TargetChannel  @default(SEO)
-  articleId      String? // Link to actual TrackedArticle/Content when generated
-  estimatedValue Float? // E.g., saved CPC cost if SEO replaces Ads
+  articleId      String?
+  estimatedValue Float?
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
+  contentPlan    ContentPlan    @relation(fields: [contentPlanId], references: [id], onDelete: Cascade)
 
   @@index([contentPlanId])
   @@index([status])
@@ -256,12 +241,12 @@ model PlannedArticle {
 model GscConnection {
   id           String    @id @default(uuid())
   siteId       String
-  site         Site      @relation(fields: [siteId], references: [id], onDelete: Cascade)
   accessToken  String
   refreshToken String
   propertyId   String?
   expiresAt    DateTime
   lastSyncAt   DateTime?
+  site         Site      @relation(fields: [siteId], references: [id], onDelete: Cascade)
 
   @@index([siteId])
 }
@@ -269,12 +254,12 @@ model GscConnection {
 model Ga4Connection {
   id           String    @id @default(uuid())
   siteId       String
-  site         Site      @relation(fields: [siteId], references: [id], onDelete: Cascade)
   accessToken  String
   refreshToken String
   propertyId   String?
   expiresAt    DateTime
   lastSyncAt   DateTime?
+  site         Site      @relation(fields: [siteId], references: [id], onDelete: Cascade)
 
   @@index([siteId])
 }
@@ -289,9 +274,9 @@ model TrackedArticle {
   keywords         String[]
   optimizedContent String
   contentHtml      String?
-  status           String    @default("PENDING") // PENDING, CHECKING, CITED, NOT_CITED
+  status           String    @default("PENDING")
   lastCheckedAt    DateTime?
-  citationSource   String? // e.g. "Perplexity", "Gemini"
+  citationSource   String?
   checkCount       Int       @default(0)
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
@@ -333,16 +318,20 @@ model Account {
   updatedAt             DateTime  @updatedAt
   user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([providerId, accountId])
   @@index([userId])
 }
 
 model Verification {
   id         String   @id @default(uuid())
-  identifier String
+  identifier String   @unique
   value      String
   expiresAt  DateTime
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+
+  @@unique([identifier, value])
+  @@index([identifier])
 }
 
 /// SyncLog - Track Notion sync operations
@@ -399,6 +388,34 @@ model SkillExecution {
   @@index([createdAt(sort: Desc)])
 }
 
+/// SkillConfig - Dynamic configuration for AI tools
+model SkillConfig {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  displayName String
+  description String?
+  cost        Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive])
+}
+
+enum StrategyStatus {
+  IDEATION
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  ARCHIVED
+}
+
+enum TargetChannel {
+  SEO
+  GOOGLE_ADS
+  META_ADS
+}
+
 enum ContentType {
   BLOG
   PAGE
@@ -434,18 +451,4 @@ enum TransactionType {
   CONSUMPTION
   REFUND
   BONUS
-}
-
-/// SkillConfig - Dynamic configuration for AI tools
-model SkillConfig {
-  id          String   @id @default(uuid())
-  name        String   @unique // e.g. "GEO_WRITER_FULL"
-  displayName String // e.g. "Geo Writer (Full)"
-  description String?
-  cost        Int      @default(0)
-  isActive    Boolean  @default(true) // Global kill switch
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([isActive])
 }

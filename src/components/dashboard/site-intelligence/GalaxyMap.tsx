@@ -81,9 +81,13 @@ export default function GalaxyMap({ data, onNodeClick, isLoading }: GalaxyMapPro
 
       // 3. 强制视图居中
       if (use3D) {
-        fgRef.current.cameraPosition({ x: 0, y: 0, z: 500 });
+        if (fgRef.current?.cameraPosition) {
+          fgRef.current.cameraPosition({ x: 0, y: 0, z: 500 });
+        }
       } else {
-        fgRef.current.centerAt(0, 0);
+        if (fgRef.current?.centerAt) {
+          fgRef.current.centerAt(0, 0);
+        }
       }
 
       // 4. 定时触发自适应缩放
