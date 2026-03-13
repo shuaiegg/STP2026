@@ -11,7 +11,11 @@
       "Bash(find /Users/apple/JSProject/STP2026/src -type f \\\\\\( -name \"*.ts\" -o -name \"*.tsx\" \\\\\\) -exec wc -l {} +)",
       "Bash(ls -1 /Users/apple/JSProject/STP2026/scripts/*.ts)",
       "Bash(grep -l \"console\\\\|test\\\\|debug\" /Users/apple/JSProject/STP2026/*.ts /Users/apple/JSProject/STP2026/*.js)",
-      "Bash(ls /Users/apple/JSProject/STP2026/*.ts /Users/apple/JSProject/STP2026/*.js)"
+      "Bash(ls /Users/apple/JSProject/STP2026/*.ts /Users/apple/JSProject/STP2026/*.js)",
+      "Bash(wc -l /Users/apple/JSProject/STP2026/src/app/admin/content/[id]/EditForm.tsx)",
+      "Bash(ls -la /Users/apple/JSProject/STP2026/src/app/admin/content/[id]/)",
+      "Bash(find /Users/apple/JSProject/STP2026/src -name \"*.tsx\" -type f -exec wc -l {} +)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d[''''instruction''''][:500]\\)\")"
     ]
   },
   "enabledPlugins": {

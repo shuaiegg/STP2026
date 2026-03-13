@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import {
     Coins,
     Zap,
@@ -45,6 +45,24 @@ export function DashboardContent({
     recentArticles?: any[];
 }) {
     const router = useRouter();
+
+    const gscCount = useMemo(
+        () => metrics.sitesOptions.filter(s => s.hasGsc).length,
+        [metrics.sitesOptions]
+    );
+    const ga4Count = useMemo(
+        () => metrics.sitesOptions.filter(s => s.hasGa4).length,
+        [metrics.sitesOptions]
+    );
+
+    const handleNavigateToSiteIntelligence = useCallback(() => {
+        const firstSiteId = localStorage.getItem('siteIntelligence_firstSiteId');
+        if (firstSiteId) {
+            router.push(`/dashboard/site-intelligence/${firstSiteId}`);
+        } else {
+            router.push('/dashboard/site-intelligence');
+        }
+    }, [router]);
 
     const getStatusBadge = (status: string) => {
         switch (status) {
@@ -94,20 +112,13 @@ export function DashboardContent({
                         {metrics.totalSites}
                     </div>
                     <div className="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
-                        其中 <span className="font-black">{metrics.sitesOptions.filter(s => s.hasGsc).length}</span> 个已连接数据仓库
+                        其中 <span className="font-black">{gscCount}</span> 个已连接数据仓库
                     </div>
                 </Card>
 
                 {/* Debts Card */}
                 <div
-                    onClick={() => {
-                        const firstSiteId = localStorage.getItem('siteIntelligence_firstSiteId');
-                        if (firstSiteId) {
-                            router.push(`/dashboard/site-intelligence/${firstSiteId}`);
-                        } else {
-                            router.push('/dashboard/site-intelligence');
-                        }
-                    }}
+                    onClick={handleNavigateToSiteIntelligence}
                     className="cursor-pointer h-full"
                 >
                     <Card className="p-8 border-2 border-slate-100 bg-white relative overflow-hidden group hover:border-brand-primary/20 hover:shadow-lg transition-all shadow-sm h-full">
@@ -224,7 +235,7 @@ export function DashboardContent({
                             <div>
                                 <div className="text-sm font-black text-purple-900 leading-none mb-1">站群与连接健康度</div>
                                 <div className="text-[10px] text-purple-600/70 font-bold uppercase tracking-widest">
-                                    GSC ({metrics.sitesOptions.filter(s => s.hasGsc).length}) • GA4 ({metrics.sitesOptions.filter(s => s.hasGa4).length})
+                                    GSC ({gscCount}) • GA4 ({ga4Count})
                                 </div>
                             </div>
                         </div>

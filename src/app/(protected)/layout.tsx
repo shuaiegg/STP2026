@@ -45,11 +45,12 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
     const { data: session, isPending } = authClient.useSession();
 
     React.useEffect(() => {
+        const controller = new AbortController();
         // Try to load from localStorage first for instant rendering
         const cachedId = localStorage.getItem('last_active_site_id');
         if (cachedId) setFirstSiteId(cachedId);
 
-        fetch('/api/dashboard/sites')
+        fetch('/api/dashboard/sites', { signal: controller.signal })
             .then(r => r.json())
             .then(data => {
                 if (data.sites && data.sites.length > 0) {
@@ -58,7 +59,12 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
                     localStorage.setItem('last_active_site_id', newId);
                 }
             })
-            .catch(console.error);
+            .catch(err => {
+                if (err.name === 'AbortError') return;
+                console.error(err);
+            });
+
+        return () => controller.abort();
     }, []);
 
     const handleSignOut = async () => {

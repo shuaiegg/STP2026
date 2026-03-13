@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from 'react';
-import { 
-    FileText, Calendar, Trash2, Edit3, Share2, 
+import {
+    FileText, Calendar, Trash2, Edit3, Share2,
     ChevronRight, CheckCircle2, Clock, AlertCircle,
     Loader2
 } from 'lucide-react';
@@ -13,22 +13,16 @@ import { deleteTrackedArticle } from '@/app/actions/delete-article';
 import { toast } from 'sonner';
 import Link from 'next/link';
 
+const STATUS_BADGE: Record<string, React.ReactNode> = {
+    CITED: <Badge className="bg-emerald-50 text-emerald-600 border-emerald-100 flex items-center gap-1 font-bold text-[10px]"><CheckCircle2 size={10} /> 已引用</Badge>,
+    CHECKING: <Badge className="bg-blue-50 text-blue-600 border-blue-100 flex items-center gap-1 font-bold text-[10px]"><Clock size={10} className="animate-spin" /> 检查中</Badge>,
+    NOT_CITED: <Badge className="bg-orange-50 text-orange-600 border-orange-100 flex items-center gap-1 font-bold text-[10px]"><AlertCircle size={10} /> 未检测到</Badge>,
+};
+const DEFAULT_STATUS_BADGE = <Badge className="bg-slate-50 text-slate-500 border-slate-100 flex items-center gap-1 font-bold text-[10px]"><Clock size={10} /> 待检</Badge>;
+
 export function ArticleList({ initialArticles }: { initialArticles: any[] }) {
     const [articles, setArticles] = useState(initialArticles);
     const [isDeleting, setIsDeleting] = useState<string | null>(null);
-
-    const getStatusBadge = (status: string) => {
-        switch (status) {
-            case 'CITED':
-                return <Badge className="bg-emerald-50 text-emerald-600 border-emerald-100 flex items-center gap-1 font-bold text-[10px]"><CheckCircle2 size={10} /> 已引用</Badge>;
-            case 'CHECKING':
-                return <Badge className="bg-blue-50 text-blue-600 border-blue-100 flex items-center gap-1 font-bold text-[10px]"><Clock size={10} className="animate-spin" /> 检查中</Badge>;
-            case 'NOT_CITED':
-                return <Badge className="bg-orange-50 text-orange-600 border-orange-100 flex items-center gap-1 font-bold text-[10px]"><AlertCircle size={10} /> 未检测到</Badge>;
-            default:
-                return <Badge className="bg-slate-50 text-slate-500 border-slate-100 flex items-center gap-1 font-bold text-[10px]"><Clock size={10} /> 待检</Badge>;
-        }
-    };
 
     const handleDelete = async (id: string) => {
         if (!confirm("确定要删除这篇文章吗？此操作不可撤销。")) return;
@@ -56,7 +50,7 @@ export function ArticleList({ initialArticles }: { initialArticles: any[] }) {
                     <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                         <div className="flex-1 space-y-3">
                             <div className="flex items-center gap-3">
-                                {getStatusBadge(article.status)}
+                                {STATUS_BADGE[article.status] ?? DEFAULT_STATUS_BADGE}
                                 <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                                     <Calendar size={12} />
                                     {new Date(article.createdAt).toLocaleDateString('zh-CN')}

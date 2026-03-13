@@ -16,41 +16,26 @@ export function CompetitorsPanel({ siteId }: { siteId: string }) {
     const [suggestedCompetitors, setSuggestedCompetitors] = useState<any[]>([]);
     const [scanningId, setScanningId] = useState<string | null>(null);
 
-    const fetchCompetitors = useCallback(async () => {
-        setIsListRefreshing(true);
-        try {
-            const res = await fetch(`/api/dashboard/sites/${siteId}/competitors`);
-            const data = await res.json();
-            if (data.success) {
-                setCompetitors(data.competitors);
-            }
-        } catch (e) {
-            console.error('Failed to fetch competitors:', e);
-        } finally {
-            setIsListRefreshing(false);
-        }
-    }, [siteId]);
-
-    const fetchMarketGap = useCallback(async () => {
-        setIsGapRefreshing(true);
-        try {
-            const res = await fetch(`/api/dashboard/sites/${siteId}/market-gap`);
-            const data = await res.json();
-            if (data.success) {
-                setMarketGap(data.data);
-            }
-        } catch (e) {
-            console.error('Failed to fetch market gap:', e);
-        } finally {
-            setIsGapRefreshing(false);
-        }
-    }, [siteId]);
-
     const fetchData = useCallback(async () => {
         setIsInitialLoading(true);
-        await Promise.all([fetchCompetitors(), fetchMarketGap()]);
-        setIsInitialLoading(false);
-    }, [fetchCompetitors, fetchMarketGap]);
+        setIsListRefreshing(true);
+        setIsGapRefreshing(true);
+        try {
+            const [compRes, gapRes] = await Promise.all([
+                fetch(`/api/dashboard/sites/${siteId}/competitors`),
+                fetch(`/api/dashboard/sites/${siteId}/market-gap`)
+            ]);
+            const [compData, gapData] = await Promise.all([compRes.json(), gapRes.json()]);
+            if (compData.success) setCompetitors(compData.competitors);
+            if (gapData.success) setMarketGap(gapData.data);
+        } catch (e) {
+            console.error('Failed to fetch data:', e);
+        } finally {
+            setIsListRefreshing(false);
+            setIsGapRefreshing(false);
+            setIsInitialLoading(false);
+        }
+    }, [siteId]);
 
     useEffect(() => {
         fetchData();
@@ -69,8 +54,7 @@ export function CompetitorsPanel({ siteId }: { siteId: string }) {
             const data = await res.json();
             if (data.success) {
                 setNewDomain('');
-                fetchCompetitors(); // Instant update for the list
-                fetchMarketGap();    // Background update for the gap
+                fetchData();
             } else {
                 alert(data.error);
             }
@@ -90,8 +74,7 @@ export function CompetitorsPanel({ siteId }: { siteId: string }) {
             });
             const data = await res.json();
             if (data.success) {
-                fetchCompetitors();
-                fetchMarketGap();
+                fetchData();
             } else {
                 alert(data.error);
             }
@@ -109,8 +92,7 @@ export function CompetitorsPanel({ siteId }: { siteId: string }) {
             });
             const data = await res.json();
             if (data.success) {
-                fetchCompetitors();
-                fetchMarketGap();
+                fetchData();
             } else {
                 alert(data.error || "扫描失败");
             }
@@ -150,8 +132,7 @@ export function CompetitorsPanel({ siteId }: { siteId: string }) {
             const data = await res.json();
             if (data.success) {
                 setSuggestedCompetitors(prev => prev.filter(s => s.domain !== domain));
-                fetchCompetitors();
-                fetchMarketGap();
+                fetchData();
             } else {
                 alert(data.error);
             }

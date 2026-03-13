@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
     Save, ArrowLeft, Wand2, Globe, TrendingUp, 
     ChevronRight, Loader2, Sparkles, AlertCircle,
@@ -21,24 +21,14 @@ export function LibraryEditor({ initialArticle }: { initialArticle: any }) {
     const router = useRouter();
     const [isSaving, setIsSaving] = useState(false);
     const [title, setTitle] = useState(initialArticle.title);
-    const [contentSections, setContentSections] = useState<ContentSection[]>([]);
-    const [liveHumanScore, setLiveHumanScore] = useState<number | null>(null);
+    const [contentSections, setContentSections] = useState<ContentSection[]>(() =>
+        initialArticle.optimizedContent ? parseMarkdownToSections(initialArticle.optimizedContent) : []
+    );
 
-    // Rehydration: Turn static markdown into editable sections
-    useEffect(() => {
-        if (initialArticle.optimizedContent) {
-            const sections = parseMarkdownToSections(initialArticle.optimizedContent);
-            setContentSections(sections);
-        }
-    }, [initialArticle.optimizedContent]);
-
-    // Live scoring logic
-    useEffect(() => {
-        if (contentSections.length > 0) {
-            const fullText = joinSectionsToMarkdown(contentSections);
-            const score = calculateHumanScore(fullText);
-            setLiveHumanScore(score);
-        }
+    const liveHumanScore = useMemo(() => {
+        if (contentSections.length === 0) return null;
+        const fullText = joinSectionsToMarkdown(contentSections);
+        return calculateHumanScore(fullText);
     }, [contentSections]);
 
     const handleSectionSave = (id: string, newBody: string) => {

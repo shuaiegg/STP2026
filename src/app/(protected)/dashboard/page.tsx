@@ -14,8 +14,12 @@ async function getUserData(userId: string) {
         prisma.site.findMany({
             where: { userId },
             include: {
-                gscConnections: true,
-                ga4Connections: true
+                _count: {
+                    select: {
+                        gscConnections: true,
+                        ga4Connections: true
+                    }
+                }
             }
         }),
         prisma.trackedArticle.count({
@@ -52,8 +56,8 @@ async function getUserData(userId: string) {
         sitesOptions: sites.map(s => ({
             id: s.id,
             domain: s.domain,
-            hasGsc: s.gscConnections?.length > 0,
-            hasGa4: s.ga4Connections?.length > 0
+            hasGsc: s._count.gscConnections > 0,
+            hasGa4: s._count.ga4Connections > 0
         }))
     };
 
