@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { getPublishedContentBySlug, getRelatedContent } from '@/lib/content';
 import { CTA } from '@/components/CTA';
@@ -47,10 +48,12 @@ export default async function BlogPost({ params }: BlogPostProps) {
             <div className="relative h-[70vh] min-h-[500px] max-h-[800px] overflow-hidden border-b-4 border-brand-primary">
                 {/* Hero Image */}
                 <div className="absolute inset-0">
-                    <img
+                    <Image
                         src={coverSrc}
                         alt={post.title}
-                        className="w-full h-full object-cover"
+                        fill
+                        priority
+                        className="object-cover"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
                 </div>
@@ -180,10 +183,13 @@ export default async function BlogPost({ params }: BlogPostProps) {
                                 components={{
                                     img: ({ node, ...props }) => (
                                         <figure className="my-12 not-prose">
-                                            <div className="border-2 border-brand-border overflow-hidden">
-                                                <img
-                                                    {...props}
-                                                    className="w-full"
+                                            <div className="border-2 border-brand-border overflow-hidden relative aspect-[16/9]">
+                                                <Image
+                                                    src={props.src || ''}
+                                                    alt={props.alt || ''}
+                                                    width={800}
+                                                    height={450}
+                                                    className="w-full h-auto"
                                                     loading="lazy"
                                                 />
                                             </div>
@@ -264,11 +270,13 @@ export default async function BlogPost({ params }: BlogPostProps) {
                                     href={`/blog/${p.slug}`}
                                     className="group block border-2 border-brand-border bg-white hover:border-brand-primary transition-all duration-300"
                                 >
-                                    <div className="aspect-[16/9] overflow-hidden bg-brand-surface-alt border-b-2 border-brand-border">
-                                        <img
+                                    <div className="aspect-[16/9] overflow-hidden bg-brand-surface-alt border-b-2 border-brand-border relative">
+                                        <Image
                                             src={relatedCover}
                                             alt={p.title}
-                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                            fill
+                                            loading="lazy"
+                                            className="object-cover group-hover:scale-110 transition-transform duration-500"
                                         />
                                     </div>
                                     <div className="p-6">

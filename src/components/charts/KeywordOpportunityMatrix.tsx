@@ -1,9 +1,19 @@
 "use client";
 
 import React from 'react';
-import { ScatterChart, Scatter, XAxis, YAxis, Tooltip, CartesianGrid, Cell, ResponsiveContainer } from 'recharts';
+import dynamic from 'next/dynamic';
 import { Card } from '@/components/ui/Card';
 import { TrendingUp, AlertCircle } from 'lucide-react';
+
+// Dynamically import Recharts with ssr: false
+const ResponsiveContainer = dynamic(() => import('recharts').then(mod => mod.ResponsiveContainer), { ssr: false });
+const ScatterChart = dynamic(() => import('recharts').then(mod => mod.ScatterChart), { ssr: false });
+const Scatter = dynamic(() => import('recharts').then(mod => mod.Scatter), { ssr: false });
+const XAxis = dynamic(() => import('recharts').then(mod => mod.XAxis), { ssr: false });
+const YAxis = dynamic(() => import('recharts').then(mod => mod.YAxis), { ssr: false });
+const Tooltip = dynamic(() => import('recharts').then(mod => mod.Tooltip), { ssr: false });
+const CartesianGrid = dynamic(() => import('recharts').then(mod => mod.CartesianGrid), { ssr: false });
+const Cell = dynamic(() => import('recharts').then(mod => mod.Cell), { ssr: false });
 
 interface KeywordDataPoint {
     keyword: string;
@@ -119,36 +129,38 @@ export function KeywordOpportunityMatrix({ topics }: KeywordOpportunityMatrixPro
             </div>
 
             {/* 散点图 */}
-            <ResponsiveContainer width="100%" height={400}>
-                <ScatterChart margin={{ top: 20, right: 20, bottom: 60, left: 60 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                    <XAxis
-                        type="number"
-                        dataKey="volume"
-                        name="搜索量"
-                        label={{ value: '月搜索量', position: 'bottom', offset: 40, style: { fontSize: '12px', fontWeight: 'bold', fill: '#64748b' } }}
-                        tick={{ fontSize: 11, fill: '#94a3b8' }}
-                    />
-                    <YAxis
-                        type="number"
-                        dataKey="competition"
-                        name="竞争度"
-                        label={{ value: '竞争度 (%)', angle: -90, position: 'left', offset: 40, style: { fontSize: '12px', fontWeight: 'bold', fill: '#64748b' } }}
-                        tick={{ fontSize: 11, fill: '#94a3b8' }}
-                        domain={[0, 100]}
-                    />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Scatter data={data}>
-                        {data.map((entry, index) => (
-                            <Cell
-                                key={`cell-${index}`}
-                                fill={getColor(entry.score)}
-                                opacity={0.8}
-                            />
-                        ))}
-                    </Scatter>
-                </ScatterChart>
-            </ResponsiveContainer>
+            <div className="h-[400px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                    <ScatterChart margin={{ top: 20, right: 20, bottom: 60, left: 60 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                        <XAxis
+                            type="number"
+                            dataKey="volume"
+                            name="搜索量"
+                            label={{ value: '月搜索量', position: 'bottom', offset: 40, style: { fontSize: '12px', fontWeight: 'bold', fill: '#64748b' } }}
+                            tick={{ fontSize: 11, fill: '#94a3b8' }}
+                        />
+                        <YAxis
+                            type="number"
+                            dataKey="competition"
+                            name="竞争度"
+                            label={{ value: '竞争度 (%)', angle: -90, position: 'left', offset: 40, style: { fontSize: '12px', fontWeight: 'bold', fill: '#64748b' } }}
+                            tick={{ fontSize: 11, fill: '#94a3b8' }}
+                            domain={[0, 100]}
+                        />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Scatter data={data}>
+                            {data.map((entry, index) => (
+                                <Cell
+                                    key={`cell-${index}`}
+                                    fill={getColor(entry.score)}
+                                    opacity={0.8}
+                                />
+                            ))}
+                        </Scatter>
+                    </ScatterChart>
+                </ResponsiveContainer>
+            </div>
 
             {/* 推荐机会 */}
             {topOpportunities.length > 0 && (

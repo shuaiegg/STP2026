@@ -15,7 +15,9 @@
       "Bash(wc -l /Users/apple/JSProject/STP2026/src/app/admin/content/[id]/EditForm.tsx)",
       "Bash(ls -la /Users/apple/JSProject/STP2026/src/app/admin/content/[id]/)",
       "Bash(find /Users/apple/JSProject/STP2026/src -name \"*.tsx\" -type f -exec wc -l {} +)",
-      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d[''''instruction''''][:500]\\)\")"
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d[''''instruction''''][:500]\\)\")",
+      "Bash(ls -la /Users/apple/JSProject/STP2026/src/app/\\\\\\(protected\\\\\\)/dashboard/site-intelligence/)",
+      "Bash(grep -r \"img\\\\|Image\" /Users/apple/JSProject/STP2026/src/app/\\\\\\(public\\\\\\)/blog/[slug]/page.tsx)"
     ]
   },
   "enabledPlugins": {

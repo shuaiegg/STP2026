@@ -47,34 +47,58 @@ export default function SiteIntelligencePage() {
     const router = useRouter();
 
     useEffect(() => {
-        fetch('/api/dashboard/sites')
-            .then(async (r) => {
-                if (!r.ok) {
-                    throw new Error(`HTTP error! status: ${r.status}`);
-                }
-                const text = await r.text();
-                if (!text) return { sites: [] };
-                try {
-                    return JSON.parse(text);
-                } catch (e) {
-                    console.error("Failed to parse JSON response:", text);
-                    throw e;
-                }
-            })
-            .then((data) => {
-                const fetchedSites = data.sites ?? [];
-                setSites(fetchedSites);
+        const CACHE_KEY = 'stp_sites_cache';
+        const CACHE_TIME_KEY = 'stp_sites_cache_time';
+        const CACHE_TTL = 5 * 60 * 1000;
 
-                // Auto-redirect to the first site if it exists
-                if (fetchedSites.length > 0) {
-                    router.replace(`/dashboard/site-intelligence/${fetchedSites[0].id}`);
+        const loadSitesFromCache = () => {
+            const cachedData = localStorage.getItem(CACHE_KEY);
+            const cachedTime = localStorage.getItem(CACHE_TIME_KEY);
+            
+            if (cachedData && cachedTime) {
+                const now = Date.now();
+                const time = parseInt(cachedTime, 10);
+                
+                if (now - time < CACHE_TTL) {
+                    try {
+                        const parsedSites = JSON.parse(cachedData);
+                        setSites(parsedSites);
+                        
+                        // Auto-redirect to the first site if it exists
+                        if (parsedSites.length > 0) {
+                            router.replace(`/dashboard/site-intelligence/${parsedSites[0].id}`);
+                        }
+                        setLoading(false);
+                        return true;
+                    } catch (e) {
+                        console.error("Failed to parse sites cache", e);
+                    }
                 }
-            })
-            .catch((err) => {
-                console.error("Error fetching sites:", err);
-                setSites([]);
-            })
-            .finally(() => setLoading(false));
+            }
+            return false;
+        };
+
+        // Attempt to load from cache
+        const success = loadSitesFromCache();
+        
+        if (!success) {
+            // If cache fails/missing/expired, layout should handle it, 
+            // but we'll fall back to fetching if necessary to be safe
+            fetch('/api/dashboard/sites')
+                .then(r => r.json())
+                .then(data => {
+                    const fetchedSites = data.sites ?? [];
+                    setSites(fetchedSites);
+                    if (fetchedSites.length > 0) {
+                        router.replace(`/dashboard/site-intelligence/${fetchedSites[0].id}`);
+                    }
+                })
+                .catch(err => {
+                    console.error("Error fetching sites:", err);
+                    setSites([]);
+                })
+                .finally(() => setLoading(false));
+        }
     }, [router]);
 
     return (

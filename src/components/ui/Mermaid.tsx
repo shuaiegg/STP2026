@@ -1,14 +1,6 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from 'react';
-import mermaid from 'mermaid';
-
-mermaid.initialize({
-    startOnLoad: false,
-    theme: 'default',
-    securityLevel: 'loose',
-    fontFamily: 'Inter, sans-serif',
-});
 
 interface MermaidProps {
     chart: string;
@@ -24,7 +16,17 @@ export function Mermaid({ chart }: MermaidProps) {
             if (!ref.current || !chart) return;
 
             try {
-                const id = `mermaid-${Math.random().toString(36).substr(2, 9)}`;
+                // Dynamically import mermaid
+                const mermaid = (await import('mermaid')).default;
+
+                mermaid.initialize({
+                    startOnLoad: false,
+                    theme: 'default',
+                    securityLevel: 'loose',
+                    fontFamily: 'Inter, sans-serif',
+                });
+
+                const id = `mermaid-${Math.random().toString(36).substring(2, 9)}`;
                 // Attempt to render
                 const { svg } = await mermaid.render(id, chart);
                 setSvg(svg);
@@ -32,7 +34,6 @@ export function Mermaid({ chart }: MermaidProps) {
             } catch (err: any) {
                 console.error('Mermaid render error:', err);
                 setError('Failed to render chart');
-                // Mermaid might wipe content on error, so we preserve raw code
             }
         };
 

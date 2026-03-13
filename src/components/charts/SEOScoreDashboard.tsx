@@ -1,10 +1,16 @@
 "use client";
 
 import React from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import dynamic from 'next/dynamic';
 import { Card } from '@/components/ui/Card';
 import { BarChart3 } from 'lucide-react';
 import type { DetailedSEOScore } from '@/lib/utils/seo-scoring';
+
+// Dynamically import Recharts with ssr: false
+const ResponsiveContainer = dynamic(() => import('recharts').then(mod => mod.ResponsiveContainer), { ssr: false });
+const PieChart = dynamic(() => import('recharts').then(mod => mod.PieChart), { ssr: false });
+const Pie = dynamic(() => import('recharts').then(mod => mod.Pie), { ssr: false });
+const Cell = dynamic(() => import('recharts').then(mod => mod.Cell), { ssr: false });
 
 interface SEOScoreDashboardProps {
     score: DetailedSEOScore;
@@ -58,13 +64,13 @@ export function SEOScoreDashboard({ score }: SEOScoreDashboardProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* 主评分圆环图 */}
                 <div className="flex flex-col items-center justify-center">
-                    <div className="relative">
-                        <ResponsiveContainer width={200} height={200}>
+                    <div className="relative w-[200px] h-[200px]">
+                        <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
                                     data={mainChartData}
-                                    cx={100}
-                                    cy={100}
+                                    cx="50%"
+                                    cy="50%"
                                     startAngle={90}
                                     endAngle={-270}
                                     innerRadius={60}

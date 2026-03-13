@@ -50,6 +50,10 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
         const cachedId = localStorage.getItem('last_active_site_id');
         if (cachedId) setFirstSiteId(cachedId);
 
+        const CACHE_KEY = 'stp_sites_cache';
+        const CACHE_TIME_KEY = 'stp_sites_cache_time';
+        const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
         fetch('/api/dashboard/sites', { signal: controller.signal })
             .then(r => r.json())
             .then(data => {
@@ -57,6 +61,10 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
                     const newId = data.sites[0].id;
                     setFirstSiteId(newId);
                     localStorage.setItem('last_active_site_id', newId);
+                    
+                    // Cache the whole sites array
+                    localStorage.setItem(CACHE_KEY, JSON.stringify(data.sites));
+                    localStorage.setItem(CACHE_TIME_KEY, Date.now().toString());
                 }
             })
             .catch(err => {

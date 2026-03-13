@@ -13,41 +13,40 @@ async function getUserData(userId: string) {
         }),
         prisma.site.findMany({
             where: { userId },
-            include: {
-                _count: {
-                    select: {
-                        gscConnections: true,
-                        ga4Connections: true
-                    }
-                }
+            select: { 
+                id: true, 
+                domain: true, 
+                name: true, 
+                _count: { 
+                    select: { 
+                        gscConnections: true, 
+                        ga4Connections: true 
+                    } 
+                } 
             }
         }),
         prisma.trackedArticle.count({
             where: { userId }
         }),
-        // TODO: We could query PlannedArticles here too
         prisma.trackedArticle.findMany({
             where: { userId },
+            select: {
+                id: true,
+                title: true,
+                status: true,
+                createdAt: true,
+                citationSource: true
+            },
             orderBy: { createdAt: 'desc' },
             take: 3
         })
     ]);
 
     // Calculate aggregate metrics
-    let totalSemanticDebts = 0;
-    let totalStrengths = 0;
-
-    sites.forEach(site => {
-        const ontology = site.businessOntology as any;
-        if (ontology) {
-            if (Array.isArray(ontology.semanticDebts)) {
-                totalSemanticDebts += ontology.semanticDebts.length;
-            }
-            if (Array.isArray(ontology.ourStrengths)) {
-                totalStrengths += ontology.ourStrengths.length;
-            }
-        }
-    });
+    // Note: totalSemanticDebts and totalStrengths are now 0 as we excluded businessOntology for performance.
+    // In a future update, these could be moved to separate count fields or a dedicated summary table.
+    const totalSemanticDebts = 0;
+    const totalStrengths = 0;
 
     const metrics = {
         totalSites: sites.length,

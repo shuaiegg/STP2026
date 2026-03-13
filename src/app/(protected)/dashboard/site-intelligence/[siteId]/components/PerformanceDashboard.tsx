@@ -1,7 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/Card';
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid, ComposedChart, Line } from 'recharts';
+import dynamic from 'next/dynamic';
 import { Badge } from '@/components/ui/Badge';
+
+// Dynamically import Recharts with ssr: false
+const ResponsiveContainer = dynamic(() => import('recharts').then(mod => mod.ResponsiveContainer), { ssr: false });
+const ComposedChart = dynamic(() => import('recharts').then(mod => mod.ComposedChart), { ssr: false });
+const Area = dynamic(() => import('recharts').then(mod => mod.Area), { ssr: false });
+const XAxis = dynamic(() => import('recharts').then(mod => mod.XAxis), { ssr: false });
+const YAxis = dynamic(() => import('recharts').then(mod => mod.YAxis), { ssr: false });
+const Tooltip = dynamic(() => import('recharts').then(mod => mod.Tooltip), { ssr: false });
+const CartesianGrid = dynamic(() => import('recharts').then(mod => mod.CartesianGrid), { ssr: false });
+const Line = dynamic(() => import('recharts').then(mod => mod.Line), { ssr: false });
 
 interface PerformanceDashboardProps {
     siteId: string;
@@ -110,7 +120,7 @@ export function PerformanceDashboard({ siteId }: PerformanceDashboardProps) {
                                 axisLine={false}
                                 tickLine={false}
                                 tick={{ fontSize: 10, fill: '#64748b' }}
-                                tickFormatter={(str) => str.substring(5)}
+                                tickFormatter={(str) => (typeof str === 'string' ? str.substring(5) : str)}
                             />
                             <YAxis
                                 yAxisId="left"

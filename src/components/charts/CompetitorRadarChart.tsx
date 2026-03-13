@@ -1,10 +1,20 @@
 "use client";
 
 import React from 'react';
-import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Legend, ResponsiveContainer, Tooltip } from 'recharts';
+import dynamic from 'next/dynamic';
 import { Card } from '@/components/ui/Card';
 import { Target } from 'lucide-react';
 import type { DetailedSEOScore } from '@/lib/utils/seo-scoring';
+
+// Dynamically import Recharts with ssr: false
+const ResponsiveContainer = dynamic(() => import('recharts').then(mod => mod.ResponsiveContainer), { ssr: false });
+const RadarChart = dynamic(() => import('recharts').then(mod => mod.RadarChart), { ssr: false });
+const Radar = dynamic(() => import('recharts').then(mod => mod.Radar), { ssr: false });
+const PolarGrid = dynamic(() => import('recharts').then(mod => mod.PolarGrid), { ssr: false });
+const PolarAngleAxis = dynamic(() => import('recharts').then(mod => mod.PolarAngleAxis), { ssr: false });
+const PolarRadiusAxis = dynamic(() => import('recharts').then(mod => mod.PolarRadiusAxis), { ssr: false });
+const Legend = dynamic(() => import('recharts').then(mod => mod.Legend), { ssr: false });
+const Tooltip = dynamic(() => import('recharts').then(mod => mod.Tooltip), { ssr: false });
 
 interface CompetitorRadarChartProps {
     myScore: DetailedSEOScore;
@@ -102,44 +112,46 @@ export function CompetitorRadarChart({ myScore, competitors = [] }: CompetitorRa
             </div>
 
             {/* 雷达图 */}
-            <ResponsiveContainer width="100%" height={400}>
-                <RadarChart data={data}>
-                    <PolarGrid stroke="#e2e8f0" />
-                    <PolarAngleAxis
-                        dataKey="metric"
-                        tick={{ fill: '#64748b', fontSize: 12, fontWeight: 'bold' }}
-                    />
-                    <PolarRadiusAxis
-                        angle={90}
-                        domain={[0, 100]}
-                        tick={{ fill: '#94a3b8', fontSize: 10 }}
-                    />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Radar
-                        name="我的内容"
-                        dataKey="mine"
-                        stroke="#3b82f6"
-                        fill="#3b82f6"
-                        fillOpacity={0.6}
-                        strokeWidth={2}
-                        dot={{ fill: '#3b82f6', r: 4 }}
-                    />
-                    <Radar
-                        name="行业平均"
-                        dataKey="average"
-                        stroke="#94a3b8"
-                        fill="#94a3b8"
-                        fillOpacity={0.3}
-                        strokeWidth={2}
-                        strokeDasharray="5 5"
-                        dot={{ fill: '#94a3b8', r: 3 }}
-                    />
-                    <Legend
-                        wrapperStyle={{ fontSize: '12px', fontWeight: 'bold' }}
-                        iconType="circle"
-                    />
-                </RadarChart>
-            </ResponsiveContainer>
+            <div className="h-[400px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                    <RadarChart data={data}>
+                        <PolarGrid stroke="#e2e8f0" />
+                        <PolarAngleAxis
+                            dataKey="metric"
+                            tick={{ fill: '#64748b', fontSize: 12, fontWeight: 'bold' }}
+                        />
+                        <PolarRadiusAxis
+                            angle={90}
+                            domain={[0, 100]}
+                            tick={{ fill: '#94a3b8', fontSize: 10 }}
+                        />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Radar
+                            name="我的内容"
+                            dataKey="mine"
+                            stroke="#3b82f6"
+                            fill="#3b82f6"
+                            fillOpacity={0.6}
+                            strokeWidth={2}
+                            dot={{ fill: '#3b82f6', r: 4 }}
+                        />
+                        <Radar
+                            name="行业平均"
+                            dataKey="average"
+                            stroke="#94a3b8"
+                            fill="#94a3b8"
+                            fillOpacity={0.3}
+                            strokeWidth={2}
+                            strokeDasharray="5 5"
+                            dot={{ fill: '#94a3b8', r: 3 }}
+                        />
+                        <Legend
+                            wrapperStyle={{ fontSize: '12px', fontWeight: 'bold' }}
+                            iconType="circle"
+                        />
+                    </RadarChart>
+                </ResponsiveContainer>
+            </div>
 
             {/* 分析总结 */}
             <div className="mt-6 grid grid-cols-2 gap-4">

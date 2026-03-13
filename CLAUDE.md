@@ -11,11 +11,16 @@ ScaletoTop is a Next.js 16 (App Router) full-stack CMS platform that uses Notion
 ## Development Commands
 
 ```bash
-# Development
 npm run dev              # Start dev server at http://localhost:3000
+npm run build            # Production build (runs next build)
+npm run lint             # Run ESLint
+npm run test             # Run Vitest tests
 
-# Rules & Standards
-# Refer to rules/STP_RULES.md for engineering guidelines
+# Prisma
+npx prisma generate      # Regenerate client after schema changes
+npx prisma db push       # Apply schema to dev DB (no migration file)
+npx prisma migrate dev   # Create migration file (production)
+npx prisma db seed       # Seed database (runs prisma/seed.ts)
 ```
 
 ## Engineering Standards
@@ -32,29 +37,37 @@ The project follows strict engineering standards for immutability, component com
 The app uses Next.js App Router with route groups:
 
 - **`(public)/`** - Public-facing routes (no auth required)
-  - `/` - Homepage
-  - `/blog` - Blog listing
-  - `/blog/[slug]` - Blog post detail
-  - `/blog/category/[slug]` - Category listing
-  - `/course`, `/tools` - Static pages
+  - `/` - Homepage; `/blog`, `/blog/[slug]`, `/blog/category/[slug]` - Blog
+  - `/login`, `/register`, `/forgot-password`, `/reset-password` - User auth
+  - `/pricing`, `/tools`, `/tools/geo-writer`, `/course` - Marketing pages
   - `/preview/[token]` - Preview unpublished content via token
 
-- **`admin/`** - Protected admin routes (requires authentication)
-  - `/admin` - Dashboard
-  - `/admin/login` - Login page (redirects to /admin if already logged in)
-  - `/admin/setup` - Initial admin user setup (unprotected)
-  - `/admin/content` - Content management
-  - `/admin/sync` - Notion sync interface
+- **`(protected)/dashboard/`** - Authenticated user routes
+  - `/dashboard/site-intelligence` - SEO site analysis (list + `[siteId]` detail)
+  - `/dashboard/site-intelligence/instant-audit` - One-shot site audit
+  - `/dashboard/library` - User article library with `/edit/[id]`
+  - `/dashboard/tools` - AI tools; `/dashboard/billing` - Credits; `/dashboard/settings`
 
-- **`api/auth/[...all]`** - better-auth API routes (handled by middleware)
+- **`admin/`** - CMS admin routes (ADMIN/EDITOR role required)
+  - `/admin` - Dashboard; `/admin/content` - Content management; `/admin/sync` - Notion sync
+  - `/admin/login` - Login; `/admin/setup` - First-run setup (unprotected); `/admin/users`, `/admin/skills`
+
+- **`api/`** - API routes
+  - `api/auth/[...all]` - better-auth handlers
+  - `api/dashboard/sites/[siteId]/*` - Site intelligence endpoints (audits, competitors, GSC/GA4, strategy)
+  - `api/generate-stream`, `api/generate-enrich` - Streaming AI generation
+  - `api/skills/execute`, `api/skills/list` - Skills execution API
+  - `api/webhooks/creem` - Creem.io payment webhook
+  - `api/cron/verify` - Cron job verification
 
 ### Authentication Flow
 
-Uses **better-auth** with session cookies:
+Uses **better-auth** with session cookies and Google OAuth:
 1. Middleware (`src/middleware.ts`) checks for `better-auth.session_token` cookie
-2. All `/admin/*` routes (except `/admin/login` and `/admin/setup`) require valid session
-3. Session management handled by better-auth with Prisma adapter
-4. User roles: `ADMIN` and `EDITOR` (stored in User table)
+2. `/admin/*` routes (except `/admin/login` and `/admin/setup`) require ADMIN or EDITOR role
+3. `/(protected)/*` routes require any authenticated session (USER role sufficient)
+4. Session management handled by better-auth with Prisma adapter
+5. User roles: `ADMIN`, `EDITOR`, `USER` (stored in User table)
 
 ### Notion Sync Architecture
 
@@ -84,6 +97,31 @@ Uses **better-auth** with session cookies:
 - Stored in `Media` table with `notionBlockId` for deduplication
 - Custom transformer in `notion-to-md` ensures images are captured
 
+### AI Skills System
+
+**Architecture**: `src/lib/skills/` — pluggable AI tool framework with credit metering
+
+- `base-skill.ts` - Abstract base class; all skills extend `BaseSkill`
+- `skill-registry.ts` - Singleton registry; use `getSkillRegistry()` to look up skills
+- `providers/` - Multi-provider: `claude-provider.ts`, `gemini-provider.ts`, `deepseek-provider.ts`
+- Skills are executed via `api/skills/execute` and logged to `SkillExecution` table
+- Each execution deducts credits from `User.credits` and records a `CreditTransaction`
+- Admin can configure skills via `SkillConfig` table (cost, active status)
+
+**Server Actions**: `src/app/actions/skills.ts` — execute skills server-side
+
+### Site Intelligence System
+
+**Architecture**: `(protected)/dashboard/site-intelligence/` + `api/dashboard/sites/`
+
+- Users register Sites with domain, target markets, seed keywords, business ontology
+- **Audits**: On-demand site audits scoring tech, content, and GEO aspects (`SiteAudit`)
+- **Competitors**: Auto-suggest and scan competitor domains (`Competitor`)
+- **GSC Integration**: OAuth to Google Search Console; syncs keyword performance (`GscConnection`, `SiteKeyword`)
+- **GA4 Integration**: OAuth to Google Analytics 4; syncs traffic/performance data (`Ga4Connection`)
+- **Strategy Board**: AI-generated content plans with Kanban (`ContentPlan`, `PlannedArticle`)
+- **Market/Semantic Gap**: AI analysis of content opportunities vs competitors
+
 ### Data Model Key Concepts
 
 **Content Lifecycle**:
@@ -108,7 +146,17 @@ Uses **better-auth** with session cookies:
 **SEO**:
 - Separate `SeoMeta` table (1:1 with Content)
 - Allows overriding meta title/description independent of content
-- Supports custom OG images and canonical URLs
+- Supports custom OG images, canonical URLs, GEO score, schema JSON, and social snippets
+
+**Credits & Transactions**:
+- Users have `credits` balance on `User` model
+- Every AI skill execution costs credits (`SkillConfig.cost`)
+- `CreditTransaction` records every change (PURCHASE, CONSUMPTION, REFUND, BONUS)
+- Creem.io webhook at `/api/webhooks/creem` auto-credits on payment
+
+**TrackedArticle**:
+- GEO citation tracking: stores optimized content and verifies AI citation status
+- Cron job checks citation status and updates `citationSource`
 
 ## Important Environment Variables
 
@@ -125,6 +173,24 @@ SUPABASE_SERVICE_ROLE_KEY=        # Admin key (for image uploads, server-side on
 # Notion
 NOTION_API_KEY=           # Notion integration token
 NOTION_DATABASE_ID=       # Database ID (from URL between notion.so/ and ?v=)
+
+# AI Providers (for Skills system)
+ANTHROPIC_API_KEY=        # Claude models
+GOOGLE_API_KEY=           # Gemini models
+DEEPSEEK_API_KEY=         # DeepSeek models
+OPENAI_API_KEY=           # OpenAI models (via ai-sdk)
+
+# Google OAuth (for GSC/GA4 integrations)
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=
+
+# Payments
+CREEM_WEBHOOK_SECRET=     # Creem.io webhook signature verification
+
+# better-auth
+BETTER_AUTH_SECRET=       # Session signing secret
+NEXT_PUBLIC_APP_URL=      # Base URL (e.g., https://scaletotop.com)
 ```
 
 ## Notion Database Requirements
@@ -148,6 +214,10 @@ All data mutations use Next.js Server Actions (`'use server'`):
 - `src/app/actions/content.ts` - Content CRUD
 - `src/app/actions/category.ts` - Category management
 - `src/app/actions/auth.ts` - Authentication helpers
+- `src/app/actions/skills.ts` - AI skill execution
+- `src/app/actions/user.ts` - User profile and credit management
+- `src/app/actions/tracked-articles.ts` - GEO citation article tracking
+- `src/app/actions/update-article.ts`, `delete-article.ts` - Library article management
 
 ### Webhooks
 
