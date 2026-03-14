@@ -51,6 +51,11 @@ Your task is to perform 'Business DNA Extraction & Identity Modeling' based on t
 Analyze the target audience, the core problems solved, the products/services offered, and ultimately deduce an "Ideal Topic Map".
 The "Ideal Topic Map" is the perfect semantic tree a leader in this specific niche *should* have to cover all user pain points and build absolute Topical Authority, independent of what competitors are doing.
 
+Additionally, identify the core "Logic Chains" of the business. Each chain should follow the "Problem → Solution → Proof" structure.
+- Problem: A specific pain point the customer has.
+- Solution: How this website/product solves it.
+- Proof: What evidence exists (case studies, data, testimonials) on the site.
+
 Website Data:
 ${siteContext}
 
@@ -59,6 +64,9 @@ Return ONLY a valid JSON object with the following structure:
   "coreOfferings": ["offering 1", "offering 2"],
   "targetAudience": ["audience 1", "audience 2"],
   "painPointsSolved": ["pain point 1", "pain point 2"],
+  "logicChains": [
+     { "problem": "...", "solution": "...", "proof": "..." }
+  ],
   "idealTopicMap": [
      {
        "topic": "Broad Category (e.g., Marketing Automation)",
@@ -88,17 +96,33 @@ Return ONLY a valid JSON object with the following structure:
 
         const ontologyData = JSON.parse(match[0]);
 
-        // 3. Save to database
-        const updatedSite = await prisma.site.update({
-            where: { id: site.id },
+        // 3. Save to database (New Model)
+        const lastOntology = await prisma.siteOntology.findFirst({
+            where: { siteId: site.id },
+            orderBy: { version: 'desc' }
+        });
+
+        const nextVersion = (lastOntology?.version || 0) + 1;
+
+        const newOntology = await prisma.siteOntology.create({
             data: {
-                businessOntology: ontologyData
+                siteId: site.id,
+                version: nextVersion,
+                coreOfferings: ontologyData.coreOfferings || [],
+                targetAudience: ontologyData.targetAudience || [],
+                painPointsSolved: ontologyData.painPointsSolved || [],
+                logicChains: ontologyData.logicChains || [],
+                idealTopicMap: ontologyData.idealTopicMap || [],
             }
         });
 
         return NextResponse.json({
             success: true,
-            data: updatedSite.businessOntology
+            data: {
+                ...ontologyData,
+                ontologyId: newOntology.id,
+                version: newOntology.version
+            }
         });
 
     } catch (error: any) {

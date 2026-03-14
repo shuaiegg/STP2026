@@ -6,7 +6,7 @@ import { redirect } from 'next/navigation';
 import { DashboardContent } from './DashboardContent';
 
 async function getUserData(userId: string) {
-    const [user, sites, articleCount, recentArticles] = await Promise.all([
+    const [user, sites, articleCount, recentArticles, highPriorityDebts, totalPlannedArticles, perSiteMinCoverage] = await Promise.all([
         prisma.user.findUnique({
             where: { id: userId },
             select: { credits: true, name: true, email: true }
@@ -39,25 +39,39 @@ async function getUserData(userId: string) {
             },
             orderBy: { createdAt: 'desc' },
             take: 3
+        }),
+        prisma.semanticDebt.count({
+            where: { site: { userId }, priorityLabel: { contains: '高搜索' } }
+        }),
+        prisma.plannedArticle.count({
+            where: { contentPlan: { site: { userId } } }
+        }),
+        prisma.semanticDebt.findMany({
+            where: { site: { userId } },
+            orderBy: [
+                { siteId: 'asc' },
+                { coverageScore: 'asc' }
+            ],
+            distinct: ['siteId'],
+            select: { topic: true, coverageScore: true, siteId: true }
         })
     ]);
 
-    // Calculate aggregate metrics
-    // Note: totalSemanticDebts and totalStrengths are now 0 as we excluded businessOntology for performance.
-    // In a future update, these could be moved to separate count fields or a dedicated summary table.
-    const totalSemanticDebts = 0;
-    const totalStrengths = 0;
-
     const metrics = {
         totalSites: sites.length,
-        totalSemanticDebts,
-        totalStrengths,
-        sitesOptions: sites.map(s => ({
-            id: s.id,
-            domain: s.domain,
-            hasGsc: s._count.gscConnections > 0,
-            hasGa4: s._count.ga4Connections > 0
-        }))
+        totalHighPriorityDebts: highPriorityDebts,
+        totalPlannedArticles,
+        sitesOptions: sites.map(s => {
+            const minCoverageDebt = perSiteMinCoverage.find(d => d.siteId === s.id);
+            return {
+                id: s.id,
+                domain: s.domain,
+                hasGsc: s._count.gscConnections > 0,
+                hasGa4: s._count.ga4Connections > 0,
+                topDebt: minCoverageDebt?.topic || null,
+                minCoverage: minCoverageDebt?.coverageScore ?? null
+            };
+        })
     };
 
     return { user, metrics, articleCount, recentArticles };

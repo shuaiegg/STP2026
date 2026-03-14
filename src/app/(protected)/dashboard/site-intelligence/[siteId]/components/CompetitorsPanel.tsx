@@ -327,7 +327,7 @@ export function CompetitorsPanel({ siteId }: { siteId: string }) {
                 )}
             </Card>
 
-            <MarketGapAnalysis marketGap={marketGap} />
+            <MarketGapAnalysis marketGap={marketGap} siteId={siteId} />
         </div>
     );
 }

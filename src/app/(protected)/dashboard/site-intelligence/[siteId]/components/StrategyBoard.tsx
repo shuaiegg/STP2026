@@ -5,7 +5,7 @@ import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { GripVertical, Zap, CheckCircle2, Clock, PlayCircle, Loader2, RefreshCw, Layers } from 'lucide-react';
+import { GripVertical, Zap, CheckCircle2, Clock, PlayCircle, Loader2, RefreshCw, Layers, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface PlannedArticle {
@@ -14,7 +14,7 @@ interface PlannedArticle {
     title: string;
     keyword: string;
     kanbanOrder: number;
-    status: 'IDEATION' | 'PLANNED' | 'IN_PROGRESS' | 'COMPLETED' | 'ARCHIVED';
+    status: 'IDEATION' | 'PLANNED' | 'IN_PROGRESS' | 'COMPLETED' | 'ARCHIVED' | 'REFACTORING_NEEDED';
     targetChannel: 'SEO' | 'GOOGLE_ADS' | 'META_ADS';
 }
 
@@ -53,22 +53,33 @@ export function StrategyBoard({ siteId }: { siteId: string }) {
         }
     };
 
-    const handleGenerate = async () => {
+    const handleGenerate = async (override: any = false) => {
+        // Prevent event being passed as override if called from onClick without args
+        const isOverride = typeof override === 'boolean' ? override : false;
         setGenerating(true);
         try {
             const res = await fetch(`/api/dashboard/sites/${siteId}/strategy/generate`, {
-                method: 'POST'
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ override: isOverride })
             });
             const data = await res.json();
+            
             if (data.success) {
                 toast.success('基于高优语义债的战略计划生成完毕！');
                 await fetchStrategies();
+            } else if (data.conflict) {
+                if (window.confirm(data.message || '已存在进行中的计划，是否归档并重新生成？')) {
+                    handleGenerate(true);
+                } else {
+                    setGenerating(false);
+                }
             } else {
                 toast.error(data.error || '生成失败');
+                setGenerating(false);
             }
         } catch (e) {
             toast.error('生成过程中发生网络错误');
-        } finally {
             setGenerating(false);
         }
     };
@@ -110,20 +121,40 @@ export function StrategyBoard({ siteId }: { siteId: string }) {
 
         // --- API Call ---
         try {
-            // we only really need to update the moved item in db for MVP, but to be perfectly 
-            // robust we could bulk update. Let's just update the moved item's new parent and index for now.
-            await fetch(`/api/dashboard/sites/${siteId}/strategy/articles/${draggableId}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    kanbanOrder: destination.index,
-                    contentPlanId: destination.droppableId,
-                    status: destination.droppableId !== source.droppableId ? 'PLANNED' : undefined // Custom logic: moving between pillars sets to PLANNED as a hack, or leave as is. 
-                })
+            // Collect all updates from affected columns
+            const updates: any[] = [];
+            
+            // Items from destination plan
+            destPlan.articles.forEach((art, index) => {
+                updates.push({
+                    id: art.id,
+                    kanbanOrder: index,
+                    contentPlanId: destPlan.id
+                });
             });
+
+            // If moving between different plans, also update source plan items
+            if (sourcePlanIndex !== destPlanIndex) {
+                sourcePlan.articles.forEach((art, index) => {
+                    updates.push({
+                        id: art.id,
+                        kanbanOrder: index,
+                        contentPlanId: sourcePlan.id
+                    });
+                });
+            }
+
+            const res = await fetch(`/api/dashboard/sites/${siteId}/strategy/articles/reorder`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ updates })
+            });
+
+            if (!res.ok) throw new Error('Failed to save reorder');
+
         } catch (e) {
-            toast.error('保存拖拽排序失败');
-            fetchStrategies(); // revert
+            toast.error('保存拖拽排序失败，已自动回滚');
+            fetchStrategies(); // revert by fetching fresh state from server
         }
     };
 
@@ -132,6 +163,7 @@ export function StrategyBoard({ siteId }: { siteId: string }) {
             case 'COMPLETED': return <CheckCircle2 size={12} className="text-emerald-500" />;
             case 'IN_PROGRESS': return <Loader2 size={12} className="text-blue-500 animate-spin" />;
             case 'PLANNED': return <PlayCircle size={12} className="text-amber-500" />;
+            case 'REFACTORING_NEEDED': return <AlertCircle size={12} className="text-rose-500" />;
             default: return <Clock size={12} className="text-slate-400" />;
         }
     };
@@ -161,7 +193,7 @@ export function StrategyBoard({ siteId }: { siteId: string }) {
                     引擎可以通过分析您的“高优语义债”，为您自动编排以抢占流量为目标的主题支柱 (Pillar) 以及下辖的集群文章 (Cluster)。
                 </p>
                 <Button
-                    onClick={handleGenerate}
+                    onClick={() => handleGenerate()}
                     disabled={generating}
                     size="lg"
                     className="bg-brand-primary text-white hover:bg-brand-primary-light shadow-xl shadow-brand-primary/20 font-black rounded-xl px-8"
@@ -259,13 +291,13 @@ export function StrategyBoard({ siteId }: { siteId: string }) {
                                                             </div>
 
                                                             <div className="flex items-center justify-between pt-3 border-t border-slate-50">
-                                                                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500">
+                                                                <div className={`flex items-center gap-1.5 text-xs font-bold ${article.status === 'REFACTORING_NEEDED' ? 'text-rose-600' : 'text-slate-500'}`}>
                                                                     {getStatusIcon(article.status)}
-                                                                    <span>{article.status.replace('_', ' ')}</span>
+                                                                    <span>{article.status === 'REFACTORING_NEEDED' ? '需要重构' : article.status.replace('_', ' ')}</span>
                                                                 </div>
                                                                 {article.status !== 'COMPLETED' && (
-                                                                    <Button size="sm" variant="ghost" className="h-7 text-[10px] font-black tracking-widest text-brand-primary hover:bg-brand-primary/10 hover:text-brand-primary ml-auto px-2">
-                                                                        交给 AI 撰写 <Zap size={10} className="ml-1" />
+                                                                    <Button size="sm" variant="ghost" className={`h-7 text-[10px] font-black tracking-widest ml-auto px-2 ${article.status === 'REFACTORING_NEEDED' ? 'text-rose-600 hover:bg-rose-50' : 'text-brand-primary hover:bg-brand-primary/10'}`}>
+                                                                        {article.status === 'REFACTORING_NEEDED' ? '立即优化' : '交给 AI 撰写'} <Zap size={10} className="ml-1" />
                                                                     </Button>
                                                                 )}
                                                             </div>

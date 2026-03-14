@@ -1,16 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { withSiteContext } from "@/lib/api-utils";
 import prisma from "@/lib/prisma";
 
 async function handler(
-    req: NextRequest,
-    { params }: { params: { siteId: string, articleId: string } },
-    site: any
+    req: Request,
+    { params }: { params: { siteId: string, articleId: string }; site: any; session: any }
 ) {
-    if (req.method !== 'PATCH') {
-        return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
-    }
-
     try {
         const { siteId, articleId } = params;
         const body = await req.json();
@@ -55,11 +50,6 @@ async function handler(
             data: updateData
         });
 
-        // 4. (Optional but recommended) If kanbanOrder changed, you might need 
-        // a transaction to shift other articles' orders down. For MVP drag&drop libraries 
-        // like @hello-pangea/dnd, they often send exact index updates, so simply updating 
-        // the single card's index is usually handled by the frontend sorting logic.
-
         return NextResponse.json({ success: true, article: updatedArticle });
 
     } catch (error: any) {
@@ -68,4 +58,4 @@ async function handler(
     }
 }
 
-export const PATCH = withSiteContext(handler);
+export const PATCH = withSiteContext<{ siteId: string, articleId: string }>(handler);

@@ -358,6 +358,7 @@ function InstantAuditInner() {
                 <div className="lg:col-span-3">
                     <Card className="bg-white border-slate-200 p-0 overflow-hidden shadow-sm">
                         <GalaxyMap
+                            siteId={savedSiteId || ''}
                             data={graphData}
                             isLoading={loading}
                             onNodeClick={handleNodeClick}

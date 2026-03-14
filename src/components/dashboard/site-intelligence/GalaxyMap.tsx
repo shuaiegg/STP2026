@@ -21,17 +21,44 @@ interface Link {
 }
 
 interface GalaxyMapProps {
+  siteId: string;
   data: { nodes: Node[]; links: Link[] };
   onNodeClick?: (node: any) => void;
   isLoading?: boolean;
 }
 
-export default function GalaxyMap({ data, onNodeClick, isLoading }: GalaxyMapProps) {
+export default function GalaxyMap({ siteId, data, onNodeClick, isLoading }: GalaxyMapProps) {
   const fgRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [use3D, setUse3D] = useState(true);
   const [webGLAvailable, setWebGLAvailable] = useState(true);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
+  const [ghostNodes, setGhostNodes] = useState<any[]>([]);
+  const [mergedData, setMergedData] = useState(data);
+
+  // Fetch ghost nodes
+  useEffect(() => {
+    const fetchGhostNodes = async () => {
+      try {
+        const res = await fetch(`/api/dashboard/sites/${siteId}/ghost-nodes`);
+        const result = await res.json();
+        if (result.nodes) {
+          setGhostNodes(result.nodes);
+        }
+      } catch (e) {
+        console.error('Failed to fetch ghost nodes:', e);
+      }
+    };
+    if (siteId) fetchGhostNodes();
+  }, [siteId]);
+
+  // Merge data when ghostNodes or data changes
+  useEffect(() => {
+    setMergedData({
+      nodes: [...data.nodes, ...ghostNodes],
+      links: data.links
+    });
+  }, [data, ghostNodes]);
 
   // 监听容器大小变化
   useEffect(() => {
@@ -113,13 +140,14 @@ export default function GalaxyMap({ data, onNodeClick, isLoading }: GalaxyMapPro
       {use3D && webGLAvailable ? (
         <ForceGraph3D
           ref={fgRef}
-          graphData={data}
+          graphData={mergedData}
           width={dimensions.width}
           height={dimensions.height}
           backgroundColor="rgba(0,0,0,0)" // 透明背景以显示 CSS 渐变
           nodeLabel="name"
-          nodeColor={(node: any) => node.color}
-          nodeVal={(node: any) => node.val}
+          nodeColor={(node: any) => node.type === 'ghost' ? '#a78bfa' : node.color}
+          nodeRelSize={4}
+          nodeVal={(node: any) => node.type === 'ghost' ? node.val * 0.7 : node.val}
           linkWidth={2.5} // Increased from 1.5
           linkColor={() => 'rgba(148, 163, 184, 0.7)'} // Darker and more opaque for visibility
           onNodeClick={onNodeClick}
@@ -127,36 +155,39 @@ export default function GalaxyMap({ data, onNodeClick, isLoading }: GalaxyMapPro
       ) : (
         <ForceGraph2D
           ref={fgRef}
-          graphData={data}
+          graphData={mergedData}
           width={dimensions.width}
           height={dimensions.height}
           backgroundColor="rgba(0,0,0,0)"
           nodeLabel="name"
-          nodeColor={(node: any) => node.color}
+          nodeColor={(node: any) => node.type === 'ghost' ? '#a78bfa' : node.color}
           nodeCanvasObject={(node: any, ctx, globalScale) => {
             const label = node.name;
             const fontSize = 12 / globalScale;
             ctx.font = `${fontSize}px Inter`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillStyle = node.color;
+            
+            const nodeColor = node.type === 'ghost' ? '#a78bfa' : node.color;
+            const nodeVal = node.type === 'ghost' ? node.val * 0.7 : node.val;
+
             ctx.beginPath();
-            ctx.arc(node.x, node.y, node.val / 2, 0, 2 * Math.PI, false);
+            ctx.arc(node.x, node.y, nodeVal / 2, 0, 2 * Math.PI, false);
 
             if (node.type === 'ghost') {
               ctx.setLineDash([2, 1]);
-              ctx.strokeStyle = node.color;
+              ctx.strokeStyle = nodeColor;
               ctx.lineWidth = 1 / globalScale;
               ctx.stroke();
-              ctx.fillStyle = `${node.color}33`; // 20% opacity fill
+              ctx.fillStyle = `${nodeColor}55`; // 35% opacity fill
               ctx.fill();
               ctx.setLineDash([]);
             } else {
-              ctx.fillStyle = node.color;
+              ctx.fillStyle = nodeColor;
               // Pillar nodes get a slight glow
               if (node.type === 'pillar') {
                 ctx.shadowBlur = 15 / globalScale;
-                ctx.shadowColor = node.color;
+                ctx.shadowColor = nodeColor;
               }
               ctx.fill();
               ctx.shadowBlur = 0;
@@ -167,12 +198,12 @@ export default function GalaxyMap({ data, onNodeClick, isLoading }: GalaxyMapPro
               const weight = node.type === 'root' || node.type === 'pillar' ? 'bold' : 'normal';
               ctx.font = `${weight} ${fontSize}px Inter`;
               ctx.fillStyle = 'rgba(15, 23, 42, 0.8)'; // Dark slate for text on light background
-              ctx.fillText(label, node.x, node.y + node.val);
+              ctx.fillText(label, node.x, node.y + nodeVal);
 
               if (node.type === 'ghost') {
-                ctx.fillStyle = node.color;
+                ctx.fillStyle = nodeColor;
                 ctx.font = `italic ${fontSize * 0.8}px Inter`;
-                ctx.fillText('(Market Gap)', node.x, node.y + node.val + (fontSize * 1.2));
+                ctx.fillText('(Market Gap)', node.x, node.y + nodeVal + (fontSize * 1.2));
               }
             }
           }}

@@ -82,9 +82,89 @@ export async function GET(request: NextRequest) {
 
     } catch (error) {
         console.error('Cron job error:', error);
-        return NextResponse.json({ 
-            success: false, 
-            error: error instanceof Error ? error.message : 'Unknown error' 
-        }, { status: 500 });
     }
+
+    // 5. GSC Health Check & Self-Healing
+    console.log('Starting GSC Health Check & Self-Healing...');
+    try {
+        const sitesWithGsc = await prisma.site.findMany({
+            where: {
+                gscConnections: { some: { propertyId: { not: null } } }
+            },
+            include: {
+                gscConnections: true,
+                semanticDebts: true
+            }
+        });
+
+        for (const site of sitesWithGsc) {
+            try {
+                const { getGscClient } = await import('@/lib/gsc-client');
+                const { searchconsole } = await getGscClient(site.id);
+                const propId = site.gscConnections[0].propertyId!;
+
+                // 2-week date ranges
+                const now = new Date();
+                const lastWeekEnd = new Date(now); lastWeekEnd.setDate(now.getDate() - 3); // GSC delay
+                const lastWeekStart = new Date(lastWeekEnd); lastWeekStart.setDate(lastWeekEnd.getDate() - 7);
+                const prevWeekEnd = new Date(lastWeekStart);
+                const prevWeekStart = new Date(prevWeekEnd); prevWeekStart.setDate(prevWeekEnd.getDate() - 7);
+
+                const formatDate = (d: Date) => d.toISOString().split('T')[0];
+
+                const [lastWeekRes, prevWeekRes] = await Promise.all([
+                    searchconsole.searchanalytics.query({
+                        siteUrl: propId,
+                        requestBody: { startDate: formatDate(lastWeekStart), endDate: formatDate(lastWeekEnd), dimensions: ['query'] }
+                    }),
+                    searchconsole.searchanalytics.query({
+                        siteUrl: propId,
+                        requestBody: { startDate: formatDate(prevWeekStart), endDate: formatDate(prevWeekEnd), dimensions: ['query'] }
+                    })
+                ]);
+
+                const lastWeekQueries = lastWeekRes.data.rows || [];
+                const prevWeekQueries = prevWeekRes.data.rows || [];
+
+                // Compare impressions for keywords matching semantic debts
+                for (const debt of site.semanticDebts) {
+                    const debtTerms = [debt.topic, ...debt.subtopics].map(t => t.toLowerCase());
+                    
+                    const lastWeekImpressions = lastWeekQueries
+                        .filter(r => r.keys?.[0] && debtTerms.some(term => r.keys![0].toLowerCase().includes(term)))
+                        .reduce((sum, r) => sum + (r.impressions || 0), 0);
+
+                    const prevWeekImpressions = prevWeekQueries
+                        .filter(r => r.keys?.[0] && debtTerms.some(term => r.keys![0].toLowerCase().includes(term)))
+                        .reduce((sum, r) => sum + (r.impressions || 0), 0);
+
+                    if (prevWeekImpressions > 100 && lastWeekImpressions < prevWeekImpressions * 0.7) {
+                        // Drop > 30%
+                        console.log(`[Self-Healing] Topic "${debt.topic}" dropped > 30% in impressions for site ${site.domain}`);
+                        
+                        await prisma.$transaction([
+                            prisma.semanticDebt.update({
+                                where: { id: debt.id },
+                                data: { priorityLabel: (debt.priorityLabel ? debt.priorityLabel + ' ' : '') + '⚠️ 流量下跌' }
+                            }),
+                            prisma.plannedArticle.updateMany({
+                                where: { 
+                                    contentPlan: { siteId: site.id }, 
+                                    keyword: { contains: debt.topic },
+                                    status: { not: 'COMPLETED' }
+                                },
+                                data: { status: 'REFACTORING_NEEDED' }
+                            })
+                        ]);
+                    }
+                }
+            } catch (siteError) {
+                console.error(`GSC check failed for site ${site.domain}:`, siteError);
+            }
+        }
+    } catch (gscError) {
+        console.error('Global GSC cron error:', gscError);
+    }
+
+    return NextResponse.json({ success: true });
 }

@@ -182,7 +182,7 @@ export function OverviewPanel({ siteId, domain, onSwitchTab }: { siteId: string,
                 {/* Our Strengths & Business DNA */}
                 <div className="space-y-6">
                     {/* Business DNA */}
-                    {semanticData?.businessOntology ? (
+                    {semanticData?.ontology ? (
                         <Card className="p-6 border-indigo-100 bg-indigo-50/30 shadow-sm">
                             <h3 className="text-sm font-bold text-indigo-900 flex items-center gap-2 mb-3">
                                 🧬 核心业务 DNA
@@ -191,13 +191,13 @@ export function OverviewPanel({ siteId, domain, onSwitchTab }: { siteId: string,
                                 <div>
                                     <h4 className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">核心产品/服务</h4>
                                     <p className="text-xs text-slate-700 mt-1 leading-relaxed">
-                                        {semanticData.businessOntology.coreOfferings?.join(" • ")}
+                                        {semanticData.ontology.coreOfferings?.join(" • ")}
                                     </p>
                                 </div>
                                 <div>
                                     <h4 className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">解决痛点</h4>
                                     <p className="text-xs text-slate-700 mt-1 leading-relaxed">
-                                        {semanticData.businessOntology.painPointsSolved?.join(" • ")}
+                                        {semanticData.ontology.painPointsSolved?.join(" • ")}
                                     </p>
                                 </div>
                             </div>
@@ -295,6 +295,20 @@ export function OverviewPanel({ siteId, domain, onSwitchTab }: { siteId: string,
                                                     </span>
                                                 )}
                                             </p>
+                                            <div className="flex gap-3 mt-1.5">
+                                                <div className="flex items-center gap-1">
+                                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">覆盖度</span>
+                                                    <span className={`text-[10px] font-black tabular-nums ${debt.coverageScore < 30 ? 'text-rose-600' : 'text-slate-600'}`}>
+                                                        {debt.coverageScore || 0}%
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-1">
+                                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">佐证度</span>
+                                                    <span className="text-[10px] font-black text-slate-600 tabular-nums">
+                                                        {debt.proofDensity || 0}%
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </div>
                                         <button className="text-rose-500 opacity-60 hover:opacity-100 transition-opacity">
                                             {selectedDebt?.topic === debt.topic ? (

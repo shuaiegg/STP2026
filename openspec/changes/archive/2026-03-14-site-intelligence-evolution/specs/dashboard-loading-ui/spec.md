@@ -1,8 +1,5 @@
-# dashboard-loading-ui Specification
+## MODIFIED Requirements
 
-## Purpose
-TBD - created by archiving change bundle-and-query-optimization. Update Purpose after archive.
-## Requirements
 ### Requirement: Dashboard routes display skeleton loading UI during navigation
 每个 dashboard 路由 SHALL 在页面数据加载期间展示骨架屏 loading 状态，利用 Next.js App Router Streaming 机制，避免整页空白等待。
 
@@ -36,4 +33,3 @@ TBD - created by archiving change bundle-and-query-optimization. Update Purpose 
 #### Scenario: 骨架屏样式一致性
 - **WHEN** 任意 dashboard loading.tsx 被渲染
 - **THEN** 占位块使用 `bg-gray-200 animate-pulse rounded` 类，与项目设计系统一致
-

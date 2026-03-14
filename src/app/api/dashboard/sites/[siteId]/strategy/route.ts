@@ -1,16 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { withSiteContext } from "@/lib/api-utils";
 import prisma from "@/lib/prisma";
 
 async function handler(
-    req: NextRequest,
-    { params }: { params: { siteId: string } },
-    site: any
+    req: Request,
+    { params }: { params: { siteId: string }; site: any; session: any }
 ) {
-    if (req.method !== 'GET') {
-        return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
-    }
-
     try {
         const { siteId } = params;
 
@@ -41,4 +36,4 @@ async function handler(
     }
 }
 
-export const GET = withSiteContext(handler);
+export const GET = withSiteContext<{ siteId: string }>(handler);

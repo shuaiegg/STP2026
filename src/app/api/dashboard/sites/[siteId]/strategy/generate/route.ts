@@ -1,49 +1,94 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { withSiteContext } from "@/lib/api-utils";
 import prisma from "@/lib/prisma";
-import { getLLMProvider } from "@/lib/skills/providers";
+import { getProvider } from "@/lib/skills/providers";
 
 async function handler(
-    req: NextRequest,
-    { params }: { params: { siteId: string } },
-    site: any
+    req: Request,
+    { params, site }: { params: { siteId: string }; site: any; session: any }
 ) {
     try {
         const { siteId } = params;
+        const body = await req.json().catch(() => ({}));
+        const { override = false } = body;
 
-        // 1. Fetch site and ontology
-        const siteData = await prisma.site.findUnique({
-            where: { id: siteId },
-            select: { businessOntology: true, domain: true }
+        // 1. Check for existing plans (Conflict Detection)
+        const existingPlans = await prisma.contentPlan.findMany({
+            where: {
+                siteId,
+                status: { in: ['IDEATION', 'PLANNED'] }
+            }
         });
 
-        if (!siteData?.businessOntology) {
+        if (existingPlans.length > 0 && !override) {
+            return NextResponse.json({
+                success: false,
+                conflict: true,
+                existingCount: existingPlans.length,
+                message: `已存在 ${existingPlans.length} 个进行中的战略计划。重新生成将归档旧计划。`
+            });
+        }
+
+        // If override is true, archive existing plans first
+        if (override && existingPlans.length > 0) {
+            await prisma.$transaction([
+                prisma.contentPlan.updateMany({
+                    where: { siteId, status: { in: ['IDEATION', 'PLANNED'] } },
+                    data: { status: 'ARCHIVED' }
+                }),
+                prisma.plannedArticle.updateMany({
+                    where: { contentPlan: { siteId }, status: { in: ['IDEATION', 'PLANNED'] } },
+                    data: { status: 'ARCHIVED' }
+                })
+            ]);
+        }
+
+        // 2. Fetch site and ontology (now only use SiteOntology)
+        const latestOntology = await prisma.siteOntology.findFirst({
+            where: { siteId },
+            orderBy: { version: 'desc' }
+        });
+
+        const siteData = await prisma.site.findUnique({
+            where: { id: siteId },
+            select: { domain: true }
+        });
+
+        if (!latestOntology) {
             return NextResponse.json(
                 { error: "Business ontology not found. Run analysis first." },
                 { status: 400 }
             );
         }
 
-        const ontology = siteData.businessOntology as any;
+        const coreOfferings = latestOntology.coreOfferings;
+        const targetAudience = latestOntology.targetAudience;
+        
+        // Need to fetch semantic debts from table
+        const semanticDebts = await prisma.semanticDebt.findMany({
+            where: { ontologyId: latestOntology.id },
+            orderBy: { coverageScore: 'asc' }, // Prioritize low coverage
+            take: 10
+        });
 
-        if (!ontology.semanticDebts || ontology.semanticDebts.length === 0) {
+        if (semanticDebts.length === 0) {
             return NextResponse.json(
-                { error: "No semantic debts found to generate a plan from." },
+                { error: "No semantic debts found to generate a plan from. Run analysis first." },
                 { status: 400 }
             );
         }
 
-        // 2. Prepare LLM Prompt
+        // 3. Prepare LLM Prompt
         // For phase 1, we'll pick the top 3 semantic debts to generate pillars for.
-        const topDebts = ontology.semanticDebts.slice(0, 3);
+        const topDebts = semanticDebts.slice(0, 3);
 
         const prompt = `
         You are an elite SEO and Content Strategist. 
         Your task is to create a highly structured "Pillar-Cluster" content strategy based on the identified "Semantic Debts" (topics the website is missing but competitors have).
         
-        Target Domain: ${siteData.domain}
-        Business Offerings: ${JSON.stringify(ontology.coreOfferings)}
-        Target Audience: ${JSON.stringify(ontology.targetAudience)}
+        Target Domain: ${siteData?.domain || ''}
+        Business Offerings: ${JSON.stringify(coreOfferings)}
+        Target Audience: ${JSON.stringify(targetAudience)}
         
         Semantic Debts to address (These must be your Pillars!):
         ${JSON.stringify(topDebts, null, 2)}
@@ -72,22 +117,22 @@ async function handler(
         }
         `;
 
-        // 3. Call LLM
-        const provider = getLLMProvider('gemini');
-        const aiResponse = await provider.generateText(prompt, {
-            model: 'gemini-2.5-flash',
-            temperature: 0.3,
-            maxTokens: 4000
+        // 4. Call LLM
+        const provider = getProvider('gemini');
+        const aiResponse = await provider.generateContent(prompt, {
+            model: 'gemini-2.0-flash',
+            temperature: 0.3
         });
 
-        // 4. Parse JSON Response
+        // 5. Parse JSON Response
         let planData;
         try {
-            // Strip markdown formatting if the model wrapped the JSON in blockquotes
-            const cleanedText = aiResponse.replace(/```json\n?|\n?```/gi, '').trim();
-            planData = JSON.parse(cleanedText);
+            const content = aiResponse.content || '';
+            const match = content.match(/\{[\s\S]*\}/);
+            if (!match) throw new Error("No JSON found");
+            planData = JSON.parse(match[0]);
         } catch (e: any) {
-            console.error("Failed to parse LLM JSON output for plan generation:", e.message, "\nRaw output:", aiResponse);
+            console.error("Failed to parse LLM JSON output for plan generation:", e.message);
             return NextResponse.json({ error: "Failed to parse AI strategy plan." }, { status: 500 });
         }
 
@@ -95,10 +140,16 @@ async function handler(
             return NextResponse.json({ error: "Invalid AI strategy plan format." }, { status: 500 });
         }
 
-        // 5. Persist to Database within a transaction
+        // 6. Persist to Database within a transaction
         const createdPlans = await prisma.$transaction(async (tx) => {
             const results = [];
-            let priorityCounter = 0; // Kanban column order
+            
+            // Get current max priority to append to end
+            const lastPlan = await tx.contentPlan.findFirst({
+                where: { siteId },
+                orderBy: { priority: 'desc' }
+            });
+            let priorityCounter = (lastPlan?.priority || 0) + 1;
 
             for (const plan of planData.plans) {
                 const dbPlan = await tx.contentPlan.create({
@@ -137,4 +188,4 @@ async function handler(
     }
 }
 
-export const POST = withSiteContext(handler);
+export const POST = withSiteContext<{ siteId: string }>(handler);

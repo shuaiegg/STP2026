@@ -143,7 +143,6 @@ model Site {
   name             String?
   targetMarkets    String[]
   seedKeywords     String[]
-  businessOntology Json?
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
   competitors      Competitor[]
@@ -153,9 +152,47 @@ model Site {
   user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   audits           SiteAudit[]
   keywords         SiteKeyword[]
+  ontologies       SiteOntology[]
+  semanticDebts    SemanticDebt[]
 
   @@index([userId])
   @@index([domain])
+}
+
+model SiteOntology {
+  id               String         @id @default(uuid())
+  siteId           String
+  version          Int            @default(1)
+  coreOfferings    String[]
+  targetAudience   String[]
+  painPointsSolved String[]
+  logicChains      Json? // Problem→Solution→Proof 结构
+  idealTopicMap    Json // { topic, subtopics }[]
+  createdAt        DateTime       @default(now())
+  site             Site           @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  semanticDebts    SemanticDebt[]
+
+  @@index([siteId, version])
+}
+
+model SemanticDebt {
+  id             String       @id @default(uuid())
+  siteId         String
+  ontologyId     String // 关联到哪个版本的本体
+  topic          String
+  subtopics      String[]
+  relevance      String // high/medium/low
+  coverageScore  Int? // 0-100
+  proofDensity   Int? // 0-100
+  gscImpressions Int?
+  gscClicks      Int?
+  priorityLabel  String?
+  createdAt      DateTime     @default(now())
+  site           Site         @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  ontology       SiteOntology @relation(fields: [ontologyId], references: [id], onDelete: Cascade)
+
+  @@index([siteId])
+  @@index([coverageScore])
 }
 
 model SiteAudit {
@@ -408,6 +445,7 @@ enum StrategyStatus {
   IN_PROGRESS
   COMPLETED
   ARCHIVED
+  REFACTORING_NEEDED
 }
 
 enum TargetChannel {

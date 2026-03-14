@@ -27,14 +27,28 @@ export async function POST(request: Request) {
                     userId: session.user.id,
                     domain,
                     name: domain,
-                    businessOntology: businessDna ? businessDna : undefined
                 },
             });
-        } else if (businessDna) {
-            // Update existing site with new DNA
-            site = await prisma.site.update({
-                where: { id: site.id },
-                data: { businessOntology: businessDna }
+        }
+
+        if (businessDna) {
+            // Find latest version to increment
+            const lastOntology = await prisma.siteOntology.findFirst({
+                where: { siteId: site.id },
+                orderBy: { version: 'desc' }
+            });
+            const nextVersion = (lastOntology?.version || 0) + 1;
+
+            await prisma.siteOntology.create({
+                data: {
+                    siteId: site.id,
+                    version: nextVersion,
+                    coreOfferings: businessDna.coreOfferings || [],
+                    targetAudience: businessDna.targetAudience || [],
+                    painPointsSolved: businessDna.painPointsSolved || [],
+                    logicChains: businessDna.logicChains || [],
+                    idealTopicMap: businessDna.idealTopicMap || [],
+                }
             });
         }
 
