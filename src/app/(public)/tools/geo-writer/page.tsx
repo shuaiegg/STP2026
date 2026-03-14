@@ -31,12 +31,14 @@ import { calculateHumanScore } from '@/lib/utils/ai-detection';
 import { downloadAsMarkdown, downloadAsHTML, triggerPrintPDF } from '@/lib/utils/export-helpers';
 import { saveSnapshot, getVersionHistory, VersionSnapshot } from '@/lib/utils/version-manager';
 import { saveTrackedArticle } from '@/app/actions/tracked-articles';
+import { saveToBlogDraft } from '@/app/actions/blog-draft';
 import posthog from 'posthog-js';
 
 export default function GEOWriterPage() {
     const [step, setStep] = useState(1); // 1: Research, 2: Strategy, 3: Creation
     const [loading, setLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isSavingDraft, setIsSavingDraft] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
     const [researchData, setResearchData] = useState<any[] | null>(null);
     const [auditResult, setAuditResult] = useState<any>(null);
@@ -185,6 +187,32 @@ export default function GEOWriterPage() {
             toast.error('保存失败，请检查登录状态');
         } finally {
             setIsSaving(false);
+        }
+    };
+
+    const handleSaveToBlogDraft = async () => {
+        const fullContent = joinSectionsToMarkdown(contentSections) || finalResult?.content || streamResult.completion;
+        if (!fullContent) return toast.error('没有可保存的内容');
+
+        setIsSavingDraft(true);
+        try {
+            const result = await saveToBlogDraft({
+                title: finalResult?.seoMetadata?.title || selectedKeyword || '未命名文章',
+                content: fullContent,
+                summary: finalResult?.seoMetadata?.description || '',
+            });
+
+            if (result.success) {
+                toast.success('已作为博客草稿保存！');
+                router.push(`/dashboard/admin/content/${result.id}`);
+            } else {
+                toast.error(result.message || '保存失败');
+            }
+        } catch (error) {
+            console.error('Save draft error:', error);
+            toast.error('保存失败，请检查权限');
+        } finally {
+            setIsSavingDraft(false);
         }
     };
 
@@ -1266,6 +1294,17 @@ export default function GEOWriterPage() {
                                     {isSaving ? <Loader2 size={14} className="animate-spin" /> : isSaved ? <Check size={14} /> : <Database size={14} />}
                                     {isSaving ? '正在保存...' : isSaved ? '已存入库' : '存入我的库'}
                                 </button>
+
+                                {(session?.user as any)?.role === 'ADMIN' && (
+                                    <button
+                                        onClick={handleSaveToBlogDraft}
+                                        disabled={isSavingDraft}
+                                        className="px-8 py-2.5 rounded-xl text-[10px] font-black uppercase transition-all flex items-center gap-2 border-2 shadow-sm active:scale-95 bg-brand-secondary border-black text-brand-text-primary hover:shadow-none hover:translate-y-[1px] ml-2"
+                                    >
+                                        {isSavingDraft ? <Loader2 size={14} className="animate-spin" /> : <FileText size={14} />}
+                                        另存为博客草稿
+                                    </button>
+                                )}
 
                                 <button onClick={() => setShowHistory(true)} className="px-8 py-2.5 rounded-xl text-[10px] font-black uppercase transition-all flex items-center gap-2 hover:bg-slate-50 text-slate-400 border border-transparent hover:border-slate-200">
                                     <Undo size={14} /> 历史版本 <Badge className="bg-slate-200 text-slate-500 text-[8px] h-4 min-w-4 flex items-center justify-center p-0">{history.length}</Badge>

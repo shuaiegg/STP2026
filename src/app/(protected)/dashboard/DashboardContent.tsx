@@ -85,7 +85,7 @@ export function DashboardContent({
                         <ShieldAlert size={20} />
                         代理预览模式：正在查看用户 {user?.email} 的账户
                     </div>
-                    <Link href="/admin/users">
+                    <Link href="/dashboard/admin/users">
                         <Button size="sm" variant="outline" className="border-amber-200 bg-white text-amber-700 hover:bg-amber-100 flex items-center gap-2">
                             <ArrowLeft size={14} /> 返回管理后台
                         </Button>

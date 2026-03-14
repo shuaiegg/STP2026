@@ -139,6 +139,7 @@ model User {
 model Site {
   id               String          @id @default(uuid())
   userId           String
+  workspaceId      String?
   domain           String
   name             String?
   targetMarkets    String[]

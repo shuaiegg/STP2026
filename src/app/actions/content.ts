@@ -69,8 +69,8 @@ export async function updateContentMetadata(id: string, data: {
         });
 
         // 6. Revalidate
-        revalidatePath('/admin/content');
-        revalidatePath(`/admin/content/${id}`);
+        revalidatePath('/dashboard/admin/content');
+        revalidatePath(`/dashboard/admin/content/${id}`);
         if (data.slug) {
             revalidatePath(`/blog/${data.slug}`);
         }
@@ -149,8 +149,8 @@ export async function updateSeoMetadata(contentId: string, data: {
         });
 
         // Revalidate paths
-        revalidatePath('/admin/content');
-        revalidatePath(`/admin/content/${contentId}`);
+        revalidatePath('/dashboard/admin/content');
+        revalidatePath(`/dashboard/admin/content/${contentId}`);
         revalidatePath(`/blog/${content.slug}`);
         revalidatePath('/blog');
 
@@ -243,8 +243,8 @@ export async function saveSeoOptimizationData(contentId: string, data: {
         });
 
         // Revalidate
-        revalidatePath('/admin/content');
-        revalidatePath(`/admin/content/${contentId}`);
+        revalidatePath('/dashboard/admin/content');
+        revalidatePath(`/dashboard/admin/content/${contentId}`);
         revalidatePath(`/blog/${content.slug}`);
         revalidatePath('/blog');
 

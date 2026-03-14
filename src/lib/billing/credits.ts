@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma";
 import { TOOL_COSTS } from "@/lib/config/credit-costs";
 
 export type ChargeResult =
-    | { success: true; remainingCredits: number; transactionId: string }
+    | { success: true; remainingCredits: number; transactionId?: string }
     | { success: false; error: string; required: number; current: number };
 
 /**
@@ -28,6 +28,24 @@ export async function chargeUser(
     description: string
 ): Promise<ChargeResult> {
     try {
+        // 6.1 Check user role for exemption
+        const userWithRole = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { role: true, credits: true }
+        });
+
+        if (!userWithRole) {
+            return { success: false, error: "User not found", required: 0, current: 0 };
+        }
+
+        // 6.2 ADMIN exemption: Skip deduction and transaction record
+        if (userWithRole.role === 'ADMIN') {
+            return {
+                success: true,
+                remainingCredits: userWithRole.credits,
+            };
+        }
+
         return await prisma.$transaction(async (tx) => {
             // 1. Get Skill Cost & Status
             const skill = await tx.skillConfig.findUnique({

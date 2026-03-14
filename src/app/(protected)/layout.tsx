@@ -17,7 +17,10 @@ import {
     User as UserIcon,
     ArrowUpRight,
     History,
-    Home
+    Home,
+    FileText,
+    RefreshCw,
+    Users
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { authClient } from '@/lib/auth-client';
@@ -97,6 +100,20 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
         { href: '/dashboard/billing', icon: BarChart3, label: '流量与账单' },
     ];
 
+    const role = (session?.user as any)?.role;
+    const adminNavItems = [
+        { href: '/dashboard/admin/content', icon: FileText, label: '内容管理' },
+        { href: '/dashboard/admin/sync', icon: RefreshCw, label: 'Notion 同步' },
+        { href: '/dashboard/admin/users', icon: Users, label: '用户管理' },
+        { href: '/dashboard/admin/skills', icon: Zap, label: '技能管理' },
+    ].filter(item => {
+        if (role === 'ADMIN') return true;
+        if (role === 'EDITOR') {
+            return item.href === '/dashboard/admin/content' || item.href === '/dashboard/admin/sync';
+        }
+        return false;
+    });
+
     // If still loading session, show a clean loader
     if (isPending && !session) {
         return (
@@ -147,6 +164,21 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
                                 }
                             />
                         ))}
+
+                        {adminNavItems.length > 0 && (
+                            <>
+                                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mt-8 mb-6 ml-4">平台管理</div>
+                                {adminNavItems.map((item) => (
+                                    <NavItem
+                                        key={item.href}
+                                        href={item.href}
+                                        icon={item.icon}
+                                        label={item.label}
+                                        active={pathname.startsWith(item.href)}
+                                    />
+                                ))}
+                            </>
+                        )}
                     </nav>
 
                     {/* Footer Nav */}
@@ -195,7 +227,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
                         <div className="hidden md:flex flex-col items-end">
                             <span className="text-sm font-black text-slate-900">{session?.user?.name || '用户'}</span>
                             <span className="text-[9px] font-black uppercase tracking-widest text-brand-primary bg-brand-primary/5 px-2 py-0.5 rounded">
-                                {(session?.user as any)?.role === 'ADMIN' ? '管理员' : '普通用户'}
+                                {(session?.user as any)?.role === 'ADMIN' ? '管理员' : (session?.user as any)?.role === 'EDITOR' ? '编辑员' : '普通用户'}
                             </span>
                         </div>
                         <div className="w-12 h-12 rounded-2xl bg-slate-100 border-2 border-white shadow-sm overflow-hidden flex items-center justify-center">

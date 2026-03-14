@@ -35,7 +35,7 @@ export default function SetupForm() {
                 setError(authError.message || "创建失败，请稍后重试");
             } else {
                 // If success, refresh to trigger middleware check and redirect to dashboard
-                router.push("/admin");
+                router.push("/dashboard");
                 router.refresh();
             }
         } catch (err: any) {

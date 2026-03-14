@@ -144,7 +144,7 @@ export default async function AdminDashboard() {
                             <div className="text-3xl font-bold text-slate-900 font-mono">{stats.totalContent}</div>
                         </div>
                     </div>
-                    <Link href="/admin/sync" className="flex items-center gap-1.5 text-xs font-bold text-brand-primary hover:underline">
+                    <Link href="/dashboard/admin/sync" className="flex items-center gap-1.5 text-xs font-bold text-brand-primary hover:underline">
                         <RefreshCw size={12} />
                         <span>最近同步: {stats.lastSync?.completedAt ? new Date(stats.lastSync.completedAt).toLocaleTimeString() : '暂无记录'}</span>
                     </Link>
@@ -173,7 +173,7 @@ export default async function AdminDashboard() {
                     <Card className="p-8 border-none shadow-sm bg-brand-primary text-white">
                         <h3 className="text-xl font-bold mb-4">快速管理</h3>
                         <div className="flex flex-col gap-3">
-                            <Link href="/admin/users">
+                            <Link href="/dashboard/admin/users">
                                 <div className="flex items-center justify-between p-4 rounded-xl bg-white/10 hover:bg-white/20 transition-all group">
                                     <div className="flex items-center gap-3">
                                         <Users size={18} />
@@ -182,7 +182,7 @@ export default async function AdminDashboard() {
                                     <ArrowUpRight size={18} className="opacity-50 group-hover:opacity-100" />
                                 </div>
                             </Link>
-                            <Link href="/admin/content">
+                            <Link href="/dashboard/admin/content">
                                 <div className="flex items-center justify-between p-4 rounded-xl bg-white/10 hover:bg-white/20 transition-all group">
                                     <div className="flex items-center gap-3">
                                         <FileText size={18} />

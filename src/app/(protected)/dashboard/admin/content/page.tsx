@@ -40,7 +40,7 @@ export default async function ContentManagement() {
                         <Filter size={16} />
                         筛选
                     </Button>
-                    <Link href="/admin/sync">
+                    <Link href="/dashboard/admin/sync">
                         <Button variant="gradient" className="gap-2 font-bold text-xs uppercase tracking-widest">
                             <RefreshCw size={16} />
                             同步 Notion
@@ -117,7 +117,7 @@ export default async function ContentManagement() {
                                                     <ExternalLink size={18} />
                                                 </Button>
                                             </Link>
-                                            <Link href={`/admin/content/${item.id}`}>
+                                            <Link href={`/dashboard/admin/content/${item.id}`}>
                                                 <Button variant="ghost" size="sm" className="p-2 h-auto rounded-lg text-slate-400 hover:text-brand-primary hover:bg-brand-primary/5">
                                                     <Edit size={18} />
                                                 </Button>

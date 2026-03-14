@@ -27,5 +27,5 @@ export async function logout() {
     // Better Auth cleanup is usually done on client, 
     // but we can also do it here if needed by clearing cookies
     // However, the recommended way is authClient.signOut()
-    redirect("/admin/login");
+    redirect("/login");
 }

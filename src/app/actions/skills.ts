@@ -48,7 +48,7 @@ export async function updateSkillCost(id: string, newCost: number) {
         data: { cost: newCost }
     });
 
-    revalidatePath('/admin/skills');
+    revalidatePath('/dashboard/admin/skills');
     return { success: true, data: result };
 }
 
@@ -70,8 +70,8 @@ export async function toggleSkill(id: string) {
         data: { isActive: !skill.isActive }
     });
 
-    revalidatePath('/admin/skills');
-    revalidatePath('/admin/skills');
+    revalidatePath('/dashboard/admin/skills');
+    revalidatePath('/dashboard/admin/skills');
     return { success: true, data: result };
 }
 
@@ -96,6 +96,6 @@ export async function createSkill(data: { name: string; displayName: string; des
         }
     });
 
-    revalidatePath('/admin/skills');
+    revalidatePath('/dashboard/admin/skills');
     return { success: true, data: result };
 }

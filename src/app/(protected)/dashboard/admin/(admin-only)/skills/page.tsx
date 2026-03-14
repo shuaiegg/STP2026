@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { getSkillConfigs, updateSkillCost, toggleSkill, createSkill } from '@/app/actions/skills';
-import { useRouter } from 'next/navigation';
 
 interface SkillConfig {
     id: string;
@@ -15,6 +14,7 @@ interface SkillConfig {
 }
 
 export default function SkillManagementPage() {
+
     const [skills, setSkills] = useState<SkillConfig[]>([]);
     const [loading, setLoading] = useState(true);
     const [editingId, setEditingId] = useState<string | null>(null);

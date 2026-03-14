@@ -13,7 +13,7 @@ export default async function AdminSetupPage() {
     });
 
     if (adminCount > 0) {
-        redirect("/admin/login");
+        redirect("/login");
     }
 
     return (

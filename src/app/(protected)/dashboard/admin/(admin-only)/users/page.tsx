@@ -26,6 +26,7 @@ import { authClient } from '@/lib/auth-client';
 
 export default function UserManagementPage() {
     const { data: session } = authClient.useSession();
+
     const [users, setUsers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');

@@ -90,7 +90,7 @@ export async function updateUserCredits(userId: string, amount: number, reason: 
             return updatedUser;
         });
 
-        revalidatePath('/admin/users');
+        revalidatePath('/dashboard/admin/users');
         revalidatePath('/dashboard');
         
         return { success: true, user: result };
@@ -138,7 +138,7 @@ export async function revertTransaction(transactionId: string) {
             return { userId: transaction.userId };
         });
 
-        revalidatePath('/admin/users');
+        revalidatePath('/dashboard/admin/users');
         revalidatePath('/dashboard');
         
         return { success: true };

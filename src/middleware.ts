@@ -1,44 +1,57 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export async function middleware(request: NextRequest) {
-    // Better Auth default session cookie name
+    const { pathname } = request.nextUrl;
     const sessionCookie = request.cookies.get("better-auth.session_token");
 
-    // 1. Path check
-    const isPathAdmin = request.nextUrl.pathname.startsWith('/admin');
-    const isPathDashboard = request.nextUrl.pathname.startsWith('/dashboard');
-    const isPathLogin = request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/admin/login';
-    const isPathSetup = request.nextUrl.pathname === '/admin/setup';
-    const isPathApiAuth = request.nextUrl.pathname.startsWith('/api/auth');
-
-    // 2. Allow API auth routes, setup page, and non-protected routes to pass through
-    if (isPathApiAuth || isPathSetup || (!isPathAdmin && !isPathDashboard)) {
+    // --- 1. Unified Dashboard Redirect Rules ---
+    
+    // 2.1 Whitelist /admin/setup (Keep independent)
+    if (pathname === '/admin/setup') {
         return NextResponse.next();
     }
 
-    // 3. If it's a protected path (admin or dashboard) but not the login page, check session
-    if ((isPathAdmin || isPathDashboard) && !isPathLogin) {
-        if (!sessionCookie) {
-            const loginPath = isPathAdmin ? "/admin/login" : "/login";
-            return NextResponse.redirect(new URL(loginPath, request.url));
-        }
-
-        // 4. Role-based protection for /admin
-        // Note: For strict security, we'd fetch the session server-side here.
-        // Since Middleware cannot easily call async auth.api.getSession without external fetch,
-        // we'll rely on a secondary check in the Admin pages themselves for now, 
-        // OR we can perform a fetch to a local API route that returns user role.
+    // 2.2 /admin/login → /login (301)
+    if (pathname === '/admin/login') {
+        return NextResponse.redirect(new URL('/login', request.url), 301);
     }
 
-    // 5. If it's the login page and user is already logged in, redirect accordingly
-    if (isPathLogin && sessionCookie) {
-        const targetPath = isPathAdmin ? "/admin" : "/dashboard";
-        return NextResponse.redirect(new URL(targetPath, request.url));
+    // 2.3 /admin → /dashboard (301)
+    if (pathname === '/admin') {
+        return NextResponse.redirect(new URL('/dashboard', request.url), 301);
+    }
+
+    // 2.4 /admin/:path* → /dashboard/admin/:path* (301)
+    // This handles sub-routes like /admin/content, /admin/sync etc.
+    if (pathname.startsWith('/admin/')) {
+        const newPath = pathname.replace('/admin/', '/dashboard/admin/');
+        return NextResponse.redirect(new URL(newPath, request.url), 301);
+    }
+
+    // --- 2. Standard Protection Logic ---
+
+    // Redirect already-authenticated users away from /login
+    if (pathname === '/login' && sessionCookie) {
+        return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+
+    const isPathDashboard = pathname.startsWith('/dashboard');
+    const isPathApiAuth = pathname.startsWith('/api/auth');
+
+    // Allow API auth and non-dashboard routes to pass through
+    if (isPathApiAuth || !isPathDashboard) {
+        return NextResponse.next();
+    }
+
+    // Protected dashboard paths: redirect unauthenticated users to /login
+    if (!sessionCookie) {
+        return NextResponse.redirect(new URL('/login', request.url));
     }
 
     return NextResponse.next();
 }
 
 export const config = {
-    matcher: ['/admin/:path*', '/dashboard/:path*', '/api/auth/:path*'],
+    // 2.5 Ensure matcher includes /admin/:path* and /dashboard/:path*
+    matcher: ['/admin/:path*', '/dashboard/:path*', '/api/auth/:path*', '/login'],
 };
