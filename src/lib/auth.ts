@@ -15,7 +15,9 @@ export const auth = betterAuth({
         emailOTP({
             // Explicitly allow sign up via OTP
             async sendVerificationOTP({ email, otp, type }) {
-                console.log(`🧞‍♂️ [Aladdin Auth] TRIGGERED: ${type} OTP for ${email}`);
+                if (process.env.NODE_ENV !== 'production') {
+                    console.log(`[Auth] OTP triggered: ${type} for ${email}`);
+                }
                 
                 const subjects = {
                     "sign-up": "欢迎加入 ScaletoTop - 注册验证码",
@@ -41,7 +43,9 @@ export const auth = betterAuth({
                         </div>
                     `
                 });
-                console.log(`🧞‍♂️ [Aladdin Auth] Resend delivery status:`, result.success ? "SUCCESS" : "FAILED", JSON.stringify(result));
+                if (process.env.NODE_ENV !== 'production') {
+                    console.log(`[Auth] Resend delivery:`, result.success ? "SUCCESS" : "FAILED", JSON.stringify(result));
+                }
             },
         }),
     ],
@@ -65,9 +69,9 @@ export const auth = betterAuth({
         expiresIn: 60 * 60 * 24 * 7, // 7 days
         updateAge: 60 * 60 * 24, // 1 day
     },
-    // Removed trustedOrigins temporarily to debug cross-origin/proxy issues
+    trustedOrigins: process.env.NEXT_PUBLIC_APP_URL ? [process.env.NEXT_PUBLIC_APP_URL] : [],
     rateLimit: {
         window: 60,
-        max: 20, // Loosened for development testing
+        max: process.env.NODE_ENV === 'production' ? 10 : 20,
     },
 });

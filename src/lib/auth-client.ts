@@ -8,23 +8,7 @@ export const authClient = createAuthClient({
     plugins: [
         emailOTPClient(),
     ],
-    fetchOptions: {
-        onError(context) {
-            console.error("Better Auth Client Error:", context.error?.message || context.error || "Unknown Error", context.error);
-        },
-        // Hack: Better Auth client sometimes requests email-o-t-p instead of email-otp
-        onRequest(context) {
-            // In better-auth fetch, context.url contains the path
-            if (context.request instanceof Request) {
-                // If it's already a Request object, we might not be able to easily rewrite it here.
-                // Usually better-auth passes URL as string in context.url or config.url
-            }
-            return context;
-        },
-        onResponse(context) {
-            return context.response;
-        }
-    }
+    fetchOptions: {}
 });
 
 // Export the inferred types so we can use them across the app

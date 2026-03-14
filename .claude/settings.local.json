@@ -25,7 +25,13 @@
       "Bash(openspec list:*)",
       "Bash(npx tsx -e \":*)",
       "Bash(npx prisma:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(git -C /Users/apple/JSProject/STP2026 log --oneline --diff-filter=A -- .env)",
+      "Bash(git -C /Users/apple/JSProject/STP2026 ls-files .env)",
+      "Bash(git -C /Users/apple/JSProject/STP2026 log --all --oneline --diff-filter=A -- .env)",
+      "Bash(git -C /Users/apple/JSProject/STP2026 log --all --oneline -- .env)",
+      "Bash(ls \"/Users/apple/JSProject/STP2026/src/app/\\(protected\\)/\")",
+      "Bash(ls \"/Users/apple/JSProject/STP2026/src/app/\\(public\\)/\")"
     ]
   },
   "enabledPlugins": {

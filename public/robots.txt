@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /api/
+Disallow: /preview/
+
+Sitemap: https://scaletotop.com/sitemap.xml
