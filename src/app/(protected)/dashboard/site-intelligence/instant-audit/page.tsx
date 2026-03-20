@@ -73,8 +73,6 @@ function InstantAuditInner() {
     const [isSaving, setIsSaving] = useState(false);
     const [techScore, setTechScore] = useState<number | null>(null);
 
-    // Auto-trigger rescan if ?rescan=1
-    const shouldRescan = searchParams.get('rescan') === '1';
     const auditIdToLoad = searchParams.get('auditId');
     const router = useRouter();
 
@@ -91,18 +89,11 @@ function InstantAuditInner() {
                 const site = sitesData.sites?.find((s: any) => s.domain === domain);
 
                 if (!site) {
-                    // Site doesn't exist yet, we must scan
-                    if (shouldRescan) handleStartAudit();
-                    else setLoading(false);
+                    setLoading(false);
                     return;
                 }
 
                 setSavedSiteId(site.id);
-
-                if (shouldRescan) {
-                    handleStartAudit();
-                    return;
-                }
 
                 if (auditIdToLoad) {
                     // Load specific historical audit
@@ -145,7 +136,7 @@ function InstantAuditInner() {
 
         loadHistoricalData();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [domain, shouldRescan, auditIdToLoad]);
+    }, [domain, auditIdToLoad]);
 
     // 2. Load audit history list for the sidebar
     useEffect(() => {
