@@ -75,7 +75,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
                 console.error(err);
             });
 
-        return () => controller.abort();
+        return () => controller.abort('component-unmounted');
     }, []);
 
     const handleSignOut = async () => {
