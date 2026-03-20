@@ -69,7 +69,11 @@ export const auth = betterAuth({
         expiresIn: 60 * 60 * 24 * 7, // 7 days
         updateAge: 60 * 60 * 24, // 1 day
     },
-    trustedOrigins: process.env.NEXT_PUBLIC_APP_URL ? [process.env.NEXT_PUBLIC_APP_URL] : [],
+    trustedOrigins: [
+        'https://www.scaletotop.com',
+        'https://scaletotop.com',
+        ...(process.env.NEXT_PUBLIC_APP_URL ? [process.env.NEXT_PUBLIC_APP_URL] : []),
+    ],
     rateLimit: {
         window: 60,
         max: process.env.NODE_ENV === 'production' ? 10 : 20,

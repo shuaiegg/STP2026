@@ -143,8 +143,7 @@ export default function UserLoginPage() {
                 throw new Error(authError.message);
             } else {
                 toast.success(isNewUser ? "注册成功！欢迎加入 ScaletoTop" : "登录成功，欢迎回来！");
-                router.push("/dashboard");
-                router.refresh();
+                window.location.href = "/dashboard";
             }
         } catch (err: any) {
             setError(translateAuthError(err.message || "验证码错误，请检查"));
@@ -168,8 +167,7 @@ export default function UserLoginPage() {
             if (authError) {
                 throw new Error(authError.message);
             } else {
-                router.push("/dashboard");
-                router.refresh();
+                window.location.href = "/dashboard";
             }
         } catch (err: any) {
             setError(translateAuthError(err.message || "登录失败，请检查密码"));

@@ -1,8 +1,8 @@
 "use client";
 
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '../ui/Button';
 import { authClient } from '@/lib/auth-client';
 
@@ -45,7 +45,25 @@ const NavIcon: React.FC<{ type: 'home' | 'blog' | 'tools' | 'pricing' | 'about' 
 
 const Header: React.FC = () => {
     const pathname = usePathname();
+    const router = useRouter();
     const { data: session } = authClient.useSession();
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    React.useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+                setDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handleSignOut = async () => {
+        await authClient.signOut();
+        window.location.href = '/';
+    };
 
     const getLinkClass = (href: string) => {
         const isActive = href === '/' ? pathname === '/' : pathname.startsWith(href);
@@ -97,8 +115,31 @@ const Header: React.FC = () => {
                     )}
                     
                     {session ? (
-                        <div className="w-10 h-10 rounded-full border-2 border-brand-border-heavy flex items-center justify-center bg-brand-surface font-display font-bold text-xs">
-                            {session.user.name?.[0]?.toUpperCase() || 'U'}
+                        <div className="relative" ref={dropdownRef}>
+                            <button
+                                onClick={() => setDropdownOpen(o => !o)}
+                                className="w-10 h-10 rounded-full border-2 border-brand-border-heavy flex items-center justify-center bg-brand-surface font-display font-bold text-xs hover:border-brand-primary transition-colors"
+                            >
+                                {session.user.name?.[0]?.toUpperCase() || 'U'}
+                            </button>
+                            {dropdownOpen && (
+                                <div className="absolute right-0 top-12 w-40 bg-white border-2 border-brand-border-heavy shadow-[4px_4px_0_0_rgba(10,10,10,1)] z-50">
+                                    <Link
+                                        href="/dashboard"
+                                        onClick={() => setDropdownOpen(false)}
+                                        className="block px-4 py-3 text-xs font-bold uppercase tracking-widest text-brand-text-secondary hover:bg-brand-surface hover:text-brand-primary transition-colors"
+                                    >
+                                        控制台
+                                    </Link>
+                                    <div className="border-t border-brand-border" />
+                                    <button
+                                        onClick={handleSignOut}
+                                        className="w-full text-left px-4 py-3 text-xs font-bold uppercase tracking-widest text-brand-error hover:bg-brand-error/5 transition-colors"
+                                    >
+                                        退出登录
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     ) : (
                         <Link href="/register">
