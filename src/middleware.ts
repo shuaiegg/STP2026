@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
-    const sessionCookie = request.cookies.get("better-auth.session_token");
+    // better-auth uses __Secure- prefix on HTTPS, plain name on HTTP
+    const sessionCookie =
+        request.cookies.get("better-auth.session_token") ??
+        request.cookies.get("__Secure-better-auth.session_token");
 
     // --- 1. Unified Dashboard Redirect Rules ---
     
