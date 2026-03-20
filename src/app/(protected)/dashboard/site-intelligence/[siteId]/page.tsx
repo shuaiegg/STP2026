@@ -26,16 +26,20 @@ import { PerformanceDashboard } from './components/PerformanceDashboard';
 import { Ga4PerformanceDashboard } from './components/Ga4PerformanceDashboard';
 import { SiteSwitcher } from './components/SiteSwitcher';
 import { StrategyBoard } from './components/StrategyBoard';
+import HealthReport from '@/components/dashboard/site-intelligence/HealthReport';
 
 export default function SiteDetailsPage({ params }: { params: Promise<{ siteId: string }> }) {
     const { siteId } = use(params);
     const router = useRouter();
     const [site, setSite] = useState<SiteRecord | null>(null);
-    const [activeTab, setActiveTab] = useState<'strategy' | 'overview' | 'audits' | 'competitors' | 'performance' | 'traffic' | 'integrations'>('strategy');
+    const [activeTab, setActiveTab] = useState<'strategy' | 'overview' | 'audit' | 'audits' | 'competitors' | 'performance' | 'traffic' | 'integrations'>('strategy');
     const [loading, setLoading] = useState(true);
+    const [latestIssueReport, setLatestIssueReport] = useState<any>(null);
+    const [loadingReport, setLoadingReport] = useState(false);
+    const [issueReportLoaded, setIssueReportLoaded] = useState(false);
 
     useEffect(() => {
-        // Fetch specific site info later, for now we just need basic info or we can fetch the list and find it
+        // Fetch specific site info
         fetch('/api/dashboard/sites')
             .then(r => r.json())
             .then(data => {
@@ -49,6 +53,25 @@ export default function SiteDetailsPage({ params }: { params: Promise<{ siteId: 
             .catch(console.error)
             .finally(() => setLoading(false));
     }, [siteId, router]);
+
+    // Fetch latest audit report when audit tab is selected
+    useEffect(() => {
+        if (activeTab === 'audit' && site && !issueReportLoaded) {
+            setLoadingReport(true);
+            fetch(`/api/dashboard/sites/${site.id}/audits`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.audits && data.audits.length > 0) {
+                        setLatestIssueReport(data.audits[0].issueReport ?? null);
+                    }
+                })
+                .catch(console.error)
+                .finally(() => {
+                    setLoadingReport(false);
+                    setIssueReportLoaded(true);
+                });
+        }
+    }, [activeTab, site, issueReportLoaded]);
 
     if (loading) {
         return <div className="p-6">加载中...</div>;
@@ -124,6 +147,13 @@ export default function SiteDetailsPage({ params }: { params: Promise<{ siteId: 
                     体检概览
                 </button>
                 <button
+                    onClick={() => setActiveTab('audit')}
+                    className={`px-4 py-3 text-sm font-black border-b-2 transition-colors flex items-center gap-1.5 ${activeTab === 'audit' ? 'border-brand-primary text-brand-primary tracking-wide' : 'border-transparent text-slate-500 hover:text-brand-primary/80 hover:border-brand-primary/30'}`}
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /></svg>
+                    体检报告
+                </button>
+                <button
                     onClick={() => setActiveTab('audits')}
                     className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'audits' ? 'border-brand-primary text-brand-primary' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}
                 >
@@ -166,6 +196,19 @@ export default function SiteDetailsPage({ params }: { params: Promise<{ siteId: 
 
                 {activeTab === 'overview' && (
                     <OverviewPanel siteId={site.id} domain={site.domain} onSwitchTab={(tab) => setActiveTab(tab as any)} />
+                )}
+
+                {activeTab === 'audit' && (
+                    <div className="space-y-6">
+                        {loadingReport ? (
+                            <div className="flex flex-col items-center justify-center p-12 text-slate-500 animate-pulse">
+                                <div className="w-8 h-8 rounded-full border-2 border-brand-primary border-t-transparent animate-spin mb-4" />
+                                <p className="text-sm font-medium">生成健康报告中...</p>
+                            </div>
+                        ) : (
+                            <HealthReport issueReport={latestIssueReport} />
+                        )}
+                    </div>
                 )}
 
                 {activeTab === 'audits' && (

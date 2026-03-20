@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import GalaxyMap from '@/components/dashboard/site-intelligence/GalaxyMap';
+import HealthReport from '@/components/dashboard/site-intelligence/HealthReport';
 import Link from 'next/link';
 
 interface PageMeta {
@@ -39,6 +40,7 @@ interface AuditHistoryItem {
     pageCount: number;
     techScore: number | null;
     graphData: GraphData | null;
+    issueReport: any | null;
 }
 
 function timeAgo(iso: string) {
@@ -58,6 +60,7 @@ function InstantAuditInner() {
     const [loading, setLoading] = useState(false);
     const [graphData, setGraphData] = useState<GraphData>({ nodes: [], links: [] });
     const [businessDna, setBusinessDna] = useState<any>(null);
+    const [issueReport, setIssueReport] = useState<any>(null);
     const [status, setStatus] = useState('READY_FOR_SCAN');
     const [scanned, setScanned] = useState(0);
     const [total, setTotal] = useState(0);
@@ -72,6 +75,7 @@ function InstantAuditInner() {
     // New manual save states
     const [isSaving, setIsSaving] = useState(false);
     const [techScore, setTechScore] = useState<number | null>(null);
+    const [showInlineReport, setShowInlineReport] = useState(false);
 
     const auditIdToLoad = searchParams.get('auditId');
     const router = useRouter();
@@ -105,6 +109,7 @@ function InstantAuditInner() {
                         setGraphData(auditData.data.graphData);
                         setActiveAuditId(auditData.data.id);
                         setTechScore(auditData.data.techScore);
+                        setIssueReport(auditData.data.issueReport);
                         setStatus('GALAXY_CONSTRUCTED');
                     } else {
                         setStatus('HISTORY_LOAD_FAILED');
@@ -120,6 +125,7 @@ function InstantAuditInner() {
                         setGraphData(latest.graphData);
                         setActiveAuditId(latest.id);
                         setTechScore(latest.techScore);
+                        setIssueReport(latest.issueReport);
                         setStatus('GALAXY_CONSTRUCTED');
                     } else {
                         // No history, prompt user to scan
@@ -211,6 +217,7 @@ function InstantAuditInner() {
                             setScanned(event.scanned);
                             setTotal(event.total);
                             setTechScore(event.techScore ?? null);
+                            setIssueReport(event.issueReport ?? null);
                             setStatus('GALAXY_CONSTRUCTED');
                             setLoading(false);
                         } else if (event.type === 'error') {
@@ -242,7 +249,8 @@ function InstantAuditInner() {
                     domain,
                     graphData,
                     techScore,
-                    businessDna
+                    businessDna,
+                    issueReport
                 })
             });
             const data = await res.json();
@@ -273,6 +281,8 @@ function InstantAuditInner() {
 
         setGraphData(audit.graphData);
         setActiveAuditId(audit.id);
+        setTechScore(audit.techScore);
+        setIssueReport(audit.issueReport);
         setSelectedNode(null);
         setStatus('GALAXY_CONSTRUCTED');
     };
@@ -378,6 +388,57 @@ function InstantAuditInner() {
                             <p className="text-[10px] text-slate-500 font-mono uppercase tracking-widest">已确认的节点</p>
                         </div>
                     </Card>
+
+                    {/* Issue Summary */}
+                    {(status === 'GALAXY_CONSTRUCTED' || activeAuditId) && issueReport && (
+                        <Card className="bg-white border-slate-200 shadow-sm overflow-hidden">
+                            <div className="p-5 space-y-3">
+                                <h3 className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">发现问题</h3>
+                                {issueReport.issues.length > 0 ? (
+                                    <div className="flex justify-between items-center">
+                                        <div className="flex gap-2">
+                                            <div className="flex flex-col items-center px-2 py-1 bg-red-50 rounded-lg min-w-[32px]">
+                                                <span className="text-[10px] font-bold text-red-600">{issueReport.stats.critical}</span>
+                                                <span className="text-[8px] text-red-400 uppercase">严重</span>
+                                            </div>
+                                            <div className="flex flex-col items-center px-2 py-1 bg-amber-50 rounded-lg min-w-[32px]">
+                                                <span className="text-[10px] font-bold text-amber-600">{issueReport.stats.warning}</span>
+                                                <span className="text-[8px] text-amber-400 uppercase">警告</span>
+                                            </div>
+                                            <div className="flex flex-col items-center px-2 py-1 bg-blue-50 rounded-lg min-w-[32px]">
+                                                <span className="text-[10px] font-bold text-blue-600">{issueReport.stats.info}</span>
+                                                <span className="text-[8px] text-blue-400 uppercase">提示</span>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => setShowInlineReport(v => !v)}
+                                            className="text-[10px] font-bold text-brand-primary hover:underline"
+                                        >
+                                            {showInlineReport ? '收起' : '查看详情'}
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center gap-2 text-green-600 py-1">
+                                        <span className="text-sm font-bold">✓</span>
+                                        <span className="text-xs font-bold">未发现问题</span>
+                                    </div>
+                                )}
+                                {savedSiteId && (
+                                    <Link
+                                        href={`/dashboard/site-intelligence/${savedSiteId}`}
+                                        className="block text-[10px] text-slate-400 hover:text-brand-primary hover:underline"
+                                    >
+                                        前往站点控制台查看完整报告 →
+                                    </Link>
+                                )}
+                            </div>
+                            {showInlineReport && (
+                                <div className="border-t border-slate-100 p-4">
+                                    <HealthReport issueReport={issueReport} />
+                                </div>
+                            )}
+                        </Card>
+                    )}
 
                     {/* Audit History */}
                     {auditHistory.length > 0 && (

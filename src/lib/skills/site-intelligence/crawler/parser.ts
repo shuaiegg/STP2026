@@ -63,7 +63,9 @@ export class CrawlerParser {
         const externalLinks = externalUrls.slice(0, 50);
 
         // 提取 Headers
-        const h1 = $('h1').first().text().trim() || '';
+        const h1Nodes = $('h1');
+        const h1Count = h1Nodes.length;
+        const h1 = h1Nodes.first().text().trim() || '';
         const h2 = $('h2').map((_, el) => $(el).text().trim()).get().filter(t => t.length > 0).slice(0, 10);
         const h3 = $('h3').map((_, el) => $(el).text().trim()).get().filter(t => t.length > 0).slice(0, 10);
 
@@ -77,6 +79,7 @@ export class CrawlerParser {
             title: $('title').text().trim() || '',
             description: $('meta[name="description"]').attr('content')?.trim() || '',
             h1,
+            h1Count,
             h2,
             h3,
             loadTime,

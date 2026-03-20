@@ -34,7 +34,13 @@
       "Bash(ls \"/Users/apple/JSProject/STP2026/src/app/\\(public\\)/\")",
       "Bash(head -30 \"src/app/\\(public\\)/register/page.tsx\")",
       "Bash(cat \"/Users/apple/JSProject/STP2026/src/app/\\(protected\\)/dashboard/site-intelligence/page.tsx\")",
-      "Bash(cat \"/Users/apple/JSProject/STP2026/src/app/\\(protected\\)/dashboard/site-intelligence/instant-audit/page.tsx\")"
+      "Bash(cat \"/Users/apple/JSProject/STP2026/src/app/\\(protected\\)/dashboard/site-intelligence/instant-audit/page.tsx\")",
+      "Bash(ls -la /Users/apple/JSProject/STP2026/src/app/\\\\\\(protected\\\\\\)/dashboard/site-intelligence/[siteId\\\\\\)/)",
+      "Bash(ls -1 \"/Users/apple/JSProject/STP2026/src/app/\\(protected\\)/dashboard/site-intelligence/\")",
+      "Bash(grep -r \"dead.*link\\\\|broken.*link\\\\|404\\\\|link.*check\" /Users/apple/JSProject/STP2026/src/lib/skills/site-intelligence --include=*.ts)",
+      "Bash(grep -r \"score\\\\|metric\\\\|performance\" /Users/apple/JSProject/STP2026/src/lib/skills/site-intelligence --include=*.ts)",
+      "Bash(grep -n \"HealthReport\\\\|体检\\\\|issueReport\\\\|health\" /Users/apple/JSProject/STP2026/src/app/\\\\\\(protected\\\\\\)/dashboard/site-intelligence/[siteId]/page.tsx)",
+      "Bash(npx tsc:*)"
     ]
   },
   "enabledPlugins": {

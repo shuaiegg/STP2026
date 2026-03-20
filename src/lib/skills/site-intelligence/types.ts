@@ -3,6 +3,7 @@ export interface ScrapedPage {
   title: string;
   description: string;
   h1: string;
+  h1Count: number;
   h2: string[];
   h3: string[];
   loadTime: number;
@@ -37,7 +38,7 @@ export type AuditProgressEvent =
   | { type: 'discovery'; urls: string[]; graphData?: import('./graph-generator.service').GraphData; }
   | { type: 'dna_extracted'; dna: BusinessDna; }
   | { type: 'progress'; scanned: number; total: number; page?: ScrapedPage; }
-  | { type: 'done'; scanned: number; total: number; graphData?: import('./graph-generator.service').GraphData; techScore: number | null; }
+  | { type: 'done'; scanned: number; total: number; graphData?: import('./graph-generator.service').GraphData; techScore: number | null; issueReport?: any; }
   | { type: 'error'; error: string; };
 
 // --- API Response Types ---

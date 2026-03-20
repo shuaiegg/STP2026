@@ -24,13 +24,19 @@ export const GET = withSiteContext<{ siteId: string, auditId: string }>(async (_
         return NextResponse.json({ success: false, error: 'Audit not found' }, { status: 404 });
     }
 
+    const reportRaw = audit.report as any;
+    // Backward compatibility: if it doesn't have graphData key, the whole report IS the graphData
+    const graphData = reportRaw?.graphData ? reportRaw.graphData : reportRaw;
+    const issueReport = reportRaw?.issueReport ?? null;
+
     return NextResponse.json({
         success: true,
         data: {
             id: audit.id,
             createdAt: audit.createdAt.toISOString(),
             techScore: audit.techScore,
-            graphData: audit.report,
+            graphData,
+            issueReport,
         }
     });
 });

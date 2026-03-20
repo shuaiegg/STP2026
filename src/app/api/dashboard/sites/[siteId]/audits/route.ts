@@ -22,7 +22,11 @@ export const GET = withSiteContext<{ siteId: string }>(async (_request, { site }
     });
 
     const result = audits.map((a, idx) => {
-        const report = a.report as any;
+        const reportRaw = a.report as any;
+        // Backward compatibility: if it doesn't have graphData key, the whole report IS the graphData
+        const report = reportRaw?.graphData ? reportRaw.graphData : reportRaw;
+        const issueReport = reportRaw?.issueReport ?? null;
+        
         const pageCount: number = report?.nodes?.length ?? 0;
         return {
             id: a.id,
@@ -31,6 +35,7 @@ export const GET = withSiteContext<{ siteId: string }>(async (_request, { site }
             techScore: a.techScore,
             // Only include full graphData for the 5 most recent audits to keep payload manageable
             graphData: idx < 5 ? (report ?? null) : null,
+            issueReport: idx < 5 ? (issueReport ?? null) : null,
         };
     });
 

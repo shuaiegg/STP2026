@@ -122,6 +122,7 @@ export default function GalaxyMap({ siteId, data, onNodeClick, isLoading }: Gala
 
   // 2D custom node renderer
   const nodeCanvasObject = (node: any, ctx: CanvasRenderingContext2D, globalScale: number) => {
+    if (!Number.isFinite(node.x) || !Number.isFinite(node.y)) return;
     const isGhost = node.type === 'ghost';
     const isRoot = node.type === 'root';
     const isPillar = node.type === 'pillar';
@@ -219,6 +220,7 @@ export default function GalaxyMap({ siteId, data, onNodeClick, isLoading }: Gala
     const start = link.source;
     const end = link.target;
     if (!start || !end || typeof start !== 'object' || typeof end !== 'object') return;
+    if (!Number.isFinite(start.x) || !Number.isFinite(start.y) || !Number.isFinite(end.x) || !Number.isFinite(end.y)) return;
 
     ctx.save();
     // Outer glow

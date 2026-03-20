@@ -36,7 +36,7 @@ export const AXIOS_HEADERS = {
  */
 export async function fetchHtml(
     url: string, 
-    timeout = 30000, 
+    timeout = 15000, 
     attempt = 1
 ): Promise<{ html: string; loadTime: number; status: number; error?: string }> {
     const startTime = Date.now();

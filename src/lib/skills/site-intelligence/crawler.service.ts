@@ -95,9 +95,12 @@ export class CrawlerService {
     let scanned = 0;
     let errorCount = 0;
 
-    const isProxy = !!process.env.CRAWLER_PROXY_HOST;
-    // 初始并发建议：代理环境下设为 2，非代理设为 5
-    let currentLimit = isProxy ? 2 : limit;
+    const isWebsharePool = !!process.env.WEBSHARE_API_KEY;
+    const isLocalProxy = !!process.env.CRAWLER_PROXY_HOST && !isWebsharePool;
+
+    // 初始并发建议：Webshare 池设为 8，单代理设为 2，直接连接设为 5
+    let currentLimit = isWebsharePool ? 8 : isLocalProxy ? 2 : 5;
+    const useJitter = isLocalProxy;
 
     const queue = [...urls];
     const activeTasks = new Set<Promise<void>>();
@@ -112,8 +115,8 @@ export class CrawlerService {
         while (queue.length > 0 && activeTasks.size < currentLimit) {
           const url = queue.shift()!;
 
-          // 并发间的微小抖动 (400ms - 800ms)
-          if (isProxy && activeTasks.size > 0) {
+          // 并发间的微小抖动 (400ms - 800ms) - 仅单代理模式加抖动
+          if (useJitter && activeTasks.size > 0) {
             await new Promise(r => setTimeout(r, 400 + Math.random() * 400));
           }
 

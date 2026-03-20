@@ -6,6 +6,7 @@ import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { AuditProgressEvent } from '@/lib/skills/site-intelligence/types';
 import { prisma } from '@/lib/prisma';
+import { analyzeAudit } from '@/lib/skills/site-intelligence/audit-analyzer';
 
 export async function POST(request: Request) {
     // 1. 鉴权
@@ -81,11 +82,9 @@ export async function POST(request: Request) {
 
                 const graphData = GraphGeneratorService.generateGraphData(auditResult, auditResult.allUrls, marketGapsData);
 
-                // 5. techScore：平均加载时间反算 (≤500ms → ~90, 每+50ms 扣 1 分, 最低 0)
-                const avgLoad = auditResult.averageLoadTime;
-                const techScore = avgLoad <= 0
-                    ? null
-                    : Math.max(0, Math.min(100, Math.round(100 - (avgLoad / 50))));
+                // 5. 生成 SEO 体检报告与评分
+                const issueReport = analyzeAudit(auditResult.pages);
+                const techScore = issueReport.techScore;
 
                 send({
                     type: 'done',
@@ -93,6 +92,7 @@ export async function POST(request: Request) {
                     total: auditResult.pageCount,
                     graphData,
                     techScore,
+                    issueReport,
                 });
             } catch (error: any) {
                 console.error('[SiteIntelligence] Stream error:', error.message);
