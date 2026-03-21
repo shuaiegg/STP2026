@@ -271,6 +271,87 @@ export function analyzeAudit(pages: ScrapedPage[]): AuditIssueReport {
     missingCanonical
   );
 
+  // 16. ORPHAN_PAGE (warning)
+  const referencedUrls = new Set<string>();
+  // 自动加入根域名 URL 避免误报
+  try {
+    const rootUrl = new URL(pages[0].url);
+    referencedUrls.add(rootUrl.origin);
+    referencedUrls.add(rootUrl.origin + '/');
+  } catch (e) {}
+
+  pages.forEach(p => {
+    p.internalLinks.forEach(link => referencedUrls.add(link));
+  });
+
+  const orphanPages = pages
+    .filter(p => !referencedUrls.has(p.url) && !referencedUrls.has(p.url + '/'))
+    .map(p => ({ url: p.url }));
+  
+  // 只有在页面数量大于 1 时才报告孤儿页
+  if (totalPages > 1) {
+    addIssue(
+      'ORPHAN_PAGE',
+      'warning',
+      '孤儿页面',
+      '这些页面没有任何内部链接指向它们。搜索引擎和用户很难发现这些页面。',
+      '在网站的其他相关页面中添加指向这些页面的链接。',
+      orphanPages
+    );
+  }
+
+  // 17. MISSING_H2 (warning)
+  const missingH2 = pages
+    .filter(p => p.wordCount > 100 && p.h2.length === 0)
+    .map(p => ({ url: p.url, detail: `${p.wordCount} 词但无 H2` }));
+  addIssue(
+    'MISSING_H2',
+    'warning',
+    '缺失 H2 标签',
+    '页面正文较长但没有使用 H2 标题进行结构化。这不利于用户阅读和搜索引擎理解内容层级。',
+    '使用 H2 标签为页面内容添加子标题，提高可读性。',
+    missingH2
+  );
+
+  // 18. HEADING_HIERARCHY_BROKEN (info)
+  const brokenHierarchy = pages
+    .filter(p => p.h1 && p.h1.trim() !== '' && p.h2.length === 0 && p.h3.length > 0)
+    .map(p => ({ url: p.url, detail: 'H1 直接跳到 H3' }));
+  addIssue(
+    'HEADING_HIERARCHY_BROKEN',
+    'info',
+    '标题层级跳跃',
+    '页面的标题层级不连续（例如 H1 后面直接使用了 H3 而没有 H2）。良好的结构应该是层级递进的。',
+    '调整标题层级，确保在 H3 之前使用了 H2 标签。',
+    brokenHierarchy
+  );
+
+  // 19. MISSING_VIEWPORT (warning)
+  const missingViewport = pages
+    .filter(p => (p.hasViewportMeta ?? false) === false)
+    .map(p => ({ url: p.url }));
+  addIssue(
+    'MISSING_VIEWPORT',
+    'warning',
+    '缺失 Viewport 设置',
+    '页面缺失 viewport meta 标签，这会导致页面在移动设备上无法正确缩放和显示。',
+    '在 <head> 中添加 <meta name="viewport" content="width=device-width, initial-scale=1"> 标签。',
+    missingViewport
+  );
+
+  // 20. MISSING_STRUCTURED_DATA (info)
+  const missingStructuredData = pages
+    .filter(p => (p.hasStructuredData ?? false) === false)
+    .map(p => ({ url: p.url }));
+  addIssue(
+    'MISSING_STRUCTURED_DATA',
+    'info',
+    '缺失结构化数据',
+    '页面没有使用 JSON-LD 结构化数据。结构化数据可以帮助搜索引擎在搜索结果中显示富摘要。',
+    '根据页面内容类型（如 Article, Product, Organization）添加相应的 Schema.org JSON-LD 标记。',
+    missingStructuredData
+  );
+
   // --- Scoring Calculations ---
 
   // techScore: 100 - (dead link ratio × 40) - (avg load time penalty, >1s linear, max -30) - (canonical missing rate × 30)
@@ -286,10 +367,17 @@ export function analyzeAudit(pages: ScrapedPage[]): AuditIssueReport {
   const nonCompliantTitleRate = (titleTooLong.length + titleTooShort.length + missingTitle.length) / totalPages;
   const contentScore = Math.max(0, Math.round(100 - (missingH1Rate * 35) - (thinContentRate * 30) - (nonCompliantTitleRate * 35)));
 
-  // seoScore: 100 - (missing meta desc rate × 30) - (missing OG image rate × 25) - (duplicate title/desc penalty × 25) - (meta desc too long rate × 20)
+  // seoScore: 100 - (missing meta desc rate × 30) - (missing OG image rate × 25) - (duplicate content penalty) - (meta desc too long rate × 20)
   const missingMetaDescRate = missingMetaDesc.length / totalPages;
   const missingOgImageRate = missingOgImage.length / totalPages;
-  const duplicatePenalty = (duplicateTitles.length > 0 || duplicateDescs.length > 0) ? 25 : 0;
+  
+  // Linear duplicate penalty
+  const affectedByDuplicatesSet = new Set<string>();
+  duplicateTitles.forEach(p => affectedByDuplicatesSet.add(p.url));
+  duplicateDescs.forEach(p => affectedByDuplicatesSet.add(p.url));
+  const duplicatePageRatio = affectedByDuplicatesSet.size / totalPages;
+  const duplicatePenalty = duplicatePageRatio * 25;
+
   const metaDescTooLongRate = metaDescTooLong.length / totalPages;
   const seoScore = Math.max(0, Math.round(100 - (missingMetaDescRate * 30) - (missingOgImageRate * 25) - duplicatePenalty - (metaDescTooLongRate * 20)));
 
@@ -305,8 +393,10 @@ export function analyzeAudit(pages: ScrapedPage[]): AuditIssueReport {
     contentScore,
     seoScore,
     issues: issues.sort((a, b) => {
-      const order: Record<Severity, number> = { critical: 0, warning: 1, info: 2 };
-      return order[a.severity] - order[b.severity];
+      const severityWeight: Record<Severity, number> = { critical: 3, warning: 2, info: 1 };
+      const scoreA = severityWeight[a.severity] * 1000 + a.affectedPages.length;
+      const scoreB = severityWeight[b.severity] * 1000 + b.affectedPages.length;
+      return scoreB - scoreA;
     }),
     stats,
   };

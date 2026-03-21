@@ -2,7 +2,9 @@
 
 import React from 'react';
 import { Card } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
 import IssueCard from './IssueCard';
+import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 export interface HealthReportProps {
   issueReport: {
@@ -16,9 +18,10 @@ export interface HealthReportProps {
       info: number;
     };
   } | null;
+  previousIssueReport?: HealthReportProps['issueReport'] | null;
 }
 
-export default function HealthReport({ issueReport }: HealthReportProps) {
+export default function HealthReport({ issueReport, previousIssueReport }: HealthReportProps) {
   if (!issueReport) {
     return (
       <Card className="bg-slate-50 border-slate-200 border-dashed p-12 shadow-sm flex flex-col items-center justify-center text-center">
@@ -45,8 +48,61 @@ export default function HealthReport({ issueReport }: HealthReportProps) {
     { label: 'SEO 合规', score: issueReport.seoScore },
   ];
 
+  // Calculate Delta
+  let deltaInfo = null;
+  if (previousIssueReport) {
+    const currentCodes = new Set(issueReport.issues.map(i => i.code));
+    const previousCodes = new Set(previousIssueReport.issues.map(i => i.code));
+
+    const newIssues = Array.from(currentCodes).filter(code => !previousCodes.has(code));
+    const fixedIssues = Array.from(previousCodes).filter(code => !currentCodes.has(code));
+
+    deltaInfo = {
+      newCount: newIssues.length,
+      fixedCount: fixedIssues.length
+    };
+  }
+
   return (
     <div className="space-y-6">
+      {/* Delta Banner */}
+      {deltaInfo && (
+        <Card className="px-4 py-3 border-slate-200 bg-slate-50/50 flex items-center justify-between shadow-sm">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">对比上次审计</span>
+            <div className="h-3 w-[1px] bg-slate-200 mx-1" />
+            <div className="flex items-center gap-4">
+              {deltaInfo.newCount === 0 && deltaInfo.fixedCount === 0 ? (
+                <div className="flex items-center gap-1.5">
+                  <Minus className="w-3.5 h-3.5 text-slate-400" />
+                  <span className="text-xs font-bold text-slate-600">与上次审计相比无变化</span>
+                </div>
+              ) : (
+                <>
+                  {deltaInfo.newCount > 0 && (
+                    <div className="flex items-center gap-1.5">
+                      <TrendingDown className="w-3.5 h-3.5 text-rose-500" />
+                      <span className="text-xs font-bold text-slate-700">新增 {deltaInfo.newCount} 个问题</span>
+                    </div>
+                  )}
+                  {deltaInfo.fixedCount > 0 && (
+                    <div className="flex items-center gap-1.5">
+                      <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
+                      <span className="text-xs font-bold text-slate-700">修复了 {deltaInfo.fixedCount} 个问题</span>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+          {deltaInfo.fixedCount > 0 && deltaInfo.newCount === 0 && issueReport.issues.length === 0 && (
+            <Badge className="bg-emerald-500 text-white border-0 text-[10px] font-bold animate-pulse">
+              全部修复 ✓
+            </Badge>
+          )}
+        </Card>
+      )}
+
       {/* Score Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {scoreCards.map((card, idx) => (

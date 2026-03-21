@@ -35,6 +35,7 @@ export default function SiteDetailsPage({ params }: { params: Promise<{ siteId: 
     const [activeTab, setActiveTab] = useState<'strategy' | 'overview' | 'audit' | 'audits' | 'competitors' | 'performance' | 'traffic' | 'integrations'>('strategy');
     const [loading, setLoading] = useState(true);
     const [latestIssueReport, setLatestIssueReport] = useState<any>(null);
+    const [previousIssueReport, setPreviousIssueReport] = useState<any>(null);
     const [loadingReport, setLoadingReport] = useState(false);
     const [issueReportLoaded, setIssueReportLoaded] = useState(false);
 
@@ -63,6 +64,9 @@ export default function SiteDetailsPage({ params }: { params: Promise<{ siteId: 
                 .then(data => {
                     if (data.audits && data.audits.length > 0) {
                         setLatestIssueReport(data.audits[0].issueReport ?? null);
+                        if (data.audits.length > 1) {
+                            setPreviousIssueReport(data.audits[1].issueReport ?? null);
+                        }
                     }
                 })
                 .catch(console.error)
@@ -206,7 +210,7 @@ export default function SiteDetailsPage({ params }: { params: Promise<{ siteId: 
                                 <p className="text-sm font-medium">生成健康报告中...</p>
                             </div>
                         ) : (
-                            <HealthReport issueReport={latestIssueReport} />
+                            <HealthReport issueReport={latestIssueReport} previousIssueReport={previousIssueReport} />
                         )}
                     </div>
                 )}

@@ -40,7 +40,13 @@
       "Bash(grep -r \"dead.*link\\\\|broken.*link\\\\|404\\\\|link.*check\" /Users/apple/JSProject/STP2026/src/lib/skills/site-intelligence --include=*.ts)",
       "Bash(grep -r \"score\\\\|metric\\\\|performance\" /Users/apple/JSProject/STP2026/src/lib/skills/site-intelligence --include=*.ts)",
       "Bash(grep -n \"HealthReport\\\\|体检\\\\|issueReport\\\\|health\" /Users/apple/JSProject/STP2026/src/app/\\\\\\(protected\\\\\\)/dashboard/site-intelligence/[siteId]/page.tsx)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(for cap:*)",
+      "Bash(do)",
+      "Bash(mkdir -p \"openspec/specs/$cap\")",
+      "Bash(cp \"openspec/changes/audit-depth-optimization/specs/$cap/spec.md\" \"openspec/specs/$cap/spec.md\")",
+      "Bash(echo \"Synced: $cap\")",
+      "Bash(done)"
     ]
   },
   "enabledPlugins": {

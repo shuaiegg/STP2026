@@ -5,6 +5,13 @@ import { CrawlerStrategy } from './crawler/strategy';
 import { getDefaultProvider } from '@/lib/skills/providers';
 import { BusinessDna } from './types';
 
+export class CrawlerCircuitBreakerError extends Error {
+  constructor(message = '站点无法访问，已停止扫描以保护您的积分') {
+    super(message);
+    this.name = 'CrawlerCircuitBreakerError';
+  }
+}
+
 /**
  * Site Intelligence Crawler Service (Façade)
  * This class abstracts the complexities of the network fetching, strategy picking, and HTML parsing modules,
@@ -76,10 +83,11 @@ export class CrawlerService {
   /**
    * 抓取单页数据 (Facade for fetchHtml + Parser)
    */
-  static async scrapePage(url: string): Promise<ScrapedPage | null> {
-    const { html, loadTime, status } = await fetchHtml(url);
-    if (!html) return null;
-    return CrawlerParser.extractPageData(html, url, loadTime, status);
+  static async scrapePage(url: string): Promise<{ page: ScrapedPage | null, status: number, error?: string }> {
+    const { html, loadTime, status, error } = await fetchHtml(url);
+    if (!html) return { page: null, status, error };
+    const page = CrawlerParser.extractPageData(html, url, loadTime, status);
+    return { page, status, error };
   }
 
   /**
@@ -94,6 +102,9 @@ export class CrawlerService {
     const total = urls.length;
     let scanned = 0;
     let errorCount = 0;
+    let consecutiveFailures = 0;
+    let isTerminated = false;
+    let terminationError: any = null;
 
     const isWebsharePool = !!process.env.WEBSHARE_API_KEY;
     const isLocalProxy = !!process.env.CRAWLER_PROXY_HOST && !isWebsharePool;
@@ -105,14 +116,21 @@ export class CrawlerService {
     const queue = [...urls];
     const activeTasks = new Set<Promise<void>>();
 
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const next = async () => {
+        if (isTerminated) {
+          if (activeTasks.size === 0) {
+            reject(terminationError);
+          }
+          return;
+        }
+
         if (queue.length === 0 && activeTasks.size === 0) {
           resolve(results);
           return;
         }
 
-        while (queue.length > 0 && activeTasks.size < currentLimit) {
+        while (queue.length > 0 && activeTasks.size < currentLimit && !isTerminated) {
           const url = queue.shift()!;
 
           // 并发间的微小抖动 (400ms - 800ms) - 仅单代理模式加抖动
@@ -120,16 +138,45 @@ export class CrawlerService {
             await new Promise(r => setTimeout(r, 400 + Math.random() * 400));
           }
 
+          if (isTerminated) return;
+
           const task = (async () => {
             try {
-              const page = await this.scrapePage(url);
+              const { page, status, error } = await this.scrapePage(url);
               if (page) {
                 results.push(page);
                 scanned++;
+                consecutiveFailures = 0; // 重置连续失败计数器
                 onBatchDone?.(scanned, total, [page]);
+              } else {
+                // 如果没有返回页面数据，判断是否为 4xx
+                if (status >= 400 && status < 500) {
+                  // 4xx 不计入熔断，但计入总错误数
+                  errorCount++;
+                } else {
+                  // 网络错误/超时/5xx 计入熔断
+                  errorCount++;
+                  consecutiveFailures++;
+                }
+              }
+
+              if (consecutiveFailures >= 5) {
+                throw new CrawlerCircuitBreakerError();
               }
             } catch (err) {
-              errorCount++;
+              if (err instanceof CrawlerCircuitBreakerError) {
+                isTerminated = true;
+                terminationError = err;
+              } else {
+                errorCount++;
+                // 这里的 catch 捕获 scrapePage 抛出的异常（如果有的话）
+                consecutiveFailures++;
+                if (consecutiveFailures >= 5) {
+                  isTerminated = true;
+                  terminationError = new CrawlerCircuitBreakerError();
+                }
+              }
+
               // 如果错误过多，动态降低并发至 1 (退避策略)
               if (errorCount > 2 && currentLimit > 1) {
                 console.warn(`[Crawler Service] Multiple errors detected. Throttling concurrency to 1.`);
@@ -246,10 +293,11 @@ export class CrawlerService {
    */
   static async extractBusinessDna(homeUrl: string, aboutUrl?: string): Promise<BusinessDna | null> {
     try {
-      const homePage = await this.scrapePage(homeUrl);
+      const { page: homePage } = await this.scrapePage(homeUrl);
       let aboutPage = null;
       if (aboutUrl) {
-        aboutPage = await this.scrapePage(aboutUrl);
+        const { page } = await this.scrapePage(aboutUrl);
+        aboutPage = page;
       }
 
       if (!homePage && !aboutPage) return null;

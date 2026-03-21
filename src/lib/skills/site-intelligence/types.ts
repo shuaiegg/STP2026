@@ -14,6 +14,8 @@ export interface ScrapedPage {
   externalLinks: string[];
   canonicalUrl: string | null;
   hasOgImage: boolean;
+  hasViewportMeta: boolean;
+  hasStructuredData: boolean;
   topic?: string;
 }
 

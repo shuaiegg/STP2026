@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { CrawlerService } from '@/lib/skills/site-intelligence/crawler.service';
+import { CrawlerService, CrawlerCircuitBreakerError } from '@/lib/skills/site-intelligence/crawler.service';
 import { GraphGeneratorService } from '@/lib/skills/site-intelligence/graph-generator.service';
 import { chargeUser } from '@/lib/billing/credits';
 import { auth } from '@/lib/auth';
@@ -95,7 +95,11 @@ export async function POST(request: Request) {
                     issueReport,
                 });
             } catch (error: any) {
-                console.error('[SiteIntelligence] Stream error:', error.message);
+                if (error instanceof CrawlerCircuitBreakerError) {
+                    console.warn('[SiteIntelligence] Circuit breaker tripped:', error.message);
+                } else {
+                    console.error('[SiteIntelligence] Stream error:', error.message);
+                }
                 send({ type: 'error', error: error.message });
             } finally {
                 controller.close();

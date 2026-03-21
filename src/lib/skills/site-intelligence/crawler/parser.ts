@@ -89,6 +89,8 @@ export class CrawlerParser {
             externalLinks,
             canonicalUrl: $('link[rel="canonical"]').attr('href') || null,
             hasOgImage: !!$('meta[property="og:image"]').attr('content'),
+            hasViewportMeta: !!$('meta[name="viewport"]').length,
+            hasStructuredData: !!$('script[type="application/ld+json"]').length,
         };
     }
 }
