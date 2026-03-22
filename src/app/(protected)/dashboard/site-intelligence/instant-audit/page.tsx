@@ -83,6 +83,22 @@ function InstantAuditInner() {
     const router = useRouter();
     const { data: session } = authClient.useSession();
     const [insufficientCredits, setInsufficientCredits] = useState(false);
+    const [auditCost, setAuditCost] = useState(5);
+
+    // Fetch actual cost from skills list
+    useEffect(() => {
+        fetch('/api/skills/list')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.skills) {
+                    const auditSkill = data.skills.find((s: any) => s.name === 'SITE_AUDIT_BASIC');
+                    if (auditSkill?.cost) {
+                        setAuditCost(auditSkill.cost);
+                    }
+                }
+            })
+            .catch(console.error);
+    }, []);
 
     // 1. Initial Load Logic
     useEffect(() => {
@@ -162,7 +178,7 @@ function InstantAuditInner() {
 
         // Check credits before starting
         const currentCredits = (session?.user as any)?.credits ?? 0;
-        if (currentCredits < 5) {
+        if (currentCredits < auditCost) {
             setInsufficientCredits(true);
             // Scroll to the warning
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -326,22 +342,38 @@ function InstantAuditInner() {
                     </p>
                 </div>
 
-                <div className="flex gap-2 w-full md:w-auto">
-                    <input
-                        type="text"
-                        placeholder="例如: scaletotop.com"
-                        className="bg-white border border-slate-200 rounded-xl px-4 py-2 text-sm text-slate-900 w-full md:w-64 focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary outline-none shadow-sm transition-all"
-                        value={domain}
-                        onChange={(e) => setDomain(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && !loading && handleStartAudit()}
-                    />
-                    <Button
-                        onClick={handleStartAudit}
-                        disabled={loading || !domain.trim()}
-                        className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm px-6 font-bold flex-shrink-0"
-                    >
-                        {loading ? '扫描中...' : '发起扫描'}
-                    </Button>
+                <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto items-start md:items-center">
+                    <div className="flex gap-2 w-full md:w-auto">
+                        <input
+                            type="text"
+                            placeholder="例如: scaletotop.com"
+                            className="bg-white border border-slate-200 rounded-xl px-4 py-2 text-sm text-slate-900 w-full md:w-64 focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary outline-none shadow-sm transition-all"
+                            value={domain}
+                            onChange={(e) => setDomain(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && !loading && handleStartAudit()}
+                        />
+                        {Number((session?.user as any)?.credits || 0) < auditCost ? (
+                            <Link href="/dashboard/billing" className="flex-shrink-0">
+                                <Button
+                                    className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl shadow-sm px-6 font-bold"
+                                >
+                                    积分不足，点击充值
+                                </Button>
+                            </Link>
+                        ) : (
+                            <Button
+                                onClick={handleStartAudit}
+                                disabled={loading || !domain.trim()}
+                                className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm px-6 font-bold flex-shrink-0"
+                            >
+                                {loading ? '扫描中...' : '发起扫描'}
+                            </Button>
+                        )}
+                    </div>
+                    <div className="hidden sm:flex flex-col items-end shrink-0">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">本次审计消耗</span>
+                        <span className="text-xs font-bold text-slate-500">{auditCost} 积分</span>
+                    </div>
                 </div>
             </div>
 
@@ -362,7 +394,7 @@ function InstantAuditInner() {
                         </div>
                         <div>
                             <h3 className="text-rose-900 font-black italic font-display italic tracking-tight">您的积分不足</h3>
-                            <p className="text-rose-600 text-sm font-medium">本次审计需要 <span className="font-black">5</span> 积分，您当前只有 <span className="font-black">{ (session?.user as any)?.credits ?? 0 }</span> 积分。</p>
+                            <p className="text-rose-600 text-sm font-medium">本次审计需要 <span className="font-black">{auditCost}</span> 积分，您当前只有 <span className="font-black">{ (session?.user as any)?.credits ?? 0 }</span> 积分。</p>
                         </div>
                     </div>
                     <Link href="/dashboard/billing">

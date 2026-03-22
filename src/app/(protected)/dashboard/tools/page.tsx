@@ -1,11 +1,11 @@
 "use client";
 
-import React from 'react';
-import { 
-    Zap, 
-    FileText, 
-    Search, 
-    Sparkles, 
+import React, { useState, useEffect } from 'react';
+import {
+    Zap,
+    FileText,
+    Search,
+    Sparkles,
     ArrowRight,
     MousePointer2,
     BarChart3,
@@ -15,6 +15,7 @@ import {
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { authClient } from '@/lib/auth-client';
 import Link from 'next/link';
 
 const tools = [
@@ -24,7 +25,8 @@ const tools = [
         description: '基于全网竞争数据与 SEO 策略的内容生产引擎，支持 GEO 增益与多维大纲生成。',
         icon: Zap,
         href: '/tools/geo-writer',
-        credits: 35,
+        credits: 15,           // fallback
+        skillName: 'GEO_WRITER_FULL',
         category: '内容创作',
         status: 'ACTIVE'
     },
@@ -35,6 +37,7 @@ const tools = [
         icon: Search,
         href: '#',
         credits: 10,
+        skillName: null,
         category: '市场研究',
         status: 'BETA'
     },
@@ -45,6 +48,7 @@ const tools = [
         icon: BarChart3,
         href: '#',
         credits: 20,
+        skillName: null,
         category: 'SEO 诊断',
         status: 'COMING_SOON'
     },
@@ -55,12 +59,32 @@ const tools = [
         icon: Languages,
         href: '#',
         credits: 15,
+        skillName: null,
         category: '全球化',
         status: 'COMING_SOON'
     }
 ];
 
 export default function MarketingToolsPage() {
+    const { data: session } = authClient.useSession();
+    const currentCredits = Number((session?.user as any)?.credits || 0);
+    const [skillCosts, setSkillCosts] = useState<Record<string, number>>({});
+
+    useEffect(() => {
+        fetch('/api/skills/list')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.skills) {
+                    const costs: Record<string, number> = {};
+                    data.skills.forEach((s: any) => {
+                        if (s.name && s.cost) costs[s.name] = s.cost;
+                    });
+                    setSkillCosts(costs);
+                }
+            })
+            .catch(() => {}); // silent fallback to hardcoded values
+    }, []);
+
     return (
         <div className="space-y-10 animate-in fade-in duration-500">
             <div>
@@ -72,6 +96,8 @@ export default function MarketingToolsPage() {
                 {tools.map((tool) => {
                     const Icon = tool.icon;
                     const isActive = tool.status === 'ACTIVE';
+                    const cost = (tool.skillName && skillCosts[tool.skillName]) ?? tool.credits;
+                    const hasEnoughCredits = currentCredits >= cost;
                     
                     return (
                         <Card 
@@ -96,9 +122,9 @@ export default function MarketingToolsPage() {
                                         {tool.status === 'COMING_SOON' && (
                                             <Badge className="bg-slate-50 text-slate-400 border-slate-100 font-black text-[9px] uppercase tracking-widest">Coming Soon</Badge>
                                         )}
-                                        <div className="flex items-center gap-1.5 text-[10px] font-black text-brand-secondary uppercase tracking-widest">
+                                        <div className={`flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest ${hasEnoughCredits || !isActive ? 'text-brand-secondary' : 'text-red-500'}`}>
                                             <Sparkles size={12} />
-                                            需 {tool.credits} 积分
+                                            需 {cost} 积分
                                         </div>
                                     </div>
                                 </div>
@@ -112,11 +138,19 @@ export default function MarketingToolsPage() {
                             </div>
 
                             {isActive ? (
-                                <Link href={tool.href}>
-                                    <Button className="w-full h-12 bg-brand-primary text-white font-black border-2 border-black shadow-[4px_4px_0_0_rgba(10,10,10,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center justify-center gap-2 group/btn">
-                                        立即开启工具 <ArrowRight size={18} className="group-hover/btn:translate-x-1 transition-transform" />
-                                    </Button>
-                                </Link>
+                                hasEnoughCredits ? (
+                                    <Link href={tool.href}>
+                                        <Button className="w-full h-12 bg-brand-primary text-white font-black border-2 border-black shadow-[4px_4px_0_0_rgba(10,10,10,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center justify-center gap-2 group/btn">
+                                            立即开启工具 <ArrowRight size={18} className="group-hover/btn:translate-x-1 transition-transform" />
+                                        </Button>
+                                    </Link>
+                                ) : (
+                                    <Link href="/dashboard/billing">
+                                        <Button className="w-full h-12 bg-amber-600 text-white font-black border-2 border-black shadow-[4px_4px_0_0_rgba(10,10,10,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center justify-center gap-2 group/btn">
+                                            积分不足，点击充值 <ArrowRight size={18} className="group-hover/btn:translate-x-1 transition-transform" />
+                                        </Button>
+                                    </Link>
+                                )
                             ) : (
                                 <Button disabled className="w-full h-12 bg-slate-100 text-slate-400 font-black border-2 border-slate-200 cursor-not-allowed">
                                     即将上线

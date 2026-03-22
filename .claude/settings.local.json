@@ -50,7 +50,8 @@
       "WebSearch",
       "WebFetch(domain:creem.io)",
       "WebFetch(domain:docs.creem.io)",
-      "Bash(ls /Users/apple/JSProject/STP2026/src/app/\\\\\\(public\\\\\\)/)"
+      "Bash(ls /Users/apple/JSProject/STP2026/src/app/\\\\\\(public\\\\\\)/)",
+      "WebFetch(domain:systeme.io)"
     ]
   },
   "enabledPlugins": {

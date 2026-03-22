@@ -23,7 +23,8 @@ import {
     Users,
     Mail,
     ShoppingBag,
-    CreditCard
+    CreditCard,
+    AlertCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { authClient } from '@/lib/auth-client';
@@ -47,6 +48,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
     const pathname = usePathname();
     const router = useRouter();
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [showLowCreditBanner, setShowLowCreditBanner] = useState(true);
     const [firstSiteId, setFirstSiteId] = useState<string | null>(null);
     const { data: session, isPending } = authClient.useSession();
 
@@ -242,6 +244,10 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
                     </div>
 
                     <div className="flex items-center gap-6">
+                        <Link href="/dashboard/billing" className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-brand-primary/5 text-brand-primary hover:bg-brand-primary/10 transition-all border border-brand-primary/10">
+                            <Zap size={14} className="fill-brand-primary" />
+                            <span className="text-sm font-black">{Number((session?.user as any)?.credits || 0)}</span>
+                        </Link>
                         <div className="hidden md:flex flex-col items-end">
                             <span className="text-sm font-black text-slate-900">{session?.user?.name || '用户'}</span>
                             <span className="text-[9px] font-black uppercase tracking-widest text-brand-primary bg-brand-primary/5 px-2 py-0.5 rounded">
@@ -260,6 +266,34 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
 
                 {/* Main Scrollable Area */}
                 <main className="flex-1 p-10 overflow-auto scrollbar-hide">
+                    {Number((session?.user as any)?.credits || 0) < 10 && showLowCreditBanner && (
+                        <div className="mb-8 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-between animate-in slide-in-from-top-4 duration-500">
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
+                                    <AlertCircle size={18} />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-bold text-amber-900">
+                                        账户积分不足：您仅剩 <span className="text-red-600">{Number((session?.user as any)?.credits || 0)}</span> 积分
+                                    </p>
+                                    <p className="text-[10px] text-amber-700 font-medium">请及时充值以保证 AI 工具的正常使用。</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <Link href="/dashboard/billing">
+                                    <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white border-none h-8 px-4 text-xs font-black uppercase">
+                                        立即充值
+                                    </Button>
+                                </Link>
+                                <button 
+                                    onClick={() => setShowLowCreditBanner(false)}
+                                    className="p-1 hover:bg-amber-100 rounded-lg text-amber-400 transition-colors"
+                                >
+                                    <X size={16} />
+                                </button>
+                            </div>
+                        </div>
+                    )}
                     {children}
                 </main>
             </div>

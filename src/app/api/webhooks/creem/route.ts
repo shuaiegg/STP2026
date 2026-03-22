@@ -52,6 +52,19 @@ export async function POST(req: NextRequest) {
         }
 
         try {
+            // Check for idempotency: if this transaction was already processed
+            const existingPurchase = await prisma.creditTransaction.findFirst({
+                where: {
+                    externalId: checkout.id,
+                    type: "PURCHASE"
+                }
+            });
+
+            if (existingPurchase) {
+                console.log(`Checkout ${checkout.id} already processed. Skipping.`);
+                return NextResponse.json({ success: true, message: "Already processed" });
+            }
+
             // Update user and record transaction in a single database transaction
             await prisma.$transaction([
                 prisma.user.update({
