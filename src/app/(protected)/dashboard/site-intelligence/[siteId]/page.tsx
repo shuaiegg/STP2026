@@ -41,12 +41,18 @@ export default function SiteDetailsPage({ params }: { params: Promise<{ siteId: 
 
     useEffect(() => {
         // Fetch specific site info
-        fetch('/api/dashboard/sites')
+        fetch(`/api/dashboard/sites/${siteId}`)
             .then(r => r.json())
             .then(data => {
-                const found = data.sites?.find((s: SiteRecord) => s.id === siteId);
+                const found = data.site;
                 if (found) {
-                    setSite(found);
+                    setSite({
+                        id: found.id,
+                        domain: found.domain,
+                        name: found.name,
+                        createdAt: found.createdAt,
+                        // latestAudit is not returned by the specific API
+                    });
                 } else {
                     router.push('/dashboard/site-intelligence');
                 }
@@ -78,7 +84,22 @@ export default function SiteDetailsPage({ params }: { params: Promise<{ siteId: 
     }, [activeTab, site, issueReportLoaded]);
 
     if (loading) {
-        return <div className="p-6">加载中...</div>;
+        return (
+            <div className="p-6 space-y-6 animate-pulse min-h-screen">
+                <div className="flex justify-between items-start">
+                    <div className="space-y-3">
+                        <div className="h-8 w-64 bg-slate-200 rounded-lg"></div>
+                        <div className="h-4 w-32 bg-slate-100 rounded-md"></div>
+                    </div>
+                </div>
+                <div className="flex gap-4 border-b border-slate-100">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                        <div key={i} className="h-10 w-24 bg-slate-100 rounded-t-lg"></div>
+                    ))}
+                </div>
+                <div className="h-96 w-full bg-slate-50 rounded-2xl border-2 border-slate-100"></div>
+            </div>
+        );
     }
 
     if (!site) {

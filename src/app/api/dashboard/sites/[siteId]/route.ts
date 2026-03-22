@@ -27,7 +27,11 @@ export async function GET(
             return NextResponse.json({ error: 'Site not found' }, { status: 404 });
         }
 
-        return NextResponse.json({ success: true, site });
+        return NextResponse.json({ success: true, site }, {
+            headers: {
+                'Cache-Control': 'private, max-age=0, s-maxage=30, stale-while-revalidate=60'
+            }
+        });
     } catch (error: any) {
         console.error("Error fetching site details:", error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

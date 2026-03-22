@@ -645,7 +645,35 @@ function InstantAuditInner() {
 // useSearchParams needs Suspense boundary
 export default function InstantAuditPage() {
     return (
-        <Suspense fallback={<div className="p-6 text-slate-500 text-sm">加载中...</div>}>
+        <Suspense fallback={
+            <div className="p-6 space-y-6 min-h-screen animate-pulse">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                            <div className="h-4 w-12 bg-slate-200 rounded"></div>
+                            <div className="h-8 w-32 bg-slate-200 rounded-md"></div>
+                            <div className="h-5 w-16 bg-brand-primary/20 rounded"></div>
+                        </div>
+                        <div className="h-4 w-64 bg-slate-100 rounded"></div>
+                    </div>
+                    <div className="flex gap-2 w-full md:w-auto">
+                        <div className="h-10 w-full md:w-64 bg-slate-100 rounded-xl"></div>
+                        <div className="h-10 w-24 bg-slate-800 rounded-xl shrink-0"></div>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    <div className="lg:col-span-3">
+                        <div className="bg-white border border-slate-200 rounded-xl shadow-sm min-h-[480px]"></div>
+                    </div>
+                    <div className="space-y-4">
+                        <div className="bg-white border border-slate-200 rounded-xl h-24 shadow-sm"></div>
+                        <div className="bg-white border border-slate-200 rounded-xl h-24 shadow-sm"></div>
+                        <div className="bg-white border border-slate-200 rounded-xl h-32 shadow-sm"></div>
+                    </div>
+                </div>
+            </div>
+        }>
             <InstantAuditInner />
         </Suspense>
     );

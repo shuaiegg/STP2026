@@ -1,11 +1,12 @@
-'use client';
-
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { redirect } from 'next/navigation';
+import { auth } from '@/lib/auth';
+import { headers } from 'next/headers';
+import { prisma } from '@/lib/prisma';
 
 interface LatestAudit {
     id: string;
@@ -40,66 +41,54 @@ function timeAgo(iso: string) {
     return `${Math.floor(hrs / 24)} 天前`;
 }
 
-export default function SiteIntelligencePage() {
-    const [sites, setSites] = useState<SiteRecord[]>([]);
-    const [loading, setLoading] = useState(true);
+export default async function SiteIntelligencePage() {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session?.user?.id) {
+        redirect('/login');
+    }
 
-    const router = useRouter();
+    const sitesData = await prisma.site.findMany({
+        where: { userId: session.user.id },
+        orderBy: { updatedAt: 'desc' },
+        select: {
+            id: true,
+            domain: true,
+            name: true,
+            createdAt: true,
+            audits: {
+                orderBy: { createdAt: 'desc' },
+                take: 1,
+                select: {
+                    id: true,
+                    createdAt: true,
+                    techScore: true,
+                    pageCount: true,
+                },
+            },
+        },
+    });
 
-    useEffect(() => {
-        const CACHE_KEY = 'stp_sites_cache';
-        const CACHE_TIME_KEY = 'stp_sites_cache_time';
-        const CACHE_TTL = 5 * 60 * 1000;
-
-        const loadSitesFromCache = () => {
-            const cachedData = localStorage.getItem(CACHE_KEY);
-            const cachedTime = localStorage.getItem(CACHE_TIME_KEY);
-            
-            if (cachedData && cachedTime) {
-                const now = Date.now();
-                const time = parseInt(cachedTime, 10);
-                
-                if (now - time < CACHE_TTL) {
-                    try {
-                        const parsedSites = JSON.parse(cachedData);
-                        setSites(parsedSites);
-                        
-                        // Auto-redirect to the first site if it exists
-                        if (parsedSites.length > 0) {
-                            router.replace(`/dashboard/site-intelligence/${parsedSites[0].id}`);
-                        }
-                        setLoading(false);
-                        return true;
-                    } catch (e) {
-                        console.error("Failed to parse sites cache", e);
-                    }
+    const sites: SiteRecord[] = sitesData.map((site) => {
+        const latest = site.audits[0] ?? null;
+        return {
+            id: site.id,
+            domain: site.domain,
+            name: site.name,
+            createdAt: site.createdAt.toISOString(),
+            latestAudit: latest
+                ? {
+                    id: latest.id,
+                    createdAt: latest.createdAt.toISOString(),
+                    pageCount: latest.pageCount ?? 0,
+                    techScore: latest.techScore,
                 }
-            }
-            return false;
+                : null,
         };
+    });
 
-        // Attempt to load from cache
-        const success = loadSitesFromCache();
-        
-        if (!success) {
-            // If cache fails/missing/expired, layout should handle it, 
-            // but we'll fall back to fetching if necessary to be safe
-            fetch('/api/dashboard/sites')
-                .then(r => r.json())
-                .then(data => {
-                    const fetchedSites = data.sites ?? [];
-                    setSites(fetchedSites);
-                    if (fetchedSites.length > 0) {
-                        router.replace(`/dashboard/site-intelligence/${fetchedSites[0].id}`);
-                    }
-                })
-                .catch(err => {
-                    console.error("Error fetching sites:", err);
-                    setSites([]);
-                })
-                .finally(() => setLoading(false));
-        }
-    }, [router]);
+    if (sites.length === 1) {
+        redirect(`/dashboard/site-intelligence/${sites[0].id}`);
+    }
 
     return (
         <div className="p-6 space-y-8 min-h-screen">
@@ -122,13 +111,7 @@ export default function SiteIntelligencePage() {
             </div>
 
             {/* Body */}
-            {loading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {[1, 2, 3].map((i) => (
-                        <div key={i} className="h-36 rounded-xl bg-slate-100 animate-pulse border border-slate-200" />
-                    ))}
-                </div>
-            ) : sites.length === 0 ? (
+            {sites.length === 0 ? (
                 <EmptyState />
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">

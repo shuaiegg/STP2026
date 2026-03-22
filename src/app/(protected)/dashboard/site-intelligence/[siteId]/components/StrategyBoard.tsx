@@ -350,12 +350,13 @@ export function StrategyBoard({ siteId }: { siteId: string }) {
 
     if (loading) {
         return (
-            <div className="flex gap-6 animate-pulse p-4">
+            <div className="flex gap-6 items-start overflow-x-auto pb-8 -mx-6 px-6">
                 {[1, 2, 3].map(i => (
-                    <div key={i} className="w-[350px] space-y-4">
-                        <div className="h-16 w-full rounded-2xl bg-slate-200" />
-                        <div className="h-24 w-full rounded-2xl bg-slate-200" />
-                        <div className="h-24 w-full rounded-2xl bg-slate-200" />
+                    <div key={i} className="w-[360px] min-w-[360px] flex flex-col bg-slate-100/50 rounded-3xl p-3 border border-slate-200/60 shadow-inner animate-pulse gap-3">
+                        <div className="h-[104px] w-full bg-white rounded-2xl shadow-sm border border-slate-100" />
+                        {[1, 2, 3].map(j => (
+                            <div key={j} className="h-32 w-full bg-white rounded-2xl shadow-sm border border-slate-100" />
+                        ))}
                     </div>
                 ))}
             </div>

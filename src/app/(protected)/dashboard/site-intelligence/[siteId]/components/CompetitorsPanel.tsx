@@ -252,9 +252,22 @@ export function CompetitorsPanel({ siteId }: { siteId: string }) {
                     )}
                 </div>
                 {isInitialLoading ? (
-                    <div className="p-12 pl-6 pb-8 text-center flex flex-col items-center justify-center">
-                        <div className="w-8 h-8 border-2 border-brand-primary/20 border-t-brand-primary rounded-full animate-spin mb-3"></div>
-                        <p className="text-xs text-slate-400 font-mono uppercase tracking-widest">探测雷达初始化中...</p>
+                    <div className="divide-y divide-slate-100/80 animate-pulse">
+                        {[1, 2, 3, 4].map(i => (
+                            <div key={i} className="p-5 flex items-start justify-between">
+                                <div className="flex gap-4 w-full">
+                                    <div className="w-12 h-12 rounded-[14px] bg-slate-200" />
+                                    <div className="space-y-2 flex-1 pt-1">
+                                        <div className="h-4 w-32 bg-slate-200 rounded-md" />
+                                        <div className="flex gap-2 mt-2">
+                                            <div className="h-5 w-16 bg-slate-100 rounded-md" />
+                                            <div className="h-5 w-20 bg-slate-100 rounded-md" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="h-8 w-24 bg-slate-200 rounded-lg" />
+                            </div>
+                        ))}
                     </div>
                 ) : competitors.length === 0 ? (
                     <div className="p-12 text-center flex flex-col items-center justify-center">

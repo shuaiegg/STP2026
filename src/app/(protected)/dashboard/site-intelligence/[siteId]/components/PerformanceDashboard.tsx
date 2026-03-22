@@ -47,9 +47,44 @@ export function PerformanceDashboard({ siteId }: PerformanceDashboardProps) {
 
     if (loading) {
         return (
-            <div className="p-12 pl-6 pb-8 text-center flex flex-col items-center justify-center min-h-[400px]">
-                <div className="w-8 h-8 border-2 border-brand-primary/20 border-t-brand-primary rounded-full animate-spin mb-3"></div>
-                <p className="text-xs text-slate-400 font-mono uppercase tracking-widest">正在拉取搜索数据...</p>
+            <div className="space-y-6 animate-pulse">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {[1, 2, 3, 4].map(i => (
+                        <Card key={i} className="p-5 flex flex-col justify-between border-slate-200 h-[104px]">
+                            <div className="h-3 w-24 bg-slate-200 rounded-md"></div>
+                            <div className="h-8 w-16 bg-slate-100 rounded-md mt-2"></div>
+                        </Card>
+                    ))}
+                </div>
+
+                <Card className="p-6 border-slate-200 h-[380px]">
+                    <div className="h-5 w-40 bg-slate-200 rounded-md mb-6"></div>
+                    <div className="h-[300px] w-full bg-slate-50/50 rounded-xl border border-slate-100"></div>
+                </Card>
+
+                <Card className="p-6 border-slate-200">
+                    <div className="h-5 w-48 bg-slate-200 rounded-md mb-4"></div>
+                    <div className="space-y-4">
+                        <div className="flex justify-between border-b border-slate-100 pb-3">
+                            <div className="h-4 w-24 bg-slate-200 rounded-md"></div>
+                            <div className="flex gap-16 hidden md:flex">
+                                <div className="h-4 w-12 bg-slate-200 rounded-md"></div>
+                                <div className="h-4 w-12 bg-slate-200 rounded-md"></div>
+                                <div className="h-4 w-12 bg-slate-200 rounded-md"></div>
+                            </div>
+                        </div>
+                        {[1, 2, 3, 4, 5].map(i => (
+                            <div key={i} className="flex justify-between border-b border-slate-50 pb-3 last:border-0 last:pb-0">
+                                <div className="h-4 w-48 bg-slate-100 rounded-md"></div>
+                                <div className="flex gap-16 hidden md:flex">
+                                    <div className="h-4 w-12 bg-slate-100 rounded-md"></div>
+                                    <div className="h-4 w-12 bg-slate-100 rounded-md"></div>
+                                    <div className="h-4 w-12 bg-slate-100 rounded-md"></div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </Card>
             </div>
         );
     }

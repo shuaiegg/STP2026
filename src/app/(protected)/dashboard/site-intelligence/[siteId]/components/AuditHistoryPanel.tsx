@@ -28,9 +28,30 @@ export function AuditHistoryPanel({ siteId, domain }: { siteId: string, domain: 
 
     if (loading) {
         return (
-            <div className="p-12 pl-6 pb-8 text-center flex flex-col items-center justify-center min-h-[400px]">
-                <div className="w-8 h-8 border-2 border-brand-primary/20 border-t-brand-primary rounded-full animate-spin mb-3"></div>
-                <p className="text-xs text-slate-400 font-mono uppercase tracking-widest">加载历史记录...</p>
+            <div className="space-y-6 animate-pulse">
+                <Card className="overflow-hidden border-slate-200 shadow-sm">
+                    <div className="bg-slate-50/80 px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+                        <div className="h-5 w-32 bg-slate-200 rounded-md"></div>
+                        <div className="h-5 w-20 bg-slate-200 rounded-full"></div>
+                    </div>
+                    <div className="divide-y divide-slate-100/80">
+                        {[1, 2, 3, 4].map(i => (
+                            <div key={i} className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div className="flex items-start gap-4">
+                                    <div className="w-16 h-16 rounded-xl bg-slate-200 shrink-0"></div>
+                                    <div className="flex flex-col justify-center py-1 space-y-2">
+                                        <div className="h-5 w-32 bg-slate-200 rounded-md"></div>
+                                        <div className="flex gap-4">
+                                            <div className="h-4 w-24 bg-slate-100 rounded-md"></div>
+                                            <div className="h-4 w-20 bg-slate-100 rounded-md"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="hidden sm:block h-9 w-32 bg-slate-100 rounded-xl"></div>
+                            </div>
+                        ))}
+                    </div>
+                </Card>
             </div>
         );
     }

@@ -77,7 +77,32 @@ export function IntegrationsPanel({ siteId, onUpdate }: { siteId: string, onUpda
     };
 
     if (loading) {
-        return <div className="p-8 text-center text-slate-500 animate-pulse text-sm">加载中...</div>;
+        return (
+            <div className="space-y-6 animate-pulse">
+                <div>
+                    <div className="h-6 w-64 bg-slate-200 rounded-md mb-2"></div>
+                    <div className="h-4 w-96 bg-slate-100 rounded-md mb-6 max-w-full"></div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {[1, 2].map(i => (
+                        <Card key={i} className="p-6 border-slate-200 h-[220px] flex flex-col">
+                            <div className="flex justify-between items-start mb-4">
+                                <div>
+                                    <div className="h-5 w-40 bg-slate-200 rounded-md mb-2"></div>
+                                    <div className="h-3 w-64 bg-slate-100 rounded-md"></div>
+                                    <div className="h-3 w-48 bg-slate-100 rounded-md mt-1"></div>
+                                </div>
+                                <div className="h-5 w-16 bg-slate-200 rounded-full"></div>
+                            </div>
+                            <div className="mt-auto border-t border-slate-100 pt-4">
+                                <div className="h-9 w-full bg-slate-100 rounded-lg"></div>
+                            </div>
+                        </Card>
+                    ))}
+                </div>
+            </div>
+        );
     }
 
     if (!siteData) {

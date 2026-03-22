@@ -54,7 +54,11 @@ export async function GET() {
             };
         });
 
-        return NextResponse.json({ sites: result });
+        return NextResponse.json({ sites: result }, {
+            headers: {
+                'Cache-Control': 'private, max-age=0, s-maxage=30, stale-while-revalidate=60'
+            }
+        });
     } catch (error: any) {
         console.error("Error fetching sites:", error);
         return NextResponse.json({ error: error.message }, { status: 500 });
