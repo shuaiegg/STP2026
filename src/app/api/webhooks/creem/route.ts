@@ -2,10 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import prisma from "@/lib/prisma";
 
-// Rate conversion: $1 (100 cents) = 100 credits
-// Adjust this as needed
-const CREDIT_CONVERSION_RATE = 1; 
-
 export async function POST(req: NextRequest) {
     const payload = await req.text();
     const signature = req.headers.get("creem-signature");
@@ -33,25 +29,26 @@ export async function POST(req: NextRequest) {
 
     // 2. Parse payload
     const event = JSON.parse(payload);
-    console.log(`Received Creem webhook event: ${event.type}`);
+    // Creem uses eventType field
+    const eventType = event.eventType;
+    console.log(`Received Creem webhook event: ${eventType}`);
 
     // 3. Handle checkout.completed
-    if (event.type === "checkout.completed") {
+    if (eventType === "checkout.completed") {
         const checkout = event.data;
         const userId = checkout.metadata?.userId;
-        const amountPaidCents = checkout.order?.amount_paid || 0;
-        const currency = checkout.order?.currency || "USD";
+        const creditsStr = checkout.metadata?.credits;
 
         if (!userId) {
             console.error("No userId found in checkout metadata", checkout.id);
             return NextResponse.json({ error: "User context missing" }, { status: 400 });
         }
 
-        const creditsToGain = Math.floor(amountPaidCents * CREDIT_CONVERSION_RATE / 100);
+        const creditsToGain = creditsStr ? parseInt(creditsStr, 10) : 0;
 
-        if (creditsToGain <= 0) {
-            console.warn("Zero credits to gain from transaction", checkout.id);
-            return NextResponse.json({ success: true, message: "No credits to add" });
+        if (!creditsToGain || isNaN(creditsToGain) || creditsToGain <= 0) {
+            console.error("Zero credits or missing metadata.credits from transaction", checkout.id);
+            return NextResponse.json({ error: "Invalid credits metadata" }, { status: 400 });
         }
 
         try {
@@ -70,7 +67,8 @@ export async function POST(req: NextRequest) {
                         userId,
                         amount: creditsToGain,
                         type: "PURCHASE",
-                        description: `Purchase of ${creditsToGain} credits via Creem.io (${currency} ${amountPaidCents/100})`
+                        externalId: checkout.id,
+                        description: `购买积分套餐: ${creditsToGain} 积分`
                     }
                 })
             ]);
@@ -80,6 +78,74 @@ export async function POST(req: NextRequest) {
         } catch (error) {
             console.error("Failed to process credit update:", error);
             return NextResponse.json({ error: "Database update failed" }, { status: 500 });
+        }
+    }
+
+    // 4. Handle refund.created
+    if (eventType === "refund.created") {
+        const refund = event.data;
+        const checkoutId = refund.checkout_id;
+        const refundId = refund.id;
+
+        try {
+            // Find the original purchase transaction
+            const purchaseTx = await prisma.creditTransaction.findFirst({
+                where: {
+                    externalId: checkoutId,
+                    type: "PURCHASE"
+                },
+                include: {
+                    user: true
+                }
+            });
+
+            if (!purchaseTx || !purchaseTx.user) {
+                console.warn(`Refund received for unknown checkout: ${checkoutId}`);
+                return NextResponse.json({ success: true, message: "No matching purchase found" });
+            }
+
+            // Check if refund already processed (idempotency)
+            const existingRefund = await prisma.creditTransaction.findFirst({
+                where: {
+                    externalId: refundId,
+                    type: "REFUND"
+                }
+            });
+
+            if (existingRefund) {
+                return NextResponse.json({ success: true, message: "Refund already processed" });
+            }
+
+            const amountToDeduct = purchaseTx.amount;
+            const currentCredits = purchaseTx.user.credits;
+            // Ensure credits don't go below 0
+            const actualDeduction = Math.min(amountToDeduct, currentCredits);
+
+            await prisma.$transaction([
+                prisma.user.update({
+                    where: { id: purchaseTx.userId },
+                    data: {
+                        credits: {
+                            decrement: actualDeduction
+                        }
+                    }
+                }),
+                prisma.creditTransaction.create({
+                    data: {
+                        userId: purchaseTx.userId,
+                        amount: -amountToDeduct, // Record the full refund amount even if deduction was capped
+                        type: "REFUND",
+                        externalId: refundId,
+                        description: `订单退款扣除: ${amountToDeduct} 积分 (关联订单: ${checkoutId})`
+                    }
+                })
+            ]);
+
+            console.log(`Processed refund ${refundId} for user ${purchaseTx.userId}, deducted ${actualDeduction} credits`);
+            return NextResponse.json({ success: true });
+        } catch (error) {
+            console.error("Failed to process refund:", error);
+            return NextResponse.json({ error: "Refund processing failed" }, { status: 500 });
         }
     }
 

@@ -10,6 +10,46 @@ export const auth = betterAuth({
     database: prismaAdapter(prisma, {
         provider: "postgresql",
     }),
+    databaseHooks: {
+        user: {
+            create: {
+                after: async (user) => {
+                    // Check if already has registration bonus to ensure idempotency
+                    const existingBonus = await prisma.creditTransaction.findFirst({
+                        where: {
+                            userId: user.id,
+                            type: 'BONUS',
+                            description: {
+                                contains: '注册赠送'
+                            }
+                        }
+                    });
+
+                    if (existingBonus) return;
+
+                    // Grant bonus credits
+                    await prisma.$transaction([
+                        prisma.user.update({
+                            where: { id: user.id },
+                            data: {
+                                credits: {
+                                    increment: 5
+                                }
+                            }
+                        }),
+                        prisma.creditTransaction.create({
+                            data: {
+                                userId: user.id,
+                                amount: 5,
+                                type: 'BONUS',
+                                description: '注册赠送'
+                            }
+                        })
+                    ]);
+                }
+            }
+        }
+    },
     emailAndPassword: {
         enabled: true,
     },

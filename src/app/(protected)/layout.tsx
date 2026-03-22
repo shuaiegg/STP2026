@@ -20,7 +20,10 @@ import {
     Home,
     FileText,
     RefreshCw,
-    Users
+    Users,
+    Mail,
+    ShoppingBag,
+    CreditCard
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { authClient } from '@/lib/auth-client';
@@ -105,6 +108,8 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
         { href: '/dashboard/admin/content', icon: FileText, label: '内容管理' },
         { href: '/dashboard/admin/sync', icon: RefreshCw, label: 'Notion 同步' },
         { href: '/dashboard/admin/users', icon: Users, label: '用户管理' },
+        { href: '/dashboard/admin/orders', icon: ShoppingBag, label: '订单管理' },
+        { href: '/dashboard/admin/credit-refund', icon: CreditCard, label: '积分管理' },
         { href: '/dashboard/admin/skills', icon: Zap, label: '技能管理' },
     ].filter(item => {
         if (role === 'ADMIN') return true;
@@ -197,6 +202,19 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
                             <LogOut size={20} />
                             <span>退出登录</span>
                         </Button>
+                    </div>
+
+                    {/* Support Area */}
+                    <div className="mt-6 px-4 py-4 bg-slate-50 rounded-2xl border border-slate-100">
+                        <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 flex items-center gap-2">
+                            <Mail size={12} className="text-brand-primary" /> 需要帮助？
+                        </div>
+                        <a 
+                            href="mailto:support@scaletotop.com" 
+                            className="text-[11px] font-bold text-slate-600 hover:text-brand-primary transition-colors truncate block"
+                        >
+                            support@scaletotop.com
+                        </a>
                     </div>
                 </div>
             </aside>

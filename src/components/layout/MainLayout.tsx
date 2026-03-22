@@ -198,6 +198,7 @@ const Footer: React.FC = () => {
                                 <li><Link href="/about" className="hover:text-brand-primary transition-colors">关于 STP2026</Link></li>
                                 <li><Link href="/privacy" className="hover:text-brand-primary transition-colors">隐私声明</Link></li>
                                 <li><Link href="/terms" className="hover:text-brand-primary transition-colors">服务条款</Link></li>
+                                <li><Link href="/refund" className="hover:text-brand-primary transition-colors">退款政策</Link></li>
                             </ul>
                         </div>
                     </div>
@@ -208,6 +209,7 @@ const Footer: React.FC = () => {
                     </p>
                     <div className="flex gap-8 text-[10px] font-bold uppercase tracking-[0.2em] text-brand-text-muted">
                         <Link href="/contact" className="hover:text-brand-primary">联系我们</Link>
+                        <Link href="/refund" className="hover:text-brand-primary">退款政策</Link>
                         <button className="hover:text-brand-primary cursor-default">中文 (简体)</button>
                     </div>
                 </div>

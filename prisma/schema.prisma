@@ -393,12 +393,14 @@ model CreditTransaction {
   amount         Int
   type           TransactionType
   description    String?
+  externalId     String?
   createdAt      DateTime        @default(now())
   user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   skillExecution SkillExecution?
 
   @@index([userId])
   @@index([createdAt(sort: Desc)])
+  @@index([externalId])
 }
 
 /// SkillExecution - Detailed logs of AI tool usage

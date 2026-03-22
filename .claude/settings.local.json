@@ -46,7 +46,11 @@
       "Bash(mkdir -p \"openspec/specs/$cap\")",
       "Bash(cp \"openspec/changes/audit-depth-optimization/specs/$cap/spec.md\" \"openspec/specs/$cap/spec.md\")",
       "Bash(echo \"Synced: $cap\")",
-      "Bash(done)"
+      "Bash(done)",
+      "WebSearch",
+      "WebFetch(domain:creem.io)",
+      "WebFetch(domain:docs.creem.io)",
+      "Bash(ls /Users/apple/JSProject/STP2026/src/app/\\\\\\(public\\\\\\)/)"
     ]
   },
   "enabledPlugins": {

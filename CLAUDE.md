@@ -186,6 +186,7 @@ GOOGLE_CLIENT_SECRET=
 GOOGLE_REDIRECT_URI=
 
 # Payments
+CREEM_API_KEY=            # Creem.io API Key for server-side calls
 CREEM_WEBHOOK_SECRET=     # Creem.io webhook signature verification
 
 # better-auth

@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/Badge';
 import GalaxyMap from '@/components/dashboard/site-intelligence/GalaxyMap';
 import HealthReport from '@/components/dashboard/site-intelligence/HealthReport';
 import Link from 'next/link';
+import { authClient } from "@/lib/auth-client";
+import { Wallet } from 'lucide-react';
 
 interface PageMeta {
     url?: string;
@@ -79,6 +81,8 @@ function InstantAuditInner() {
 
     const auditIdToLoad = searchParams.get('auditId');
     const router = useRouter();
+    const { data: session } = authClient.useSession();
+    const [insufficientCredits, setInsufficientCredits] = useState(false);
 
     // 1. Initial Load Logic
     useEffect(() => {
@@ -155,6 +159,17 @@ function InstantAuditInner() {
 
     const handleStartAudit = async () => {
         if (!domain) return;
+
+        // Check credits before starting
+        const currentCredits = (session?.user as any)?.credits ?? 0;
+        if (currentCredits < 5) {
+            setInsufficientCredits(true);
+            // Scroll to the warning
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+        }
+
+        setInsufficientCredits(false);
         setLoading(true);
         setGraphData({ nodes: [], links: [] });
         setSelectedNode(null);
@@ -336,6 +351,26 @@ function InstantAuditInner() {
                     <span>✓</span>
                     <span>审计已保存至您的站点列表</span>
                 </div>
+            )}
+
+            {/* Insufficient Credits Message */}
+            {insufficientCredits && (
+                <Card className="bg-rose-50 border-rose-200 p-6 flex flex-col md:flex-row items-center justify-between gap-6 animate-in slide-in-from-top duration-300 rounded-3xl">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center text-rose-600 shrink-0">
+                            <Wallet size={24} />
+                        </div>
+                        <div>
+                            <h3 className="text-rose-900 font-black italic font-display italic tracking-tight">您的积分不足</h3>
+                            <p className="text-rose-600 text-sm font-medium">本次审计需要 <span className="font-black">5</span> 积分，您当前只有 <span className="font-black">{ (session?.user as any)?.credits ?? 0 }</span> 积分。</p>
+                        </div>
+                    </div>
+                    <Link href="/dashboard/billing">
+                        <Button className="bg-rose-600 hover:bg-rose-700 text-white font-black px-8 py-6 shadow-xl shadow-rose-200 rounded-2xl">
+                            立即前往充值
+                        </Button>
+                    </Link>
+                </Card>
             )}
 
             {/* 进度条 */}
