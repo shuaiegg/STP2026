@@ -4,21 +4,7 @@ import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
-
-/**
- * Check if the current user is an admin
- */
-async function checkAdmin() {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
-
-    if (!session || (session.user as any).role !== 'ADMIN') {
-        throw new Error("Unauthorized: Admin access required");
-    }
-
-    return session;
-}
+import { checkAdmin } from "@/lib/auth-utils";
 
 /**
  * Get all skill configurations
@@ -70,7 +56,6 @@ export async function toggleSkill(id: string) {
         data: { isActive: !skill.isActive }
     });
 
-    revalidatePath('/dashboard/admin/skills');
     revalidatePath('/dashboard/admin/skills');
     return { success: true, data: result };
 }

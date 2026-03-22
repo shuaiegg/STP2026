@@ -85,19 +85,24 @@ export async function POST(request: NextRequest) {
         }
 
         // 5. Check if this is a repeat execution for the same keywords (Paid Project Logic)
-        const executions = await prisma.skillExecution.findMany({
-            where: {
-                userId: user.id,
-                skillName,
-                status: 'success'
-            },
-            select: { input: true }
-        });
+        const keywords = (input as any).keywords;
+        let isRepeat = false;
 
-        const isRepeat = executions.some(exe =>
-            (exe.input as any)?.keywords === (input as any).keywords &&
-            !(input as any).auditOnly
-        );
+        if (keywords && !(input as any).auditOnly) {
+            const existing = await prisma.skillExecution.findFirst({
+                where: {
+                    userId: user.id,
+                    skillName,
+                    status: 'success',
+                    input: {
+                        path: ['keywords'],
+                        equals: keywords
+                    }
+                },
+                select: { id: true }
+            });
+            isRepeat = !!existing;
+        }
 
         const cost = isRepeat ? 0 : getSkillCost(skillName, input);
 

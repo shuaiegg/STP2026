@@ -220,7 +220,7 @@ export function evaluateReadability(content: string): ScoreItem {
     });
 
     if (longParagraphsCount > 0) {
-        score -= min(15, longParagraphsCount * 5); // 最多扣15分
+        score -= Math.min(15, longParagraphsCount * 5); // 最多扣15分
         issues.push(`存在 ${longParagraphsCount} 个超长段落 (Wall of Text)`);
         suggestions.push('将超长段落拆分成短段落，提升移动端阅读体验');
     }
@@ -233,11 +233,6 @@ export function evaluateReadability(content: string): ScoreItem {
         suggestions,
         metrics
     };
-}
-
-// 辅助函数
-function min(a: number, b: number): number {
-    return a < b ? a : b;
 }
 
 /**
@@ -714,7 +709,7 @@ export function calculateValueDensity(content: string): ScoreItem {
     const fillerRegex = /(?:it is important to note that|as we have seen|as mentioned before|generally speaking|可以说是|从某种意义上说|不得不说|众所周知)/gi;
     const fillers = (content.match(fillerRegex) || []).length;
     if (fillers > (wordCount / 200)) {
-        score -= min(30, fillers * 5);
+        score -= Math.min(30, fillers * 5);
         issues.push(`侦测到过多过渡套话 (${fillers} 处)`);
         suggestions.push('删减“综上所述”、“众所周知”等无其实际含义的填充词');
     }

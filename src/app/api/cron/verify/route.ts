@@ -11,9 +11,15 @@ import prisma from "@/lib/prisma";
 import { DataForSEOClient } from "@/lib/external/dataforseo";
 
 // CRON_SECRET should be set in .env for production security
-const CRON_SECRET = process.env.CRON_SECRET || 'dev_secret_only';
+const CRON_SECRET = process.env.CRON_SECRET;
 
 export async function GET(request: NextRequest) {
+    // Security check: Ensure CRON_SECRET is configured
+    if (!CRON_SECRET) {
+        console.error('CRON_SECRET is not set in environment variables');
+        return new NextResponse('Internal Server Error: Missing Configuration', { status: 500 });
+    }
+
     const authHeader = request.headers.get('authorization');
     
     // Security check: Verify cron secret

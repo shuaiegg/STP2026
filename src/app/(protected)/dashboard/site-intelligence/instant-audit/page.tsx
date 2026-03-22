@@ -100,69 +100,45 @@ function InstantAuditInner() {
             .catch(console.error);
     }, []);
 
-    // 1. Initial Load Logic
+    // 1. Initial Load Logic — only triggers when a specific auditId is requested via URL
+    //    (e.g. navigating from audit history list). Plain ?site= just pre-fills the input.
     useEffect(() => {
-        if (!domain) return;
+        if (!auditIdToLoad || !domain) return;
 
-        const loadHistoricalData = async () => {
+        const loadSpecificAudit = async () => {
             setLoading(true);
+            setStatus('LOADING_HISTORY');
             try {
-                // First, we need to find the siteId for this domain
                 const sitesRes = await fetch('/api/dashboard/sites');
                 const sitesData = await sitesRes.json();
                 const site = sitesData.sites?.find((s: any) => s.domain === domain);
-
-                if (!site) {
-                    setLoading(false);
-                    return;
-                }
+                if (!site) { setStatus('HISTORY_LOAD_FAILED'); return; }
 
                 setSavedSiteId(site.id);
 
-                if (auditIdToLoad) {
-                    // Load specific historical audit
-                    setStatus('LOADING_HISTORY');
-                    const auditRes = await fetch(`/api/dashboard/sites/${site.id}/audits/${auditIdToLoad}`);
-                    const auditData = await auditRes.json();
+                const auditRes = await fetch(`/api/dashboard/sites/${site.id}/audits/${auditIdToLoad}`);
+                const auditData = await auditRes.json();
 
-                    if (auditData.success && auditData.data.graphData) {
-                        setGraphData(auditData.data.graphData);
-                        setActiveAuditId(auditData.data.id);
-                        setTechScore(auditData.data.techScore);
-                        setIssueReport(auditData.data.issueReport);
-                        setStatus('GALAXY_CONSTRUCTED');
-                    } else {
-                        setStatus('HISTORY_LOAD_FAILED');
-                    }
+                if (auditData.success && auditData.data.graphData) {
+                    setGraphData(auditData.data.graphData);
+                    setActiveAuditId(auditData.data.id);
+                    setTechScore(auditData.data.techScore);
+                    setIssueReport(auditData.data.issueReport);
+                    setStatus('GALAXY_CONSTRUCTED');
                 } else {
-                    // Try to load the most recent audit for this site
-                    setStatus('CHECKING_HISTORY');
-                    const auditsRes = await fetch(`/api/dashboard/sites/${site.id}/audits`);
-                    const auditsData = await auditsRes.json();
-
-                    if (auditsData.audits && auditsData.audits.length > 0 && auditsData.audits[0].graphData) {
-                        const latest = auditsData.audits[0];
-                        setGraphData(latest.graphData);
-                        setActiveAuditId(latest.id);
-                        setTechScore(latest.techScore);
-                        setIssueReport(latest.issueReport);
-                        setStatus('GALAXY_CONSTRUCTED');
-                    } else {
-                        // No history, prompt user to scan
-                        setStatus('READY_FOR_SCAN');
-                    }
+                    setStatus('HISTORY_LOAD_FAILED');
                 }
             } catch (e) {
-                console.error("Failed to load history:", e);
+                console.error("Failed to load audit history:", e);
                 setStatus('SYSTEM_ERROR');
             } finally {
                 setLoading(false);
             }
         };
 
-        loadHistoricalData();
+        loadSpecificAudit();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [domain, auditIdToLoad]);
+    }, [auditIdToLoad, domain]);
 
     // 2. Load audit history list for the sidebar
     useEffect(() => {
@@ -424,6 +400,35 @@ function InstantAuditInner() {
             {/* 核心展示区 */}
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                 <div className="lg:col-span-3">
+                    {graphData.nodes.length === 0 && !loading ? (
+                        <Card className="bg-white border-slate-200 shadow-sm flex flex-col items-center justify-center py-24 px-8 text-center min-h-[480px]">
+                            <div className="w-16 h-16 rounded-2xl bg-brand-primary/8 flex items-center justify-center mb-6">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-brand-primary"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                            </div>
+                            <h2 className="text-xl font-bold text-slate-900 mb-2">输入域名，开始即时审计</h2>
+                            <p className="text-sm text-slate-500 max-w-sm mb-8 leading-relaxed">
+                                在顶部输入框中填写要审计的域名（如 <span className="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-slate-700">scaletotop.com</span>），然后点击「发起扫描」。
+                            </p>
+                            <div className="flex gap-2 w-full max-w-sm">
+                                <input
+                                    type="text"
+                                    placeholder="例如: scaletotop.com"
+                                    className="bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 flex-1 focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary outline-none shadow-sm transition-all"
+                                    value={domain}
+                                    onChange={(e) => setDomain(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && !loading && handleStartAudit()}
+                                    autoFocus
+                                />
+                                <Button
+                                    onClick={handleStartAudit}
+                                    disabled={loading || !domain.trim()}
+                                    className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm px-5 font-bold flex-shrink-0"
+                                >
+                                    扫描
+                                </Button>
+                            </div>
+                        </Card>
+                    ) : (
                     <Card className="bg-white border-slate-200 p-0 overflow-hidden shadow-sm">
                         <GalaxyMap
                             siteId={savedSiteId || ''}
@@ -432,6 +437,7 @@ function InstantAuditInner() {
                             onNodeClick={handleNodeClick}
                         />
                     </Card>
+                    )}
                 </div>
 
                 {/* 侧边 HUD */}

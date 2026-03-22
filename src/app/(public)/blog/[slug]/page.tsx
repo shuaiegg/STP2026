@@ -7,21 +7,20 @@ import { CTA } from '@/components/CTA';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-export const dynamic = 'force-dynamic';
-
 interface BlogPostProps {
     params: Promise<{ slug: string }>;
 }
 
 export default async function BlogPost({ params }: BlogPostProps) {
     const { slug } = await params;
-    const post = await getPublishedContentBySlug(slug);
+    const [post, relatedPosts] = await Promise.all([
+        getPublishedContentBySlug(slug),
+        getRelatedContent(slug)
+    ]);
 
     if (!post) {
         return notFound();
     }
-
-    const relatedPosts = await getRelatedContent(slug);
 
     const formatDate = (date: Date | null) => {
         if (!date) return 'Not Published';
@@ -185,8 +184,8 @@ export default async function BlogPost({ params }: BlogPostProps) {
                                         <figure className="my-12 not-prose">
                                             <div className="border-2 border-brand-border overflow-hidden relative aspect-[16/9]">
                                                 <Image
-                                                    src={props.src || ''}
-                                                    alt={props.alt || ''}
+                                                    src={(props.src as string) || ''}
+                                                    alt={(props.alt as string) || ''}
                                                     width={800}
                                                     height={450}
                                                     className="w-full h-auto"

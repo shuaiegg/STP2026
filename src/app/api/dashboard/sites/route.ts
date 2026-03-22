@@ -17,7 +17,11 @@ export async function GET() {
         const sites = await prisma.site.findMany({
             where: { userId: session.user.id },
             orderBy: { updatedAt: 'desc' },
-            include: {
+            select: {
+                id: true,
+                domain: true,
+                name: true,
+                createdAt: true,
                 audits: {
                     orderBy: { createdAt: 'desc' },
                     take: 1,
@@ -25,7 +29,7 @@ export async function GET() {
                         id: true,
                         createdAt: true,
                         techScore: true,
-                        report: true,
+                        pageCount: true,
                     },
                 },
             },
@@ -33,15 +37,6 @@ export async function GET() {
 
         const result = sites.map((site) => {
             const latest = site.audits[0] ?? null;
-            let report = latest?.report;
-            if (typeof report === 'string') {
-                try {
-                    report = JSON.parse(report);
-                } catch (e) {
-                    report = {};
-                }
-            }
-            const pageCount: number = (report as any)?.nodes?.length ?? 0;
 
             return {
                 id: site.id,
@@ -52,7 +47,7 @@ export async function GET() {
                     ? {
                         id: latest.id,
                         createdAt: latest.createdAt.toISOString(),
-                        pageCount,
+                        pageCount: latest.pageCount ?? 0,
                         techScore: latest.techScore,
                     }
                     : null,

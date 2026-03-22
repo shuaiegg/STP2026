@@ -1,10 +1,9 @@
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { getCategoryBySlug, getContentByCategory } from '@/lib/content';
 import { Card } from '@/components/ui/Card';
-
-export const dynamic = 'force-dynamic';
 
 interface CategoryPageProps {
     params: Promise<{ slug: string }>;
@@ -51,8 +50,14 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                     return (
                         <Link key={post.id} href={`/blog/${post.slug}`}>
                             <Card className="h-full flex flex-col group">
-                                <div className="aspect-[16/10] bg-brand-surface overflow-hidden">
-                                    <img src={coverSrc} alt={post.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                                <div className="aspect-[16/10] bg-brand-surface relative overflow-hidden">
+                                    <Image 
+                                        src={coverSrc} 
+                                        alt={post.title} 
+                                        fill 
+                                        className="object-cover transition-transform duration-500 group-hover:scale-105" 
+                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                    />
                                 </div>
                                 <div className="p-6">
                                     <h3 className="text-lg font-bold text-brand-text-primary mb-3 group-hover:text-brand-primary transition-colors">

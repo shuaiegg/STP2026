@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
     LayoutDashboard,
@@ -146,8 +147,8 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
                     {/* Brand */}
                     <div className="flex items-center gap-3 mb-12 px-2">
                         <Link href="/" className="flex items-center gap-3 group">
-                            <div className="w-10 h-10 transition-transform group-hover:rotate-12">
-                                <img src="/assets/images/logo.svg" alt="STP Logo" className="w-full h-full" />
+                            <div className="w-10 h-10 transition-transform group-hover:rotate-12 relative">
+                                <Image src="/assets/images/logo.svg" alt="STP Logo" fill className="object-contain" />
                             </div>
                             <span className="text-xl font-black italic tracking-tighter text-slate-900 font-display">STP 2026</span>
                         </Link>

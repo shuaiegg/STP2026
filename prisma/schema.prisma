@@ -131,8 +131,6 @@ model User {
   sites           Site[]
   executions      SkillExecution[]
   trackedArticles TrackedArticle[]
-
-  @@index([email])
 }
 
 /// Site - Managed websites for SEO intelligence
@@ -203,11 +201,12 @@ model SiteAudit {
   techScore    Int?
   contentScore Int?
   geoScore     Int?
+  pageCount    Int?
   report       Json?
   createdAt    DateTime @default(now())
   site         Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
 
-  @@index([siteId])
+  @@index([siteId, createdAt(sort: Desc)])
 }
 
 model SiteKeyword {
@@ -223,8 +222,7 @@ model SiteKeyword {
   updatedAt   DateTime @updatedAt
   site        Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
 
-  @@index([siteId])
-  @@index([keyword])
+  @@unique([siteId, keyword])
 }
 
 model Competitor {
@@ -272,8 +270,7 @@ model PlannedArticle {
   updatedAt      DateTime       @updatedAt
   contentPlan    ContentPlan    @relation(fields: [contentPlanId], references: [id], onDelete: Cascade)
 
-  @@index([contentPlanId])
-  @@index([status])
+  @@index([contentPlanId, status])
 }
 
 model GscConnection {
@@ -286,7 +283,7 @@ model GscConnection {
   lastSyncAt   DateTime?
   site         Site      @relation(fields: [siteId], references: [id], onDelete: Cascade)
 
-  @@index([siteId])
+  @@index([siteId, propertyId])
 }
 
 model Ga4Connection {
@@ -299,7 +296,7 @@ model Ga4Connection {
   lastSyncAt   DateTime?
   site         Site      @relation(fields: [siteId], references: [id], onDelete: Cascade)
 
-  @@index([siteId])
+  @@index([siteId, propertyId])
 }
 
 /// TrackedArticle - Closed-loop verification for GEO citations

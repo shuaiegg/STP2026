@@ -17,17 +17,32 @@ export const GET = withSiteContext<{ siteId: string }>(async (_request, { site }
             id: true,
             createdAt: true,
             techScore: true,
-            report: true,
+            pageCount: true,
+            // report is EXCLUDED from initial list to avoid heavy payload
         },
     });
 
+    // Fetch full reports for only the first 5 audits
+    const auditIdsWithReports = audits.slice(0, 5).map(a => a.id);
+    const auditsWithReports = await prisma.siteAudit.findMany({
+        where: { id: { in: auditIdsWithReports } },
+        select: {
+            id: true,
+            report: true,
+        }
+    });
+
+    const reportMap = new Map(auditsWithReports.map(a => [a.id, a.report]));
+
     const result = audits.map((a, idx) => {
-        const reportRaw = a.report as any;
+        const reportRaw = reportMap.get(a.id) as any;
         // Backward compatibility: if it doesn't have graphData key, the whole report IS the graphData
         const report = reportRaw?.graphData ? reportRaw.graphData : reportRaw;
         const issueReport = reportRaw?.issueReport ?? null;
         
-        const pageCount: number = report?.nodes?.length ?? 0;
+        // Use the new pageCount column if available, fallback to report length if we have the report
+        const pageCount = a.pageCount ?? report?.nodes?.length ?? 0;
+        
         return {
             id: a.id,
             createdAt: a.createdAt.toISOString(),

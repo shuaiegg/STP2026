@@ -51,7 +51,20 @@
       "WebFetch(domain:creem.io)",
       "WebFetch(domain:docs.creem.io)",
       "Bash(ls /Users/apple/JSProject/STP2026/src/app/\\\\\\(public\\\\\\)/)",
-      "WebFetch(domain:systeme.io)"
+      "WebFetch(domain:systeme.io)",
+      "Bash(grep -rn \"from ''posthog-js''\" /Users/apple/JSProject/STP2026/src --include=\"*.ts\" --include=\"*.tsx\")",
+      "Bash(grep -rn \"from ''recharts''\" /Users/apple/JSProject/STP2026/src --include=\"*.tsx\" --include=\"*.ts\")",
+      "Bash(grep -rn \"from ''recharts''\" /Users/apple/JSProject/STP2026/src -l)",
+      "Bash(grep -rn \"select:\" /Users/apple/JSProject/STP2026/src/app/api/dashboard/sites/[siteId]/audits/route.ts)",
+      "Bash(head -80 /Users/apple/JSProject/STP2026/src/app/api/dashboard/sites/[siteId]/audits/route.ts)",
+      "Bash(grep -rn \"from ''bcryptjs''\" /Users/apple/JSProject/STP2026/src --include=\"*.ts\" --include=\"*.tsx\")",
+      "Bash(grep -rn \"from ''jose''\" /Users/apple/JSProject/STP2026/src --include=\"*.ts\" --include=\"*.tsx\")",
+      "Bash(grep -rn \"from ''dotenv''\" /Users/apple/JSProject/STP2026/src --include=\"*.ts\" --include=\"*.tsx\")",
+      "Bash(grep -rn \"from ''https-proxy-agent''\" /Users/apple/JSProject/STP2026/src --include=\"*.ts\" --include=\"*.tsx\")",
+      "Bash(grep -rn \"from ''@ai-sdk/react''\" /Users/apple/JSProject/STP2026/src --include=\"*.ts\" --include=\"*.tsx\")",
+      "Bash(grep -rn \"import.*from ''ai''\" /Users/apple/JSProject/STP2026/src --include=\"*.ts\" --include=\"*.tsx\")",
+      "Bash(grep -rn \"from ''@/lib/auth-errors''\" /Users/apple/JSProject/STP2026/src --include=\"*.ts\" --include=\"*.tsx\")",
+      "Bash(grep -rn \"from ''@/lib/email''\" /Users/apple/JSProject/STP2026/src --include=\"*.ts\" --include=\"*.tsx\")"
     ]
   },
   "enabledPlugins": {

@@ -71,12 +71,14 @@ export async function POST(request: Request) {
                 });
 
                 if (siteRecord) {
-                    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/dashboard/sites/${siteRecord.id}/semantic-gap`);
-                    if (res.ok) {
-                        const gapJson = await res.json();
-                        if (gapJson.success && gapJson.data?.semanticDebts) {
-                            marketGapsData = gapJson.data.semanticDebts;
+                    try {
+                        const { getSemanticGap } = await import('@/lib/site-intelligence/semantic-gap-service');
+                        const gapResult = await getSemanticGap(siteRecord.id);
+                        if (gapResult.semanticDebts) {
+                            marketGapsData = gapResult.semanticDebts;
                         }
+                    } catch (e: any) {
+                        console.log("[SiteIntelligence] Semantic gap service call failed:", e.message);
                     }
                 }
 

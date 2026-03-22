@@ -1,11 +1,10 @@
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { getPublishedContent } from '@/lib/content';
-
-export const dynamic = 'force-dynamic';
 
 // Animated counter component
 function AnimatedCounter({ value, suffix = '', label }: { value: number; suffix?: string; label: string }) {
@@ -360,7 +359,7 @@ export default async function Home() {
             <div className="group relative">
               <div className="border-2 border-brand-border-heavy p-10 bg-white transition-all hover:shadow-[8px_8px_0_0_rgba(10,10,10,1)] hover:translate-x-[-4px] hover:translate-y-[-4px] cursor-pointer h-full">
                 <div className="mb-8">
-                  <div className="font-mono text-4xl font-bold text-brand-primary mb-2">01</div>
+                  <div className="font-mono text-4xl font-bold text-brand-primary mb-2">03</div>
                   <div className="h-1 w-12 bg-brand-secondary"></div>
                 </div>
                 <h3 className="font-display text-2xl font-bold text-brand-text-primary mb-5 leading-snug">
@@ -466,10 +465,12 @@ export default async function Home() {
                   >
                     <article className="border-2 border-brand-border-heavy bg-white overflow-hidden transition-all hover:shadow-[8px_8px_0_0_rgba(10,10,10,1)] hover:translate-x-[-4px] hover:translate-y-[-4px] cursor-pointer">
                       <div className="aspect-[16/10] overflow-hidden bg-brand-surface relative border-b-2 border-brand-border-heavy">
-                        <img
+                        <Image
                           src={coverSrc}
                           alt={post.title}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                          fill
+                          className="object-cover transition-transform duration-700 group-hover:scale-105"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         />
                         {post.category?.name && (
                           <div className="absolute top-4 left-4">

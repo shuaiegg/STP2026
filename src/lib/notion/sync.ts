@@ -20,7 +20,6 @@ n2m.setCustomTransformer('image', async (block: any) => {
 
 // Types for Notion API responses
 type NotionPage = any; // Simplified for now
-type NotionBlock = any;
 
 export interface SyncResult {
     success: boolean;
@@ -145,31 +144,36 @@ async function processMarkdownImages(
     // Regex to find ANY external image URLs in markdown
     const imageRegex = /!\[([^\]]*)\]\((https?:\/\/[^)]+)\)/g;
     let processedMarkdown = markdown;
-    let match;
+    const matches = Array.from(markdown.matchAll(imageRegex));
 
-    console.log(`[Sync] Processing images in markdown...`);
-    let imageCount = 0;
+    if (matches.length === 0) return markdown;
 
-    while ((match = imageRegex.exec(markdown)) !== null) {
-        imageCount++;
+    console.log(`[Sync] Processing ${matches.length} images in markdown in parallel...`);
+
+    const uploadPromises = matches.map(async (match) => {
         const [fullMatch, altText, imageUrl] = match;
+        const blockId = `${pageId}-img-${match.index}`;
 
         try {
-            // Generate a unique block ID for this image
-            const blockId = `${pageId}-img-${match.index}`;
-
             const result = await uploadImageFromUrl(imageUrl, {
                 notionBlockId: blockId,
             });
-
-            // Replace Notion URL with Supabase Storage URL
-            processedMarkdown = processedMarkdown.replace(
-                fullMatch,
-                `![${altText}](${result.storageUrl})`
-            );
+            return { fullMatch, altText, storageUrl: result.storageUrl };
         } catch (error) {
             console.error(`Failed to process image: ${imageUrl}`, error);
-            // Keep original URL on failure
+            return null;
+        }
+    });
+
+    const results = await Promise.allSettled(uploadPromises);
+
+    for (const result of results) {
+        if (result.status === 'fulfilled' && result.value) {
+            const { fullMatch, altText, storageUrl } = result.value;
+            processedMarkdown = processedMarkdown.replace(
+                fullMatch,
+                `![${altText}](${storageUrl})`
+            );
         }
     }
 
@@ -238,15 +242,6 @@ export async function syncNotionPage(pageId: string, force: boolean = false): Pr
         const status = getPropertyValue(page, 'Status');
         const notionReadingTime = getPropertyValue(page, 'ReadingTime') || getPropertyValue(page, 'Minutes');
 
-        // SEO properties from Notion (optional)
-        const seoStatus = getPropertyValue(page, 'SEOStatus') || getPropertyValue(page, 'SEO Status');
-        const geoScore = getNumberProperty(page, 'GEOScore') || getNumberProperty(page, 'GEO Score');
-        const seoUpdatedAt = getDateProperty(page, 'SEOUpdated') || getDateProperty(page, 'SEO Updated');
-        const keywords = getMultiSelectProperty(page, 'Keywords') ||
-            (getPropertyValue(page, 'Keywords')?.split(',').map(k => k.trim()).filter(Boolean) || []);
-        const metaTitle = getPropertyValue(page, 'MetaTitle') || getPropertyValue(page, 'Meta Title');
-        const metaDescription = getPropertyValue(page, 'MetaDescription') || getPropertyValue(page, 'Meta Description');
-
         console.log(`[Sync] Processing page: "${title}", Summary: "${summary}"`);
 
         if (!slug) {
@@ -292,21 +287,22 @@ export async function syncNotionPage(pageId: string, force: boolean = false): Pr
             readingTime = calculateReadingTime(contentMd);
         }
 
-        // Find category (don't auto-create!)
-        const categoryId = await findCategoryByName(categoryName);
-
-        // Handle cover image
-        let coverImageId: string | null = null;
-        if (coverUrl) {
-            try {
-                const coverResult = await uploadImageFromUrl(coverUrl, {
-                    notionBlockId: `${pageId}-cover`,
-                });
-                coverImageId = coverResult.mediaId;
-            } catch (error) {
-                console.error('Failed to process cover image:', error);
-            }
-        }
+        // Parallelize category lookup and cover image upload
+        const [categoryId, coverImageId] = await Promise.all([
+            findCategoryByName(categoryName),
+            (async () => {
+                if (!coverUrl) return null;
+                try {
+                    const coverResult = await uploadImageFromUrl(coverUrl, {
+                        notionBlockId: `${pageId}-cover`,
+                    });
+                    return coverResult.mediaId;
+                } catch (error) {
+                    console.error('Failed to process cover image:', error);
+                    return null;
+                }
+            })()
+        ]);
 
         // Upsert content
         // @ts-ignore - Ignore temporary sync issues with generated client
@@ -415,12 +411,6 @@ export async function syncAllNotionPages(options: { force?: boolean } = {}): Pro
                 console.error(`[Sync] Failed to sync page ${page.id}:`, result.error);
                 failed++;
             }
-
-            // Update sync log progress
-            await prisma.syncLog.update({
-                where: { id: syncLog.id },
-                data: { itemsSynced: synced, itemsFailed: failed },
-            });
         }
 
         // Mark sync as complete

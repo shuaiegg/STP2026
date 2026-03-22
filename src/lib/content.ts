@@ -35,7 +35,19 @@ export async function getPublishedContent(
         const [contents, total] = await Promise.all([
             prisma.content.findMany({
                 where,
-                include: {
+                select: {
+                    id: true,
+                    type: true,
+                    title: true,
+                    slug: true,
+                    summary: true,
+                    status: true,
+                    visibility: true,
+                    publishedAt: true,
+                    readingTime: true,
+                    categoryId: true,
+                    createdAt: true,
+                    updatedAt: true,
                     category: true,
                     coverImage: true,
                     seo: true,
@@ -108,27 +120,6 @@ export async function getContentByPreviewToken(token: string) {
 }
 
 /**
- * Generate a preview token for content
- */
-export async function generatePreviewToken(
-    contentId: string,
-    expiresInHours: number = 24
-): Promise<string> {
-    const token = crypto.randomUUID();
-    const expiresAt = new Date(Date.now() + expiresInHours * 60 * 60 * 1000);
-
-    await prisma.previewToken.create({
-        data: {
-            token,
-            contentId,
-            expiresAt,
-        },
-    });
-
-    return token;
-}
-
-/**
  * Get all active categories
  */
 export async function getActiveCategories() {
@@ -175,29 +166,6 @@ export async function getContentByCategory(
     if (!category) return null;
 
     return getPublishedContent({ categoryId: category.id }, pagination);
-}
-
-/**
- * Publish content (change status from SYNCED/DRAFT to PUBLISHED)
- */
-export async function publishContent(contentId: string) {
-    return prisma.content.update({
-        where: { id: contentId },
-        data: {
-            status: ContentStatus.PUBLISHED,
-            publishedAt: new Date(),
-        },
-    });
-}
-
-/**
- * Archive content (soft delete)
- */
-export async function archiveContent(contentId: string) {
-    return prisma.content.update({
-        where: { id: contentId },
-        data: { status: ContentStatus.ARCHIVED },
-    });
 }
 
 /**

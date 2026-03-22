@@ -16,15 +16,41 @@ import {
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { SEOScorePanel } from '@/components/seo/SEOScorePanel';
-import { KeywordOpportunityMatrix } from '@/components/charts/KeywordOpportunityMatrix';
-import { SEOScoreDashboard } from '@/components/charts/SEOScoreDashboard';
-import { CompetitorRadarChart } from '@/components/charts/CompetitorRadarChart';
-import { SERPOpportunitiesPanel } from '@/components/serp/SERPOpportunitiesPanel';
-import { ContentGapPanel } from '@/components/gap/ContentGapPanel';
+import dynamic from 'next/dynamic';
+
+// Dynamic imports for heavy components
+const SEOScorePanel = dynamic(() => import('@/components/seo/SEOScorePanel').then(mod => mod.SEOScorePanel), {
+    ssr: false,
+    loading: () => <div className="h-64 animate-pulse bg-slate-50 rounded-xl border border-slate-100" />
+});
+const KeywordOpportunityMatrix = dynamic(() => import('@/components/charts/KeywordOpportunityMatrix').then(mod => mod.KeywordOpportunityMatrix), {
+    ssr: false,
+    loading: () => <div className="h-80 animate-pulse bg-slate-50 rounded-xl border border-slate-100" />
+});
+const SEOScoreDashboard = dynamic(() => import('@/components/charts/SEOScoreDashboard').then(mod => mod.SEOScoreDashboard), {
+    ssr: false,
+    loading: () => <div className="h-80 animate-pulse bg-slate-50 rounded-xl border border-slate-100" />
+});
+const CompetitorRadarChart = dynamic(() => import('@/components/charts/CompetitorRadarChart').then(mod => mod.CompetitorRadarChart), {
+    ssr: false,
+    loading: () => <div className="h-80 animate-pulse bg-slate-50 rounded-xl border border-slate-100" />
+});
+const SERPOpportunitiesPanel = dynamic(() => import('@/components/serp/SERPOpportunitiesPanel').then(mod => mod.SERPOpportunitiesPanel), {
+    ssr: false,
+    loading: () => <div className="h-64 animate-pulse bg-slate-50 rounded-xl border border-slate-100" />
+});
+const ContentGapPanel = dynamic(() => import('@/components/gap/ContentGapPanel').then(mod => mod.ContentGapPanel), {
+    ssr: false,
+    loading: () => <div className="h-64 animate-pulse bg-slate-50 rounded-xl border border-slate-100" />
+});
+const OutlineEditor = dynamic(() => import('@/components/editor/OutlineEditor').then(mod => mod.OutlineEditor), {
+    ssr: false,
+    loading: () => <div className="h-96 animate-pulse bg-slate-50 rounded-xl border border-slate-100" />
+});
+
 import { toast } from 'sonner';
 import Link from 'next/link';
-import { OutlineEditor, OutlineNode } from '@/components/editor/OutlineEditor';
+import type { OutlineNode } from '@/components/editor/OutlineEditor';
 import { EditableSection } from '@/components/editor/EditableSection';
 import { parseMarkdownToSections, joinSectionsToMarkdown, ContentSection } from '@/lib/utils/markdown-sections';
 import { calculateHumanScore } from '@/lib/utils/ai-detection';

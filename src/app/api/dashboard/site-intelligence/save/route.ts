@@ -52,11 +52,14 @@ export async function POST(request: Request) {
             });
         }
 
+        const pageCount = graphData?.nodes?.length ?? 0;
+
         const audit = await prisma.siteAudit.create({
             data: {
                 siteId: site.id,
                 status: 'done',
                 techScore: techScore ?? null,
+                pageCount,
                 report: {
                     graphData,
                     techScore,
