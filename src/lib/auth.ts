@@ -33,14 +33,14 @@ export const auth = betterAuth({
                             where: { id: user.id },
                             data: {
                                 credits: {
-                                    increment: 5
+                                    increment: 10
                                 }
                             }
                         }),
                         prisma.creditTransaction.create({
                             data: {
                                 userId: user.id,
-                                amount: 5,
+                                amount: 10,
                                 type: 'BONUS',
                                 description: '注册赠送'
                             }

@@ -1,4 +1,4 @@
-## ADDED Requirements
+## MODIFIED Requirements
 
 ### Requirement: New user registration credit bonus
 The system SHALL automatically grant 10 credits to every new user upon successful registration, using better-auth's `databaseHooks.user.create.after` hook.
