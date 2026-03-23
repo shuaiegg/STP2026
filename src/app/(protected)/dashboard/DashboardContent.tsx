@@ -4,19 +4,18 @@ import React, { useCallback, useMemo } from 'react';
 import {
     Coins,
     Zap,
-    History,
-    CreditCard,
-    LogOut,
     Library,
     ArrowRight,
     TrendingUp,
     ShieldCheck,
     ArrowUpRight,
-    Clock,
     Plus,
     FileText,
     CheckCircle2,
-    AlertCircle
+    AlertCircle,
+    X,
+    ShieldAlert,
+    ArrowLeft,
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -24,14 +23,32 @@ import { Badge } from '@/components/ui/Badge';
 import { authClient } from "@/lib/auth-client";
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ShieldAlert, ArrowLeft, Settings as SettingsIcon } from 'lucide-react';
+
+const COPY = {
+    empty: {
+        title: "欢迎开启出海获客之旅",
+        subtitle: "ScaletoTop 是专为 B2B 企业打造的自动化获客与内容管理系统。请先添加你的第一个站点，即可查收深度优化的策略建议。",
+        ctaPrimary: "添加第一个站点",
+        ctaSecondary: "免费即时审计"
+    },
+    checklist: {
+        title: "配置指南",
+        steps: [
+            { id: 'site', label: '添加站点' },
+            { id: 'audit', label: '运行审计' },
+            { id: 'gsc', label: '连接 GSC', optional: true },
+            { id: 'strategy', label: '查看战略看板' }
+        ]
+    }
+};
 
 export function DashboardContent({
     user,
     metrics,
     isImpersonating = false,
     articleCount = 0,
-    recentArticles = []
+    recentArticles = [],
+    auditCount = 0
 }: {
     user: any;
     metrics: {
@@ -50,6 +67,7 @@ export function DashboardContent({
     isImpersonating?: boolean;
     articleCount?: number;
     recentArticles?: any[];
+    auditCount?: number;
 }) {
     const router = useRouter();
 
@@ -77,6 +95,46 @@ export function DashboardContent({
         }
     }, [router, metrics.sitesOptions]);
 
+    const [checklistDismissed, setChecklistDismissed] = React.useState(false);
+    const [mounted, setMounted] = React.useState(false);
+
+    React.useEffect(() => {
+        setMounted(true);
+        if (typeof window !== 'undefined') {
+            const dismissed = localStorage.getItem('stp_checklist_dismissed');
+            if (dismissed === 'true') {
+                setChecklistDismissed(true);
+            }
+        }
+    }, []);
+
+    const isNewUser = metrics.totalSites === 0;
+
+    const checklistAutoHidden = metrics.totalSites > 0 && auditCount > 0 && metrics.totalPlannedArticles > 0;
+    const isSetupState = metrics.totalSites > 0 && !checklistDismissed;
+    const showChecklist = mounted && isSetupState && !checklistAutoHidden;
+
+    const checklistSteps = COPY.checklist.steps.map(step => {
+        let isCompleted = false;
+        let href = '';
+        let onClick: (() => void) | undefined = undefined;
+        if (step.id === 'site') {
+            isCompleted = metrics.totalSites > 0;
+            href = '/dashboard/site-intelligence';
+        } else if (step.id === 'audit') {
+            isCompleted = auditCount > 0;
+            href = '/dashboard/site-intelligence';
+        } else if (step.id === 'gsc') {
+            isCompleted = gscCount > 0;
+            href = '/dashboard/site-intelligence';
+        } else if (step.id === 'strategy') {
+            isCompleted = metrics.totalPlannedArticles > 0;
+            onClick = () => handleNavigateToSiteIntelligence();
+        }
+        return { ...step, isCompleted, href, onClick };
+    });
+    const completedSteps = checklistSteps.filter(s => s.isCompleted).length;
+
     return (
         <div className="space-y-10 animate-in fade-in duration-500">
             {isImpersonating && (
@@ -96,9 +154,84 @@ export function DashboardContent({
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
                     <h1 className="font-display text-4xl font-black text-brand-text-primary italic leading-none mb-4">概览中心</h1>
-                    <p className="text-brand-text-secondary font-medium">欢迎回来，{user?.name || '用户'}。系统已为您聚合全局情报。</p>
+                    <p className="text-brand-text-secondary font-medium">欢迎回来，{user?.name || '用户'}。系统已为你聚合全局情报。</p>
                 </div>
             </div>
+
+            {isNewUser ? (
+                <div className="py-8">
+                    <Card className="p-12 border-2 border-brand-secondary/20 bg-brand-secondary-muted rounded-lg text-center flex flex-col items-center justify-center min-h-[400px]">
+                        <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-6 shadow-sm text-brand-secondary">
+                            <Plus size={32} />
+                        </div>
+                        <h2 className="font-display text-3xl font-black text-brand-text-primary mb-4">{COPY.empty.title}</h2>
+                        <p className="text-brand-text-secondary max-w-lg mx-auto mb-10 leading-relaxed">
+                            {COPY.empty.subtitle}
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <Link href="/dashboard/site-intelligence">
+                                <Button as="span" className="bg-brand-secondary hover:bg-brand-secondary-hover text-brand-text-primary font-bold border-none rounded-lg px-8 shadow-sm">
+                                    {COPY.empty.ctaPrimary}
+                                </Button>
+                            </Link>
+                            <Link href="/dashboard/site-intelligence/instant-audit">
+                                <Button as="span" variant="outline" className="font-bold rounded-lg px-8 border-brand-secondary/30 text-brand-text-primary hover:bg-brand-secondary/10">
+                                    {COPY.empty.ctaSecondary}
+                                </Button>
+                            </Link>
+                        </div>
+                    </Card>
+                </div>
+            ) : (
+                <>
+                    {/* Checklist Banner */}
+                    {showChecklist && (
+                        <div className="border border-brand-secondary/20 bg-brand-secondary-muted rounded-lg p-6 relative">
+                            <button 
+                                onClick={() => {
+                                    localStorage.setItem('stp_checklist_dismissed', 'true');
+                                    setChecklistDismissed(true);
+                                }}
+                                className="absolute top-4 right-4 text-brand-text-muted hover:text-brand-text-primary transition-colors"
+                            >
+                                <X size={20} />
+                            </button>
+                            <div className="mb-4">
+                                <h4 className="font-bold text-brand-text-primary text-lg flex items-center gap-2">
+                                    <ShieldCheck size={20} className="text-brand-secondary" />
+                                    {COPY.checklist.title}
+                                </h4>
+                                <div className="flex items-center gap-4 mt-2">
+                                    <div className="text-sm font-medium text-brand-text-secondary">{completedSteps}/{checklistSteps.length} 完成</div>
+                                    <div className="flex-1 max-w-xs h-2 bg-white rounded-full overflow-hidden">
+                                        <div className="h-full bg-brand-secondary transition-all" style={{ width: `${(completedSteps / checklistSteps.length) * 100}%` }} />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                                {checklistSteps.map((step) => (
+                                    <div key={step.id} className="flex items-start gap-3">
+                                        <div className={`shrink-0 mt-0.5 ${step.isCompleted ? 'text-brand-secondary' : 'text-slate-300'}`}>
+                                            {step.isCompleted ? <CheckCircle2 size={18} /> : <div className="w-[18px] h-[18px] border-2 border-current rounded-full" />}
+                                        </div>
+                                        <div>
+                                            <div className="flex items-center gap-2 group">
+                                                {step.href ? (
+                                                    <Link href={step.href} className={`text-sm font-bold hover:text-brand-secondary transition-colors ${step.isCompleted ? 'text-brand-text-secondary line-through opacity-70' : 'text-brand-text-primary'}`}>
+                                                        {step.label} {step.optional && <span className="text-[10px] font-normal text-brand-text-muted ml-1 no-underline">(可选)</span>}
+                                                    </Link>
+                                                ) : (
+                                                    <button onClick={step.onClick} className={`text-sm font-bold hover:text-brand-secondary transition-colors ${step.isCompleted ? 'text-brand-text-secondary line-through opacity-70' : 'text-brand-text-primary'}`}>
+                                                        {step.label} {step.optional && <span className="text-[10px] font-normal text-brand-text-muted ml-1 no-underline">(可选)</span>}
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
             {/* Core Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -216,6 +349,8 @@ export function DashboardContent({
                     </Link>
                 </div>
             </div>
+            </>
+            )}
 
             {/* Account Summary & Updates */}
             <div className="space-y-6">

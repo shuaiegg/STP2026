@@ -6,7 +6,7 @@ import { redirect } from 'next/navigation';
 import { DashboardContent } from './DashboardContent';
 
 async function getUserData(userId: string) {
-    const [user, sites, articleCount, recentArticles, highPriorityDebts, totalPlannedArticles, perSiteMinCoverage] = await Promise.all([
+    const [user, sites, articleCount, recentArticles, highPriorityDebts, totalPlannedArticles, perSiteMinCoverage, auditCount] = await Promise.all([
         prisma.user.findUnique({
             where: { id: userId },
             select: { credits: true, name: true, email: true }
@@ -54,7 +54,8 @@ async function getUserData(userId: string) {
             ],
             distinct: ['siteId'],
             select: { topic: true, coverageScore: true, siteId: true }
-        })
+        }),
+        prisma.siteAudit.count({ where: { site: { userId } } })
     ]);
 
     const metrics = {
@@ -74,7 +75,7 @@ async function getUserData(userId: string) {
         })
     };
 
-    return { user, metrics, articleCount, recentArticles };
+    return { user, metrics, articleCount, recentArticles, auditCount };
 }
 
 export default async function UserDashboard({
@@ -97,7 +98,7 @@ export default async function UserDashboard({
     const isActuallyImpersonating = !!(isAdmin && impersonate && impersonate !== session.user.id);
     const targetUserId = isActuallyImpersonating ? (impersonate as string) : session.user.id;
 
-    const { user, metrics, articleCount, recentArticles } = await getUserData(targetUserId);
+    const { user, metrics, articleCount, recentArticles, auditCount } = await getUserData(targetUserId);
 
     return (
         <DashboardContent
@@ -106,6 +107,7 @@ export default async function UserDashboard({
             isImpersonating={isActuallyImpersonating}
             articleCount={articleCount}
             recentArticles={recentArticles}
+            auditCount={auditCount}
         />
     );
 }

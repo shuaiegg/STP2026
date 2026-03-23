@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import { CSPostHogProvider } from "@/components/providers/PostHogProvider";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 // Configure fonts if needed, or rely on CSS imports in globals.css
@@ -56,6 +57,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <CSPostHogProvider>
           {children}
         </CSPostHogProvider>
+        <Toaster position="top-right" richColors />
       </body>
     </html>
   );

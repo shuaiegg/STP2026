@@ -1,9 +1,5 @@
-# global-dashboard-metrics Specification
+## MODIFIED Requirements
 
-## Purpose
-Provide a high-level strategic overview of content assets and semantic gaps across all managed sites on the main dashboard.
-
-## Requirements
 ### Requirement: 全局大盘展示跨站点战略指标
 系统 SHALL 在 `/dashboard` 主页展示具有战略价值的聚合指标，并根据用户数据状态（EMPTY / SETUP / ACTIVE）条件渲染不同 UI。
 
