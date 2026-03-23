@@ -5,10 +5,10 @@ context: |
   Tech stack: Next.js 16 (App Router), React 19, TypeScript, TailwindCSS v4, Prisma ORM, PostgreSQL (Supabase), better-auth
 
   Design system: rules/design.md is the source of truth. Key constraints:
-  - Colors: primary accent #00d4ff (sky blue), secondary accent #f59e0b (amber), success #16a34a — all via --color-brand-* CSS variables
+  - Colors: primary accent #10b981 (emerald), hover #059669, muted #d1fae5; secondary accent #f59e0b (amber); success #16a34a — all via --color-brand-* CSS variables
   - Border-radius: rounded-lg (8px) default, rounded-xl for modals only — never rounded-0
   - Fonts: Plus Jakarta Sans (display/headings) + Noto Sans SC (CJK fallback) + Instrument Sans (body) + JetBrains Mono (code)
-  - Logo gradient (linear-gradient(135deg, #00ff88, #00d4ff)) appears ONLY on the logo mark
+  - Logo gradient (linear-gradient(135deg, #34d399, #38bdf8)) appears ONLY on the logo mark SVG — never as a UI background
   - Removed utility classes that must never be used: .border-brutalist, .brutalist-hover, .bg-gradient-brand, .text-gradient-brand
   - Brand voice: 精准·实用·有底气 — use "你" not "您" in Chinese copy
   - All user-visible strings must be in a const COPY/ITEMS object for i18n readiness

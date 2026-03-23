@@ -13,10 +13,22 @@ Vercel's Web Interface Guidelines. Fix all reported issues before marking the ta
 ## Color System
 
 ### Brand Colors
-- **Primary** (UI Accent): `#00d4ff` (Sky Blue) — main CTAs, links, active states
+- **Primary** (UI Accent): `#10b981` (Emerald) — main CTAs, links, active states; hover `#059669`; muted bg `#d1fae5`
 - **Secondary** (Accent): `#f59e0b` (Amber) — highlights, badges, progress indicators
 - **Success**: `#16a34a`
 - **Destructive**: `#ef4444` — delete actions, error states
+
+### Token Reference (CSS variables → Tailwind classes)
+| Token | Value | Tailwind class |
+|-------|-------|----------------|
+| `--color-brand-secondary` | `#10b981` | `brand-secondary` |
+| `--color-brand-secondary-hover` | `#059669` | `brand-secondary-hover` |
+| `--color-brand-secondary-muted` | `#d1fae5` | `brand-secondary-muted` |
+| `--color-brand-accent` | `#f59e0b` | `brand-accent` |
+
+### Logo Gradient
+- Applies **only** to the logo mark SVG: `linear-gradient(135deg, #34d399, #38bdf8)`
+- Never use this gradient as a background or button color elsewhere
 
 ### Neutral Scale (use Tailwind defaults unless overriding)
 - Background: `white` / `gray-50`

@@ -13,10 +13,13 @@
   /* Near Black */
   --primary-muted: #f5f5f5;
   /* Off White */
-  --secondary: #00d4ff;
+  --secondary: #10b981;
+  /*--secondary: #00d4ff; */
   /* Sky Blue */
-  --secondary-hover: #00bce6;
-  --secondary-muted: #e6f9ff;
+  /* --secondary-hover: #00bce6;
+  --secondary-muted: #e6f9ff; */
+  --secondary-hover: #059669;  /* 深翡翠，hover */
+  --secondary-muted: #d1fae5;  /* 淡薄荷，背景/badge */
   /* Blue Whisper */
   --accent: #f59e0b;
   /* Amber */
