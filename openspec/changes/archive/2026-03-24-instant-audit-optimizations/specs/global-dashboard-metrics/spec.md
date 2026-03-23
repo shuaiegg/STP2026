@@ -1,9 +1,5 @@
-# global-dashboard-metrics Specification
+## MODIFIED Requirements
 
-## Purpose
-Provide a high-level strategic overview of content assets and semantic gaps across all managed sites on the main dashboard.
-
-## Requirements
 ### Requirement: 全局大盘展示跨站点战略指标
 系统 SHALL 在 `/dashboard` 主页展示具有战略价值的聚合指标，并根据用户数据状态（EMPTY / SETUP / ACTIVE）条件渲染不同 UI。The system SHALL explicitly exclude sites marked as `isCompetitor: true` from all aggregate metrics.
 
@@ -22,14 +18,3 @@ Provide a high-level strategic overview of content assets and semantic gaps acro
 #### Scenario: 无站点时展示欢迎空状态（EMPTY 态）
 - **WHEN** 用户尚未创建任何非竞品站点（`totalSites === 0`）
 - **THEN** 显示欢迎空状态 UI（详见 dashboard-onboarding-checklist spec），不显示空统计数字
-
-### Requirement: Dashboard 数据层包含审计计数
-系统 SHALL 在服务端 `getUserData` 函数中并行查询当前用户的 `SiteAudit` 总数，并将其作为 `auditCount` 传入客户端组件。
-
-#### Scenario: auditCount 与其他 metrics 并行查询
-- **WHEN** 服务端渲染 `/dashboard` 页面
-- **THEN** `prisma.siteAudit.count({ where: { site: { userId } } })` 与其他 7 个 query 在同一 `Promise.all` 中执行
-
-#### Scenario: auditCount 正确传入 DashboardContent
-- **WHEN** `getUserData` 返回结果
-- **THEN** `auditCount` 作为独立 prop 传入 `DashboardContent`，类型为 `number`，默认值 `0`

@@ -21,6 +21,7 @@ export async function GET() {
                 id: true,
                 domain: true,
                 name: true,
+                isCompetitor: true,
                 createdAt: true,
                 audits: {
                     orderBy: { createdAt: 'desc' },
@@ -42,6 +43,7 @@ export async function GET() {
                 id: site.id,
                 domain: site.domain,
                 name: site.name,
+                isCompetitor: site.isCompetitor,
                 createdAt: site.createdAt.toISOString(),
                 latestAudit: latest
                     ? {
@@ -61,6 +63,57 @@ export async function GET() {
         });
     } catch (error: any) {
         console.error("Error fetching sites:", error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+}
+
+/**
+ * POST /api/dashboard/sites
+ * Creates a new Site record for the user.
+ */
+export async function POST(request: Request) {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session?.user?.id) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    try {
+        const body = await request.json();
+        const { domain, name, isCompetitor = false } = body;
+
+        if (!domain) {
+            return NextResponse.json({ error: 'Missing required field: domain' }, { status: 400 });
+        }
+
+        // Check if site already exists for this user
+        const existing = await prisma.site.findFirst({
+            where: { userId: session.user.id, domain },
+        });
+
+        if (existing) {
+            return NextResponse.json({ error: 'Site already exists' }, { status: 409 });
+        }
+
+        const site = await prisma.site.create({
+            data: {
+                userId: session.user.id,
+                domain,
+                name: name || domain,
+                isCompetitor: !!isCompetitor,
+            },
+        });
+
+        return NextResponse.json({
+            success: true,
+            site: {
+                id: site.id,
+                domain: site.domain,
+                name: site.name,
+                isCompetitor: site.isCompetitor,
+            }
+        });
+    } catch (error: any) {
+        console.error("Error creating site:", error);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }

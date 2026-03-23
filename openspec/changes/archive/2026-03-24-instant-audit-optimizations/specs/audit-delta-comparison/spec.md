@@ -1,11 +1,7 @@
-## ADDED Requirements
+## MODIFIED Requirements
 
 ### Requirement: Delta comparison between current and previous audit
 The HealthReport component SHALL accept an optional `previousIssueReport` prop and display a Delta banner when both current and previous issue reports are available. The Delta SHALL be computed in the frontend by comparing issue code sets. Additionally, the Instant Audit summary UI SHALL display upward/downward (↑/↓) trending arrows against historical numerical scores.
-
-Delta is defined as:
-- **New issues**: issue codes present in current report but not in previous
-- **Fixed issues**: issue codes present in previous report but not in current
 
 #### Scenario: Both current and previous reports available
 - **WHEN** `issueReport` and `previousIssueReport` are both non-null
@@ -28,14 +24,3 @@ Delta is defined as:
 #### Scenario: Numerical Score Delta
 - **WHEN** the parent page passes a historical `techScore` comparison
 - **THEN** the UI SHALL render a green ↑ or red ↓ indicator indicating the point difference.
-
-### Requirement: Parent page passes previous audit data to HealthReport
-The `[siteId]/page.tsx` SHALL pass the second-most-recent audit's `issueReport` (index 1 in the audits array) as `previousIssueReport` to the `HealthReport` component.
-
-#### Scenario: At least two audits exist
-- **WHEN** the audits API returns 2 or more records with issueReport data
-- **THEN** `audits[1].issueReport` SHALL be passed as `previousIssueReport`
-
-#### Scenario: Only one audit exists
-- **WHEN** the audits API returns exactly one record
-- **THEN** `previousIssueReport` SHALL be `null` and no Delta banner SHALL appear

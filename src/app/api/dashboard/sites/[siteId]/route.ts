@@ -37,3 +37,35 @@ export async function GET(
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
+
+export async function DELETE(
+    request: Request,
+    { params }: { params: Promise<{ siteId: string }> }
+) {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session?.user?.id) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { siteId } = await params;
+
+    try {
+        // Verify ownership
+        const site = await prisma.site.findUnique({
+            where: { id: siteId, userId: session.user.id },
+        });
+
+        if (!site) {
+            return NextResponse.json({ error: 'Site not found or unauthorized' }, { status: 404 });
+        }
+
+        await prisma.site.delete({
+            where: { id: siteId },
+        });
+
+        return NextResponse.json({ success: true, message: 'Site deleted successfully' });
+    } catch (error: any) {
+        console.error("Error deleting site:", error);
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
+}

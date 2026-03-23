@@ -11,7 +11,7 @@ export async function POST(request: Request) {
 
     try {
         const body = await request.json();
-        const { domain, graphData, techScore, businessDna, issueReport } = body;
+        const { domain, graphData, techScore, businessDna, issueReport, isCompetitor = false } = body;
 
         if (!domain || !graphData) {
             return NextResponse.json({ error: '缺失必要字段 (域名或图表数据)' }, { status: 400 });
@@ -27,6 +27,7 @@ export async function POST(request: Request) {
                     userId: session.user.id,
                     domain,
                     name: domain,
+                    isCompetitor: !!isCompetitor,
                 },
             });
         }

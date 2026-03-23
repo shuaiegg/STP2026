@@ -67,9 +67,12 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
             .then(r => r.json())
             .then(data => {
                 if (data.sites && data.sites.length > 0) {
-                    const newId = data.sites[0].id;
-                    setFirstSiteId(newId);
-                    localStorage.setItem('last_active_site_id', newId);
+                    const ownedSites = data.sites.filter((s: any) => !s.isCompetitor);
+                    const defaultId = data.sites.find((s: any) => s.id === cachedId)?.id || 
+                                     (ownedSites.length > 0 ? ownedSites[0].id : data.sites[0].id);
+                    
+                    setFirstSiteId(defaultId);
+                    localStorage.setItem('last_active_site_id', defaultId);
                     
                     // Cache the whole sites array
                     localStorage.setItem(CACHE_KEY, JSON.stringify(data.sites));

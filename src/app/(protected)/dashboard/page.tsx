@@ -12,7 +12,7 @@ async function getUserData(userId: string) {
             select: { credits: true, name: true, email: true }
         }),
         prisma.site.findMany({
-            where: { userId },
+            where: { userId, isCompetitor: false },
             select: { 
                 id: true, 
                 domain: true, 
@@ -41,13 +41,22 @@ async function getUserData(userId: string) {
             take: 3
         }),
         prisma.semanticDebt.count({
-            where: { site: { userId }, priorityLabel: { contains: '高搜索' } }
+            where: { 
+                site: { userId, isCompetitor: false }, 
+                priorityLabel: { contains: '高搜索' } 
+            }
         }),
         prisma.plannedArticle.count({
-            where: { contentPlan: { site: { userId } } }
+            where: { 
+                contentPlan: { 
+                    site: { userId, isCompetitor: false } 
+                } 
+            }
         }),
         prisma.semanticDebt.findMany({
-            where: { site: { userId } },
+            where: { 
+                site: { userId, isCompetitor: false } 
+            },
             orderBy: [
                 { siteId: 'asc' },
                 { coverageScore: 'asc' }
@@ -55,7 +64,11 @@ async function getUserData(userId: string) {
             distinct: ['siteId'],
             select: { topic: true, coverageScore: true, siteId: true }
         }),
-        prisma.siteAudit.count({ where: { site: { userId } } })
+        prisma.siteAudit.count({ 
+            where: { 
+                site: { userId, isCompetitor: false } 
+            } 
+        })
     ]);
 
     const metrics = {
