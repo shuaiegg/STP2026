@@ -6,6 +6,43 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '../ui/Button';
 import { authClient } from '@/lib/auth-client';
 
+const NAV_ITEMS = [
+    { href: '/', label: '首页', icon: 'home' as const },
+    { href: '/blog', label: '博客文章', icon: 'blog' as const },
+    { href: '/tools', label: '效率工具', icon: 'tools' as const },
+    { href: '/pricing', label: '定价方案', icon: 'pricing' as const },
+    { href: '/about', label: '关于我们', icon: 'about' as const }
+];
+
+const FOOTER_LINKS = [
+    {
+        title: '产品服务',
+        links: [
+            { label: '技术型 SEO 课程 (即将上线)', href: '#', disabled: true },
+            { label: 'pSEO 自动化工具', href: '/tools', disabled: false },
+            { label: '定价方案', href: '/pricing', disabled: false },
+            { label: '增长咨询服务 (预约已满)', href: '#', disabled: true }
+        ]
+    },
+    {
+        title: '知识库',
+        links: [
+            { label: '最新文章', href: '/blog', disabled: false },
+            { label: '案例拆解', href: '/case-studies', disabled: false },
+            { label: '联系我们', href: '/contact', disabled: false }
+        ]
+    },
+    {
+        title: '关于',
+        links: [
+            { label: '关于 STP2026', href: '/about', disabled: false },
+            { label: '隐私声明', href: '/privacy', disabled: false },
+            { label: '服务条款', href: '/terms', disabled: false },
+            { label: '退款政策', href: '/refund', disabled: false }
+        ]
+    }
+];
+
 const NavIcon: React.FC<{ type: 'home' | 'blog' | 'tools' | 'pricing' | 'about' }> = ({ type }) => {
     switch (type) {
         case 'home':
@@ -45,7 +82,6 @@ const NavIcon: React.FC<{ type: 'home' | 'blog' | 'tools' | 'pricing' | 'about' 
 
 const Header: React.FC = () => {
     const pathname = usePathname();
-    const router = useRouter();
     const { data: session } = authClient.useSession();
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -67,7 +103,7 @@ const Header: React.FC = () => {
 
     const getLinkClass = (href: string) => {
         const isActive = href === '/' ? pathname === '/' : pathname.startsWith(href);
-        return `flex items-center group text-sm font-semibold transition-all py-2 ${isActive ? 'text-brand-primary' : 'text-brand-text-secondary hover:text-brand-primary'}`;
+        return `flex items-center group text-sm font-semibold transition-all py-2 px-3 rounded-lg ${isActive ? 'text-brand-secondary bg-brand-secondary/10' : 'text-brand-text-secondary hover:text-brand-primary hover:bg-brand-surface'}`;
     };
 
     return (
@@ -75,32 +111,18 @@ const Header: React.FC = () => {
             <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
                 <div className="flex items-center gap-16">
                     <Link href="/" className="flex items-center gap-2.5 group">
-                        <div className="w-9 h-9 bg-gradient-brand rounded-xl flex items-center justify-center text-white shadow-lg shadow-brand-primary/20 transition-transform group-hover:rotate-6">
+                        <div className="w-9 h-9 rounded-lg flex items-center justify-center text-white shadow-lg shadow-brand-primary/20 transition-transform group-hover:rotate-6" style={{ background: 'linear-gradient(135deg, #00ff88, #00d4ff)' }}>
                             <span className="text-lg font-black font-display tracking-tighter">S</span>
                         </div>
                         <span className="text-xl font-bold tracking-tight text-brand-text-primary">ScaletoTop</span>
                     </Link>
-                    <nav className="hidden md:flex items-center gap-8">
-                        <Link href="/" className={getLinkClass('/')}>
-                            <NavIcon type="home" />
-                            首页
-                        </Link>
-                        <Link href="/blog" className={getLinkClass('/blog')}>
-                            <NavIcon type="blog" />
-                            博客文章
-                        </Link>
-                        <Link href="/tools" className={getLinkClass('/tools')}>
-                            <NavIcon type="tools" />
-                            效率工具
-                        </Link>
-                        <Link href="/pricing" className={getLinkClass('/pricing')}>
-                            <NavIcon type="pricing" />
-                            定价方案
-                        </Link>
-                        <Link href="/about" className={getLinkClass('/about')}>
-                            <NavIcon type="about" />
-                            关于我们
-                        </Link>
+                    <nav className="hidden md:flex items-center gap-2">
+                        {NAV_ITEMS.map(item => (
+                            <Link key={item.href} href={item.href} className={getLinkClass(item.href)}>
+                                <NavIcon type={item.icon} />
+                                {item.label}
+                            </Link>
+                        ))}
                     </nav>
                 </div>
                 <div className="flex items-center gap-4">
@@ -118,16 +140,16 @@ const Header: React.FC = () => {
                         <div className="relative" ref={dropdownRef}>
                             <button
                                 onClick={() => setDropdownOpen(o => !o)}
-                                className="w-10 h-10 rounded-full border-2 border-brand-border-heavy flex items-center justify-center bg-brand-surface font-display font-bold text-xs hover:border-brand-primary transition-colors"
+                                className="w-10 h-10 rounded-full border border-brand-border flex items-center justify-center bg-brand-surface font-display font-bold text-xs hover:border-brand-text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-brand-secondary"
                             >
                                 {session.user.name?.[0]?.toUpperCase() || 'U'}
                             </button>
                             {dropdownOpen && (
-                                <div className="absolute right-0 top-12 w-40 bg-white border-2 border-brand-border-heavy shadow-[4px_4px_0_0_rgba(10,10,10,1)] z-50">
+                                <div className="absolute right-0 top-12 w-40 bg-white border border-brand-border rounded-lg shadow-md z-50 overflow-hidden">
                                     <Link
                                         href="/dashboard"
                                         onClick={() => setDropdownOpen(false)}
-                                        className="block px-4 py-3 text-xs font-bold uppercase tracking-widest text-brand-text-secondary hover:bg-brand-surface hover:text-brand-primary transition-colors"
+                                        className="block px-4 py-3 text-xs font-bold uppercase tracking-widest text-brand-text-secondary hover:bg-brand-surface hover:text-brand-text-primary transition-colors"
                                     >
                                         控制台
                                     </Link>
@@ -175,32 +197,22 @@ const Footer: React.FC = () => {
                         </div>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-20">
-                        <div>
-                            <h5 className="text-brand-text-primary font-bold text-sm mb-8 tracking-widest uppercase">产品服务</h5>
-                            <ul className="space-y-4 text-sm text-brand-text-secondary">
-                                <li className="opacity-50 cursor-not-allowed">技术型 SEO 课程 (即将上线)</li>
-                                <li><Link href="/tools" className="hover:text-brand-primary transition-colors">pSEO 自动化工具</Link></li>
-                                <li><Link href="/pricing" className="hover:text-brand-primary transition-colors">定价方案</Link></li>
-                                <li className="opacity-50 cursor-not-allowed">增长咨询服务 (预约已满)</li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h5 className="text-brand-text-primary font-bold text-sm mb-8 tracking-widest uppercase">知识库</h5>
-                            <ul className="space-y-4 text-sm text-brand-text-secondary">
-                                <li><Link href="/blog" className="hover:text-brand-primary transition-colors">最新文章</Link></li>
-                                <li><Link href="/case-studies" className="hover:text-brand-primary transition-colors">案例拆解</Link></li>
-                                <li><Link href="/contact" className="hover:text-brand-primary transition-colors">联系我们</Link></li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h5 className="text-brand-text-primary font-bold text-sm mb-8 tracking-widest uppercase">关于</h5>
-                            <ul className="space-y-4 text-sm text-brand-text-secondary">
-                                <li><Link href="/about" className="hover:text-brand-primary transition-colors">关于 STP2026</Link></li>
-                                <li><Link href="/privacy" className="hover:text-brand-primary transition-colors">隐私声明</Link></li>
-                                <li><Link href="/terms" className="hover:text-brand-primary transition-colors">服务条款</Link></li>
-                                <li><Link href="/refund" className="hover:text-brand-primary transition-colors">退款政策</Link></li>
-                            </ul>
-                        </div>
+                        {FOOTER_LINKS.map(group => (
+                            <div key={group.title}>
+                                <h5 className="text-brand-text-primary font-bold text-sm mb-8 tracking-widest uppercase">{group.title}</h5>
+                                <ul className="space-y-4 text-sm text-brand-text-secondary">
+                                    {group.links.map(link => (
+                                        <li key={link.label} className={link.disabled ? "opacity-50 cursor-not-allowed" : ""}>
+                                            {link.disabled ? (
+                                                link.label
+                                            ) : (
+                                                <Link href={link.href} className="hover:text-brand-text-primary transition-colors">{link.label}</Link>
+                                            )}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        ))}
                     </div>
                 </div>
                 <div className="mt-24 pt-10 border-t border-brand-border flex flex-col sm:flex-row justify-between items-center gap-6">

@@ -1,20 +1,40 @@
 schema: spec-driven
 
-# Project context (optional)
-# This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
+# Project context — shown to AI when creating artifacts
+context: |
+  Tech stack: Next.js 16 (App Router), React 19, TypeScript, TailwindCSS v4, Prisma ORM, PostgreSQL (Supabase), better-auth
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+  Design system: rules/design.md is the source of truth. Key constraints:
+  - Colors: primary accent #00d4ff (sky blue), secondary accent #f59e0b (amber), success #16a34a — all via --color-brand-* CSS variables
+  - Border-radius: rounded-lg (8px) default, rounded-xl for modals only — never rounded-0
+  - Fonts: Plus Jakarta Sans (display/headings) + Noto Sans SC (CJK fallback) + Instrument Sans (body) + JetBrains Mono (code)
+  - Logo gradient (linear-gradient(135deg, #00ff88, #00d4ff)) appears ONLY on the logo mark
+  - Removed utility classes that must never be used: .border-brutalist, .brutalist-hover, .bg-gradient-brand, .text-gradient-brand
+  - Brand voice: 精准·实用·有底气 — use "你" not "您" in Chinese copy
+  - All user-visible strings must be in a const COPY/ITEMS object for i18n readiness
+  - Server Components by default; 'use client' only when hooks/browser APIs needed
+  - next/image for all images, generateMetadata on every page
+
+  Two user segments: SEO beginners (public pages, acquisition focus) and advanced SEO/SEM professionals (dashboard, efficiency focus).
+  Long-term vision: globally scalable platform — design tokens and components must be culturally neutral.
+
+# Per-artifact rules
+rules:
+  proposal:
+    - Always state the long-term product positioning (globally scalable SEO/SEM platform) when the change involves public-facing pages or design
+    - Identify whether the change affects public pages (beginner audience) or dashboard (expert audience) — these require different visual registers
+    - Mark any change to CSS tokens or utility classes as BREAKING
+
+  tasks:
+    - For any task that creates or modifies a page or UI component, append a "Design Compliance" sub-group with these tasks:
+        - Verify all colors use brand token classes (no hardcoded hex)
+        - Verify no removed utility classes (.border-brutalist, .brutalist-hover, .bg-gradient-brand, .text-gradient-brand)
+        - Verify rounded-lg on all interactive elements
+        - Verify all user-visible strings are in a const COPY/ITEMS object
+        - Run /web-design-guidelines skill on modified files and fix reported issues
+    - For any task that creates a new Next.js page, add:
+        - Add error.tsx boundary for the new route segment
+        - Add generateMetadata or static metadata export
+        - Verify next/image is used for all images (not <img> tags)
+    - Keep each task small enough to complete in one session
+    - Order tasks by dependency: tokens → components → layouts → pages → verification

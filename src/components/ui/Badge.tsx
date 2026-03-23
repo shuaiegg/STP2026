@@ -10,7 +10,7 @@ export const Badge: React.FC<BadgeProps> = ({ children, variant = 'default', cla
   const styles = {
     default: "bg-brand-primary-muted text-brand-primary",
     muted: "bg-brand-surface text-brand-text-muted border border-brand-border",
-    success: "bg-brand-secondary-muted text-brand-secondary",
+    success: "bg-brand-success/10 text-brand-success",
   };
 
   return (

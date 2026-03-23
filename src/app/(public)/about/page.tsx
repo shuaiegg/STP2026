@@ -1,136 +1,165 @@
-"use client";
-
-import React from 'react';
 import Link from 'next/link';
-import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 
+const COPY = {
+  badge: 'ScaletoTop · 关于我们',
+  heroHeadline: '为什么 99% 的内容都在烧钱？',
+  heroHighlight: '在结果面前，数量从不是护城河。',
+  heroDescription: '在 AI 泛滥的时代，我们不追求"更多"的内容，我们追求更完整的逻辑。让每一篇内容都成为可量化的资产，而不是沉没成本。',
+  philosophyLabel: '我们的方法论',
+  philosophyHeadline: '内生驱动：用业务逻辑统治语义',
+  principles: [
+    {
+      number: '01',
+      title: '业务 DNA 提取',
+      description: '每一个伟大的业务都有其内在的公理系统。我们通过 AI 深度解构你的业务核心、受众痛点与品牌调性，确保内容产出具备天然的商业直觉。',
+    },
+    {
+      number: '02',
+      title: '语义统治力',
+      description: '真正的专业不是覆盖对手的关键词，而是完善自己的知识体系。当内容逻辑严丝合缝，搜索引擎将别无选择，只能将你置于顶端。',
+    },
+    {
+      number: '03',
+      title: '流量套利雷达',
+      description: '用算力替换广告费。精准锁定高 CPC 词的自然排名机会，实现降维打击。让每一分预算，都为长期的数字资产增值服务。',
+    },
+  ],
+  statsLabel: '截至 2026 年 3 月',
+  stats: [
+    { value: '10,000+', label: '分析站点数' },
+    { value: '2.4M+', label: '追踪关键词' },
+    { value: '98%', label: '构建成功率' },
+  ],
+  techLabel: '平台架构',
+  techHeadline: '独立演进的 SEO 操作系统',
+  techDescription: 'STP 不只是工具集，它是一套可以自我监测、自我修正的有机系统。从 Site Intelligence 的战略侦察到 GEO Writer 的精准执行，消灭了从"看到机会"到"交付结果"之间的所有认知负荷。',
+  techFeatures: [
+    '站点健康度实时审计',
+    '语义债自动化度量',
+    '人机协同战略看板',
+    'GEO 内容被引用追踪',
+  ],
+  ctaHeadline: '准备好让你的内容为你工作了吗？',
+  ctaDescription: '分析你的站点，找出被搜索引擎忽略的内容缺口。免费开始，无需信用卡。',
+  ctaPrimary: '免费分析我的网站',
+  ctaSecondary: '查看定价',
+};
+
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-brand-surface grid-bg-dense selection:bg-brand-secondary selection:text-brand-primary">
-      {/* 1. HERO SECTION */}
-      <section className="container mx-auto px-6 pt-32 pb-24 relative overflow-hidden">
-        <div className="max-w-4xl animate-slide-in-up">
-          <Badge variant="muted" className="mb-6 border-brutalist-sm px-4 py-1.5 text-xs uppercase tracking-widest font-black">
-            ScaletoTop 2026 / 逻辑驱动数字帝国
-          </Badge>
-          <h1 className="text-6xl md:text-8xl font-display font-bold leading-[0.9] mb-10 text-brand-primary tracking-tighter">
-            为什么 99% 的内容 <br />
-            <span className="text-gradient-brand animate-gradient-x italic">都在烧钱？</span>
+    <div className="min-h-screen bg-white">
+
+      {/* ── HERO ── */}
+      <section className="max-w-7xl mx-auto px-6 pt-24 pb-20">
+        <div className="max-w-3xl animate-slide-in-up">
+          <Badge variant="muted" className="mb-6">{COPY.badge}</Badge>
+          <h1 className="text-5xl md:text-6xl font-display font-bold leading-tight mb-6 text-brand-text-primary tracking-tight">
+            {COPY.heroHeadline}
           </h1>
-          <p className="text-xl md:text-2xl text-brand-text-secondary max-w-2xl font-sans leading-relaxed">
-            在 AI 泛滥的时代，数量不再是护城河。我们不追求“更多”的内容，
-            我们追求 <strong className="text-brand-primary font-bold">“更完整的逻辑”</strong>。
+          <p className="text-xl text-brand-secondary font-semibold mb-4">{COPY.heroHighlight}</p>
+          <p className="text-lg text-brand-text-secondary leading-relaxed max-w-2xl">
+            {COPY.heroDescription}
           </p>
-        </div>
-        
-        {/* Decorative Grid Element */}
-        <div className="absolute -top-10 -right-20 w-96 h-96 opacity-5 pointer-events-none">
-           <div className="w-full h-full border-[20px] border-brand-primary rotate-12"></div>
         </div>
       </section>
 
-      {/* 2. PHILOSOPHY SECTION (Black Bar) */}
-      <section className="bg-brand-primary py-32 text-brand-text-inverted border-y-8 border-brand-primary">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row gap-20 items-start">
-            <div className="md:w-1/3">
-              <h2 className="text-4xl md:text-5xl font-display font-bold mb-6 leading-tight">
-                内生驱动：<br />
-                <span className="text-brand-secondary">我们的公理系统</span>
-              </h2>
-              <div className="w-20 h-2 bg-brand-secondary"></div>
-            </div>
-            <div className="md:w-2/3 grid gap-16">
-               <div className="stagger-1">
-                  <h3 className="text-2xl font-display font-bold mb-4 text-brand-secondary uppercase tracking-widest">01 / 业务 DNA 提取</h3>
-                  <p className="text-lg text-brand-text-muted font-sans leading-relaxed">
-                    每一个伟大的业务都有其内在的公理系统。我们通过 AI 深度解构您的业务核心、受众痛点与品牌调性，确保内容产出具备天然的商业直觉。
-                  </p>
-               </div>
-               <div className="stagger-2">
-                  <h3 className="text-2xl font-display font-bold mb-4 text-brand-secondary uppercase tracking-widest">02 / 语义统治力</h3>
-                  <p className="text-lg text-brand-text-muted font-sans leading-relaxed">
-                    真正的专业不是覆盖对手的关键词，而是完善您自己的知识体系。当您的内容逻辑严丝合缝，Google 将别无选择，只能将您置于顶端。
-                  </p>
-               </div>
-               <div className="stagger-3">
-                  <h3 className="text-2xl font-display font-bold mb-4 text-brand-secondary uppercase tracking-widest">03 / 流量套利雷达</h3>
-                  <p className="text-lg text-brand-text-muted font-sans leading-relaxed">
-                    用算力替换广告费。精准锁定那些高 CPC 词的自然排名机会，实现降维打击。让每一分广告预算，都为长期的数字资产增值服务。
-                  </p>
-               </div>
-            </div>
+      {/* ── STATS BAR ── */}
+      <section className="border-y border-brand-border bg-brand-surface">
+        <div className="max-w-7xl mx-auto px-6 py-12">
+          <p className="text-xs font-mono text-brand-text-muted uppercase tracking-widest mb-8">{COPY.statsLabel}</p>
+          <div className="grid grid-cols-3 gap-8 md:gap-16 max-w-lg">
+            {COPY.stats.map((stat) => (
+              <div key={stat.label}>
+                <div className="text-3xl font-mono font-bold text-brand-text-primary">{stat.value}</div>
+                <div className="text-xs text-brand-text-muted mt-1">{stat.label}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* 3. TECHNOLOGY SECTION */}
-      <section className="py-32 container mx-auto px-6">
-        <div className="grid md:grid-cols-2 gap-20 items-center">
-           <div className="order-2 md:order-1">
-              <div className="border-brutalist p-2 bg-brand-primary inline-block rotate-1">
-                 <div className="bg-brand-surface p-8 border-2 border-brand-primary">
-                    <pre className="font-mono text-xs text-brand-text-primary overflow-hidden">
+      {/* ── PHILOSOPHY ── */}
+      <section className="max-w-7xl mx-auto px-6 py-24">
+        <div className="mb-14">
+          <p className="text-xs font-mono text-brand-secondary uppercase tracking-widest mb-3">{COPY.philosophyLabel}</p>
+          <h2 className="text-3xl md:text-4xl font-display font-bold text-brand-text-primary tracking-tight max-w-xl">
+            {COPY.philosophyHeadline}
+          </h2>
+        </div>
+        <div className="grid md:grid-cols-3 gap-8">
+          {COPY.principles.map((p) => (
+            <div key={p.number} className="border border-brand-border rounded-lg p-8 bg-white hover:shadow-md transition-shadow">
+              <div className="text-4xl font-mono font-bold text-brand-border mb-6">{p.number}</div>
+              <h3 className="text-lg font-display font-bold text-brand-text-primary mb-3">{p.title}</h3>
+              <p className="text-brand-text-secondary leading-relaxed text-sm">{p.description}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── TECHNOLOGY ── */}
+      <section className="bg-brand-primary">
+        <div className="max-w-7xl mx-auto px-6 py-24">
+          <div className="grid md:grid-cols-2 gap-16 items-center">
+            <div>
+              <p className="text-xs font-mono text-brand-secondary uppercase tracking-widest mb-4">{COPY.techLabel}</p>
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-white tracking-tight mb-6">
+                {COPY.techHeadline}
+              </h2>
+              <p className="text-brand-text-muted leading-relaxed mb-10">
+                {COPY.techDescription}
+              </p>
+              <ul className="space-y-3">
+                {COPY.techFeatures.map((feature) => (
+                  <li key={feature} className="flex items-center gap-3 text-sm text-white">
+                    <span className="w-1.5 h-1.5 rounded-full bg-brand-secondary flex-shrink-0" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="rounded-lg bg-white/5 border border-white/10 p-8 font-mono text-sm text-brand-text-muted">
+              <pre className="overflow-hidden leading-relaxed">
 {`{
-  "project": "STP2026",
-  "engine": "IntelligenceEngine v1.4",
+  "platform": "ScaletoTop",
+  "version": "2026",
+  "engine": "IntelligenceEngine",
   "strategy": "Internal-Driven",
-  "status": "Dominating",
   "goals": [
     "Semantic Integrity",
     "Topical Authority",
     "Zero-Friction Execution"
-  ]
+  ],
+  "status": "Active"
 }`}
-                    </pre>
-                 </div>
-              </div>
-           </div>
-           <div className="order-1 md:order-2">
-              <h2 className="text-4xl font-display font-bold mb-8">独立演进的架构</h2>
-              <p className="text-lg text-brand-text-secondary mb-8 leading-relaxed">
-                STP 不仅是一个工具，它是一套可以自我进化、自我监测、自我修正的有机体。
-                从 Site Intelligence 的战略侦察到 GEO Writer 的精准执行，我们消灭了从“看到机会”到“交付结果”之间的所有认知负荷。
-              </p>
-              <ul className="space-y-4 font-bold font-display uppercase tracking-wider text-sm">
-                <li className="flex items-center gap-3"><span className="w-2 h-2 bg-brand-accent"></span> 3D 集群地图实时审计</li>
-                <li className="flex items-center gap-3"><span className="w-2 h-2 bg-brand-accent"></span> 语义债自动化度量</li>
-                <li className="flex items-center gap-3"><span className="w-2 h-2 bg-brand-accent"></span> 人机协同战略看板</li>
-              </ul>
-           </div>
+              </pre>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* 4. FINAL CTA */}
-      <section className="pb-40 container mx-auto px-6 text-center">
-        <div className="border-brutalist bg-brand-secondary p-12 md:p-24 relative brutalist-hover">
-          <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-brand-primary text-white px-8 py-2 font-display font-bold skew-x-12 uppercase tracking-[0.3em]">
-             Take Command
-          </div>
-          <h2 className="text-4xl md:text-6xl font-display font-bold mb-10 text-brand-primary">
-            准备好接管您的 <br /> 细分市场了吗？
+      {/* ── CTA ── */}
+      <section className="max-w-7xl mx-auto px-6 py-24">
+        <div className="rounded-xl border border-brand-border bg-brand-surface p-12 md:p-16 text-center max-w-3xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-display font-bold text-brand-text-primary mb-4 tracking-tight">
+            {COPY.ctaHeadline}
           </h2>
-          <div className="flex flex-col sm:flex-row justify-center gap-8">
+          <p className="text-brand-text-secondary mb-10 leading-relaxed">
+            {COPY.ctaDescription}
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link href="/dashboard/site-intelligence/instant-audit">
-              <Button size="lg" className="h-20 px-12 text-xl font-display border-brutalist bg-brand-primary hover:bg-brand-primary-hover">
-                一键开启深度审计
-              </Button>
+              <Button size="lg">{COPY.ctaPrimary}</Button>
             </Link>
-            <Link href="/register">
-              <Button size="lg" variant="outline" className="h-20 px-12 text-xl font-display border-brutalist bg-white">
-                立即免费注册
-              </Button>
+            <Link href="/pricing">
+              <Button size="lg" variant="outline">{COPY.ctaSecondary}</Button>
             </Link>
           </div>
         </div>
       </section>
-      
-      {/* 5. TICKET DECOR */}
-      <div className="h-16 bg-brand-primary text-brand-secondary flex items-center justify-center font-mono text-xs font-bold tracking-[0.5em] overflow-hidden whitespace-nowrap">
-         STP2026 // LOGIC OVER QUANTITY // SEMANTIC DOMINANCE // ROI MAXIMIZER // INDEPENDENT AGENT // 
-      </div>
+
     </div>
   );
 }

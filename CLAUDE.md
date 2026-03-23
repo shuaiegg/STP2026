@@ -29,6 +29,72 @@ The project follows strict engineering standards for immutability, component com
 - **Rules Directory**: Detailed guidelines are stored in `rules/*.md`.
 - **Primary Rules**: `rules/STP_RULES.md` is the source of truth for project standards.
 - **Frontend Patterns**: `frontend-patterns.skill` contains React/Next.js best practices.
+- **Design & Copy Rules**: `rules/design.md` defines visual design, UI patterns, and copy guidelines.
+
+## Frontend Design Checklist — Run Before Marking Any UI Task Complete
+
+When implementing or modifying any page, component, or UI element, verify ALL of the following before marking the task done. Do not skip items silently — if a check fails, fix it first.
+
+### Tokens & Colors
+- [ ] All colors use `--color-brand-*` CSS variables or Tailwind `brand-*` classes — no hardcoded hex values in JSX/CSS
+- [ ] Primary interactive elements (buttons, links, active states) use `brand-secondary` (`#00d4ff`)
+- [ ] No usage of removed utility classes: `.border-brutalist`, `.border-brutalist-sm`, `.border-brutalist-accent`, `.brutalist-hover`, `.bg-gradient-brand`, `.text-gradient-brand`
+- [ ] Logo gradient (`linear-gradient(135deg, #00ff88, #00d4ff)`) appears ONLY on the logo mark — not on buttons, backgrounds, or decorative elements
+
+### Layout & Components
+- [ ] All interactive elements use `rounded-lg` (8px) — modals/dialogs may use `rounded-xl`; nothing else uses `rounded-0`
+- [ ] Cards use `hover:shadow-md transition-shadow` — not pixel-offset box-shadows
+- [ ] Section vertical spacing is `py-16` minimum on public pages (`py-20` or `py-24` preferred)
+- [ ] Page max-width is `max-w-7xl mx-auto px-4 sm:px-6 lg:px-8` or equivalent
+
+### Typography & Copy
+- [ ] Headings use `font-display` (Plus Jakarta Sans / Noto Sans SC fallback)
+- [ ] No more than 3 font sizes on a single page
+- [ ] All user-visible text strings are extracted to a `const COPY = {...}` or `const ITEMS = [...]` at file scope — no inline hardcoded strings in JSX (i18n readiness)
+- [ ] Chinese copy uses "你" not "您"
+- [ ] Headlines lead with the benefit, not the feature name
+
+### Accessibility
+- [ ] All interactive elements are keyboard navigable (Tab + Enter/Space)
+- [ ] Images have meaningful `alt` text; decorative images use `alt=""`
+- [ ] Color is not the only differentiator — icons or text labels accompany color-only states
+
+### Next.js Best Practices
+- [ ] Components default to Server Components — `'use client'` added only when hooks or browser APIs are needed
+- [ ] `next/image` used for all content images (not `<img>` tags)
+- [ ] Every new route segment has an `error.tsx` boundary
+- [ ] Pages export `generateMetadata` or a static `metadata` object
+
+### Final Gate
+- [ ] Run `/web-design-guidelines` skill on the modified file(s) and fix all reported issues before marking complete
+
+## Destructive Operations — Always Confirm First
+
+Before executing any of the following, **stop and explicitly ask the user for confirmation**. Do not proceed without a clear "yes":
+
+### Database
+- `npx prisma migrate dev` or `npx prisma migrate deploy` — alters production schema
+- `npx prisma db push` — confirm you are on the correct environment (dev vs prod)
+- Any raw SQL with `DROP`, `TRUNCATE`, or `DELETE` without a `WHERE` clause
+- `npx prisma db seed` on a non-empty database — may overwrite existing data
+
+### Git
+- `git push --force` or `git push --force-with-lease`
+- `git reset --hard`
+- `git checkout .` or `git restore .` — permanently discards uncommitted changes
+- `git clean -f` or `git clean -fd`
+- `git branch -D` — deletes a branch
+
+### Files & Storage
+- `rm -rf` on any directory
+- Bulk deletion of files from Supabase `media` bucket
+- Overwriting `.env`, `.env.local`, or any environment config file
+
+### Deployment
+- Any change to `vercel.json`, CI/CD pipeline configs, or cron job schedules
+- Force-deploying to production outside of the normal build process
+
+**Rule**: If an action cannot be fully undone in under 60 seconds, always ask first.
 
 ## Architecture Overview
 

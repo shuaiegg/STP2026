@@ -31,12 +31,12 @@ export default function NotFound() {
       {/* Actions */}
       <div className="flex flex-col sm:flex-row gap-6 animate-slide-in-up stagger-4 relative z-10">
         <Link href="/">
-          <Button size="lg" className="h-16 px-10 text-lg font-display border-brutalist bg-brand-primary hover:bg-brand-primary-hover brutalist-hover">
-            返回战略指挥部 (首页)
+          <Button size="lg" className="h-16 px-10 text-lg font-display">
+            返回首页
           </Button>
         </Link>
         <Link href="/blog">
-          <Button variant="outline" size="lg" className="h-16 px-10 text-lg font-display border-brutalist bg-white brutalist-hover">
+          <Button variant="outline" size="lg" className="h-16 px-10 text-lg font-display">
             探索知识库
           </Button>
         </Link>
