@@ -1,4 +1,4 @@
-## ADDED Requirements
+## MODIFIED Requirements
 
 ### Requirement: Bind Instant Audit to Site Definition
 The Instant Audit page SHALL require a domain to be bound to a tracked `Site` record, removing the free-text arbitrary scan behavior.

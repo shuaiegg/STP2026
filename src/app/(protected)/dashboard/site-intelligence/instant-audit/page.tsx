@@ -9,7 +9,24 @@ import GalaxyMap from '@/components/dashboard/site-intelligence/GalaxyMap';
 import HealthReport from '@/components/dashboard/site-intelligence/HealthReport';
 import Link from 'next/link';
 import { authClient } from "@/lib/auth-client";
-import { Wallet, Globe, ShieldCheck, ChevronDown, Plus, Trash2, Copy, Check, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Globe, ShieldCheck, ChevronDown, Plus, Trash2, Copy, Check, TrendingUp, TrendingDown, Minus, X } from 'lucide-react';
+
+const COPY = {
+    DELETE_TITLE: "确认取消绑定站点？",
+    DELETE_DESC: "此操作将从「即时审计」中移除该站点及其所有历史记录。站点本身不会在系统中删除，但该页面的本地持久化数据将清空。",
+    DELETE_CONFIRM_PREFIX: "请输入域名",
+    DELETE_CONFIRM_SUFFIX: "以确认删除：",
+    DELETE_BUTTON: "确认删除",
+    DELETE_CANCEL: "取消",
+    DELETE_INPUT_PLACEHOLDER: "输入域名以确认",
+    ADD_SITE: "添加我的站点",
+    START_SCAN: "发起扫描",
+    SCANNING: "扫描中...",
+    SWITCH_TARGET: "切换审计目标",
+    MY_SITES: "我的站点",
+    BACK: "返回",
+    BETA_TAG: "公测版",
+};
 
 interface PageMeta {
     url?: string;
@@ -101,9 +118,11 @@ function InstantAuditInner() {
     const [isAddingSite, setIsAddingSite] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
-    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deleteTarget, setDeleteTarget] = useState<Site | null>(null);
+    const [deleteConfirmInput, setDeleteConfirmInput] = useState('');
 
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const prevActiveSiteIdRef = useRef<string | null>(null);
     const [isSelectorOpen, setIsSelectorOpen] = useState(false);
 
     // Fetch sites and cost on mount
@@ -146,16 +165,18 @@ function InstantAuditInner() {
     useEffect(() => {
         if (!activeSiteId) return;
         const site = sites.find(s => s.id === activeSiteId);
-        if (site) {
-            setDomain(site.domain);
-            localStorage.setItem('last_active_site_id', site.id);
-            
-            // If no specific auditId in URL, fetch latest audit
-            if (!activeAuditId) {
-                fetchLatestAudit(site.id);
-            } else {
-                fetchSpecificAudit(site.id, activeAuditId);
-            }
+        if (!site) return; // sites not yet loaded, will re-run when sites loads
+        if (prevActiveSiteIdRef.current === activeSiteId) return; // sites list changed (e.g. deletion of non-active site), skip
+        prevActiveSiteIdRef.current = activeSiteId;
+
+        setDomain(site.domain);
+        localStorage.setItem('last_active_site_id', site.id);
+
+        // If no specific auditId in URL, fetch latest audit
+        if (!activeAuditId) {
+            fetchLatestAudit(site.id);
+        } else {
+            fetchSpecificAudit(site.id, activeAuditId);
         }
     }, [activeSiteId, sites]);
 
@@ -380,24 +401,47 @@ function InstantAuditInner() {
         }
     };
 
-    const handleDeleteSite = async () => {
-        if (!activeSiteId) return;
+    const resetAuditStates = () => {
+        setActiveAuditId(null);
+        setGraphData({ nodes: [], links: [] });
+        setTechScore(null);
+        setIssueReport(null);
+        setAuditHistory([]);
+        setSelectedNode(null);
+        setStatus('READY_FOR_SCAN');
+        setScanned(0);
+        setTotal(0);
+        setBusinessDna(null);
+    };
+
+    const handleDeleteSite = async (siteId: string) => {
+        if (!siteId) return;
         setIsDeleting(true);
         try {
-            const res = await fetch(`/api/dashboard/sites/${activeSiteId}`, {
+            const res = await fetch(`/api/dashboard/sites/${siteId}`, {
                 method: 'DELETE'
             });
             const data = await res.json();
             if (data.success) {
-                const remaining = sites.filter(s => s.id !== activeSiteId);
+                const remaining = sites.filter(s => s.id !== siteId);
                 setSites(remaining);
-                setShowDeleteConfirm(false);
-                if (remaining.length > 0) {
-                    setActiveSiteId(remaining[0].id);
-                } else {
-                    setActiveSiteId(null);
-                    setGraphData({ nodes: [], links: [] });
-                    setStatus('READY_FOR_SCAN');
+                setDeleteTarget(null);
+                setDeleteConfirmInput('');
+                
+                if (siteId === activeSiteId) {
+                    if (remaining.length > 0) {
+                        const nextSite = remaining[0];
+                        setActiveSiteId(nextSite.id);
+                        
+                        const params = new URLSearchParams(searchParams.toString());
+                        params.set('siteId', nextSite.id);
+                        params.delete('auditId');
+                        router.replace(`/dashboard/site-intelligence/instant-audit?${params.toString()}`, { scroll: false });
+                    } else {
+                        setActiveSiteId(null);
+                        resetAuditStates();
+                        router.replace('/dashboard/site-intelligence/instant-audit', { scroll: false });
+                    }
                 }
             }
         } catch (e) {
@@ -485,19 +529,38 @@ ${issuesMarkdown}
         : null;
 
     const renderSiteItem = (site: Site) => (
-        <button
+        <div
             key={site.id}
-            onClick={() => { setActiveSiteId(site.id); setIsSelectorOpen(false); }}
-            className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left transition-colors mb-1 ${site.id === activeSiteId
-                ? 'bg-brand-primary/10 text-brand-primary shadow-sm border border-brand-primary/10'
-                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border border-transparent'
+            className={`group w-full flex items-center justify-between px-3 py-2 rounded-xl text-left transition-all mb-1 cursor-pointer border ${site.id === activeSiteId
+                ? 'bg-brand-primary/10 text-brand-primary border-brand-primary/10 shadow-sm'
+                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent'
                 }`}
+            onClick={() => {
+                if (site.id !== activeSiteId) {
+                    resetAuditStates();
+                    setActiveSiteId(site.id);
+                }
+                setIsSelectorOpen(false);
+            }}
         >
-            <div className="flex flex-col min-w-0 flex-1 mr-4">
+            <div className="flex flex-col min-w-0 flex-1">
                 <span className="text-sm font-bold truncate">{site.domain}</span>
             </div>
-            {site.id === activeSiteId && <Check size={14} className="text-brand-primary" />}
-        </button>
+            <div className="flex items-center gap-1">
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteTarget(site);
+                        setDeleteConfirmInput('');
+                        setIsSelectorOpen(false);
+                    }}
+                    className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                >
+                    <Trash2 size={14} />
+                </button>
+                {site.id === activeSiteId && <Check size={14} className="text-brand-primary shrink-0" />}
+            </div>
+        </div>
     );
 
     return (
@@ -536,16 +599,7 @@ ${issuesMarkdown}
                         {isSelectorOpen && (
                             <div className="absolute top-full right-0 mt-2 w-72 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100 origin-top-right">
                                 <div className="p-2 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">切换审计目标</p>
-                                    {activeSite && (
-                                        <button 
-                                            onClick={() => setShowDeleteConfirm(true)}
-                                            className="p-1.5 text-slate-400 hover:text-rose-500 transition-colors"
-                                            title="取消绑定此站点"
-                                        >
-                                            <Trash2 size={14} />
-                                        </button>
-                                    )}
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">{COPY.SWITCH_TARGET}</p>
                                 </div>
                                 <div className="max-h-[300px] overflow-y-auto p-2">
                                     {mySites.length > 0 && (
@@ -580,33 +634,59 @@ ${issuesMarkdown}
             </div>
 
             {/* Delete Confirmation Modal */}
-            {showDeleteConfirm && (
+            {deleteTarget && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-6">
-                    <Card className="max-w-md w-full p-8 space-y-6 shadow-2xl border-rose-100 animate-in zoom-in-95 duration-200">
-                        <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center text-rose-500 mx-auto">
+                    <Card className="max-w-md w-full p-8 space-y-6 shadow-2xl border-rose-100 animate-in zoom-in-95 duration-200 rounded-2xl relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-rose-500/20" />
+                        <button 
+                            onClick={() => { setDeleteTarget(null); setDeleteConfirmInput(''); }}
+                            className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
+                        >
+                            <X size={18} />
+                        </button>
+                        
+                        <div className="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-500 mx-auto transform -rotate-6">
                             <Trash2 size={32} />
                         </div>
+                        
                         <div className="text-center space-y-2">
-                            <h3 className="text-xl font-black italic tracking-tight text-slate-900">确认取消绑定站点？</h3>
-                            <p className="text-sm text-slate-500 leading-relaxed">
-                                此操作将永久删除 **{activeSite?.domain}** 的所有历史审计数据、语义债评分及已规划的资产。此操作不可撤销。
+                            <h3 className="text-xl font-black tracking-tight text-slate-900">{COPY.DELETE_TITLE}</h3>
+                            <p className="text-sm text-slate-500 leading-relaxed px-2">
+                                {COPY.DELETE_DESC}
                             </p>
                         </div>
-                        <div className="flex gap-3">
+
+                        <div className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                {COPY.DELETE_CONFIRM_PREFIX}{' '}
+                                <strong className="text-slate-700 font-mono normal-case">{deleteTarget.domain}</strong>
+                                {' '}{COPY.DELETE_CONFIRM_SUFFIX}
+                            </label>
+                            <input
+                                type="text"
+                                value={deleteConfirmInput}
+                                onChange={(e) => setDeleteConfirmInput(e.target.value)}
+                                placeholder={COPY.DELETE_INPUT_PLACEHOLDER}
+                                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 outline-none transition-all font-mono"
+                                autoFocus
+                            />
+                        </div>
+                        
+                        <div className="flex gap-3 pt-2">
                             <Button 
                                 variant="outline" 
-                                className="flex-1 font-bold rounded-xl"
-                                onClick={() => setShowDeleteConfirm(false)}
+                                className="flex-1 font-bold rounded-xl border-slate-200"
+                                onClick={() => { setDeleteTarget(null); setDeleteConfirmInput(''); }}
                                 disabled={isDeleting}
                             >
-                                取消
+                                {COPY.DELETE_CANCEL}
                             </Button>
                             <Button 
                                 className="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl shadow-lg shadow-rose-200"
-                                onClick={handleDeleteSite}
-                                disabled={isDeleting}
+                                onClick={() => handleDeleteSite(deleteTarget.id)}
+                                disabled={isDeleting || deleteConfirmInput.trim() !== deleteTarget.domain}
                             >
-                                {isDeleting ? '删除中...' : '确认删除'}
+                                {isDeleting ? '删除中...' : COPY.DELETE_BUTTON}
                             </Button>
                         </div>
                     </Card>
