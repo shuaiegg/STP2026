@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getPublishedContentBySlug, getRelatedContent } from '@/lib/content';
 import { CTA } from '@/components/CTA';
@@ -9,6 +10,35 @@ import remarkGfm from 'remark-gfm';
 
 interface BlogPostProps {
     params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: BlogPostProps): Promise<Metadata> {
+    const { slug } = await params;
+    const post = await getPublishedContentBySlug(slug);
+
+    if (!post) {
+        return {};
+    }
+
+    const coverUrl = post.coverImage?.storageUrl || '/api/og';
+
+    return {
+        title: `${post.title} | ScaletoTop`,
+        description: post.summary || '',
+        alternates: {
+            canonical: `https://www.scaletotop.com/blog/${slug}`,
+        },
+        openGraph: {
+            images: [
+                {
+                    url: coverUrl,
+                    width: 1200,
+                    height: 630,
+                    alt: post.title,
+                },
+            ],
+        },
+    };
 }
 
 export default async function BlogPost({ params }: BlogPostProps) {

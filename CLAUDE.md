@@ -105,7 +105,7 @@ The app uses Next.js App Router with route groups:
 - **`(public)/`** - Public-facing routes (no auth required)
   - `/` - Homepage; `/blog`, `/blog/[slug]`, `/blog/category/[slug]` - Blog
   - `/login`, `/register`, `/forgot-password`, `/reset-password` - User auth
-  - `/pricing`, `/tools`, `/tools/geo-writer`, `/course` - Marketing pages
+  - `/pricing`, `/tools`, `/tools/geo-writer` - Marketing pages
   - `/preview/[token]` - Preview unpublished content via token
 
 - **`(protected)/dashboard/`** - Authenticated user routes

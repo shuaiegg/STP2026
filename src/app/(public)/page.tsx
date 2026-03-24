@@ -2,10 +2,29 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { Metadata } from 'next';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { getPublishedContent } from '@/lib/content';
+
+export const metadata: Metadata = {
+  title: 'ScaletoTop | 帮中国出海企业每月新增 50+ 优质询盘',
+  description: '专为中国出海企业打造。通过精准广告投流、SEO 内容矩阵和自动化跟进工具，帮你建立可预测、低成本的海外获客闭环。',
+  alternates: {
+    canonical: 'https://www.scaletotop.com',
+  },
+  openGraph: {
+    images: [
+      {
+        url: '/api/og',
+        width: 1200,
+        height: 630,
+        alt: 'ScaletoTop Home',
+      },
+    ],
+  },
+};
 
 const COPY = {
   hero: {

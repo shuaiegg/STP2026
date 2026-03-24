@@ -18,7 +18,6 @@ const FOOTER_LINKS = [
     {
         title: '产品服务',
         links: [
-            { label: '技术型 SEO 课程 (即将上线)', href: '#', disabled: true },
             { label: 'pSEO 自动化工具', href: '/tools', disabled: false },
             { label: '定价方案', href: '/pricing', disabled: false },
             { label: '增长咨询服务 (预约已满)', href: '#', disabled: true }

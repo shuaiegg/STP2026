@@ -1,7 +1,26 @@
 import React from 'react';
 import Link from 'next/link';
+import { Metadata } from 'next';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+
+export const metadata: Metadata = {
+  title: '出海营销工具箱 | ScaletoTop',
+  description: 'AI 驱动的出海营销工具集：多语言内容生成、站点 SEO 分析、市场竞争情报，一站式提升海外获客效率。',
+  alternates: {
+    canonical: 'https://www.scaletotop.com/tools',
+  },
+  openGraph: {
+    images: [
+      {
+        url: '/api/og',
+        width: 1200,
+        height: 630,
+        alt: 'ScaletoTop Tools',
+      },
+    ],
+  },
+};
 
 const TOOLS = [
   {
