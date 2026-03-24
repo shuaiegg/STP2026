@@ -29,7 +29,18 @@ export const TOPIC_BLACKLIST = [
     'not found',
     'error',
     'loading',
-    'untitled'
+    'untitled',
+    '登录',
+    '注册',
+    '隐私',
+    '条款',
+    '协议',
+    '政策',
+    '关于',
+    '联系',
+    '帮助',
+    '常见问题',
+    '退款'
 ];
 
 /**

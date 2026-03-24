@@ -3,6 +3,7 @@ import { fetchHtml } from './crawler/fetcher';
 import { CrawlerParser } from './crawler/parser';
 import { CrawlerStrategy } from './crawler/strategy';
 import { getDefaultProvider } from '@/lib/skills/providers';
+import { isBlacklistedTopic } from './constants';
 import { BusinessDna } from './types';
 
 export class CrawlerCircuitBreakerError extends Error {
@@ -19,13 +20,24 @@ export class CrawlerCircuitBreakerError extends Error {
  */
 export class CrawlerService {
   /**
+   * Deterministic hash for URL string (djb2)
+   */
+  static hashUrl(url: string): number {
+    let hash = 0;
+    for (let i = 0; i < url.length; i++) {
+      hash = ((hash << 5) - hash + url.charCodeAt(i)) | 0;
+    }
+    return Math.abs(hash);
+  }
+
+  /**
    * 智能采样：从大量 URL 中抽取具有深度分布代表性的样本
    */
   static sampleUrls(urls: string[], limit: number): string[] {
     if (urls.length <= limit) return urls;
 
-    // 1. 随机打乱，避免字母序偏差
-    const shuffled = [...urls].sort(() => Math.random() - 0.5);
+    // 1. 确定性排序，用哈希代替随机，确保两次审计采样结果一致
+    const shuffled = [...urls].sort((a, b) => this.hashUrl(a) - this.hashUrl(b));
 
     // 2. 按路径深度分组
     const depthGroups: Record<number, string[]> = {};
@@ -76,7 +88,7 @@ export class CrawlerService {
   /**
    * Delegates URL discovery to CrawlerStrategy
    */
-  static async discoverUrls(domain: string): Promise<string[]> {
+  static async discoverUrls(domain: string): Promise<{ urls: string[]; sitemapFound: boolean }> {
     return CrawlerStrategy.discoverUrls(domain);
   }
 
@@ -200,7 +212,8 @@ export class CrawlerService {
    * 极速扫描：仅获取 URL 列表用于快速星图渲染
    */
   static async fastScan(domain: string): Promise<string[]> {
-    return await this.discoverUrls(this.normalizeDomain(domain));
+    const { urls } = await this.discoverUrls(this.normalizeDomain(domain));
+    return urls;
   }
 
   /**
@@ -208,7 +221,7 @@ export class CrawlerService {
    */
   static async performFullAudit(domain: string): Promise<SiteAuditResult> {
     const normalized = this.normalizeDomain(domain);
-    const urls = await this.discoverUrls(normalized);
+    const { urls, sitemapFound } = await this.discoverUrls(normalized);
     const targetUrls = this.sampleUrls(urls, 100);
 
     const pages = await this.crawlWithConcurrency(targetUrls, 5);
@@ -221,6 +234,7 @@ export class CrawlerService {
     return {
       domain: normalized,
       sitemapUrl: `${normalized}/sitemap.xml`,
+      sitemapFound,
       pageCount: urls.length,
       allUrls: urls,
       pages: await this.clusterPages(pages),
@@ -236,10 +250,10 @@ export class CrawlerService {
     onProgress: (event: AuditProgressEvent) => void
   ): Promise<SiteAuditResult> {
     const normalized = this.normalizeDomain(domain);
-    const urls = await this.discoverUrls(normalized);
+    const { urls, sitemapFound } = await this.discoverUrls(normalized);
 
     // 立即通知已发现的所有链接（骨架图）
-    onProgress({ type: 'discovery', urls });
+    onProgress({ type: 'discovery', urls, sitemapFound });
 
     // Extract Business DNA in the background
     let businessDna: BusinessDna | undefined;
@@ -280,6 +294,7 @@ export class CrawlerService {
     return {
       domain: normalized,
       sitemapUrl: `${normalized}/sitemap.xml`,
+      sitemapFound,
       pageCount: urls.length,
       allUrls: urls,
       pages: await this.clusterPages(pages),
@@ -340,7 +355,7 @@ export class CrawlerService {
       });
 
       if (response.content) {
-        const match = response.content.match(/\\{[\\s\\S]*\\}/);
+        const match = response.content.match(/\{[\s\S]*\}/);
         if (match) {
           const parsed = JSON.parse(match[0]);
           return {
@@ -368,7 +383,15 @@ export class CrawlerService {
       const aiProvider = await getDefaultProvider();
       const defaultModel = aiProvider.getDefaultModel();
 
-      const pageData = pages.map((p, i) => ({
+      // 1. 预过滤：排除黑名单中的 boilerplate 页面（登录、法律条款等）
+      const meaningfulPages = pages.filter(p => !isBlacklistedTopic(new URL(p.url).pathname));
+      const boilerplatePages = pages.filter(p => isBlacklistedTopic(new URL(p.url).pathname));
+
+      if (meaningfulPages.length === 0) {
+        return pages.map(p => ({ ...p, topic: 'System/Boilerplate' }));
+      }
+
+      const pageData = meaningfulPages.map((p, i) => ({
         id: i,
         title: p.title,
         url: p.url,
@@ -379,10 +402,8 @@ You are an expert SEO strategist. Analyze the following list of pages from a web
 Your goal is to group these pages into 5-10 "Semantic Topic Clusters" that represent the core business value, product features, or content strategy (e.g. "Marketing Automation", "E-commerce Funnels", "SaaS Pricing Models").
 
 CRITICAL INSTRUCTIONS:
-1. IGNORE system pages, legal boilerplates, and administrative links (e.g., Privacy Policy, Terms of Service, Contact Us, Login/Logout, My Account).
-2. If a page is clearly a system/legal boilerplate, assign it the topic "System/Boilerplate".
-3. Focus on extracting semantic topics that would be valuable for competitive analysis and content planning.
-4. Each page must be assigned to exactly one cluster.
+1. Focus on extracting semantic topics that would be valuable for competitive analysis and content planning.
+2. Each page must be assigned to exactly one cluster.
 
 Pages List:
 ${JSON.stringify(pageData, null, 2)}
@@ -401,16 +422,28 @@ Do NOT include markdown formatting or extra text.
         temperature: 0.1,
       });
 
+      let mapping: Record<string, string> = {};
       if (response.content) {
         const match = response.content.match(/\{[\s\S]*\}/);
         if (match) {
-          const mapping = JSON.parse(match[0]);
-          return pages.map((p, i) => ({
-            ...p,
-            topic: mapping[i.toString()] || 'Uncategorized',
-          }));
+          mapping = JSON.parse(match[0]);
         }
       }
+
+      // 2. 合并结果：meaningfulPages 使用 LLM 映射，boilerplatePages 直接归类
+      const clusteredMeaningful = meaningfulPages.map((p, i) => ({
+        ...p,
+        topic: mapping[i.toString()] || 'Uncategorized',
+      }));
+
+      const clusteredBoilerplate = boilerplatePages.map(p => ({
+        ...p,
+        topic: 'System/Boilerplate',
+      }));
+
+      // 保持原始顺序或重新组合。这里我们直接组合即可，顺序在前端渲染时通常不敏感
+      return [...clusteredMeaningful, ...clusteredBoilerplate];
+
     } catch (error) {
       console.error('[Crawler Service] Clustering failed:', error);
     }

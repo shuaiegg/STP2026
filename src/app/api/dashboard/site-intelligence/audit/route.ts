@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { CrawlerService, CrawlerCircuitBreakerError } from '@/lib/skills/site-intelligence/crawler.service';
 import { GraphGeneratorService } from '@/lib/skills/site-intelligence/graph-generator.service';
-import { chargeUser } from '@/lib/billing/credits';
+import { chargeUser, refundUser } from '@/lib/billing/credits';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { AuditProgressEvent } from '@/lib/skills/site-intelligence/types';
@@ -54,6 +54,7 @@ export async function POST(request: Request) {
                             progressEvent.graphData = GraphGeneratorService.generateGraphData({
                                 domain,
                                 sitemapUrl: null,
+                                sitemapFound: progressEvent.sitemapFound ?? false,
                                 pageCount: progressEvent.urls.length,
                                 pages: [],
                                 averageLoadTime: 0
@@ -85,24 +86,32 @@ export async function POST(request: Request) {
                 const graphData = GraphGeneratorService.generateGraphData(auditResult, auditResult.allUrls, marketGapsData);
 
                 // 5. 生成 SEO 体检报告与评分
-                const issueReport = analyzeAudit(auditResult.pages);
+                const issueReport = analyzeAudit(auditResult.pages, {
+                    sitemapFound: auditResult.sitemapFound,
+                    sitemapUrls: auditResult.allUrls // 使用 allUrls 作为 sitemap 的参考（sitemap 发现模式下 allUrls 即为 sitemap URLs）
+                });
                 const techScore = issueReport.techScore;
 
                 send({
                     type: 'done',
                     scanned: auditResult.pages.length,
                     total: auditResult.pageCount,
+                    sitemapFound: auditResult.sitemapFound,
                     graphData,
                     techScore,
                     issueReport,
                 });
             } catch (error: any) {
+                let refunded = false;
                 if (error instanceof CrawlerCircuitBreakerError) {
                     console.warn('[SiteIntelligence] Circuit breaker tripped:', error.message);
+                    // 自动退款：熔断器触发通常意味着站点无法访问，不应扣分
+                    const refundResult = await refundUser(session.user.id, 'SITE_AUDIT_BASIC', '站点无法访问，已自动退还积分');
+                    refunded = refundResult.success;
                 } else {
                     console.error('[SiteIntelligence] Stream error:', error.message);
                 }
-                send({ type: 'error', error: error.message });
+                send({ type: 'error', error: error.message, refunded } as any);
             } finally {
                 controller.close();
             }

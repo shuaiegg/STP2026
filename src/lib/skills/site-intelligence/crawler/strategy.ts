@@ -5,18 +5,19 @@ export class CrawlerStrategy {
     /**
      * 发现页面的主入口：Sitemap优先，Spider兜底
      */
-    static async discoverUrls(domain: string): Promise<string[]> {
+    static async discoverUrls(domain: string): Promise<{ urls: string[]; sitemapFound: boolean }> {
         console.log(`[Crawler] Discovering URLs for ${domain}...`);
         let urls = await this.crawlSitemap(domain);
+        let sitemapFound = urls.length >= 2;
 
-        if (urls.length < 2) {
+        if (!sitemapFound) {
             console.log(`[Crawler] Sitemap found only ${urls.length} URLs. Falling back to 2-level Spider Mode...`);
             const spiderUrls = await this.spiderCrawl(domain, 2);
             // 合并并去重
             const allUrls = Array.from(new Set([...urls, ...spiderUrls]));
-            return allUrls;
+            return { urls: allUrls, sitemapFound: false };
         }
-        return urls;
+        return { urls, sitemapFound: true };
     }
 
     /**

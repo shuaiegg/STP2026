@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Suspense, useRef } from 'react';
+import React, { useState, useEffect, Suspense, useRef, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -9,6 +9,7 @@ import GalaxyMap from '@/components/dashboard/site-intelligence/GalaxyMap';
 import HealthReport from '@/components/dashboard/site-intelligence/HealthReport';
 import Link from 'next/link';
 import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
 import { Globe, ShieldCheck, Copy, Check, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 const COPY = {
@@ -64,6 +65,20 @@ function timeAgo(iso: string) {
     return `${Math.floor(hrs / 24)} 天前`;
 }
 
+const STATUS_LABELS: Record<string, string> = {
+    'READY_FOR_SCAN': '准备就绪',
+    'INITIALIZING_PROBE': '正在初始化探针…',
+    'SITE_STRUCTURE_DISCOVERED': '站点结构已探明',
+    'SCANNING_GALAXY': '页面深度扫描中…',
+    'GALAXY_CONSTRUCTED': '审计完成',
+    'PROBE_FAILED': '扫描失败',
+    'SYSTEM_ERROR': '系统异常',
+    'LOADING_LATEST_AUDIT': '加载最新审计…',
+    'LOADING_HISTORY': '加载历史审计…',
+    'HISTORY_LOAD_FAILED': '历史记录加载失败',
+    'SAVING_RESULTS': '正在自动保存审计结果…',
+};
+
 function InstantAuditInner() {
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -95,8 +110,24 @@ function InstantAuditInner() {
     const [isCopied, setIsCopied] = useState(false);
 
     const initialAuditId = useRef<string | null>(searchParams.get('auditId'));
+    const lastGraphData = useRef<GraphData>({ nodes: [], links: [] });
+    const lastIssueReport = useRef<any>(null);
+    const lastTechScore = useRef<number | null>(null);
+    const lastBusinessDna = useRef<any>(null);
 
     // Fetch site info and load audit on mount
+    useEffect(() => {
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            if (!activeSiteId && status === 'GALAXY_CONSTRUCTED' && !activeAuditId) {
+                e.preventDefault();
+                e.returnValue = '扫描结果尚未保存，确认离开？';
+                return e.returnValue;
+            }
+        };
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }, [activeSiteId, status, activeAuditId]);
+
     useEffect(() => {
         if (!activeSiteId) return;
 
@@ -208,10 +239,12 @@ function InstantAuditInner() {
         setInsufficientCredits(false);
         setLoading(true);
         setGraphData({ nodes: [], links: [] });
+        lastGraphData.current = { nodes: [], links: [] };
         setSelectedNode(null);
         setScanned(0);
         setTotal(0);
         setBusinessDna(null);
+        lastBusinessDna.current = null;
         setJustSaved(false);
         setStatus('INITIALIZING_PROBE');
 
@@ -247,21 +280,37 @@ function InstantAuditInner() {
                     try {
                         const event = JSON.parse(line.slice(6));
                         if (event.type === 'discovery') {
-                            if (event.graphData) setGraphData(event.graphData);
+                            if (event.graphData) {
+                                setGraphData(event.graphData);
+                                lastGraphData.current = event.graphData;
+                            }
                             setTotal(event.urls?.length || 0);
                             setStatus('SITE_STRUCTURE_DISCOVERED');
                         } else if (event.type === 'dna_extracted') {
                             setBusinessDna(event.dna);
+                            lastBusinessDna.current = event.dna;
                         } else if (event.type === 'progress') {
                             setScanned(event.scanned);
                             setTotal(event.total);
                         } else if (event.type === 'done') {
                             setGraphData(event.graphData);
+                            lastGraphData.current = event.graphData;
                             setTechScore(event.techScore ?? null);
+                            lastTechScore.current = event.techScore ?? null;
                             setIssueReport(event.issueReport ?? null);
+                            lastIssueReport.current = event.issueReport ?? null;
                             setStatus('GALAXY_CONSTRUCTED');
                             setLoading(false);
-                            // Auto save for bound sites? Let's stick to manual for now as per previous behavior
+                            
+                            // 自动保存：如果 activeSiteId 存在，扫描完成后自动触发保存
+                            if (activeSiteId) {
+                                handleSaveSite({
+                                    graphData: event.graphData,
+                                    techScore: event.techScore,
+                                    issueReport: event.issueReport,
+                                    businessDna: lastBusinessDna.current
+                                });
+                            }
                         } else if (event.type === 'error') {
                             setStatus('PROBE_FAILED');
                             setLoading(false);
@@ -276,19 +325,32 @@ function InstantAuditInner() {
         }
     };
 
-    const handleSaveSite = async () => {
-        if (!domain || graphData.nodes.length === 0) return;
+    const handleSaveSite = async (overrideData?: {
+        graphData?: GraphData;
+        techScore?: number | null;
+        issueReport?: any;
+        businessDna?: any;
+    }) => {
+        const finalGraphData = overrideData?.graphData || graphData;
+        const finalTechScore = overrideData?.techScore !== undefined ? overrideData.techScore : techScore;
+        const finalIssueReport = overrideData?.issueReport || issueReport;
+        const finalBusinessDna = overrideData?.businessDna || businessDna;
+
+        if (!domain || finalGraphData.nodes.length === 0) return;
+        
         setIsSaving(true);
+        if (activeSiteId) setStatus('SAVING_RESULTS');
+
         try {
             const res = await fetch('/api/dashboard/site-intelligence/save', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     domain,
-                    graphData,
-                    techScore,
-                    businessDna,
-                    issueReport
+                    graphData: finalGraphData,
+                    techScore: finalTechScore,
+                    businessDna: finalBusinessDna,
+                    issueReport: finalIssueReport
                 })
             });
             const data = await res.json();
@@ -305,15 +367,15 @@ function InstantAuditInner() {
                 router.replace(`/dashboard/site-intelligence/instant-audit?${params.toString()}`, { scroll: false });
 
                 setTimeout(() => setJustSaved(false), 4000);
-            }
- else {
-                alert("Failed to save: " + data.error);
+            } else {
+                toast.error("保存失败: " + data.error);
             }
         } catch (error) {
             console.error(error);
-            alert("Error saving site to dashboard.");
+            toast.error("保存到仪表盘时出错，请重试");
         } finally {
             setIsSaving(false);
+            if (activeSiteId) setStatus('GALAXY_CONSTRUCTED');
         }
     };
 
@@ -370,7 +432,12 @@ ${issuesMarkdown}
     };
 
     const handleHistoryClick = (audit: AuditHistoryItem) => {
-        if (!audit.graphData) return;
+        if (!audit.graphData) {
+            if (activeSiteId) {
+                fetchSpecificAudit(activeSiteId, audit.id);
+            }
+            return;
+        }
         
         const params = new URLSearchParams(searchParams.toString());
         params.set('auditId', audit.id);
@@ -385,13 +452,23 @@ ${issuesMarkdown}
         setStatus('GALAXY_CONSTRUCTED');
     };
 
+    const nodeIssues = (selectedNode && issueReport?.issues) 
+        ? issueReport.issues.filter((i: any) => i.affectedPages?.some((p: any) => p.url === selectedNode.meta?.url))
+        : [];
+
     // Derived states
     const progressPercent = total > 0 ? Math.round((scanned / total) * 100) : 0;
 
     // Tech Score Trend
-    const scoreTrend = (auditHistory.length > 1 && techScore !== null && auditHistory[1].techScore !== null)
-        ? techScore - auditHistory[1].techScore
-        : null;
+    const scoreTrend = useMemo(() => {
+        if (!activeAuditId || auditHistory.length < 2 || techScore === null) return null;
+        const currentIdx = auditHistory.findIndex(a => a.id === activeAuditId);
+        const prevAudit = currentIdx >= 0 && currentIdx + 1 < auditHistory.length 
+            ? auditHistory[currentIdx + 1] 
+            : null;
+        
+        return (prevAudit?.techScore != null) ? techScore - prevAudit.techScore : null;
+    }, [activeAuditId, auditHistory, techScore]);
 
     return (
         <div className="p-6 space-y-6 min-h-screen">
@@ -430,6 +507,14 @@ ${issuesMarkdown}
                 <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 text-sm w-fit animate-in fade-in slide-in-from-left-4">
                     <ShieldCheck size={18} />
                     <span className="font-bold">审计结果已持久化保存至站点历史</span>
+                </div>
+            )}
+
+            {/* Temporary scan warning */}
+            {!activeSiteId && status === 'GALAXY_CONSTRUCTED' && !activeAuditId && (
+                <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 text-sm w-fit animate-in fade-in slide-in-from-left-4">
+                    <span className="text-lg">⚠️</span>
+                    <span className="font-bold">扫描结果未保存，离开页面将丢失。请绑定站点或手动点击同步。</span>
                 </div>
             )}
 
@@ -510,7 +595,7 @@ ${issuesMarkdown}
                             <h3 className="text-[10px] font-black tracking-widest text-slate-400 uppercase">系统状态</h3>
                             <div className="flex items-center gap-3">
                                 <div className={`w-2 h-2 rounded-full flex-shrink-0 ${loading ? 'bg-amber-500 animate-pulse' : status === 'GALAXY_CONSTRUCTED' ? 'bg-emerald-500 shadow-sm shadow-emerald-200' : status.includes('FAILED') || status.includes('ERROR') ? 'bg-rose-500' : 'bg-slate-300'}`} />
-                                <span className="font-mono text-[11px] font-bold text-slate-600 break-all">{status}</span>
+                                <span className="font-mono text-[11px] font-bold text-slate-600 break-all">{STATUS_LABELS[status] ?? status}</span>
                             </div>
                         </div>
 
@@ -597,7 +682,12 @@ ${issuesMarkdown}
                                     >
                                         <div className="min-w-0 flex-1">
                                             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">{timeAgo(audit.createdAt)}</p>
-                                            <p className="text-xs font-black text-slate-700">{audit.pageCount} 页面节点</p>
+                                            <div className="flex items-center gap-2">
+                                                <p className="text-xs font-black text-slate-700">{audit.pageCount} 页面节点</p>
+                                                {!audit.graphData && (
+                                                    <span className="text-[8px] font-black bg-slate-100 text-slate-400 px-1 rounded uppercase">↗ 加载</span>
+                                                )}
+                                            </div>
                                         </div>
                                         {audit.techScore !== null && (
                                             <span className={`ml-2 text-[11px] font-black font-display italic px-2 py-0.5 rounded-lg ${audit.techScore >= 80 ? 'bg-emerald-50 text-emerald-600' :
@@ -646,15 +736,38 @@ ${issuesMarkdown}
                                         {selectedNode.meta.url}
                                     </a>
                                 )}
+
+                                <div className="pt-2 border-t border-slate-50 space-y-3">
+                                    <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest">命中 SEO 问题</h4>
+                                    <div className="space-y-2">
+                                        {nodeIssues.length > 0 ? (
+                                            nodeIssues.map((issue: any) => (
+                                                <div key={issue.code} className="flex items-start gap-2 p-2 bg-slate-50/50 rounded-lg border border-slate-100">
+                                                    <span className={`mt-0.5 shrink-0 px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${
+                                                        issue.severity === 'critical' ? 'bg-rose-100 text-rose-600' :
+                                                        issue.severity === 'warning' ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-blue-600'
+                                                    }`}>
+                                                        {issue.severity === 'critical' ? '严重' : issue.severity === 'warning' ? '警告' : '提示'}
+                                                    </span>
+                                                    <span className="text-[11px] font-bold text-slate-700 leading-tight">{issue.title}</span>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="text-[11px] font-bold text-emerald-600 flex items-center gap-1.5 px-1">
+                                                <Check size={12} /> 该页面未检测到问题
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         </Card>
                     )}
 
                     {/* Actions Panel */}
                     <div className="space-y-3 pt-2">
-                        {status === 'GALAXY_CONSTRUCTED' && !activeAuditId && (
+                        {status === 'GALAXY_CONSTRUCTED' && !activeSiteId && !activeAuditId && (
                             <Button
-                                onClick={handleSaveSite}
+                                onClick={() => handleSaveSite()}
                                 disabled={isSaving || !graphData.nodes.length}
                                 className={`w-full font-black tracking-[0.2em] uppercase py-7 rounded-2xl shadow-xl transition-all
                                     ${isSaving ? 'bg-slate-100 text-slate-400' : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-200'}`}

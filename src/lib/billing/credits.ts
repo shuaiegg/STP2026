@@ -121,3 +121,54 @@ export async function chargeUser(
         };
     }
 }
+
+/**
+ * Refund a user for tool failure.
+ */
+export async function refundUser(
+    userId: string,
+    skillName: string,
+    description: string
+): Promise<{ success: true; remainingCredits: number } | { success: false; error: string }> {
+    try {
+        // 1. Get Skill Cost
+        const skill = await prisma.skillConfig.findUnique({
+            where: { name: skillName }
+        });
+
+        if (!skill) {
+            return { success: false, error: `Skill '${skillName}' not found` };
+        }
+
+        const amount = skill.cost;
+
+        return await prisma.$transaction(async (tx) => {
+            // 2. Increment credits
+            const updatedUser = await tx.user.update({
+                where: { id: userId },
+                data: {
+                    credits: { increment: amount }
+                },
+                select: { credits: true }
+            });
+
+            // 3. Record transaction
+            await tx.creditTransaction.create({
+                data: {
+                    userId,
+                    amount,
+                    type: 'REFUND',
+                    description: `${description} (+${amount} credits)`
+                }
+            });
+
+            return {
+                success: true,
+                remainingCredits: updatedUser.credits
+            };
+        });
+    } catch (error: any) {
+        console.error("Credit refund failed:", error);
+        return { success: false, error: error.message };
+    }
+}

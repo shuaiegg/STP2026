@@ -32,7 +32,10 @@ export interface AuditIssueReport {
  * AuditAnalyzer is a pure function service that detects SEO issues
  * and calculates scores based on scraped page data.
  */
-export function analyzeAudit(pages: ScrapedPage[]): AuditIssueReport {
+export function analyzeAudit(
+  pages: ScrapedPage[],
+  meta?: { sitemapFound?: boolean; sitemapUrls?: string[] }
+): AuditIssueReport {
   if (pages.length === 0) {
     return {
       techScore: 100,
@@ -45,6 +48,11 @@ export function analyzeAudit(pages: ScrapedPage[]): AuditIssueReport {
 
   const issues: IssueItem[] = [];
   const totalPages = pages.length;
+  // 识别主域名用于站点级 issue
+  let domain = 'your-site.com';
+  try {
+    domain = new URL(pages[0].url).hostname;
+  } catch (e) { }
 
   // Helper to add issues
   const addIssue = (
@@ -59,6 +67,18 @@ export function analyzeAudit(pages: ScrapedPage[]): AuditIssueReport {
       issues.push({ code, severity, title, explanation, howToFix, affectedPages });
     }
   };
+
+  // 0. MISSING_SITEMAP (warning)
+  if (meta && meta.sitemapFound === false) {
+    addIssue(
+      'MISSING_SITEMAP',
+      'warning',
+      '缺失 Sitemap',
+      '未在站点根目录发现有效的 sitemap.xml 文件。Sitemap 能够帮助搜索引擎更高效地发现和爬取您的页面。',
+      '生成一个 sitemap.xml 文件并将其放置在网站根目录下，同时在 Google Search Console 中进行提交。',
+      [{ url: `https://${domain}`, detail: '站点级别' }]
+    );
+  }
 
   // 1. DEAD_LINK (status 4xx/5xx)
   const deadLinks = pages
@@ -278,7 +298,19 @@ export function analyzeAudit(pages: ScrapedPage[]): AuditIssueReport {
     const rootUrl = new URL(pages[0].url);
     referencedUrls.add(rootUrl.origin);
     referencedUrls.add(rootUrl.origin + '/');
-  } catch (e) {}
+  } catch (e) { }
+
+  // 如果提供了 sitemapUrls，将其视为已引用的链接
+  if (meta?.sitemapUrls) {
+    meta.sitemapUrls.forEach(u => {
+      referencedUrls.add(u);
+      if (u.endsWith('/')) {
+        referencedUrls.add(u.slice(0, -1));
+      } else {
+        referencedUrls.add(u + '/');
+      }
+    });
+  }
 
   pages.forEach(p => {
     p.internalLinks.forEach(link => referencedUrls.add(link));
@@ -354,12 +386,12 @@ export function analyzeAudit(pages: ScrapedPage[]): AuditIssueReport {
 
   // --- Scoring Calculations ---
 
-  // techScore: 100 - (dead link ratio × 40) - (avg load time penalty, >1s linear, max -30) - (canonical missing rate × 30)
+  // techScore: 100 - (dead link ratio × 40) - (avg load time penalty, >1s linear, max -30)
+  // 修正：Canonical 迁移至 SEO 分
   const deadLinkRatio = deadLinks.length / totalPages;
   const avgLoadTime = pages.reduce((s, p) => s + p.loadTime, 0) / totalPages;
   const loadTimePenalty = avgLoadTime > 1000 ? Math.min(30, ((avgLoadTime - 1000) / 4000) * 30) : 0;
-  const canonicalMissingRate = missingCanonical.length / totalPages;
-  const techScore = Math.max(0, Math.round(100 - (deadLinkRatio * 40) - loadTimePenalty - (canonicalMissingRate * 30)));
+  const techScore = Math.max(0, Math.round(100 - (deadLinkRatio * 40) - loadTimePenalty));
 
   // contentScore: 100 - (missing H1 rate × 35) - (thin content rate × 30) - (non-compliant title rate × 35)
   const missingH1Rate = missingH1.length / totalPages;
@@ -368,6 +400,7 @@ export function analyzeAudit(pages: ScrapedPage[]): AuditIssueReport {
   const contentScore = Math.max(0, Math.round(100 - (missingH1Rate * 35) - (thinContentRate * 30) - (nonCompliantTitleRate * 35)));
 
   // seoScore: 100 - (missing meta desc rate × 30) - (missing OG image rate × 25) - (duplicate content penalty) - (meta desc too long rate × 20)
+  // 新增：Canonical (15) + Sitemap (10)
   const missingMetaDescRate = missingMetaDesc.length / totalPages;
   const missingOgImageRate = missingOgImage.length / totalPages;
   
@@ -379,7 +412,17 @@ export function analyzeAudit(pages: ScrapedPage[]): AuditIssueReport {
   const duplicatePenalty = duplicatePageRatio * 25;
 
   const metaDescTooLongRate = metaDescTooLong.length / totalPages;
-  const seoScore = Math.max(0, Math.round(100 - (missingMetaDescRate * 30) - (missingOgImageRate * 25) - duplicatePenalty - (metaDescTooLongRate * 20)));
+  const canonicalMissingRate = missingCanonical.length / totalPages;
+  const sitemapPenalty = meta?.sitemapFound === false ? 10 : 0;
+
+  const seoScore = Math.max(0, Math.round(
+    100 - (missingMetaDescRate * 30) 
+        - (missingOgImageRate * 25) 
+        - duplicatePenalty 
+        - (metaDescTooLongRate * 20)
+        - (canonicalMissingRate * 15)
+        - sitemapPenalty
+  ));
 
   // Final stats
   const stats = {

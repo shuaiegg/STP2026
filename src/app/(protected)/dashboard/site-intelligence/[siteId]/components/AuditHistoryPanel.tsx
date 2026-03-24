@@ -66,7 +66,7 @@ export function AuditHistoryPanel({ siteId, domain }: { siteId: string, domain: 
                 <p className="text-sm text-slate-500 max-w-sm mb-6">
                     您还没有对该站点进行过深度审计。发起一次扫描以开始建立您的情报档案。
                 </p>
-                <Link href={`/dashboard/site-intelligence/instant-audit?site=${encodeURIComponent(domain)}`}>
+                <Link href={`/dashboard/site-intelligence/instant-audit?siteId=${siteId}`}>
                     <button className="bg-brand-primary hover:bg-brand-primary/90 text-white rounded-xl shadow-sm px-6 py-2.5 font-bold transition-all flex items-center gap-2">
                         开始全面扫描
                     </button>
@@ -132,7 +132,7 @@ export function AuditHistoryPanel({ siteId, domain }: { siteId: string, domain: 
 
                                     {/* Action Button */}
                                     <div className="flex items-center pl-20 sm:pl-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                                        <Link href={`/dashboard/site-intelligence/instant-audit?site=${encodeURIComponent(domain)}&auditId=${audit.id}`}>
+                                        <Link href={`/dashboard/site-intelligence/instant-audit?siteId=${siteId}&auditId=${audit.id}`}>
                                             <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 hover:border-brand-primary hover:text-brand-primary text-slate-600 rounded-xl text-xs font-bold shadow-sm transition-all">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg>
                                                 查看星图快照

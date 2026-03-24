@@ -29,6 +29,7 @@ export interface BusinessDna {
 export interface SiteAuditResult {
   domain: string;
   sitemapUrl: string | null;
+  sitemapFound: boolean;
   pageCount: number;
   allUrls?: string[];
   pages: ScrapedPage[];
@@ -37,11 +38,11 @@ export interface SiteAuditResult {
 }
 
 export type AuditProgressEvent =
-  | { type: 'discovery'; urls: string[]; graphData?: import('./graph-generator.service').GraphData; }
+  | { type: 'discovery'; urls: string[]; sitemapFound: boolean; graphData?: import('./graph-generator.service').GraphData; }
   | { type: 'dna_extracted'; dna: BusinessDna; }
   | { type: 'progress'; scanned: number; total: number; page?: ScrapedPage; }
-  | { type: 'done'; scanned: number; total: number; graphData?: import('./graph-generator.service').GraphData; techScore: number | null; issueReport?: any; }
-  | { type: 'error'; error: string; };
+  | { type: 'done'; scanned: number; total: number; sitemapFound: boolean; graphData?: import('./graph-generator.service').GraphData; techScore: number | null; issueReport?: any; }
+  | { type: 'error'; error: string; refunded?: boolean; };
 
 // --- API Response Types ---
 

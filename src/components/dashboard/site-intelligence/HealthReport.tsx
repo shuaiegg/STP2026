@@ -57,9 +57,21 @@ export default function HealthReport({ issueReport, previousIssueReport }: Healt
     const newIssues = Array.from(currentCodes).filter(code => !previousCodes.has(code));
     const fixedIssues = Array.from(previousCodes).filter(code => !currentCodes.has(code));
 
+    // Persistent issues: compare affected pages count
+    const pageCountChanges = Array.from(currentCodes)
+      .filter(code => previousCodes.has(code))
+      .map(code => {
+        const curIssue = issueReport.issues.find(i => i.code === code);
+        const prevIssue = previousIssueReport.issues.find(i => i.code === code);
+        const diff = (curIssue?.affectedPages?.length || 0) - (prevIssue?.affectedPages?.length || 0);
+        return { code, title: curIssue?.title, diff };
+      })
+      .filter(change => change.diff !== 0);
+
     deltaInfo = {
       newCount: newIssues.length,
-      fixedCount: fixedIssues.length
+      fixedCount: fixedIssues.length,
+      pageCountChanges
     };
   }
 
@@ -91,6 +103,14 @@ export default function HealthReport({ issueReport, previousIssueReport }: Healt
                       <span className="text-xs font-bold text-slate-700">修复了 {deltaInfo.fixedCount} 个问题</span>
                     </div>
                   )}
+                  {deltaInfo.pageCountChanges.slice(0, 2).map((change) => (
+                    <div key={change.code} className="flex items-center gap-1.5 px-2 py-0.5 bg-white rounded border border-slate-100">
+                      {change.diff > 0 ? <TrendingDown className="w-3 h-3 text-rose-400" /> : <TrendingUp className="w-3 h-3 text-emerald-400" />}
+                      <span className="text-[10px] font-bold text-slate-500">
+                        {change.title}: {change.diff > 0 ? '↑' : '↓'} {Math.abs(change.diff)}页
+                      </span>
+                    </div>
+                  ))}
                 </>
               )}
             </div>

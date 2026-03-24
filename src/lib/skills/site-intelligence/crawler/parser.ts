@@ -51,6 +51,23 @@ export class CrawlerParser {
     }
 
     /**
+     * 估算词数：支持中英文混合内容
+     * CJK 字符: 1 字符 ≈ 0.6 英文词
+     * 西文: 按空格分词计数
+     */
+    static estimateWordCount(text: string): number {
+        if (!text) return 0;
+        // 提取并计数 CJK 字符（汉字、日文、韩文）
+        const cjkChars = (text.match(/[\u4e00-\u9fff\u3040-\u30ff\uac00-\ud7af]/g) || []).length;
+        // 提取并计数西文词汇（将 CJK 替换为空格后按空格分割）
+        const latinWords = text.replace(/[\u4e00-\u9fff\u3040-\u30ff\uac00-\ud7af]/g, ' ')
+                               .split(/\s+/)
+                               .filter(Boolean).length;
+        
+        return Math.round(cjkChars * 0.6 + latinWords);
+    }
+
+    /**
      * 从 HTML 中提取 SEO 和内容指标
      */
     static extractPageData(html: string, url: string, loadTime: number, status: number): ScrapedPage {
@@ -72,7 +89,7 @@ export class CrawlerParser {
         // 计算词数（去除脚本/样式内容）
         $('script, style, noscript').remove();
         const bodyText = $('body').text().replace(/\s+/g, ' ').trim();
-        const wordCount = bodyText ? bodyText.split(' ').length : 0;
+        const wordCount = this.estimateWordCount(bodyText);
 
         return {
             url,
