@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useEffect, Suspense, useRef } from 'react';
+import React, { useState, useEffect, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -9,23 +9,15 @@ import GalaxyMap from '@/components/dashboard/site-intelligence/GalaxyMap';
 import HealthReport from '@/components/dashboard/site-intelligence/HealthReport';
 import Link from 'next/link';
 import { authClient } from "@/lib/auth-client";
-import { Globe, ShieldCheck, ChevronDown, Plus, Trash2, Copy, Check, TrendingUp, TrendingDown, Minus, X } from 'lucide-react';
+import { Globe, ShieldCheck, Copy, Check, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 const COPY = {
-    DELETE_TITLE: "确认取消绑定站点？",
-    DELETE_DESC: "此操作将从「即时审计」中移除该站点及其所有历史记录。站点本身不会在系统中删除，但该页面的本地持久化数据将清空。",
-    DELETE_CONFIRM_PREFIX: "请输入域名",
-    DELETE_CONFIRM_SUFFIX: "以确认删除：",
-    DELETE_BUTTON: "确认删除",
-    DELETE_CANCEL: "取消",
-    DELETE_INPUT_PLACEHOLDER: "输入域名以确认",
-    ADD_SITE: "添加我的站点",
     START_SCAN: "发起扫描",
     SCANNING: "扫描中...",
-    SWITCH_TARGET: "切换审计目标",
-    MY_SITES: "我的站点",
-    BACK: "返回",
     BETA_TAG: "公测版",
+    NO_SITE_TITLE: "请先选择审计站点",
+    NO_SITE_DESC: "请前往站点管家选择一个站点，然后点击「查看最新星图」或「重新扫描」进入即时审计。",
+    NO_SITE_BUTTON: "返回站点管家",
 };
 
 interface PageMeta {
@@ -62,18 +54,6 @@ interface AuditHistoryItem {
     issueReport: any | null;
 }
 
-interface Site {
-    id: string;
-    domain: string;
-    name: string | null;
-    isCompetitor: boolean;
-    latestAudit?: {
-        id: string;
-        techScore: number | null;
-        pageCount: number;
-    } | null;
-}
-
 function timeAgo(iso: string) {
     const diff = Date.now() - new Date(iso).getTime();
     const mins = Math.floor(diff / 60000);
@@ -90,8 +70,7 @@ function InstantAuditInner() {
     const { data: session } = authClient.useSession();
 
     // Site & Data states
-    const [sites, setSites] = useState<Site[]>([]);
-    const [activeSiteId, setActiveSiteId] = useState<string | null>(searchParams.get('siteId'));
+    const [activeSiteId] = useState<string | null>(searchParams.get('siteId'));
     const [domain, setDomain] = useState('');
     const [loading, setLoading] = useState(false);
     const [graphData, setGraphData] = useState<GraphData>({ nodes: [], links: [] });
@@ -113,72 +92,43 @@ function InstantAuditInner() {
     const [showInlineReport, setShowInlineReport] = useState(false);
     const [insufficientCredits, setInsufficientCredits] = useState(false);
     const [auditCost, setAuditCost] = useState(5);
-    const [showAddSiteModal, setShowAddSiteModal] = useState(false);
-    const [newSiteDomain, setNewSiteDomain] = useState('');
-    const [isAddingSite, setIsAddingSite] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false);
-    const [deleteTarget, setDeleteTarget] = useState<Site | null>(null);
-    const [deleteConfirmInput, setDeleteConfirmInput] = useState('');
 
-    const dropdownRef = useRef<HTMLDivElement>(null);
-    const prevActiveSiteIdRef = useRef<string | null>(null);
-    const [isSelectorOpen, setIsSelectorOpen] = useState(false);
+    const initialAuditId = useRef<string | null>(searchParams.get('auditId'));
 
-    // Fetch sites and cost on mount
+    // Fetch site info and load audit on mount
     useEffect(() => {
+        if (!activeSiteId) return;
+
         const fetchData = async () => {
             try {
-                const [sitesRes, skillsRes] = await Promise.all([
-                    fetch('/api/dashboard/sites'),
-                    fetch('/api/skills/list')
+                const [siteRes, skillsRes] = await Promise.all([
+                    fetch(`/api/dashboard/sites/${activeSiteId}`),
+                    fetch('/api/skills/list'),
                 ]);
 
-                const sitesData = await sitesRes.json();
-                if (sitesData.sites) {
-                    setSites(sitesData.sites);
-                    // If no activeSiteId from URL, try to pick the first one or from localStorage
-                    if (!activeSiteId && sitesData.sites.length > 0) {
-                        const lastId = localStorage.getItem('last_active_site_id');
-                        const defaultId = sitesData.sites.find((s: Site) => s.id === lastId)?.id || sitesData.sites[0].id;
-                        setActiveSiteId(defaultId);
-                        
-                        const params = new URLSearchParams(searchParams.toString());
-                        params.set('siteId', defaultId);
-                        router.replace(`/dashboard/site-intelligence/instant-audit?${params.toString()}`, { scroll: false });
-                    }
-                }
+                const siteData = await siteRes.json();
+                if (!siteData.site) return;
+                setDomain(siteData.site.domain);
 
                 const skillsData = await skillsRes.json();
                 if (skillsData.success && skillsData.skills) {
                     const auditSkill = skillsData.skills.find((s: any) => s.name === 'SITE_AUDIT_BASIC');
                     if (auditSkill?.cost) setAuditCost(auditSkill.cost);
                 }
+
+                if (!initialAuditId.current) {
+                    fetchLatestAudit(activeSiteId);
+                } else {
+                    fetchSpecificAudit(activeSiteId, initialAuditId.current);
+                }
             } catch (e) {
                 console.error("Initialization error:", e);
             }
         };
         fetchData();
-    }, []);
-
-    // Load active site details when activeSiteId changes
-    useEffect(() => {
-        if (!activeSiteId) return;
-        const site = sites.find(s => s.id === activeSiteId);
-        if (!site) return; // sites not yet loaded, will re-run when sites loads
-        if (prevActiveSiteIdRef.current === activeSiteId) return; // sites list changed (e.g. deletion of non-active site), skip
-        prevActiveSiteIdRef.current = activeSiteId;
-
-        setDomain(site.domain);
-        localStorage.setItem('last_active_site_id', site.id);
-
-        // If no specific auditId in URL, fetch latest audit
-        if (!activeAuditId) {
-            fetchLatestAudit(site.id);
-        } else {
-            fetchSpecificAudit(site.id, activeAuditId);
-        }
-    }, [activeSiteId, sites]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeSiteId]);
 
     const fetchLatestAudit = async (siteId: string) => {
         setLoading(true);
@@ -367,89 +317,6 @@ function InstantAuditInner() {
         }
     };
 
-    const handleAddSite = async () => {
-        if (!newSiteDomain.trim()) return;
-        setIsAddingSite(true);
-        try {
-            const res = await fetch('/api/dashboard/sites', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    domain: newSiteDomain
-                })
-            });
-            const data = await res.json();
-            if (data.success) {
-                const newSite = data.site;
-                setSites(prev => [newSite, ...prev]);
-                setActiveSiteId(newSite.id);
-                setShowAddSiteModal(false);
-                setNewSiteDomain('');
-                
-                const newUrl = new URL(window.location.href);
-                newUrl.searchParams.set('siteId', newSite.id);
-                newUrl.searchParams.delete('auditId');
-                router.push(newUrl.pathname + newUrl.search);
-            } else {
-                alert(data.error || "添加站点失败");
-            }
-        } catch (e) {
-            console.error(e);
-            alert("系统错误");
-        } finally {
-            setIsAddingSite(false);
-        }
-    };
-
-    const resetAuditStates = () => {
-        setActiveAuditId(null);
-        setGraphData({ nodes: [], links: [] });
-        setTechScore(null);
-        setIssueReport(null);
-        setAuditHistory([]);
-        setSelectedNode(null);
-        setStatus('READY_FOR_SCAN');
-        setScanned(0);
-        setTotal(0);
-        setBusinessDna(null);
-    };
-
-    const handleDeleteSite = async (siteId: string) => {
-        if (!siteId) return;
-        setIsDeleting(true);
-        try {
-            const res = await fetch(`/api/dashboard/sites/${siteId}`, {
-                method: 'DELETE'
-            });
-            const data = await res.json();
-            if (data.success) {
-                const remaining = sites.filter(s => s.id !== siteId);
-                setSites(remaining);
-                setDeleteTarget(null);
-                setDeleteConfirmInput('');
-                
-                if (siteId === activeSiteId) {
-                    if (remaining.length > 0) {
-                        const nextSite = remaining[0];
-                        setActiveSiteId(nextSite.id);
-                        
-                        const params = new URLSearchParams(searchParams.toString());
-                        params.set('siteId', nextSite.id);
-                        params.delete('auditId');
-                        router.replace(`/dashboard/site-intelligence/instant-audit?${params.toString()}`, { scroll: false });
-                    } else {
-                        setActiveSiteId(null);
-                        resetAuditStates();
-                        router.replace('/dashboard/site-intelligence/instant-audit', { scroll: false });
-                    }
-                }
-            }
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setIsDeleting(false);
-        }
-    };
 
     const handleExportMarkdown = () => {
         if (!graphData.nodes.length || !issueReport) return;
@@ -520,48 +387,11 @@ ${issuesMarkdown}
 
     // Derived states
     const progressPercent = total > 0 ? Math.round((scanned / total) * 100) : 0;
-    const mySites = sites.filter(s => !s.isCompetitor);
-    const activeSite = sites.find(s => s.id === activeSiteId);
-    
-    // Tech Score Trend
-    const scoreTrend = (auditHistory.length > 1 && techScore !== null && auditHistory[1].techScore !== null) 
-        ? techScore - auditHistory[1].techScore 
-        : null;
 
-    const renderSiteItem = (site: Site) => (
-        <div
-            key={site.id}
-            className={`group w-full flex items-center justify-between px-3 py-2 rounded-xl text-left transition-all mb-1 cursor-pointer border ${site.id === activeSiteId
-                ? 'bg-brand-primary/10 text-brand-primary border-brand-primary/10 shadow-sm'
-                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent'
-                }`}
-            onClick={() => {
-                if (site.id !== activeSiteId) {
-                    resetAuditStates();
-                    setActiveSiteId(site.id);
-                }
-                setIsSelectorOpen(false);
-            }}
-        >
-            <div className="flex flex-col min-w-0 flex-1">
-                <span className="text-sm font-bold truncate">{site.domain}</span>
-            </div>
-            <div className="flex items-center gap-1">
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        setDeleteTarget(site);
-                        setDeleteConfirmInput('');
-                        setIsSelectorOpen(false);
-                    }}
-                    className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
-                >
-                    <Trash2 size={14} />
-                </button>
-                {site.id === activeSiteId && <Check size={14} className="text-brand-primary shrink-0" />}
-            </div>
-        </div>
-    );
+    // Tech Score Trend
+    const scoreTrend = (auditHistory.length > 1 && techScore !== null && auditHistory[1].techScore !== null)
+        ? techScore - auditHistory[1].techScore
+        : null;
 
     return (
         <div className="p-6 space-y-6 min-h-screen">
@@ -582,165 +412,18 @@ ${issuesMarkdown}
                     </div>
                 </div>
 
-                <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto items-start md:items-center">
-                    {/* Site Selector Dropdown */}
-                    <div className="relative" ref={dropdownRef}>
-                        <button
-                            onClick={() => setIsSelectorOpen(!isSelectorOpen)}
-                            className="flex items-center gap-3 px-4 py-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all shadow-sm w-full md:w-64"
-                        >
-                            <Globe size={18} className="text-slate-400" />
-                            <span className="text-sm font-bold text-slate-700 truncate flex-1 text-left">
-                                {activeSite?.domain || '请选择站点'}
-                            </span>
-                            <ChevronDown size={16} className={`text-slate-400 transition-transform ${isSelectorOpen ? 'rotate-180' : ''}`} />
-                        </button>
-
-                        {isSelectorOpen && (
-                            <div className="absolute top-full right-0 mt-2 w-72 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100 origin-top-right">
-                                <div className="p-2 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">{COPY.SWITCH_TARGET}</p>
-                                </div>
-                                <div className="max-h-[300px] overflow-y-auto p-2">
-                                    {mySites.length > 0 && (
-                                        <div className="mb-4">
-                                            <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-widest px-2 mb-2">我的站点</h3>
-                                            {mySites.map(renderSiteItem)}
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="p-2 border-t border-slate-100 bg-slate-50/30">
-                                    <button
-                                        onClick={() => { setShowAddSiteModal(true); setIsSelectorOpen(false); }}
-                                        className="w-full flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-black text-slate-700 bg-white border border-slate-200 hover:border-brand-primary/30 hover:text-brand-primary shadow-sm transition-all"
-                                    >
-                                        <Plus size={14} /> 添加我的站点
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    {activeSite && (
+                <div className="flex items-center gap-3">
+                    {domain && activeSiteId && (
                         <Button
                             onClick={handleStartAudit}
                             disabled={loading}
                             className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm px-6 font-bold flex-shrink-0"
                         >
-                            {loading ? '扫描中...' : '发起扫描'}
+                            {loading ? COPY.SCANNING : COPY.START_SCAN}
                         </Button>
                     )}
                 </div>
             </div>
-
-            {/* Delete Confirmation Modal */}
-            {deleteTarget && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-6">
-                    <Card className="max-w-md w-full p-8 space-y-6 shadow-2xl border-rose-100 animate-in zoom-in-95 duration-200 rounded-2xl relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-full h-1 bg-rose-500/20" />
-                        <button 
-                            onClick={() => { setDeleteTarget(null); setDeleteConfirmInput(''); }}
-                            className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
-                        >
-                            <X size={18} />
-                        </button>
-                        
-                        <div className="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-500 mx-auto transform -rotate-6">
-                            <Trash2 size={32} />
-                        </div>
-                        
-                        <div className="text-center space-y-2">
-                            <h3 className="text-xl font-black tracking-tight text-slate-900">{COPY.DELETE_TITLE}</h3>
-                            <p className="text-sm text-slate-500 leading-relaxed px-2">
-                                {COPY.DELETE_DESC}
-                            </p>
-                        </div>
-
-                        <div className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                                {COPY.DELETE_CONFIRM_PREFIX}{' '}
-                                <strong className="text-slate-700 font-mono normal-case">{deleteTarget.domain}</strong>
-                                {' '}{COPY.DELETE_CONFIRM_SUFFIX}
-                            </label>
-                            <input
-                                type="text"
-                                value={deleteConfirmInput}
-                                onChange={(e) => setDeleteConfirmInput(e.target.value)}
-                                placeholder={COPY.DELETE_INPUT_PLACEHOLDER}
-                                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 outline-none transition-all font-mono"
-                                autoFocus
-                            />
-                        </div>
-                        
-                        <div className="flex gap-3 pt-2">
-                            <Button 
-                                variant="outline" 
-                                className="flex-1 font-bold rounded-xl border-slate-200"
-                                onClick={() => { setDeleteTarget(null); setDeleteConfirmInput(''); }}
-                                disabled={isDeleting}
-                            >
-                                {COPY.DELETE_CANCEL}
-                            </Button>
-                            <Button 
-                                className="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl shadow-lg shadow-rose-200"
-                                onClick={() => handleDeleteSite(deleteTarget.id)}
-                                disabled={isDeleting || deleteConfirmInput.trim() !== deleteTarget.domain}
-                            >
-                                {isDeleting ? '删除中...' : COPY.DELETE_BUTTON}
-                            </Button>
-                        </div>
-                    </Card>
-                </div>
-            )}
-
-            {/* Add Site Modal */}
-            {showAddSiteModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-6">
-                    <Card className="max-w-md w-full p-8 space-y-6 shadow-2xl border-brand-primary/20 animate-in zoom-in-95 duration-200">
-                        <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                                <h3 className="text-xl font-black italic tracking-tight text-slate-900">
-                                    添加我的站点
-                                </h3>
-                                <Badge className="bg-emerald-100 text-emerald-600 border-none font-bold">
-                                    OWNED
-                                </Badge>
-                            </div>
-                            <p className="text-sm text-slate-500">输入需要审计的网站域名</p>
-                        </div>
-                        <div className="space-y-4">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">域名 (Domain)</label>
-                                <input
-                                    type="text"
-                                    placeholder="例如: example.com"
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all"
-                                    value={newSiteDomain}
-                                    onChange={(e) => setNewSiteDomain(e.target.value)}
-                                    autoFocus
-                                />
-                            </div>
-                            <div className="flex gap-3 pt-2">
-                                <Button 
-                                    variant="outline" 
-                                    className="flex-1 font-bold rounded-xl"
-                                    onClick={() => { setShowAddSiteModal(false); setNewSiteDomain(''); }}
-                                    disabled={isAddingSite}
-                                >
-                                    取消
-                                </Button>
-                                <Button 
-                                    className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl shadow-lg shadow-slate-200"
-                                    onClick={handleAddSite}
-                                    disabled={isAddingSite}
-                                >
-                                    {isAddingSite ? '添加中...' : '添加并选择'}
-                                </Button>
-                            </div>
-                        </div>
-                    </Card>
-                </div>
-            )}
 
             {/* Saved notification */}
             {justSaved && (
@@ -750,26 +433,21 @@ ${issuesMarkdown}
                 </div>
             )}
 
-            {/* Empty State */}
-            {!activeSiteId && !loading && (
+            {/* Empty State — no siteId in URL */}
+            {!activeSiteId && (
                 <div className="py-20 flex flex-col items-center justify-center text-center space-y-8 animate-in fade-in duration-700">
-                    <div className="w-24 h-24 bg-brand-primary/5 rounded-[2.5rem] flex items-center justify-center text-brand-primary shadow-inner">
-                        <Plus size={48} strokeWidth={1.5} />
+                    <div className="w-24 h-24 bg-slate-100 rounded-[2.5rem] flex items-center justify-center">
+                        <Globe size={40} className="text-slate-400" strokeWidth={1.5} />
                     </div>
                     <div className="space-y-2 max-w-sm">
-                        <h2 className="text-2xl font-black text-slate-900 tracking-tight italic">绑定站点开启专业扫描</h2>
-                        <p className="text-sm text-slate-500 leading-relaxed font-medium">
-                            即时审计现已全面接入站点模型。请先选择一个现有站点，或添加新的审计目标。
-                        </p>
+                        <h2 className="text-2xl font-black text-slate-900 tracking-tight">{COPY.NO_SITE_TITLE}</h2>
+                        <p className="text-sm text-slate-500 leading-relaxed">{COPY.NO_SITE_DESC}</p>
                     </div>
-                    <div className="flex justify-center w-full max-w-md">
-                        <Button 
-                            onClick={() => { setShowAddSiteModal(true); }}
-                            className="w-full bg-slate-900 hover:bg-slate-800 text-white py-8 rounded-2xl shadow-xl shadow-slate-200 font-black text-sm group"
-                        >
-                            添加并扫描我的站点 <Plus size={16} className="ml-2 group-hover:rotate-90 transition-transform" />
+                    <Link href="/dashboard/site-intelligence">
+                        <Button className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl px-8 font-bold">
+                            {COPY.NO_SITE_BUTTON}
                         </Button>
-                    </div>
+                    </Link>
                 </div>
             )}
 
@@ -781,7 +459,7 @@ ${issuesMarkdown}
                             <div className="w-20 h-20 rounded-3xl bg-brand-primary/8 flex items-center justify-center mb-6">
                                 <Globe size={40} className="text-brand-primary opacity-60" />
                             </div>
-                            <h2 className="text-xl font-bold text-slate-900 mb-2">准备就绪：{activeSite?.domain}</h2>
+                            <h2 className="text-xl font-bold text-slate-900 mb-2">准备就绪：{domain}</h2>
                             <p className="text-sm text-slate-500 max-w-sm mb-8 leading-relaxed">
                                 系统已绑定到站点，点击右上角「发起扫描」按钮即可生成最新的主题星图与技术报告。
                             </p>
@@ -940,7 +618,7 @@ ${issuesMarkdown}
                             <div className="flex justify-between items-start">
                                 <h3 className="text-[10px] font-black tracking-widest text-brand-primary uppercase">节点全量情报</h3>
                                 <button onClick={() => setSelectedNode(null)} className="text-slate-400 hover:text-slate-600">
-                                    <Trash2 size={14} />
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
                                 </button>
                             </div>
                             <div className="space-y-4">

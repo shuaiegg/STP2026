@@ -145,10 +145,10 @@ export default function SiteDetailsPage({ params }: { params: Promise<{ siteId: 
                     </p>
                 </div>
                 <div className="flex gap-2">
-                    <Link href={`/dashboard/site-intelligence/instant-audit?site=${encodeURIComponent(site.domain)}`}>
+                    <Link href={`/dashboard/site-intelligence/instant-audit?siteId=${site.id}`}>
                         <Button variant="outline" className="rounded-xl font-bold">查看最新星图</Button>
                     </Link>
-                    <Link href={`/dashboard/site-intelligence/instant-audit?site=${encodeURIComponent(site.domain)}&rescan=1`}>
+                    <Link href={`/dashboard/site-intelligence/instant-audit?siteId=${site.id}&rescan=1`}>
                         <Button className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm px-6 font-bold">
                             重新扫描
                         </Button>
