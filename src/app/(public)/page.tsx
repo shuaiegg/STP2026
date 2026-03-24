@@ -200,7 +200,20 @@ function ProcessStep({ number, title, description, icon }: {
   );
 }
 
-export default async function Home() {
+import { Suspense } from 'react';
+import { JsonLd } from '@/components/seo/JsonLd';
+
+function PostsSkeleton() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      {[0, 1, 2].map((i) => (
+        <div key={i} className="border border-brand-border rounded-lg bg-white h-[320px] animate-pulse" />
+      ))}
+    </div>
+  );
+}
+
+async function FeaturedPosts() {
   let contents: any[] = [];
   try {
     const result = await getPublishedContent({}, { limit: 3 });
@@ -209,8 +222,6 @@ export default async function Home() {
     console.error('Failed to fetch published content for home page:', error);
     contents = [];
   }
-  
-  const featuredPosts = contents;
 
   const formatDate = (date: Date | null) => {
     if (!date) return '未发布';
@@ -221,19 +232,79 @@ export default async function Home() {
     });
   };
 
+  if (contents.length === 0) {
+    return (
+      <div className="text-center py-16 border border-dashed border-brand-border rounded-lg bg-white">
+        <h3 className="font-bold text-brand-text-primary mb-2">{COPY.resources.emptyTitle}</h3>
+        <p className="text-brand-text-secondary text-sm">{COPY.resources.emptyDesc}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      {contents.map((post: any, index: number) => {
+        const coverSrc = post.coverImage?.storageUrl || post.coverImage?.originalUrl || 'https://picsum.photos/seed/placeholder/1200/630';
+        return (
+          <Link key={post.slug} href={`/blog/${post.slug}`} className="group block h-full">
+            <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
+              <div className="aspect-[16/10] overflow-hidden relative border-b border-brand-border">
+                <Image
+                  src={coverSrc}
+                  alt={post.title}
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  priority={index === 0}
+                />
+                {post.category?.name && (
+                  <div className="absolute top-4 left-4">
+                    <Badge className="bg-white/90 backdrop-blur text-brand-text-primary">
+                      {post.category.name}
+                    </Badge>
+                  </div>
+                )}
+              </div>
+              <div className="p-6 flex flex-col flex-1">
+                <h3 className="font-display text-lg font-bold text-brand-text-primary group-hover:text-brand-secondary transition-colors mb-2 line-clamp-2">
+                  {post.title}
+                </h3>
+                <p className="text-sm text-brand-text-secondary leading-relaxed mb-4 line-clamp-2 flex-1">
+                  {post.summary}
+                </p>
+                <div className="flex items-center gap-3 pt-4 border-t border-brand-border mt-auto">
+                  <span className="text-xs text-brand-text-muted">
+                    {formatDate(post.publishedAt)}
+                  </span>
+                  <div className="w-1 h-1 bg-brand-border rounded-full"></div>
+                  <span className="text-xs text-brand-text-muted">
+                    {post.readingTime || '5'} 分钟
+                  </span>
+                </div>
+              </div>
+            </Card>
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
+
+export default async function Home() {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
+
       <section className="relative py-24 md:py-32 overflow-hidden bg-brand-surface">
         <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
           <div className="max-w-4xl mx-auto">
-            <div className="inline-flex items-center gap-4 mb-8 opacity-0 animate-slide-in-up">
+            <div className="inline-flex items-center gap-4 mb-8 animate-slide-in-up">
               <Badge className="bg-brand-secondary/10 text-brand-secondary">
                 {COPY.hero.badge}
               </Badge>
             </div>
 
-            <h1 className="font-display text-4xl md:text-6xl font-black leading-tight mb-6 tracking-tight opacity-0 animate-slide-in-up stagger-1">
+            <h1 className="font-display text-4xl md:text-6xl font-black leading-tight mb-6 tracking-tight animate-slide-in-up stagger-1">
               <span className="text-brand-text-primary">{COPY.hero.titleLine1}</span>
               <br />
               <span className="text-brand-secondary">
@@ -241,11 +312,11 @@ export default async function Home() {
               </span>
             </h1>
 
-            <p className="text-lg md:text-xl text-brand-text-secondary leading-relaxed mb-10 max-w-2xl mx-auto opacity-0 animate-slide-in-up stagger-2">
+            <p className="text-lg md:text-xl text-brand-text-secondary leading-relaxed mb-10 max-w-2xl mx-auto animate-slide-in-up stagger-2">
               {COPY.hero.subtitle}
             </p>
 
-            <div className="flex flex-col items-center gap-4 mb-12 opacity-0 animate-slide-in-up stagger-3">
+            <div className="flex flex-col items-center gap-4 mb-12 animate-slide-in-up stagger-3">
               <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
                 <Link href="/blog" className="w-full sm:w-auto">
                   <Button as="span" variant="primary" size="lg" className="w-full">
@@ -410,57 +481,9 @@ export default async function Home() {
         </div>
 
         <div className="max-w-7xl mx-auto px-6">
-          {featuredPosts.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {featuredPosts.map((post: any) => {
-                const coverSrc = post.coverImage?.storageUrl || post.coverImage?.originalUrl || 'https://picsum.photos/seed/placeholder/1200/630';
-                return (
-                  <Link key={post.slug} href={`/blog/${post.slug}`} className="group block h-full">
-                    <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
-                      <div className="aspect-[16/10] overflow-hidden relative border-b border-brand-border">
-                        <Image
-                          src={coverSrc}
-                          alt={post.title}
-                          fill
-                          className="object-cover transition-transform duration-700 group-hover:scale-105"
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        />
-                        {post.category?.name && (
-                          <div className="absolute top-4 left-4">
-                            <Badge className="bg-white/90 backdrop-blur text-brand-text-primary">
-                              {post.category.name}
-                            </Badge>
-                          </div>
-                        )}
-                      </div>
-                      <div className="p-6 flex flex-col flex-1">
-                        <h3 className="font-display text-lg font-bold text-brand-text-primary group-hover:text-brand-secondary transition-colors mb-2 line-clamp-2">
-                          {post.title}
-                        </h3>
-                        <p className="text-sm text-brand-text-secondary leading-relaxed mb-4 line-clamp-2 flex-1">
-                          {post.summary}
-                        </p>
-                        <div className="flex items-center gap-3 pt-4 border-t border-brand-border mt-auto">
-                          <span className="text-xs text-brand-text-muted">
-                            {formatDate(post.publishedAt)}
-                          </span>
-                          <div className="w-1 h-1 bg-brand-border rounded-full"></div>
-                          <span className="text-xs text-brand-text-muted">
-                            {post.readingTime || '5'} 分钟
-                          </span>
-                        </div>
-                      </div>
-                    </Card>
-                  </Link>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-16 border border-dashed border-brand-border rounded-lg bg-white">
-              <h3 className="font-bold text-brand-text-primary mb-2">{COPY.resources.emptyTitle}</h3>
-              <p className="text-brand-text-secondary text-sm">{COPY.resources.emptyDesc}</p>
-            </div>
-          )}
+          <Suspense fallback={<PostsSkeleton />}>
+            <FeaturedPosts />
+          </Suspense>
         </div>
       </section>
 

@@ -1,11 +1,28 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { Plus_Jakarta_Sans, Instrument_Sans, JetBrains_Mono } from "next/font/google";
 import { CSPostHogProvider } from "@/components/providers/PostHogProvider";
 import { Toaster } from "sonner";
+import { JsonLd } from "@/components/seo/JsonLd";
 import "./globals.css";
 
-// Configure fonts if needed, or rely on CSS imports in globals.css
-// Keeping it simple as per legacy migration
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+});
+
+const instrumentSans = Instrument_Sans({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
+
+const jetBrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "ScaletoTop | Digital Marketing Engineering",
@@ -22,13 +39,37 @@ export default function RootLayout({
 }>) {
   const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
   const isProduction = process.env.NODE_ENV === 'production';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.scaletotop.com';
+
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "ScaletoTop",
+    "url": baseUrl,
+    "logo": {
+      "@type": "ImageObject",
+      "url": `${baseUrl}/logo-512.png`,
+      "width": 512,
+      "height": 512
+    },
+    "sameAs": [
+      "https://twitter.com/jack_scaletotop",
+      "https://www.linkedin.com/company/scaletotop"
+    ]
+  };
+
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "ScaletoTop",
+    "url": baseUrl
+  };
 
   return (
-    <html lang="zh-Hans">
+    <html lang="zh-Hans" className={`${plusJakartaSans.variable} ${instrumentSans.variable} ${jetBrainsMono.variable}`}>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+        <JsonLd data={organizationSchema} />
+        <JsonLd data={websiteSchema} />
         {isProduction && gtmId && (
           <Script
             id="gtm-script"

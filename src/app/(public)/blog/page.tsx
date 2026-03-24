@@ -21,16 +21,40 @@ export const metadata: Metadata = {
   },
 };
 
+import { JsonLd } from '@/components/seo/JsonLd';
+
 export default async function BlogPage() {
     const [{ contents }, categories] = await Promise.all([
         getPublishedContent(),
         getActiveCategories(),
     ]);
 
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.scaletotop.com';
+    const blogListSchema = {
+        "@context": "https://schema.org",
+        "@type": "Blog",
+        "name": "ScaletoTop Blog",
+        "description": "出海营销实战博客：深度拆解出海企业获客方法。",
+        "url": `${baseUrl}/blog`,
+        "publisher": {
+            "@type": "Organization",
+            "name": "ScaletoTop",
+            "logo": {
+                "@type": "ImageObject",
+                "url": `${baseUrl}/logo-512.png`,
+                "width": 512,
+                "height": 512
+            }
+        }
+    };
+
     return (
-        <BlogListContent
-            initialPosts={contents as any}
-            categories={categories as any}
-        />
+        <>
+            <JsonLd data={blogListSchema} />
+            <BlogListContent
+                initialPosts={contents as any}
+                categories={categories as any}
+            />
+        </>
     );
 }

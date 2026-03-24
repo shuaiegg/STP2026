@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { JsonLd } from '@/components/seo/JsonLd';
 
 export const metadata: Metadata = {
   title: '出海营销工具箱 | ScaletoTop',
@@ -72,9 +73,35 @@ const TOOLS = [
 ];
 
 export default function Tools() {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.scaletotop.com';
+  
+  const toolsSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "itemListElement": TOOLS.map((tool, index) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "item": {
+        "@type": "SoftwareApplication",
+        "name": tool.name,
+        "description": tool.description,
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web",
+        "url": `${baseUrl}${tool.href}`,
+        "offers": {
+          "@type": "Offer",
+          "price": tool.cost === "免费" ? "0" : "50",
+          "priceCurrency": tool.cost === "免费" ? "USD" : "Points"
+        }
+      }
+    }))
+  };
+
   return (
     <div className="container mx-auto py-24 px-6 min-h-[60vh]">
+      <JsonLd data={toolsSchema} />
       <div className="text-center mb-16 max-w-2xl mx-auto">
+
         <h1 className="font-display text-4xl md:text-5xl font-bold mb-6 text-brand-text-primary">数字化效率工具包</h1>
         <p className="text-brand-text-secondary text-lg leading-relaxed">
           为出海团队打造的自动化工具，将重复工作流程化，助力每一个决策都可量化、可追踪。

@@ -1,4 +1,5 @@
-import { Metadata } from 'next';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { CREDIT_PRODUCTS } from '@/lib/billing/products';
 import PricingClient from './PricingClient';
 
 export const metadata: Metadata = {
@@ -20,5 +21,30 @@ export const metadata: Metadata = {
 };
 
 export default function PricingPage() {
-  return <PricingClient />;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.scaletotop.com';
+  const pricingSchema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "ScaletoTop AI Credits",
+    "description": "Flexible AI credits for SEO content generation, site audit, and marketing automation.",
+    "brand": {
+      "@type": "Brand",
+      "name": "ScaletoTop"
+    },
+    "offers": CREDIT_PRODUCTS.map(pack => ({
+      "@type": "Offer",
+      "name": pack.label,
+      "price": pack.price,
+      "priceCurrency": "USD",
+      "url": `${baseUrl}/pricing`,
+      "availability": "https://schema.org/InStock"
+    }))
+  };
+
+  return (
+    <>
+      <JsonLd data={pricingSchema} />
+      <PricingClient />
+    </>
+  );
 }

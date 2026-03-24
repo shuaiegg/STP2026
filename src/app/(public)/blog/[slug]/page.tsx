@@ -7,6 +7,7 @@ import { getPublishedContentBySlug, getRelatedContent } from '@/lib/content';
 import { CTA } from '@/components/CTA';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { JsonLd } from '@/components/seo/JsonLd';
 
 interface BlogPostProps {
     params: Promise<{ slug: string }>;
@@ -63,6 +64,55 @@ export default async function BlogPost({ params }: BlogPostProps) {
 
     const coverSrc = post.coverImage?.storageUrl || post.coverImage?.originalUrl || 'https://picsum.photos/seed/placeholder/1200/630';
 
+    // JSON-LD Logic
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.scaletotop.com';
+    let blogSchema: any = null;
+
+    if (post.seo?.schemaJson) {
+        try {
+            blogSchema = JSON.parse(post.seo.schemaJson as string);
+        } catch (e) {
+            console.error('Failed to parse custom schemaJson:', e);
+        }
+    }
+
+    if (!blogSchema) {
+        blogSchema = {
+            "@context": "https://schema.org",
+            "@type": "BlogPosting",
+            "headline": post.title,
+            "image": [coverSrc],
+            "datePublished": post.publishedAt?.toISOString() ?? undefined,
+            "dateModified": post.updatedAt?.toISOString() ?? post.publishedAt?.toISOString() ?? undefined,
+            "author": [{
+                "@type": "Person",
+                "name": "ScaletoTop Team",
+                "url": baseUrl
+            }],
+            "publisher": {
+                "@type": "Organization",
+                "name": "ScaletoTop",
+                "logo": {
+                    "@type": "ImageObject",
+                    "url": `${baseUrl}/logo-512.png`,
+                    "width": 512,
+                    "height": 512
+                }
+            },
+            "description": post.summary
+        };
+    }
+
+    const breadcrumbSchema = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "首页", "item": baseUrl },
+            { "@type": "ListItem", "position": 2, "name": "博客", "item": `${baseUrl}/blog` },
+            { "@type": "ListItem", "position": 3, "name": post.title, "item": `${baseUrl}/blog/${post.slug}` }
+        ]
+    };
+
     // Help remove title if it's already in the markdown as H1 (e.g. # Title)
     const processedContentMd = post.contentMd
         ? post.contentMd.replace(new RegExp(`^\\s*#\\s+${post.title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\n*`, 'i'), '')
@@ -70,6 +120,8 @@ export default async function BlogPost({ params }: BlogPostProps) {
 
     return (
         <article className="relative pb-24">
+            <JsonLd data={blogSchema} />
+            <JsonLd data={breadcrumbSchema} />
             {/* Technical Grid Background */}
             <div className="fixed inset-0 grid-bg opacity-30 pointer-events-none" />
 
