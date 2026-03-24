@@ -30,8 +30,8 @@ const COPY = {
   hero: {
     badge: "已服务 50+ 出海企业",
     titleLine1: "让你的海外业务",
-    titleLine2: "每月稳定新增 50+ 优质询盘",
-    subtitle: "专为中国出海企业打造。通过精准广告投流、SEO 内容矩阵和自动化跟进工具，帮你建立可预测、低成本的海外获客闭环。",
+    titleLine2: "平均每月新增 50+ 优质询盘",
+    subtitle: "专为出海企业打造。通过精准广告投流、SEO 内容矩阵和自动化跟进工具，帮你建立可预测、低成本的海外获客闭环。",
     ctaPrimary: "免费获取获客诊断报告",
     ctaPrimaryMicro: "无需信用卡 · 专属增长方案",
     ctaSecondary: "探索自动化工具"

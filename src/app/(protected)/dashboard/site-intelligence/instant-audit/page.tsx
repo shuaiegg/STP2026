@@ -102,6 +102,7 @@ function InstantAuditInner() {
     const [techScore, setTechScore] = useState<number | null>(null);
 
     // UI States
+    const [isInitializing, setIsInitializing] = useState<boolean>(!!searchParams.get('siteId'));
     const [isSaving, setIsSaving] = useState(false);
     const [justSaved, setJustSaved] = useState(false);
     const [showInlineReport, setShowInlineReport] = useState(false);
@@ -195,6 +196,7 @@ function InstantAuditInner() {
             setStatus('SYSTEM_ERROR');
         } finally {
             setLoading(false);
+            setIsInitializing(false);
         }
     };
 
@@ -223,6 +225,7 @@ function InstantAuditInner() {
             setStatus('SYSTEM_ERROR');
         } finally {
             setLoading(false);
+            setIsInitializing(false);
         }
     };
 
@@ -539,7 +542,15 @@ ${issuesMarkdown}
             {activeSiteId && (
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                 <div className="lg:col-span-3 space-y-6">
-                    {graphData.nodes.length === 0 && !loading ? (
+                    {isInitializing ? (
+                        <Card className="bg-white border-slate-200 shadow-sm min-h-[520px] flex flex-col items-center justify-center p-8">
+                            <div className="w-full max-w-md space-y-4 animate-pulse">
+                                <div className="h-6 bg-slate-100 rounded-xl w-2/3 mx-auto" />
+                                <div className="h-4 bg-slate-100 rounded-lg w-1/2 mx-auto" />
+                                <div className="h-64 bg-slate-100 rounded-2xl w-full mt-6" />
+                            </div>
+                        </Card>
+                    ) : graphData.nodes.length === 0 && !loading ? (
                         <Card className="bg-white border-slate-200 shadow-sm flex flex-col items-center justify-center py-24 px-8 text-center min-h-[520px]">
                             <div className="w-20 h-20 rounded-3xl bg-brand-primary/8 flex items-center justify-center mb-6">
                                 <Globe size={40} className="text-brand-primary opacity-60" />
