@@ -227,13 +227,13 @@ export default async function Home() {
       <section className="relative py-24 md:py-32 overflow-hidden bg-brand-surface">
         <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
           <div className="max-w-4xl mx-auto">
-            <div className="inline-flex items-center gap-4 mb-8 opacity-0 animate-slide-in-up">
+            <div className="inline-flex items-center gap-4 mb-8 animate-slide-in-up">
               <Badge className="bg-brand-secondary/10 text-brand-secondary">
                 {COPY.hero.badge}
               </Badge>
             </div>
 
-            <h1 className="font-display text-4xl md:text-6xl font-black leading-tight mb-6 tracking-tight opacity-0 animate-slide-in-up stagger-1">
+            <h1 className="font-display text-4xl md:text-6xl font-black leading-tight mb-6 tracking-tight animate-slide-in-up stagger-1">
               <span className="text-brand-text-primary">{COPY.hero.titleLine1}</span>
               <br />
               <span className="text-brand-secondary">
@@ -241,11 +241,11 @@ export default async function Home() {
               </span>
             </h1>
 
-            <p className="text-lg md:text-xl text-brand-text-secondary leading-relaxed mb-10 max-w-2xl mx-auto opacity-0 animate-slide-in-up stagger-2">
+            <p className="text-lg md:text-xl text-brand-text-secondary leading-relaxed mb-10 max-w-2xl mx-auto animate-slide-in-up stagger-2">
               {COPY.hero.subtitle}
             </p>
 
-            <div className="flex flex-col items-center gap-4 mb-12 opacity-0 animate-slide-in-up stagger-3">
+            <div className="flex flex-col items-center gap-4 mb-12 animate-slide-in-up stagger-3">
               <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
                 <Link href="/blog" className="w-full sm:w-auto">
                   <Button as="span" variant="primary" size="lg" className="w-full">

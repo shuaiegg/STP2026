@@ -5,6 +5,10 @@ import Link from 'next/link';
 import { IntegrationGuidanceCard } from '@/components/dashboard/IntegrationGuidanceCard';
 import { Zap, ChevronRight, TrendingUp, Search, BarChart2 } from 'lucide-react';
 
+const COPY = {
+  debtDetailCta: '去策略板查看'
+} as const;
+
 interface OverviewPanelProps {
   siteId: string;
   domain: string;
@@ -38,6 +42,11 @@ export function OverviewPanel({
         }
         setSelectedDebt(debt);
     }, [selectedDebt]);
+
+    const handleSwitchToStrategy = useCallback(() => {
+        onSwitchTab?.('strategy');
+        setSelectedDebt(null);
+    }, [onSwitchTab]);
 
     const fetchData = useCallback(async () => {
         setLoading(true);
@@ -193,7 +202,7 @@ export function OverviewPanel({
                                 [ 关键词趋势组件待集成 ]
                             </Card>
                         ) : (
-                            <IntegrationGuidanceCard type="gsc" href={`/dashboard/site-intelligence/${siteId}#integrations`} />
+                            <IntegrationGuidanceCard type="gsc" onClick={() => onSwitchTab?.('integrations')} />
                         )}
                     </div>
 
@@ -212,7 +221,7 @@ export function OverviewPanel({
                                 [ GA4 流量组件待集成 ]
                             </Card>
                         ) : (
-                            <IntegrationGuidanceCard type="ga4" href={`/dashboard/site-intelligence/${siteId}#integrations`} />
+                            <IntegrationGuidanceCard type="ga4" onClick={() => onSwitchTab?.('integrations')} />
                         )}
                     </div>
                 </div>
@@ -255,7 +264,7 @@ export function OverviewPanel({
                                 )}
                             </div>
                         ) : (
-                            <IntegrationGuidanceCard type="content-plan" href={`/dashboard/site-intelligence/${siteId}#strategy`} />
+                            <IntegrationGuidanceCard type="content-plan" onClick={() => onSwitchTab?.('strategy')} />
                         )}
                     </div>
 
@@ -268,20 +277,41 @@ export function OverviewPanel({
                             <Card className="p-6 border-rose-100 bg-rose-50/20 shadow-sm">
                                 <div className="space-y-3">
                                     {semanticData.semanticDebts.slice(0, 3).map((debt: any, i: number) => (
-                                        <div 
-                                            key={i} 
-                                            className="flex items-center justify-between p-3 bg-white rounded-xl border border-rose-100 hover:border-rose-300 transition-colors cursor-pointer group"
-                                            onClick={() => handleDebtClick(debt)}
-                                        >
-                                            <span className="text-sm font-bold text-slate-800">{debt.topic}</span>
-                                            <div className="flex items-center gap-3">
-                                                <div className="flex items-center gap-1">
-                                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">覆盖度</span>
-                                                    <span className="text-[10px] font-black text-rose-600">{debt.coverageScore}%</span>
+                                        <React.Fragment key={i}>
+                                            <div 
+                                                className={`flex items-center justify-between p-3 bg-white rounded-xl border transition-all cursor-pointer group ${selectedDebt?.topic === debt.topic ? 'border-rose-400 shadow-sm' : 'border-rose-100 hover:border-rose-300'}`}
+                                                onClick={() => handleDebtClick(debt)}
+                                            >
+                                                <span className="text-sm font-bold text-slate-800">{debt.topic}</span>
+                                                <div className="flex items-center gap-3">
+                                                    <div className="flex items-center gap-1">
+                                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">覆盖度</span>
+                                                        <span className="text-[10px] font-black text-rose-600">{debt.coverageScore}%</span>
+                                                    </div>
+                                                    <ChevronRight size={14} className={`transition-transform ${selectedDebt?.topic === debt.topic ? 'rotate-90 text-rose-500' : 'text-rose-200 group-hover:text-rose-400'}`} />
                                                 </div>
-                                                <ChevronRight size={14} className="text-rose-200 group-hover:text-rose-400" />
                                             </div>
-                                        </div>
+                                            
+                                            {selectedDebt?.topic === debt.topic && (
+                                                <div className="mt-2 ml-2 p-4 bg-white border border-rose-100 rounded-xl animate-scale-in">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="space-y-1">
+                                                            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">话题名称</div>
+                                                            <div className="text-sm font-bold text-slate-900">{debt.topic}</div>
+                                                        </div>
+                                                        <Badge variant="muted" className="bg-rose-50 text-rose-600 border-rose-100 font-mono">
+                                                            SCORE: {debt.coverageScore}
+                                                        </Badge>
+                                                    </div>
+                                                    <button 
+                                                        onClick={handleSwitchToStrategy}
+                                                        className="mt-4 w-full py-2 bg-rose-600 text-white text-[11px] font-black uppercase rounded-lg shadow-sm hover:bg-rose-700 transition-colors"
+                                                    >
+                                                        {COPY.debtDetailCta}
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </React.Fragment>
                                     ))}
                                 </div>
                             </Card>

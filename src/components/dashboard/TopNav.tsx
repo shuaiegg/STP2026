@@ -181,7 +181,7 @@ export function TopNav({ sites, currentSiteId, user }: TopNavProps) {
                     <button
                       key={site.id}
                       role="option"
-                      aria-selected={site.id === activeSiteId}
+                      aria-selected={site.id === currentSiteId}
                       onClick={() => {
                         router.push(`/dashboard/site-intelligence/${site.id}`);
                         setIsSiteOpen(false);
@@ -189,12 +189,12 @@ export function TopNav({ sites, currentSiteId, user }: TopNavProps) {
                       className="w-full flex items-center justify-between px-4 py-2 hover:bg-gray-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-primary/50"
                     >
                       <div className="flex items-center gap-3">
-                        <span className={`text-sm ${site.id === activeSiteId ? 'font-semibold text-gray-900' : 'text-gray-600'}`}>
+                        <span className={`text-sm ${site.id === currentSiteId ? 'font-semibold text-gray-900' : 'text-gray-600'}`}>
                           {site.domain}
                         </span>
                         <HealthScoreBadge score={site.latestHealthScore} />
                       </div>
-                      {site.id === activeSiteId && (
+                      {site.id === currentSiteId && (
                         <Check size={14} aria-hidden="true" className="text-brand-primary" />
                       )}
                     </button>

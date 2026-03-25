@@ -114,7 +114,7 @@ export default function Tools() {
                   {tool.cost}
                 </p>
                 <Link href={tool.href} tabIndex={-1}>
-                  <Button as="span" variant="secondary" size="sm" className="font-bold">
+                  <Button as="span" variant="primary" size="sm" className="font-bold">
                     {tool.cta}
                   </Button>
                 </Link>
