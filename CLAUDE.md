@@ -113,6 +113,7 @@ The app uses Next.js App Router with route groups:
   - `/dashboard/site-intelligence/instant-audit` - One-shot site audit
   - `/dashboard/library` - User article library with `/edit/[id]`
   - `/dashboard/tools` - AI tools; `/dashboard/billing` - Credits; `/dashboard/settings`
+  - `/dashboard/onboarding` - New user onboarding flow (shown after registration)
 
 - **`admin/`** - CMS admin routes (ADMIN/EDITOR role required)
   - `/admin` - Dashboard; `/admin/content` - Content management; `/admin/sync` - Notion sync
@@ -258,6 +259,11 @@ CREEM_WEBHOOK_SECRET=     # Creem.io webhook signature verification
 # better-auth
 BETTER_AUTH_SECRET=       # Session signing secret
 NEXT_PUBLIC_APP_URL=      # Base URL (e.g., https://scaletotop.com)
+
+# Analytics
+NEXT_PUBLIC_GTM_ID=               # Google Tag Manager container ID (production only)
+NEXT_PUBLIC_POSTHOG_KEY=          # PostHog project API key
+NEXT_PUBLIC_POSTHOG_HOST=         # PostHog host (e.g., https://app.posthog.com)
 ```
 
 ## Notion Database Requirements
@@ -396,6 +402,54 @@ Categories are pre-defined and managed separately from Notion:
 1. Run initial sync: Visit `/admin/sync` and trigger "Sync All"
 2. Verify images are uploaded to Supabase Storage
 3. Check blog pages are accessible at `/blog`
+
+## SEO Infrastructure
+
+### Dynamic Sitemap & Robots
+
+- **`src/app/sitemap.ts`** — Dynamic sitemap generated at request time. Queries Prisma for `PUBLISHED + PUBLIC` content and combines with static marketing routes. Do NOT use a static `public/sitemap.xml` — it will conflict.
+- **`src/app/robots.ts`** — Dynamic robots config (replaces the old `public/robots.txt`). Returns a `MetadataRoute.Robots` object.
+
+### Page Metadata Pattern
+
+All public pages (`(public)/`) export `generateMetadata` or a static `metadata` object with:
+- `title`, `description`, `alternates.canonical`
+- `openGraph.images` pointing to `/api/og` (dynamic OG image) or a specific image URL
+
+The root layout (`src/app/layout.tsx`) provides fallback metadata only. Page-level metadata always takes precedence.
+
+### JSON-LD Structured Data
+
+JSON-LD is injected inline per page via `<script type="application/ld+json">` in the page's `<head>`. Use the `JsonLd` component at `src/components/seo/JsonLd.tsx` when it exists, or inline the script directly in the page's metadata/head slot. Schema types in use: `WebSite`, `BlogPosting`, `BreadcrumbList`.
+
+### Analytics & Tag Management
+
+- **Google Tag Manager**: Loaded in `src/app/layout.tsx` via `next/script` with `strategy="afterInteractive"`. Only injected when `NEXT_PUBLIC_GTM_ID` is set AND `NODE_ENV === 'production'`.
+- **PostHog**: Wrapped via `<CSPostHogProvider>` in root layout (`src/components/providers/PostHogProvider`). Active in all environments.
+
+## OpenSpec Change Management
+
+All significant feature work follows the OpenSpec workflow tracked in `openspec/`:
+
+```
+openspec/
+  changes/
+    <change-name>/          # Active change being implemented
+      .openspec.yaml        # Change metadata
+      design.md             # Design decisions
+      proposal.md           # What & why
+      specs/                # Detailed specs per feature area
+      tasks.md              # Checklist of implementation tasks
+    archive/                # Completed changes (prefixed with date)
+  specs/                    # Living specs (canonical, updated in place)
+```
+
+**Workflow**:
+1. `/openspec-propose` — Create a new change with all artifacts
+2. `/openspec-apply-change` — Work through tasks.md
+3. `/openspec-archive-change` — Move completed change to `archive/` with date prefix
+
+**Rule**: Do not delete or modify specs in `openspec/specs/` directly — they are updated by the OpenSpec workflow. Archived changes in `openspec/changes/archive/` are read-only history.
 
 ## Caching Strategy
 
