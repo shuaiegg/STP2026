@@ -2,8 +2,26 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import Link from 'next/link';
+import { IntegrationGuidanceCard } from '@/components/dashboard/IntegrationGuidanceCard';
+import { Zap, ChevronRight, TrendingUp, Search, BarChart2 } from 'lucide-react';
 
-export function OverviewPanel({ siteId, domain, onSwitchTab }: { siteId: string, domain: string, onSwitchTab?: (tab: string) => void }) {
+interface OverviewPanelProps {
+  siteId: string;
+  domain: string;
+  hasGsc: boolean;
+  hasGa4: boolean;
+  hasContentPlan: boolean;
+  onSwitchTab?: (tab: string) => void;
+}
+
+export function OverviewPanel({ 
+  siteId, 
+  domain, 
+  hasGsc, 
+  hasGa4, 
+  hasContentPlan, 
+  onSwitchTab 
+}: OverviewPanelProps) {
     const [latestAudit, setLatestAudit] = useState<any>(null);
     const [semanticData, setSemanticData] = useState<any>(null);
     const [competitorCount, setCompetitorCount] = useState<number>(0);
@@ -20,8 +38,6 @@ export function OverviewPanel({ siteId, domain, onSwitchTab }: { siteId: string,
         }
         setSelectedDebt(debt);
     }, [selectedDebt]);
-
-
 
     const fetchData = useCallback(async () => {
         setLoading(true);
@@ -57,15 +73,12 @@ export function OverviewPanel({ siteId, domain, onSwitchTab }: { siteId: string,
         }
     }, [siteId]);
 
-
-
     const handleExtractDNA = useCallback(async () => {
         setIsExtractingDNA(true);
         try {
             const res = await fetch(`/api/dashboard/sites/${siteId}/ontology`, { method: 'POST' });
             const data = await res.json();
             if (data.success) {
-                // Refresh the panel data
                 await fetchData();
             } else {
                 alert(data.error || "提取业务DNA失败");
@@ -85,349 +98,201 @@ export function OverviewPanel({ siteId, domain, onSwitchTab }: { siteId: string,
     if (loading) {
         return (
             <div className="space-y-6 animate-pulse">
-                {/* Top Metrics Row */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {[1, 2, 3].map(i => (
-                        <Card key={i} className="p-6 flex flex-col justify-between border-slate-200 shadow-sm h-[180px]">
-                            <div className="h-4 w-24 bg-slate-200 rounded-md"></div>
-                            <div className="h-12 w-24 bg-slate-100 rounded-md mt-4"></div>
-                            <div className="h-3 w-40 bg-slate-100 rounded-md mt-4"></div>
-                        </Card>
+                        <div key={i} className="h-[180px] bg-white border border-slate-100 rounded-2xl shadow-sm" />
                     ))}
                 </div>
-
-                {/* Strategic Insights */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
-                    <div className="space-y-6">
-                        <Card className="p-6 h-[160px] bg-slate-50 border-slate-200">
-                            <div className="h-5 w-32 bg-slate-200 rounded-md mb-4"></div>
-                            <div className="space-y-3">
-                                <div className="h-4 w-full bg-slate-100 rounded-md"></div>
-                                <div className="h-4 w-2/3 bg-slate-100 rounded-md"></div>
-                            </div>
-                        </Card>
-                        <Card className="p-6 h-[120px] bg-slate-50 border-slate-200">
-                            <div className="h-5 w-40 bg-slate-200 rounded-md mb-4"></div>
-                            <div className="flex gap-2">
-                                {[1, 2, 3, 4].map(j => (
-                                    <div key={j} className="h-6 w-16 bg-slate-200 rounded-full"></div>
-                                ))}
-                            </div>
-                        </Card>
-                    </div>
-
-                    <Card className="p-6 h-[400px] bg-slate-50 border-slate-200">
-                        <div className="flex justify-between items-start mb-6">
-                            <div className="h-5 w-40 bg-slate-200 rounded-md"></div>
-                            <div className="h-5 w-16 bg-slate-200 rounded-md"></div>
-                        </div>
-                        <div className="space-y-3">
-                            {[1, 2, 3, 4, 5].map(k => (
-                                <div key={k} className="h-16 w-full bg-white rounded-xl border border-slate-100"></div>
-                            ))}
-                        </div>
-                    </Card>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="h-[400px] bg-white border border-slate-100 rounded-2xl shadow-sm" />
+                    <div className="h-[400px] bg-white border border-slate-100 rounded-2xl shadow-sm" />
                 </div>
             </div>
         );
     }
 
-    if (!latestAudit) {
-        return (
-            <Card className="p-12 text-center flex flex-col items-center justify-center min-h-[400px] border-dashed border-slate-200">
-                <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
-                    <span className="text-2xl opacity-80">🔭</span>
-                </div>
-                <h3 className="text-slate-900 font-semibold mb-2 text-lg">开启第一次站点探测</h3>
-                <p className="text-sm text-slate-500 max-w-sm mb-6">
-                    我们还需要对您的站点进行初步扫描，以生成初始星图和提取核心话题结构。
-                </p>
-                <Link href={`/dashboard/site-intelligence/instant-audit?site=${encodeURIComponent(domain)}`}>
-                    <button className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm px-6 py-2.5 font-bold transition-all flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="4" /><line x1="21.17" x2="12" y1="8" y2="8" /><line x1="3.95" x2="8.58" y1="6.06" y2="14" /><line x1="10.88" x2="15.46" y1="21.94" y2="14" /></svg>
-                        立即发射探测站
-                    </button>
-                </Link>
-            </Card>
-        );
-    }
-
-    const techScore = latestAudit.techScore || 0;
+    const techScore = latestAudit?.techScore || 0;
     const isScoreGood = techScore >= 80;
     const isScoreWarn = techScore >= 50 && techScore < 80;
 
     return (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {/* Top Metrics Row */}
+        <div className="space-y-8">
+            {/* Top Row: Core Metrics & Status */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Tech Score Widget */}
-                <Card className="p-6 flex flex-col justify-between border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                {/* Health Score Card */}
+                <Card className="p-6 border-slate-200 shadow-sm flex flex-col justify-between">
                     <div className="space-y-1">
-                        <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
                             <span className={`w-1.5 h-1.5 rounded-full ${isScoreGood ? 'bg-emerald-500' : isScoreWarn ? 'bg-amber-500' : 'bg-rose-500'}`}></span>
-                            最新健康度
+                            全站健康得分
                         </h4>
-                    </div>
-                    <div className="mt-4 flex items-end gap-3">
-                        <div className={`text-5xl font-extrabold tracking-tight tabular-nums ${isScoreGood ? 'text-emerald-600' : isScoreWarn ? 'text-amber-600' : 'text-rose-600'}`}>
-                            {techScore}
-                        </div>
-                        <div className="mb-1 text-sm font-medium text-slate-500">/ 100</div>
-                    </div>
-                    <div className="mt-4 text-[11px] text-slate-500 font-medium">
-                        基于最后一次扫描的平均加载响应计算。
-                    </div>
-                </Card>
-
-                {/* Scope Widget */}
-                <Card className="p-6 flex flex-col justify-between border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="space-y-1">
-                        <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                            版图结构
-                        </h4>
-                    </div>
-                    <div className="mt-4">
-                        <div className="text-4xl font-extrabold tracking-tight text-slate-900 tabular-nums">
-                            {latestAudit.pageCount} <span className="text-lg text-slate-400 font-medium">个页面</span>
-                        </div>
-                    </div>
-                    <div className="mt-4 text-[11px] text-slate-500 font-medium flex items-center gap-2">
-                        更新于 {new Date(latestAudit.createdAt).toLocaleDateString()}
-                    </div>
-                </Card>
-
-                {/* Competitors Widget */}
-                <Card className="p-6 flex flex-col justify-between border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="space-y-1">
-                        <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                            视野内对手
-                        </h4>
-                    </div>
-                    <div className="mt-4">
-                        <div className="text-4xl font-extrabold tracking-tight text-slate-900 tabular-nums">
-                            {competitorCount} <span className="text-lg text-slate-400 font-medium">/ 5 排列</span>
-                        </div>
-                    </div>
-                    <div className="mt-4">
-                        <Link href="#competitors" onClick={() => (document.querySelector('button[aria-label="竞争对手追踪"]') as HTMLElement)?.click()}>
-                            <span className="text-[11px] text-brand-primary font-bold hover:underline">
-                                管理追踪列表 &rarr;
+                        <div className="flex items-baseline gap-2 pt-2">
+                            <span className={`text-5xl font-black font-display italic tracking-tighter ${isScoreGood ? 'text-emerald-600' : isScoreWarn ? 'text-amber-600' : 'text-rose-600'}`}>
+                                {techScore}
                             </span>
-                        </Link>
+                            <span className="text-sm font-bold text-slate-300">/ 100</span>
+                        </div>
                     </div>
+                    <p className="mt-4 text-[11px] text-slate-500 font-medium">
+                        基于星图扫描的技术 SEO 指标计算得出。
+                    </p>
+                </Card>
+
+                {/* Page Count Card */}
+                <Card className="p-6 border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div className="space-y-1">
+                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">版图页面规模</h4>
+                        <div className="flex items-baseline gap-2 pt-2">
+                            <span className="text-5xl font-black font-display italic tracking-tighter text-slate-900">
+                                {latestAudit?.pageCount || 0}
+                            </span>
+                            <span className="text-sm font-bold text-slate-300">PAGES</span>
+                        </div>
+                    </div>
+                    <p className="mt-4 text-[11px] text-slate-500 font-medium">
+                        已在星图中探明的有效 URL 节点。
+                    </p>
+                </Card>
+
+                {/* Competitors Card */}
+                <Card className="p-6 border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div className="space-y-1">
+                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">已追踪竞争对手</h4>
+                        <div className="flex items-baseline gap-2 pt-2">
+                            <span className="text-5xl font-black font-display italic tracking-tighter text-slate-900">
+                                {competitorCount}
+                            </span>
+                            <span className="text-sm font-bold text-slate-300">/ 5 MAX</span>
+                        </div>
+                    </div>
+                    <button 
+                        onClick={() => onSwitchTab?.('competitors')}
+                        className="mt-4 flex items-center text-[11px] font-black text-brand-primary uppercase tracking-widest hover:gap-2 transition-all"
+                    >
+                        管理追踪列表 <ChevronRight size={14} className="ml-1" />
+                    </button>
                 </Card>
             </div>
 
-            {/* Strategic Insights */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
-                {/* Our Strengths & Business DNA */}
-                <div className="space-y-6">
-                    {/* Business DNA */}
-                    {semanticData?.ontology ? (
-                        <Card className="p-6 border-indigo-100 bg-indigo-50/30 shadow-sm">
-                            <h3 className="text-sm font-bold text-indigo-900 flex items-center gap-2 mb-3">
-                                🧬 核心业务 DNA
+            {/* Adaptive Insights Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Left Column: Data Insights */}
+                <div className="space-y-8">
+                    {/* Keywords Section */}
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                                <Search size={16} className="text-brand-primary" /> 关键词表现
                             </h3>
-                            <div className="space-y-3">
-                                <div>
-                                    <h4 className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">核心产品/服务</h4>
-                                    <p className="text-xs text-slate-700 mt-1 leading-relaxed">
-                                        {semanticData.ontology.coreOfferings?.join(" • ")}
-                                    </p>
-                                </div>
-                                <div>
-                                    <h4 className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">解决痛点</h4>
-                                    <p className="text-xs text-slate-700 mt-1 leading-relaxed">
-                                        {semanticData.ontology.painPointsSolved?.join(" • ")}
-                                    </p>
-                                </div>
-                            </div>
-                        </Card>
-                    ) : (
-                        <Card className="p-6 border-dashed border-indigo-200 bg-indigo-50/10 shadow-sm flex flex-col items-center justify-center text-center space-y-3">
-                            <span className="text-2xl opacity-50">🧬</span>
-                            <div>
-                                <h3 className="text-sm font-bold text-indigo-900">未提取业务 DNA</h3>
-                                <p className="text-xs text-slate-500 mt-1">提取自身的业务逻辑，系统才能推导出你的"语义债"和核心支柱。</p>
-                            </div>
-                            <button
-                                onClick={handleExtractDNA}
-                                disabled={isExtractingDNA}
-                                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2 text-[11px] font-bold transition-all disabled:opacity-50"
-                            >
-                                {isExtractingDNA ? "正在利用全站数据反推 DNA..." : "立即提取业务 DNA"}
-                            </button>
-                        </Card>
-                    )}
-
-                    <Card className="p-6 border-emerald-100 bg-emerald-50/20 shadow-sm">
-                        <h3 className="text-sm font-bold text-emerald-900 flex items-center gap-2 mb-4">
-                            权威支柱 (Core Strengths)
-                        </h3>
-                        {semanticData?.ourStrengths?.length > 0 ? (
-                            <div className="flex flex-wrap gap-2">
-                                {semanticData.ourStrengths.slice(0, 15).map((topic: any, i: number) => (
-                                    <Badge key={i} variant="default" className="bg-white border-emerald-200 text-emerald-700 shadow-sm cursor-default">
-                                        {topic.topic}
-                                    </Badge>
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="text-xs text-slate-500">系统中尚未提取到成熟的内容支柱。建议补充业务相关的核心长文。</p>
-                        )}
-                    </Card>
-                </div>
-
-                {/* Top Semantic Debts */}
-                <Card className="p-6 border-rose-100 bg-rose-50/20 shadow-sm flex flex-col h-full">
-                    <div className="flex justify-between items-start mb-4">
-                        <div>
-                            <h3 className="text-sm font-bold text-rose-900 flex items-center gap-2">
-                                高优语义债 (Semantic Debts)
-                            </h3>
-                            {(!siteData?.gscConnections || siteData.gscConnections.length === 0 || !siteData.gscConnections[0].propertyId) ? (
-                                <button
-                                    onClick={() => onSwitchTab && onSwitchTab('integrations')}
-                                    className="mt-2 text-[10px] font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-md transition-colors flex items-center gap-1 w-fit"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.54 15H17a2 2 0 0 0-2 2v4.54" /><path d="M7 3.34V5a3 3 0 0 0 3 3v0a2 2 0 0 1 2 2v0c0 1.1.9 2 2 2v0a2 2 0 0 0 2-2v0c0-1.1.9-2 2-2h3.17" /><path d="M11 21.95V18a2 2 0 0 0-2-2v0a2 2 0 0 1-2-2v-1a2 2 0 0 0-2-2H2.05" /><circle cx="12" cy="12" r="10" /></svg>
-                                    前往设置接入 GSC，计算排序优先级 ✨
-                                </button>
-                            ) : null}
-
-                            {/* GA4 Connection Block */}
-                            {(!siteData?.ga4Connections || siteData.ga4Connections.length === 0 || !siteData.ga4Connections[0].propertyId) ? (
-                                <button
-                                    onClick={() => onSwitchTab && onSwitchTab('integrations')}
-                                    className="mt-2 text-[10px] font-bold text-orange-600 bg-orange-50 hover:bg-orange-100 px-2.5 py-1 rounded-md transition-colors flex items-center gap-1 w-fit"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-4" /></svg>
-                                    前往设置接入 GA4，分析站内流量 📈
-                                </button>
-                            ) : null}
+                            {hasGsc && (
+                                <button onClick={() => onSwitchTab?.('performance')} className="text-[10px] font-black text-brand-primary uppercase">查看大盘 &rarr;</button>
+                            )}
                         </div>
-                        {semanticData?.semanticDebts?.length > 0 && (
-                            <Badge variant="muted" className="bg-white border-rose-200 text-rose-600 text-[10px]">
-                                发现 {semanticData.semanticDebts.length} 个缺口
-                            </Badge>
+                        {hasGsc ? (
+                            <Card className="p-6 bg-white border-slate-200 shadow-sm h-64 flex items-center justify-center text-slate-400 italic text-sm">
+                                [ 关键词趋势组件待集成 ]
+                            </Card>
+                        ) : (
+                            <IntegrationGuidanceCard type="gsc" href={`/dashboard/site-intelligence/${siteId}#integrations`} />
                         )}
                     </div>
 
-                    {semanticData?.semanticDebts?.length > 0 ? (
-                        <div className="space-y-3 flex-1">
-                            {semanticData.semanticDebts.slice(0, 5).map((debt: any, i: number) => (
-                                <div key={i} className="flex flex-col gap-2">
-                                    <div
-                                        className={`flex items-center justify-between p-3 rounded-xl border shadow-sm transition-all cursor-pointer ${selectedDebt?.topic === debt.topic
-                                            ? 'bg-rose-50 border-rose-300 ring-1 ring-rose-200'
-                                            : 'bg-white border-rose-100 hover:border-rose-300'
-                                            }`}
-                                        onClick={() => handleDebtClick(debt)}
-                                    >
-                                        <div>
-                                            <p className="font-bold text-slate-800 text-sm flex items-center gap-2">
-                                                {debt.topic}
-                                                {debt.priorityLabel && (
-                                                    <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-md ${debt.priorityLabel.includes('🔥')
-                                                        ? 'bg-rose-100 text-rose-600'
-                                                        : 'bg-emerald-100 text-emerald-600'
-                                                        }`}>
-                                                        {debt.priorityLabel}
-                                                    </span>
-                                                )}
-                                            </p>
-                                            <div className="flex gap-3 mt-1.5">
-                                                <div className="flex items-center gap-1">
-                                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">覆盖度</span>
-                                                    <span className={`text-[10px] font-black tabular-nums ${debt.coverageScore < 30 ? 'text-rose-600' : 'text-slate-600'}`}>
-                                                        {debt.coverageScore || 0}%
-                                                    </span>
-                                                </div>
-                                                <div className="flex items-center gap-1">
-                                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">佐证度</span>
-                                                    <span className="text-[10px] font-black text-slate-600 tabular-nums">
-                                                        {debt.proofDensity || 0}%
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <button className="text-rose-500 opacity-60 hover:opacity-100 transition-opacity">
-                                            {selectedDebt?.topic === debt.topic ? (
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6" /></svg>
-                                            ) : (
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
-                                            )}
-                                        </button>
-                                    </div>
-
-                                    {/* Inline Expansion Pane */}
-                                    {selectedDebt?.topic === debt.topic && (
-                                        <div className="mx-2 mb-2 p-4 bg-white rounded-lg border border-rose-100 shadow-inner animate-in slide-in-from-top-1 space-y-4">
-                                            <div className="bg-slate-50 rounded p-3 text-xs leading-relaxed text-slate-700 border border-slate-100">
-                                                <strong className="text-slate-900 block mb-1">为什么这很重要？ (Relevance)</strong>
-                                                {debt.relevance}
-                                            </div>
-
-                                            {debt.gscData ? (
-                                                <div className="bg-blue-50/50 p-3 rounded-lg border border-blue-100/50">
-                                                    <div className="flex items-center gap-2 mb-2">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500"><path d="M3 3v18h18" /><path d="m19 9-5 5-4-4-3 3" /></svg>
-                                                        <span className="text-[10px] font-bold text-blue-600 tracking-widest uppercase">30天搜索表现 (GSC)</span>
-                                                    </div>
-                                                    <div className="grid grid-cols-2 gap-3 mb-2">
-                                                        <div className="bg-white p-2 rounded border border-blue-50 shadow-sm">
-                                                            <div className="text-[9px] font-bold text-slate-400 uppercase mb-0.5">总曝光 (Impressions)</div>
-                                                            <div className="text-sm font-black text-slate-800 tabular-nums">{debt.gscData.impressions.toLocaleString()}</div>
-                                                        </div>
-                                                        <div className="bg-white p-2 rounded border border-blue-50 shadow-sm">
-                                                            <div className="text-[9px] font-bold text-slate-400 uppercase mb-0.5">捕获点击 (Clicks)</div>
-                                                            <div className="text-sm font-black text-slate-800 tabular-nums">{debt.gscData.clicks.toLocaleString()}</div>
-                                                        </div>
-                                                    </div>
-                                                    {debt.gscData.matchedKeywords?.length > 0 && (
-                                                        <div className="text-[10px] text-slate-500 bg-white/50 px-2 py-1.5 rounded border border-blue-50">
-                                                            热门搜索词: <span className="font-mono text-slate-700 font-medium">{debt.gscData.matchedKeywords.join(', ')}</span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            ) : (
-                                                <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                                                    <div className="flex justify-between items-center mb-1">
-                                                        <span className="text-[10px] font-bold text-slate-500 tracking-widest uppercase">搜索潜力评估</span>
-                                                        <span className="text-[10px] text-slate-400">尚无真实数据</span>
-                                                    </div>
-                                                    <p className="text-[11px] text-slate-500 leading-relaxed">该主题在当前的 GSC 点击流中未获得足够曝光，或您的站点尚未绑定 Google Search Console。</p>
-                                                </div>
-                                            )}
-
-                                            {debt.subtopics && debt.subtopics.length > 0 && (
-                                                <div className="bg-slate-900 rounded p-3">
-                                                    <div className="text-[10px] text-slate-400 font-mono mb-2">SUGGESTED SUB-TOPICS:</div>
-                                                    <ul className="space-y-1 font-mono text-[11px] text-slate-300 list-disc list-inside">
-                                                        {debt.subtopics.map((sub: string, idx: number) => (
-                                                            <li key={idx}>{sub}</li>
-                                                        ))}
-                                                    </ul>
-                                                </div>
-                                            )}
-
-                                            <button className="w-full bg-slate-900 hover:bg-slate-800 text-white rounded-lg py-2.5 text-[11px] font-bold tracking-widest uppercase transition-colors flex justify-center items-center gap-2">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-zap"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
-                                                派发 GEO Writer 任务
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
+                    {/* Traffic Section */}
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                                <BarChart2 size={16} className="text-brand-primary" /> 流量趋势
+                            </h3>
+                            {hasGa4 && (
+                                <button onClick={() => onSwitchTab?.('traffic')} className="text-[10px] font-black text-brand-primary uppercase">查看详情 &rarr;</button>
+                            )}
                         </div>
-                    ) : (
-                        <p className="text-xs text-slate-500 flex-1">
-                            尚未提取到业务本体数据或未发现明显的语义债。
-                        </p>
-                    )
-                    }
-                </Card >
-            </div >
-        </div >
+                        {hasGa4 ? (
+                            <Card className="p-6 bg-white border-slate-200 shadow-sm h-64 flex items-center justify-center text-slate-400 italic text-sm">
+                                [ GA4 流量组件待集成 ]
+                            </Card>
+                        ) : (
+                            <IntegrationGuidanceCard type="ga4" href={`/dashboard/site-intelligence/${siteId}#integrations`} />
+                        )}
+                    </div>
+                </div>
+
+                {/* Right Column: Strategic Insights */}
+                <div className="space-y-8">
+                    {/* Content Plan Section */}
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                                <TrendingUp size={16} className="text-brand-primary" /> 内容执行进度
+                            </h3>
+                            {hasContentPlan && (
+                                <button onClick={() => onSwitchTab?.('strategy')} className="text-[10px] font-black text-brand-primary uppercase">进入工作台 &rarr;</button>
+                            )}
+                        </div>
+                        {hasContentPlan ? (
+                            <div className="space-y-4">
+                                {semanticData?.ontology ? (
+                                    <Card className="p-6 bg-indigo-50/30 border-indigo-100 shadow-sm">
+                                        <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-3">核心业务 DNA</h4>
+                                        <div className="space-y-3">
+                                            <p className="text-xs text-indigo-900 leading-relaxed font-bold">
+                                                {semanticData.ontology.coreOfferings?.slice(0, 3).join(" • ")}
+                                            </p>
+                                            <div className="flex flex-wrap gap-2">
+                                                {semanticData.ourStrengths?.slice(0, 5).map((topic: any, i: number) => (
+                                                    <Badge key={i} variant="default" className="bg-white border-indigo-200 text-indigo-700 shadow-sm">
+                                                        {topic.topic}
+                                                    </Badge>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </Card>
+                                ) : (
+                                    <Card className="p-6 border-dashed border-slate-200 flex flex-col items-center justify-center text-center space-y-3 py-12">
+                                        <p className="text-xs text-slate-500">已开启计划，建议提取业务 DNA 以优化策略</p>
+                                        <button onClick={handleExtractDNA} disabled={isExtractingDNA} className="bg-slate-900 text-white rounded-xl px-4 py-2 text-[11px] font-black uppercase">立即提取</button>
+                                    </Card>
+                                )}
+                            </div>
+                        ) : (
+                            <IntegrationGuidanceCard type="content-plan" href={`/dashboard/site-intelligence/${siteId}#strategy`} />
+                        )}
+                    </div>
+
+                    {/* Semantic Debts / Gaps */}
+                    <div className="space-y-4">
+                        <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                            <Zap size={16} className="text-rose-500" /> 高优语义债
+                        </h3>
+                        {semanticData?.semanticDebts?.length > 0 ? (
+                            <Card className="p-6 border-rose-100 bg-rose-50/20 shadow-sm">
+                                <div className="space-y-3">
+                                    {semanticData.semanticDebts.slice(0, 3).map((debt: any, i: number) => (
+                                        <div 
+                                            key={i} 
+                                            className="flex items-center justify-between p-3 bg-white rounded-xl border border-rose-100 hover:border-rose-300 transition-colors cursor-pointer group"
+                                            onClick={() => handleDebtClick(debt)}
+                                        >
+                                            <span className="text-sm font-bold text-slate-800">{debt.topic}</span>
+                                            <div className="flex items-center gap-3">
+                                                <div className="flex items-center gap-1">
+                                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">覆盖度</span>
+                                                    <span className="text-[10px] font-black text-rose-600">{debt.coverageScore}%</span>
+                                                </div>
+                                                <ChevronRight size={14} className="text-rose-200 group-hover:text-rose-400" />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </Card>
+                        ) : (
+                            <Card className="p-12 border-dashed border-slate-200 text-center text-slate-400 italic text-xs">
+                                尚未发现明显的语义缺口
+                            </Card>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 }

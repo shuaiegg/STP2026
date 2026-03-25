@@ -1,20 +1,19 @@
-import React from 'react';
+import { SkeletonBlock } from "@/components/ui/skeleton"
 
-export default function Loading() {
-    return (
-        <div className="max-w-6xl mx-auto space-y-10 animate-pulse p-6">
-            <div className="space-y-4">
-                <div className="h-10 w-48 bg-slate-200 rounded-lg"></div>
-                <div className="h-4 w-80 bg-slate-100 rounded-md"></div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {[1, 2, 3].map((i) => (
-                    <div key={i} className="h-40 bg-white border border-slate-100 rounded-3xl"></div>
-                ))}
-            </div>
-
-            <div className="h-96 w-full bg-white border border-slate-100 rounded-3xl"></div>
-        </div>
-    );
+export default function BillingLoading() {
+  return (
+    <div className="space-y-8">
+      <SkeletonBlock className="h-10 w-32" />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <SkeletonBlock className="h-48 w-full rounded-xl" />
+        <SkeletonBlock className="h-48 w-full rounded-xl" />
+      </div>
+      <div className="space-y-4">
+        <SkeletonBlock className="h-8 w-48" />
+        {[...Array(4)].map((_, i) => (
+          <SkeletonBlock key={i} className="h-16 w-full rounded-lg" />
+        ))}
+      </div>
+    </div>
+  )
 }

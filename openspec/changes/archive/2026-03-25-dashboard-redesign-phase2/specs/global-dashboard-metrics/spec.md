@@ -1,9 +1,5 @@
-# global-dashboard-metrics Specification
+## MODIFIED Requirements
 
-## Purpose
-Provide a high-level strategic overview of content assets and semantic gaps across all managed sites on the main dashboard.
-
-## Requirements
 ### Requirement: `/dashboard` 主页根据站点数量执行智能路由
 系统 SHALL 在服务端渲染 `/dashboard` 时，根据当前用户的站点数量执行不同的路由策略，而非始终渲染通用大盘页面。
 
@@ -26,14 +22,3 @@ Provide a high-level strategic overview of content assets and semantic gaps acro
 #### Scenario: 站点选择器卡片点击进入工作台
 - **WHEN** 用户点击任意站点卡片的「进入工作台」
 - **THEN** 跳转至 `/dashboard/site-intelligence/[siteId]`
-
-### Requirement: Dashboard 数据层包含审计计数
-系统 SHALL 在服务端 `getUserData` 函数中并行查询当前用户的 `SiteAudit` 总数，并将其作为 `auditCount` 传入客户端组件。
-
-#### Scenario: auditCount 与其他 metrics 并行查询
-- **WHEN** 服务端渲染 `/dashboard` 页面
-- **THEN** `prisma.siteAudit.count({ where: { site: { userId } } })` 与其他 7 个 query 在同一 `Promise.all` 中执行
-
-#### Scenario: auditCount 正确传入 DashboardContent
-- **WHEN** `getUserData` 返回结果
-- **THEN** `auditCount` 作为独立 prop 传入 `DashboardContent`，类型为 `number`，默认值 `0`

@@ -1,35 +1,36 @@
-import React from 'react';
+import { SkeletonBlock } from "@/components/ui/skeleton"
 
-export default function Loading() {
-    return (
-        <div className="space-y-10 animate-pulse">
-            {/* Header Skeleton */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div className="space-y-4">
-                    <div className="h-10 w-48 bg-slate-200 rounded-lg"></div>
-                    <div className="h-4 w-64 bg-slate-100 rounded-md"></div>
-                </div>
-            </div>
-
-            {/* Core Stats Grid Skeleton */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {[1, 2, 3].map((i) => (
-                    <div key={i} className="h-48 rounded-3xl bg-slate-100 border-2 border-slate-50"></div>
-                ))}
-            </div>
-
-            {/* Recent Articles Skeleton */}
-            <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
-                    <div key={i} className="h-24 rounded-2xl bg-slate-50 border-2 border-slate-100"></div>
-                ))}
-            </div>
-
-            {/* Account Summary Skeleton */}
-            <div className="space-y-6">
-                <div className="h-8 w-40 bg-slate-200 rounded-md"></div>
-                <div className="h-64 rounded-3xl bg-slate-100 border-2 border-slate-50"></div>
-            </div>
+export default function DashboardLoading() {
+  return (
+    <div className="space-y-10">
+      {/* Top Nav Skeleton Placeholder (Matching Shell Height) */}
+      <nav className="h-14 border-b border-gray-200 bg-white -mx-6 md:-mx-10 px-4 flex items-center justify-between -mt-6 md:-mt-10 mb-6">
+        <div className="flex items-center gap-6">
+          <SkeletonBlock className="w-8 h-8 rounded-lg" />
+          <SkeletonBlock className="h-6 w-24 hidden sm:block" />
+          <div className="h-6 w-px bg-gray-200 hidden sm:block" />
+          <SkeletonBlock className="h-5 w-32" />
         </div>
-    );
+        <div className="flex items-center gap-4">
+          <SkeletonBlock className="h-8 w-16 rounded-full" />
+          <SkeletonBlock className="w-8 h-8 rounded-lg" />
+        </div>
+      </nav>
+
+      <div className="max-w-7xl mx-auto space-y-10">
+        {/* Welcome Header */}
+        <div className="flex flex-col gap-2">
+          <SkeletonBlock className="h-10 w-64" />
+          <SkeletonBlock className="h-5 w-96" />
+        </div>
+
+        {/* Metrics Grid (3x2 as per task 2.2) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) => (
+            <SkeletonBlock key={i} className="h-40 w-full rounded-xl" />
+          ))}
+        </div>
+      </div>
+    </div>
+  )
 }
