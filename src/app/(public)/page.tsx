@@ -304,7 +304,7 @@ export default async function Home() {
               </Badge>
             </div>
 
-            <h1 className="font-display text-4xl md:text-6xl font-black leading-tight mb-6 tracking-tight animate-slide-in-up stagger-1">
+            <h1 className="font-display text-4xl md:text-6xl font-black leading-tight mb-6 tracking-tight">
               <span className="text-brand-text-primary">{COPY.hero.titleLine1}</span>
               <br />
               <span className="text-brand-secondary">

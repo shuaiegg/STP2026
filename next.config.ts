@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   serverExternalPackages: ['@prisma/client', '.prisma/client'],
   experimental: {
-    optimizeCss: true,
+    inlineCss: true,
   },
   typescript: {
     ignoreBuildErrors: true,
