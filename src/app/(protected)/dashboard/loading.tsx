@@ -1,35 +1,36 @@
-import React from 'react';
+import { SkeletonBlock, SkeletonCard } from "@/components/ui/skeleton"
 
-export default function Loading() {
-    return (
-        <div className="space-y-10 animate-pulse">
-            {/* Header Skeleton */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div className="space-y-4">
-                    <div className="h-10 w-48 bg-slate-200 rounded-lg"></div>
-                    <div className="h-4 w-64 bg-slate-100 rounded-md"></div>
-                </div>
-            </div>
+export default function DashboardLoading() {
+  return (
+    <div className="space-y-10">
+      {/* Welcome Header */}
+      <div className="flex flex-col gap-2">
+        <SkeletonBlock className="h-10 w-64" />
+        <SkeletonBlock className="h-5 w-96" />
+      </div>
 
-            {/* Core Stats Grid Skeleton */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {[1, 2, 3].map((i) => (
-                    <div key={i} className="h-48 rounded-3xl bg-slate-100 border-2 border-slate-50"></div>
-                ))}
-            </div>
+      {/* Metrics Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <SkeletonCard className="h-40" />
+        <SkeletonCard className="h-40" />
+        <SkeletonCard className="h-40" />
+      </div>
 
-            {/* Recent Articles Skeleton */}
-            <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
-                    <div key={i} className="h-24 rounded-2xl bg-slate-50 border-2 border-slate-100"></div>
-                ))}
-            </div>
-
-            {/* Account Summary Skeleton */}
-            <div className="space-y-6">
-                <div className="h-8 w-40 bg-slate-200 rounded-md"></div>
-                <div className="h-64 rounded-3xl bg-slate-100 border-2 border-slate-50"></div>
-            </div>
+      {/* Content Area */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        <div className="lg:col-span-2 space-y-6">
+          <SkeletonBlock className="h-8 w-48" />
+          <SkeletonBlock className="h-[400px] w-full rounded-xl" />
         </div>
-    );
+        <div className="space-y-6">
+          <SkeletonBlock className="h-8 w-32" />
+          <div className="space-y-4">
+            <SkeletonBlock className="h-24 w-full rounded-xl" />
+            <SkeletonBlock className="h-24 w-full rounded-xl" />
+            <SkeletonBlock className="h-24 w-full rounded-xl" />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 }

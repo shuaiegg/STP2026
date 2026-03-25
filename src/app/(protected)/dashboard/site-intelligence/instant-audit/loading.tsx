@@ -1,24 +1,34 @@
-import React from 'react';
+import { SkeletonBlock, SkeletonCard } from "@/components/ui/skeleton"
 
-export default function Loading() {
-    return (
-        <div className="max-w-4xl mx-auto space-y-8 animate-pulse p-6">
-            <div className="space-y-4">
-                <div className="h-10 w-64 bg-slate-200 rounded-lg"></div>
-                <div className="h-4 w-96 bg-slate-100 rounded-md"></div>
-            </div>
-
-            <div className="h-64 w-full bg-white border-2 border-slate-100 rounded-3xl p-8">
-                <div className="space-y-6">
-                    <div className="h-12 w-full bg-slate-50 rounded-xl"></div>
-                    <div className="h-12 w-full bg-slate-900/10 rounded-xl"></div>
-                </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="h-48 bg-slate-50 rounded-2xl border border-slate-100"></div>
-                <div className="h-48 bg-slate-50 rounded-2xl border border-slate-100"></div>
-            </div>
+export default function InstantAuditLoading() {
+  return (
+    <div className="p-6 space-y-6 min-h-screen">
+      {/* Header Skeleton */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <SkeletonBlock className="h-4 w-12" />
+            <SkeletonBlock className="h-8 w-48" />
+            <SkeletonBlock className="h-6 w-16 rounded-full" />
+          </div>
         </div>
-    );
+        <SkeletonBlock className="h-10 w-32 rounded-xl" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Main Area Skeleton */}
+        <div className="lg:col-span-3 space-y-6">
+          <SkeletonCard className="h-[600px] rounded-3xl" />
+        </div>
+
+        {/* Sidebar Skeleton */}
+        <div className="space-y-4">
+          <SkeletonCard className="h-32" />
+          <SkeletonCard className="h-24 bg-slate-100" />
+          <SkeletonCard className="h-48" />
+          <SkeletonCard className="h-64" />
+        </div>
+      </div>
+    </div>
+  )
 }

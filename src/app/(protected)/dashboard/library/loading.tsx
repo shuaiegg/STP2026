@@ -1,29 +1,27 @@
-import React from 'react';
+import { SkeletonBlock } from "@/components/ui/skeleton"
 
-export default function Loading() {
-    return (
-        <div className="space-y-8 animate-pulse p-6">
-            {/* Header Skeleton */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div className="space-y-3">
-                    <div className="h-10 w-48 bg-slate-200 rounded-lg"></div>
-                    <div className="h-4 w-72 bg-slate-100 rounded-md"></div>
-                </div>
-            </div>
-
-            {/* Filters Skeleton */}
-            <div className="flex gap-4 p-4 bg-white border border-slate-100 rounded-2xl">
-                {[1, 2, 3].map((i) => (
-                    <div key={i} className="h-10 w-40 bg-slate-50 rounded-xl"></div>
-                ))}
-            </div>
-
-            {/* Table/List Skeleton */}
-            <div className="space-y-3">
-                {[1, 2, 3, 4, 5].map((i) => (
-                    <div key={i} className="h-24 bg-white border-2 border-slate-50 rounded-2xl"></div>
-                ))}
-            </div>
+export default function LibraryLoading() {
+  return (
+    <div className="space-y-8 pb-20">
+      {/* Header section */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="space-y-4">
+          <SkeletonBlock className="h-12 w-64 italic" />
+          <SkeletonBlock className="h-5 w-80" />
         </div>
-    );
+        
+        <div className="flex items-center gap-3">
+          <SkeletonBlock className="h-10 w-64 rounded-xl" />
+          <SkeletonBlock className="h-10 w-12 rounded-xl" />
+        </div>
+      </div>
+
+      {/* Article List Skeleton (5 rows) */}
+      <div className="space-y-4">
+        {[...Array(5)].map((_, i) => (
+          <SkeletonBlock key={i} className="h-24 w-full rounded-2xl" />
+        ))}
+      </div>
+    </div>
+  )
 }
