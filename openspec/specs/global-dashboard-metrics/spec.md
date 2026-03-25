@@ -4,24 +4,28 @@
 Provide a high-level strategic overview of content assets and semantic gaps across all managed sites on the main dashboard.
 
 ## Requirements
-### Requirement: 全局大盘展示跨站点战略指标
-系统 SHALL 在 `/dashboard` 主页展示具有战略价值的聚合指标，并根据用户数据状态（EMPTY / SETUP / ACTIVE）条件渲染不同 UI。The system SHALL explicitly exclude sites marked as `isCompetitor: true` from all aggregate metrics.
+### Requirement: `/dashboard` 主页根据站点数量执行智能路由
+系统 SHALL 在服务端渲染 `/dashboard` 时，根据当前用户的站点数量执行不同的路由策略，而非始终渲染通用大盘页面。
 
-#### Scenario: 展示内容资产总数
-- **WHEN** 用户访问 `/dashboard`
-- **THEN** 页面展示该用户旗下所有站点 (`isCompetitor: false`) 的内容资产（PlannedArticle）总数
+#### Scenario: 用户无站点时跳转引导页
+- **WHEN** 用户访问 `/dashboard` 且 `totalSites === 0`
+- **THEN** 服务端执行 `redirect('/dashboard/onboarding')`
+- **THEN** 不渲染任何大盘内容
 
-#### Scenario: 展示高优语义债总数
-- **WHEN** 用户访问 `/dashboard`
-- **THEN** 页面展示跨所有站点 (`isCompetitor: false`)、`priorityLabel` 含"高搜索"的语义债总条数
+#### Scenario: 用户有且仅有 1 个站点时跳转工作台
+- **WHEN** 用户访问 `/dashboard` 且 `totalSites === 1`
+- **THEN** 服务端执行 `redirect('/dashboard/site-intelligence/${siteId}')`
+- **THEN** 不渲染大盘页面，减少一次用户点击
 
-#### Scenario: 展示每站点置顶语义债摘要
-- **WHEN** 用户访问 `/dashboard` 且至少有一个非竞品站点有语义债数据
-- **THEN** 每个非竞品站点卡片显示其 `coverageScore` 最低的语义债话题名称
+#### Scenario: 用户有多个站点时显示站点选择器
+- **WHEN** 用户访问 `/dashboard` 且 `totalSites > 1`
+- **THEN** 页面渲染站点选择器，以卡片网格形式展示所有站点
+- **THEN** 每张站点卡片显示：域名、最新综合健康评分（或「未评分」）、上次审计时间、「进入工作台」按钮
+- **THEN** 页面顶部提供「添加新站点」按钮，链接至 `/dashboard/onboarding`
 
-#### Scenario: 无站点时展示欢迎空状态（EMPTY 态）
-- **WHEN** 用户尚未创建任何非竞品站点（`totalSites === 0`）
-- **THEN** 显示欢迎空状态 UI（详见 dashboard-onboarding-checklist spec），不显示空统计数字
+#### Scenario: 站点选择器卡片点击进入工作台
+- **WHEN** 用户点击任意站点卡片的「进入工作台」
+- **THEN** 跳转至 `/dashboard/site-intelligence/[siteId]`
 
 ### Requirement: Dashboard 数据层包含审计计数
 系统 SHALL 在服务端 `getUserData` 函数中并行查询当前用户的 `SiteAudit` 总数，并将其作为 `auditCount` 传入客户端组件。
