@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import dynamic from 'next/dynamic';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   StrategyBoardSkeleton,
   OverviewPanelSkeleton,
@@ -73,8 +74,22 @@ const COPY = {
 
 // ─── TabContainer ─────────────────────────────────────────────────────────────
 
-export function TabContainer({ siteId, domain }: { siteId: string; domain: string }) {
-  const [activeTab, setActiveTab] = useState<TabType>('strategy');
+export function TabContainer({ 
+  siteId, 
+  domain,
+  hasGsc,
+  hasGa4,
+  hasContentPlan
+}: { 
+  siteId: string; 
+  domain: string;
+  hasGsc?: boolean;
+  hasGa4?: boolean;
+  hasContentPlan?: boolean;
+}) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState<TabType>('overview'); // Default to overview in phase 2
   const [issueReportLoaded, setIssueReportLoaded] = useState(false);
   const [latestIssueReport, setLatestIssueReport] = useState<any>(null);
   const [previousIssueReport, setPreviousIssueReport] = useState<any>(null);
@@ -116,56 +131,39 @@ export function TabContainer({ siteId, domain }: { siteId: string; domain: strin
 
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
-    window.history.replaceState(null, '', `#${tab}`);
+    router.replace(pathname + '#' + tab, { scroll: false });
     if (tab === 'audit') fetchReport();
   };
 
   const tabCls = (key: TabType) =>
-    `px-4 py-3 text-sm border-b-2 transition-colors whitespace-nowrap ` +
+    `px-4 py-3 text-sm border-b-2 transition-all whitespace-nowrap ` +
     `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50 focus-visible:ring-inset ` +
     (activeTab === key
-      ? 'border-brand-primary text-brand-primary font-black tracking-wide'
+      ? 'border-brand-secondary text-gray-900 font-bold'
       : 'border-transparent text-slate-500 font-medium hover:text-slate-700 hover:border-slate-300');
 
   return (
-    <>
+    <div className="space-y-6">
       {/* Tab Bar */}
       <div
         role="tablist"
         aria-label={COPY.tabListAriaLabel}
-        className="flex border-b border-slate-200 overflow-x-auto scrollbar-hide"
+        className="flex border-b border-slate-200 overflow-x-auto scrollbar-hide sticky top-14 bg-white/80 backdrop-blur-md z-30 -mx-6 md:-mx-10 px-6 md:px-10"
       >
+        <button role="tab" id="tab-overview" aria-selected={activeTab === 'overview'} aria-controls="tabpanel-overview"
+          onClick={() => handleTabChange('overview')} className={tabCls('overview')}>
+          概览
+        </button>
+
         <button role="tab" id="tab-strategy" aria-selected={activeTab === 'strategy'} aria-controls="tabpanel-strategy"
           onClick={() => handleTabChange('strategy')}
           className={`${tabCls('strategy')} flex items-center gap-1.5`}>
-          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polygon points="12 2 2 7 12 12 22 7 12 2" /><polyline points="2 17 12 22 22 17" /><polyline points="2 12 12 17 22 12" />
-          </svg>
-          战略枢纽
-        </button>
-
-        <button role="tab" id="tab-overview" aria-selected={activeTab === 'overview'} aria-controls="tabpanel-overview"
-          onClick={() => handleTabChange('overview')} className={tabCls('overview')}>
-          体检概览
-        </button>
-
-        <button role="tab" id="tab-audit" aria-selected={activeTab === 'audit'} aria-controls="tabpanel-audit"
-          onClick={() => handleTabChange('audit')}
-          className={`${tabCls('audit')} flex items-center gap-1.5`}>
-          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
-          </svg>
-          体检报告
-        </button>
-
-        <button role="tab" id="tab-audits" aria-selected={activeTab === 'audits'} aria-controls="tabpanel-audits"
-          onClick={() => handleTabChange('audits')} className={tabCls('audits')}>
-          审计历史
+          内容策略
         </button>
 
         <button role="tab" id="tab-competitors" aria-selected={activeTab === 'competitors'} aria-controls="tabpanel-competitors"
           onClick={() => handleTabChange('competitors')} className={tabCls('competitors')}>
-          竞争对手追踪
+          竞争分析
         </button>
 
         <button role="tab" id="tab-performance" aria-selected={activeTab === 'performance'} aria-controls="tabpanel-performance"
@@ -174,39 +172,48 @@ export function TabContainer({ siteId, domain }: { siteId: string; domain: strin
         </button>
 
         <button role="tab" id="tab-traffic" aria-selected={activeTab === 'traffic'} aria-controls="tabpanel-traffic"
-          onClick={() => handleTabChange('traffic')}
-          className={`${tabCls('traffic')} flex items-center gap-1.5`}>
-          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-4" />
-          </svg>
+          onClick={() => handleTabChange('traffic')} className={tabCls('traffic')}>
           流量表现
+        </button>
+
+        <button role="tab" id="tab-audit" aria-selected={activeTab === 'audit'} aria-controls="tabpanel-audit"
+          onClick={() => handleTabChange('audit')} className={tabCls('audit')}>
+          体检报告
+        </button>
+
+        <button role="tab" id="tab-audits" aria-selected={activeTab === 'audits'} aria-controls="tabpanel-audits"
+          onClick={() => handleTabChange('audits')} className={tabCls('audits')}>
+          审计历史
         </button>
 
         <div className="flex-1" aria-hidden="true" />
 
         <button role="tab" id="tab-integrations" aria-selected={activeTab === 'integrations'} aria-controls="tabpanel-integrations"
-          onClick={() => handleTabChange('integrations')}
-          className={`${tabCls('integrations')} flex items-center gap-1.5`}>
-          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
-          </svg>
-          接入与设置
+          onClick={() => handleTabChange('integrations')} className={tabCls('integrations')}>
+          设置
         </button>
       </div>
 
       {/* Tab Panels */}
-      <div className="pt-4">
-        <div role="tabpanel" id="tabpanel-strategy" aria-labelledby="tab-strategy" hidden={activeTab !== 'strategy'}>
-          <Suspense fallback={<StrategyBoardSkeleton />}>
-            {activeTab === 'strategy' && <StrategyBoard siteId={siteId} />}
-          </Suspense>
-        </div>
-
+      <div className="animate-in fade-in duration-500">
         <div role="tabpanel" id="tabpanel-overview" aria-labelledby="tab-overview" hidden={activeTab !== 'overview'}>
           <Suspense fallback={<OverviewPanelSkeleton />}>
             {activeTab === 'overview' && (
-              <OverviewPanel siteId={siteId} domain={domain} onSwitchTab={(tab) => handleTabChange(tab as TabType)} />
+              <OverviewPanel 
+                siteId={siteId} 
+                domain={domain} 
+                hasGsc={!!hasGsc}
+                hasGa4={!!hasGa4}
+                hasContentPlan={!!hasContentPlan}
+                onSwitchTab={(tab) => handleTabChange(tab as TabType)} 
+              />
             )}
+          </Suspense>
+        </div>
+
+        <div role="tabpanel" id="tabpanel-strategy" aria-labelledby="tab-strategy" hidden={activeTab !== 'strategy'}>
+          <Suspense fallback={<StrategyBoardSkeleton />}>
+            {activeTab === 'strategy' && <StrategyBoard siteId={siteId} />}
           </Suspense>
         </div>
 
@@ -268,6 +275,6 @@ export function TabContainer({ siteId, domain }: { siteId: string; domain: strin
           </Suspense>
         </div>
       </div>
-    </>
+    </div>
   );
 }

@@ -3,10 +3,10 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import prisma from '@/lib/prisma';
 import { redirect } from 'next/navigation';
-import { DashboardContent } from './DashboardContent';
+import { SiteSelector } from './SiteSelector';
 
 async function getUserData(userId: string) {
-    const [user, sites, articleCount, recentArticles, highPriorityDebts, totalPlannedArticles, perSiteMinCoverage, auditCount] = await Promise.all([
+    const [user, sitesWithAudits, articleCount, recentArticles, highPriorityDebts, totalPlannedArticles, perSiteMinCoverage, auditCount] = await Promise.all([
         prisma.user.findUnique({
             where: { id: userId },
             select: { credits: true, name: true, email: true }
@@ -17,6 +17,16 @@ async function getUserData(userId: string) {
                 id: true, 
                 domain: true, 
                 name: true, 
+                audits: {
+                    orderBy: { createdAt: 'desc' },
+                    take: 1,
+                    select: {
+                        techScore: true,
+                        contentScore: true,
+                        geoScore: true,
+                        createdAt: true,
+                    }
+                },
                 _count: { 
                     select: { 
                         gscConnections: true, 
@@ -71,6 +81,18 @@ async function getUserData(userId: string) {
         })
     ]);
 
+    const sites = (sitesWithAudits || []).map(s => ({
+        id: s.id,
+        domain: s.domain,
+        name: s.name,
+        latestHealthScore: s.audits[0] 
+            ? Math.round(((s.audits[0].techScore || 0) + (s.audits[0].contentScore || 0) + (s.audits[0].geoScore || 0)) / 3)
+            : null,
+        lastAuditAt: s.audits[0]?.createdAt || null,
+        hasGsc: s._count.gscConnections > 0,
+        hasGa4: s._count.ga4Connections > 0,
+    }));
+
     const metrics = {
         totalSites: sites.length,
         totalHighPriorityDebts: highPriorityDebts,
@@ -80,15 +102,15 @@ async function getUserData(userId: string) {
             return {
                 id: s.id,
                 domain: s.domain,
-                hasGsc: s._count.gscConnections > 0,
-                hasGa4: s._count.ga4Connections > 0,
+                hasGsc: s.hasGsc,
+                hasGa4: s.hasGa4,
                 topDebt: minCoverageDebt?.topic || null,
                 minCoverage: minCoverageDebt?.coverageScore ?? null
             };
         })
     };
 
-    return { user, metrics, articleCount, recentArticles, auditCount };
+    return { user, metrics, articleCount, recentArticles, auditCount, sites };
 }
 
 export default async function UserDashboard({
@@ -111,16 +133,19 @@ export default async function UserDashboard({
     const isActuallyImpersonating = !!(isAdmin && impersonate && impersonate !== session.user.id);
     const targetUserId = isActuallyImpersonating ? (impersonate as string) : session.user.id;
 
-    const { user, metrics, articleCount, recentArticles, auditCount } = await getUserData(targetUserId);
+    const { user, metrics, articleCount, recentArticles, auditCount, sites } = await getUserData(targetUserId);
 
+    // Smart Routing Logic (Task 4.3)
+    if (metrics.totalSites === 0) {
+        redirect('/dashboard/onboarding');
+    }
+
+    if (metrics.totalSites === 1) {
+        redirect(`/dashboard/site-intelligence/${sites[0].id}`);
+    }
+
+    // If more than 1 site, show Site Selector
     return (
-        <DashboardContent
-            user={user}
-            metrics={metrics}
-            isImpersonating={isActuallyImpersonating}
-            articleCount={articleCount}
-            recentArticles={recentArticles}
-            auditCount={auditCount}
-        />
+        <SiteSelector sites={sites} />
     );
 }

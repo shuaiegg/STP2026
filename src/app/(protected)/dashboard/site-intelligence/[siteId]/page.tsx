@@ -5,10 +5,8 @@ import { headers } from "next/headers";
 import { redirect } from 'next/navigation';
 import { getSiteById } from '@/lib/site-intelligence/sites';
 import { TabContainer } from './TabContainer';
-import { SiteSwitcher } from './components/SiteSwitcher';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
-import Link from 'next/link';
+import { SiteHeader } from '@/components/dashboard/SiteHeader';
+import { NextStepsBanner } from '@/components/dashboard/NextStepsBanner';
 
 export async function generateMetadata({ params }: { params: Promise<{ siteId: string }> }): Promise<Metadata> {
     const { siteId } = await params;
@@ -21,8 +19,16 @@ export async function generateMetadata({ params }: { params: Promise<{ siteId: s
     };
 }
 
-export default async function SiteDetailsPage({ params }: { params: Promise<{ siteId: string }> }) {
+export default async function SiteDetailsPage({ 
+    params,
+    searchParams
+}: { 
+    params: Promise<{ siteId: string }>,
+    searchParams: Promise<{ onboarded?: string }>
+}) {
     const { siteId } = await params;
+    const { onboarded } = await searchParams;
+    
     const session = await auth.api.getSession({
         headers: await headers()
     });
@@ -38,59 +44,28 @@ export default async function SiteDetailsPage({ params }: { params: Promise<{ si
     }
 
     return (
-        <div className="p-6 space-y-8 min-h-screen">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div className="space-y-1">
-                    <div className="flex items-center gap-4">
-                        <SiteSwitcher currentSiteId={site.id} currentDomain={site.domain} />
+        <div className="space-y-8 animate-in fade-in duration-700">
+            {/* Onboarding Banner */}
+            {onboarded === '1' && (
+                <NextStepsBanner 
+                    siteId={site.id} 
+                    hasGsc={site.hasGsc} 
+                    hasGa4={site.hasGa4} 
+                    hasCompetitors={site.hasCompetitors} 
+                />
+            )}
 
-                        {site.latestAudit && (
-                            <div className="flex items-center gap-3 pl-4 border-l border-slate-200">
-                                <div className="flex flex-col">
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-tight">技术得分</span>
-                                    <div className="flex items-center gap-1.5">
-                                        <div aria-hidden="true" className={`w-1.5 h-1.5 rounded-full ${(site.latestAudit.techScore || 0) >= 80 ? 'bg-emerald-500' :
-                                            (site.latestAudit.techScore || 0) >= 50 ? 'bg-amber-500' : 'bg-rose-500'
-                                            }`} />
-                                        <span className={`text-sm font-bold font-mono ${(site.latestAudit.techScore || 0) >= 80 ? 'text-emerald-600' :
-                                            (site.latestAudit.techScore || 0) >= 50 ? 'text-amber-600' : 'text-rose-600'
-                                            }`}>
-                                            {site.latestAudit.techScore ?? '--'}
-                                        </span>
-                                        <span className="text-[10px] text-slate-400">
-                                            {(site.latestAudit.techScore || 0) >= 80 ? '优' : (site.latestAudit.techScore || 0) >= 50 ? '中' : '差'}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div className="flex flex-col">
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-tight">页面总数</span>
-                                    <span className="text-sm font-bold text-slate-700 font-mono italic">
-                                        {site.latestAudit.pageCount}<span className="text-[10px] ml-0.5 opacity-50 font-sans">P</span>
-                                    </span>
-                                </div>
-                            </div>
-                        )}
+            {/* Site Header */}
+            <SiteHeader site={site} />
 
-                        <Badge variant="default" className="bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20 border-0 ml-1">管理中</Badge>
-                    </div>
-                    <p className="text-sm text-slate-500">
-                        查看站点的表现、审计历史及监控竞争对手
-                    </p>
-                </div>
-                <div className="flex gap-2">
-                    <Link href={`/dashboard/site-intelligence/instant-audit?siteId=${site.id}`}>
-                        <Button variant="outline" className="rounded-xl font-bold">查看最新星图</Button>
-                    </Link>
-                    <Link href={`/dashboard/site-intelligence/instant-audit?siteId=${site.id}&rescan=1`}>
-                        <Button className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm px-6 font-bold">
-                            重新扫描
-                        </Button>
-                    </Link>
-                </div>
-            </div>
-
-            <TabContainer siteId={site.id} domain={site.domain} />
+            {/* Main Tabs */}
+            <TabContainer 
+                siteId={site.id} 
+                domain={site.domain} 
+                hasGsc={site.hasGsc}
+                hasGa4={site.hasGa4}
+                hasContentPlan={site.hasContentPlan}
+            />
         </div>
     );
 }

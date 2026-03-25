@@ -1,21 +1,13 @@
-import { SkeletonBlock, SkeletonCard } from "@/components/ui/skeleton"
+import { SkeletonBlock } from "@/components/ui/skeleton"
 
 export default function ToolsLoading() {
   return (
-    <div className="space-y-10">
-      <div className="space-y-4">
-        <SkeletonBlock className="h-12 w-64 italic" />
-        <SkeletonBlock className="h-5 w-80" />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {[...Array(4)].map((_, i) => (
-          <SkeletonCard key={i} className="h-72 rounded-xl" />
+    <div className="space-y-8">
+      <SkeletonBlock className="h-10 w-48" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[...Array(9)].map((_, i) => (
+          <SkeletonBlock key={i} className="h-56 w-full rounded-xl" />
         ))}
-      </div>
-      
-      <div className="max-w-2xl mx-auto">
-        <SkeletonCard className="h-48 rounded-xl border-dashed" />
       </div>
     </div>
   )

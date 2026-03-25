@@ -1,24 +1,13 @@
-import { SkeletonBlock, SkeletonCard } from "@/components/ui/skeleton"
+import { SkeletonBlock } from "@/components/ui/skeleton"
 
 export default function SiteIntelligenceLoading() {
   return (
-    <div className="p-6 space-y-8 min-h-screen">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <SkeletonBlock className="h-8 w-48" />
-            <SkeletonBlock className="h-6 w-16 rounded-full" />
-          </div>
-          <SkeletonBlock className="h-4 w-80" />
-        </div>
-        <SkeletonBlock className="h-10 w-32 rounded-xl" />
-      </div>
-
-      {/* Body - Site Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {[...Array(3)].map((_, i) => (
-          <SkeletonCard key={i} className="h-64 rounded-xl" />
+    <div className="space-y-6">
+      <SkeletonBlock className="h-10 w-64" />
+      <SkeletonBlock className="h-5 w-96" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[...Array(6)].map((_, i) => (
+          <SkeletonBlock key={i} className="h-48 w-full rounded-xl" />
         ))}
       </div>
     </div>

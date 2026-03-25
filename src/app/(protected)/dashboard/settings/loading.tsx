@@ -1,21 +1,24 @@
-import { SkeletonBlock, SkeletonCard } from "@/components/ui/skeleton"
+import { SkeletonBlock } from "@/components/ui/skeleton"
 
 export default function SettingsLoading() {
   return (
-    <div className="max-w-4xl mx-auto px-6 py-12">
-      <div className="mb-10 space-y-4">
-        <SkeletonBlock className="h-6 w-32" />
-        <SkeletonBlock className="h-12 w-64" />
-        <SkeletonBlock className="h-5 w-80" />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-        <div className="md:col-span-8">
-          <SkeletonCard className="h-[500px] rounded-xl" />
+    <div className="space-y-10">
+      <SkeletonBlock className="h-10 w-32" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+        <div className="md:col-span-1 space-y-4">
+          <SkeletonBlock className="h-6 w-32" />
+          <SkeletonBlock className="h-20 w-full" />
         </div>
-        <div className="md:col-span-4 space-y-6">
-          <SkeletonCard className="h-48 rounded-xl border-dashed" />
-          <SkeletonCard className="h-32 rounded-xl bg-slate-50" />
+        <div className="md:col-span-2 space-y-6">
+          <div className="p-6 bg-white border border-gray-100 rounded-xl space-y-6">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="space-y-2">
+                <SkeletonBlock className="h-4 w-24" />
+                <SkeletonBlock className="h-10 w-full" />
+              </div>
+            ))}
+            <SkeletonBlock className="h-10 w-24 ml-auto rounded-lg" />
+          </div>
         </div>
       </div>
     </div>
