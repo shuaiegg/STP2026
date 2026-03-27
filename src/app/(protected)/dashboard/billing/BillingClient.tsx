@@ -42,50 +42,50 @@ export function BillingClient() {
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
             {CREDIT_PRODUCTS.map((product) => (
-                <Card key={product.productId} className={`relative overflow-hidden flex flex-col p-6 h-full transition-all duration-300 ${product.recommended ? 'ring-2 ring-brand-primary shadow-xl scale-105 z-10' : 'hover:shadow-md'}`}>
+                <Card key={product.productId} className={`relative overflow-hidden flex flex-col p-6 h-full transition-all duration-300 ${product.recommended ? 'ring-2 ring-brand-secondary shadow-lg' : 'hover:shadow-md'}`}>
                     {product.recommended && (
                         <div className="absolute top-0 right-0">
-                            <div className="bg-brand-primary text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg uppercase tracking-wider">
+                            <div className="bg-brand-secondary text-brand-text-inverted text-[10px] font-bold px-3 py-1 rounded-bl-lg uppercase tracking-wider">
                                 推荐
                             </div>
                         </div>
                     )}
                     
                     <div className="mb-6">
-                        <h3 className="text-lg font-bold text-slate-900 mb-1">{product.label}</h3>
+                        <h3 className="text-lg font-bold text-brand-text-primary mb-1">{product.label}</h3>
                         <div className="flex items-baseline gap-1">
-                            <span className="text-4xl font-black text-slate-900">{product.credits}</span>
-                            <span className="text-sm font-bold text-slate-500 uppercase tracking-tight">积分</span>
+                            <span className="text-4xl font-black text-brand-text-primary">{product.credits}</span>
+                            <span className="text-sm font-bold text-brand-text-secondary uppercase tracking-tight">积分</span>
                         </div>
                     </div>
 
                     <div className="space-y-3 mb-8 flex-grow">
-                        <div className="flex items-center gap-2 text-sm text-slate-600">
-                            <Check className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <div className="flex items-center gap-2 text-sm text-brand-text-secondary">
+                            <Check className="w-4 h-4 text-brand-success shrink-0" />
                             <span>永久有效，不限时间</span>
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-slate-600">
-                            <Check className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <div className="flex items-center gap-2 text-sm text-brand-text-secondary">
+                            <Check className="w-4 h-4 text-brand-success shrink-0" />
                             <span>解锁所有 AI 工具</span>
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-slate-600">
-                            <Check className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <div className="flex items-center gap-2 text-sm text-brand-text-secondary">
+                            <Check className="w-4 h-4 text-brand-success shrink-0" />
                             <span>单价: ${(product.price / product.credits).toFixed(3)} / 积分</span>
                         </div>
                         {product.credits > 50 && (
-                            <div className="flex items-center gap-2 text-sm font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md inline-flex w-fit">
+                            <div className="flex items-center gap-2 text-sm font-bold text-brand-success bg-brand-success/10 px-2 py-1 rounded-md inline-flex w-fit">
                                 <Zap className="w-3 h-3 fill-current" />
                                 <span>省 {Math.round((1 - (product.price / product.credits) / (9 / 50)) * 100)}%</span>
                             </div>
                         )}
                     </div>
 
-                    <div className="mt-auto pt-6 border-t border-slate-100">
-                        <div className="text-2xl font-bold text-slate-900 mb-4 text-center">
+                    <div className="mt-auto pt-6 border-t border-brand-border">
+                        <div className="text-2xl font-bold text-brand-text-primary mb-4 text-center">
                             ${product.price}
                         </div>
                         <Button 
-                            className={`w-full py-6 font-bold text-base ${product.recommended ? 'bg-brand-primary hover:bg-brand-primary/90' : 'bg-slate-900 hover:bg-slate-800'}`}
+                            className={`w-full py-6 font-bold text-base ${product.recommended ? 'bg-brand-secondary hover:bg-brand-secondary/90' : 'bg-brand-primary hover:bg-brand-primary/90'}`}
                             onClick={() => handleCheckout(product.productId)}
                             disabled={loadingProductId !== null}
                         >

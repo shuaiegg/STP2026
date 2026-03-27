@@ -44,6 +44,12 @@
   --success: #16a34a;
   --warning: #ffb800;
   --error: #ff006e;
+  --brand-info: #3b82f6;
+  --brand-info-hover: #2563eb;
+  --brand-info-muted: #eff6ff;
+  --brand-admin: #8b5cf6;
+  --brand-admin-muted: #f5f3ff;
+  --brand-admin-border: #ddd6fe;
 
   /* Technical Grid */
   --grid-color: rgba(0, 0, 0, 0.05);
@@ -114,6 +120,12 @@
   --color-brand-success: var(--success);
   --color-brand-warning: var(--warning);
   --color-brand-error: var(--error);
+  --color-brand-info: var(--brand-info);
+  --color-brand-info-hover: var(--brand-info-hover);
+  --color-brand-info-muted: var(--brand-info-muted);
+  --color-brand-admin: var(--brand-admin);
+  --color-brand-admin-muted: var(--brand-admin-muted);
+  --color-brand-admin-border: var(--brand-admin-border);
 
   /* Fonts - Modern SaaS */
   --font-display: 'Plus Jakarta Sans', 'Noto Sans SC', sans-serif;

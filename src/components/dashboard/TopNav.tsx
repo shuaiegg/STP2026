@@ -18,6 +18,8 @@ import {
   Users,
   ShoppingBag,
   CreditCard,
+  Menu,
+  X
 } from 'lucide-react';
 import { HealthScoreBadge } from '@/components/ui/HealthScoreBadge';
 import { authClient } from '@/lib/auth-client';
@@ -60,6 +62,8 @@ const COPY = {
   openUserMenu: '打开用户菜单',
   siteSwitcherLabel: '站点切换列表',
   userMenuLabel: '用户菜单',
+  openMobileMenu: '打开移动端菜单',
+  closeMobileMenu: '关闭移动端菜单',
 } as const;
 
 const NAV_LINKS = [
@@ -84,8 +88,13 @@ export function TopNav({ sites, currentSiteId, user }: TopNavProps) {
   const router = useRouter();
   const [isSiteOpen, setIsSiteOpen] = useState(false);
   const [isUserOpen, setIsUserOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
   const siteRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
+  const siteTriggerRef = useRef<HTMLButtonElement>(null);
+  const userTriggerRef = useRef<HTMLButtonElement>(null);
+  const mobileTriggerRef = useRef<HTMLButtonElement>(null);
 
   // Only show current site when the URL identifies one
   const displayedSite = sites.find(s => s.id === currentSiteId);
@@ -104,6 +113,28 @@ export function TopNav({ sites, currentSiteId, user }: TopNavProps) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Escape key handler
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (isSiteOpen) {
+          setIsSiteOpen(false);
+          siteTriggerRef.current?.focus();
+        }
+        if (isUserOpen) {
+          setIsUserOpen(false);
+          userTriggerRef.current?.focus();
+        }
+        if (isMobileMenuOpen) {
+          setIsMobileMenuOpen(false);
+          mobileTriggerRef.current?.focus();
+        }
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isSiteOpen, isUserOpen, isMobileMenuOpen]);
+
   const handleSignOut = async () => {
     await authClient.signOut({
       fetchOptions: { onSuccess: () => router.push('/login') },
@@ -119,19 +150,29 @@ export function TopNav({ sites, currentSiteId, user }: TopNavProps) {
   });
 
   return (
-    <nav className="h-14 border-b border-gray-200 bg-white sticky top-0 z-40 px-4 flex items-center justify-between">
+    <nav className="h-14 border-b border-brand-border bg-brand-surface sticky top-0 z-40 px-4 flex items-center justify-between">
       {/* Left: Logo & Site Switcher */}
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-4 md:gap-6">
+        {/* Mobile Menu Trigger */}
+        <button
+          ref={mobileTriggerRef}
+          onClick={() => setIsMobileMenuOpen(true)}
+          className="md:hidden p-2 -ml-2 text-brand-text-secondary hover:text-brand-text-primary transition-colors"
+          aria-label={COPY.openMobileMenu}
+        >
+          <Menu size={24} />
+        </button>
+
         <Link href="/dashboard" className="flex items-center gap-2 group" aria-label={COPY.logoName}>
           <div className="w-8 h-8 relative transition-transform group-hover:rotate-12">
             <Image src="/assets/images/logo.svg" alt={COPY.logoAlt} fill className="object-contain" />
           </div>
-          <span className="text-lg font-black italic tracking-tighter text-slate-900 font-display hidden sm:block">
+          <span className="text-lg font-black italic tracking-tighter text-brand-text-primary font-display hidden sm:block">
             {COPY.logoName}
           </span>
         </Link>
 
-        <div className="h-6 w-px bg-gray-200 hidden sm:block" aria-hidden="true" />
+        <div className="h-6 w-px bg-brand-border hidden sm:block" aria-hidden="true" />
 
         {/* Split Button: domain name → workbench link; chevron → dropdown */}
         <div className="relative flex items-center" ref={siteRef}>
@@ -140,17 +181,18 @@ export function TopNav({ sites, currentSiteId, user }: TopNavProps) {
               {/* Domain name → go directly to site workbench */}
               <Link
                 href={`/dashboard/site-intelligence/${displayedSite.id}`}
-                className="text-sm font-semibold text-gray-900 hover:text-brand-primary transition-colors max-w-[150px] truncate focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50 rounded-lg"
+                className="text-sm font-semibold text-brand-text-primary hover:text-brand-primary transition-colors max-w-[120px] sm:max-w-[150px] truncate focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50 rounded-lg"
               >
                 {displayedSite.domain}
               </Link>
               {/* Chevron → open site switcher */}
               <button
+                ref={siteTriggerRef}
                 onClick={() => setIsSiteOpen(prev => !prev)}
                 aria-label={COPY.openSiteSwitcher}
                 aria-expanded={isSiteOpen}
                 aria-haspopup="listbox"
-                className="ml-1 p-1 rounded-lg hover:bg-slate-100 text-gray-400 hover:text-gray-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50"
+                className="ml-1 p-1 rounded-lg hover:bg-brand-surface-alt text-brand-text-muted hover:text-brand-text-secondary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50"
               >
                 <ChevronDown
                   size={14}
@@ -163,7 +205,7 @@ export function TopNav({ sites, currentSiteId, user }: TopNavProps) {
             /* Not on a site page: simple link back to /dashboard (smart routing handles redirect) */
             <Link
               href="/dashboard"
-              className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50 rounded-lg"
+              className="text-sm font-medium text-brand-text-secondary hover:text-brand-text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50 rounded-lg"
             >
               {COPY.noSite}
             </Link>
@@ -173,7 +215,7 @@ export function TopNav({ sites, currentSiteId, user }: TopNavProps) {
             <div
               role="listbox"
               aria-label={COPY.siteSwitcherLabel}
-              className="absolute top-full left-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-50"
+              className="absolute top-full left-0 mt-2 w-64 bg-brand-surface border border-brand-border rounded-lg shadow-lg py-2 z-50 animate-in fade-in slide-in-from-top-1 duration-200"
             >
               <div className="max-h-60 overflow-auto">
                 {sites.length > 0 ? (
@@ -186,10 +228,10 @@ export function TopNav({ sites, currentSiteId, user }: TopNavProps) {
                         router.push(`/dashboard/site-intelligence/${site.id}`);
                         setIsSiteOpen(false);
                       }}
-                      className="w-full flex items-center justify-between px-4 py-2 hover:bg-gray-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-primary/50"
+                      className="w-full flex items-center justify-between px-4 py-2 hover:bg-brand-surface-alt transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-primary/50"
                     >
                       <div className="flex items-center gap-3">
-                        <span className={`text-sm ${site.id === currentSiteId ? 'font-semibold text-gray-900' : 'text-gray-600'}`}>
+                        <span className={`text-sm ${site.id === currentSiteId ? 'font-semibold text-brand-text-primary' : 'text-brand-text-secondary'}`}>
                           {site.domain}
                         </span>
                         <HealthScoreBadge score={site.latestHealthScore} />
@@ -200,13 +242,13 @@ export function TopNav({ sites, currentSiteId, user }: TopNavProps) {
                     </button>
                   ))
                 ) : (
-                  <div className="px-4 py-2 text-sm text-gray-500 italic">{COPY.noSites}</div>
+                  <div className="px-4 py-2 text-sm text-brand-text-muted italic">{COPY.noSites}</div>
                 )}
               </div>
-              <div className="border-t border-gray-100 mt-2 pt-2">
+              <div className="border-t border-brand-border mt-2 pt-2">
                 <Link
                   href="/dashboard/onboarding"
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-brand-primary hover:bg-gray-50 transition-colors font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-primary/50"
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-brand-primary hover:bg-brand-surface-alt transition-colors font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-primary/50"
                   onClick={() => setIsSiteOpen(false)}
                 >
                   <Plus size={14} aria-hidden="true" />
@@ -226,8 +268,9 @@ export function TopNav({ sites, currentSiteId, user }: TopNavProps) {
             <Link
               key={link.href}
               href={link.href}
+              aria-current={isActive ? 'page' : undefined}
               className={`text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50 rounded-lg px-1 ${
-                isActive ? 'text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700'
+                isActive ? 'text-brand-text-primary font-semibold' : 'text-brand-text-secondary hover:text-brand-text-primary'
               }`}
             >
               {link.name}
@@ -249,16 +292,17 @@ export function TopNav({ sites, currentSiteId, user }: TopNavProps) {
 
         <div className="relative" ref={userRef}>
           <button
+            ref={userTriggerRef}
             onClick={() => setIsUserOpen(prev => !prev)}
             aria-label={COPY.openUserMenu}
             aria-expanded={isUserOpen}
             aria-haspopup="menu"
-            className="w-8 h-8 rounded-lg bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center hover:ring-2 hover:ring-brand-primary/20 transition-all relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50"
+            className="w-8 h-8 rounded-lg bg-brand-surface-alt border border-brand-border overflow-hidden flex items-center justify-center hover:ring-2 hover:ring-brand-primary/20 transition-all relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50"
           >
             {user.image ? (
               <Image src={user.image} alt="" fill className="object-cover" />
             ) : (
-              <span className="text-xs font-bold text-gray-600">
+              <span className="text-xs font-bold text-brand-text-secondary">
                 {(user.name || user.email || '?')[0].toUpperCase()}
               </span>
             )}
@@ -268,23 +312,23 @@ export function TopNav({ sites, currentSiteId, user }: TopNavProps) {
             <div
               role="menu"
               aria-label={COPY.userMenuLabel}
-              className="absolute top-full right-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-50"
+              className="absolute top-full right-0 mt-2 w-56 bg-brand-surface border border-brand-border rounded-lg shadow-lg py-2 z-50 animate-in fade-in slide-in-from-top-1 duration-200"
             >
-              <div className="px-4 py-2 border-b border-gray-100 mb-1">
+              <div className="px-4 py-2 border-b border-brand-border mb-1">
                 <div className="flex items-center justify-between mb-0.5">
-                  <p className="text-xs font-semibold text-gray-900 truncate">{user.name || '用户'}</p>
+                  <p className="text-xs font-semibold text-brand-text-primary truncate">{user.name || '用户'}</p>
                   {user.role && (
                     <span className="text-[10px] font-bold text-brand-primary bg-brand-primary/5 px-1.5 py-0.5 rounded">
                       {user.role}
                     </span>
                   )}
                 </div>
-                <p className="text-[10px] text-gray-500 truncate">{user.email}</p>
+                <p className="text-[10px] text-brand-text-muted truncate">{user.email}</p>
               </div>
 
               {adminLinks.length > 0 && (
                 <>
-                  <div className="px-4 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                  <div className="px-4 py-1.5 text-[10px] font-bold text-brand-text-muted uppercase tracking-widest">
                     {COPY.adminSection}
                   </div>
                   {adminLinks.map(link => (
@@ -292,30 +336,30 @@ export function TopNav({ sites, currentSiteId, user }: TopNavProps) {
                       key={link.href}
                       href={link.href}
                       role="menuitem"
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-primary/50"
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-brand-text-secondary hover:bg-brand-surface-alt transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-primary/50"
                       onClick={() => setIsUserOpen(false)}
                     >
-                      <link.icon size={14} aria-hidden="true" className="text-gray-400" />
+                      <link.icon size={14} aria-hidden="true" className="text-brand-text-muted" />
                       <span>{link.label}</span>
                     </Link>
                   ))}
-                  <div className="h-px bg-gray-100 my-1" aria-hidden="true" />
+                  <div className="h-px bg-brand-border my-1" aria-hidden="true" />
                 </>
               )}
 
               <Link
                 href="/dashboard/settings"
                 role="menuitem"
-                className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-primary/50"
+                className="flex items-center gap-2 px-4 py-2 text-sm text-brand-text-secondary hover:bg-brand-surface-alt transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-primary/50"
                 onClick={() => setIsUserOpen(false)}
               >
-                <Settings size={14} aria-hidden="true" className="text-gray-400" />
+                <Settings size={14} aria-hidden="true" className="text-brand-text-muted" />
                 <span>{COPY.settings}</span>
               </Link>
               <button
                 role="menuitem"
                 onClick={handleSignOut}
-                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-primary/50"
+                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-brand-error hover:bg-brand-error/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-primary/50"
               >
                 <LogOut size={14} aria-hidden="true" />
                 <span>{COPY.signOut}</span>
@@ -324,6 +368,84 @@ export function TopNav({ sites, currentSiteId, user }: TopNavProps) {
           )}
         </div>
       </div>
+
+      {/* Mobile Menu Drawer */}
+      {isMobileMenuOpen && (
+        <>
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-black/50 z-50 animate-in fade-in duration-300" 
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+          {/* Drawer */}
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="导航菜单"
+            className="fixed inset-y-0 left-0 w-72 bg-brand-surface z-50 shadow-2xl animate-in slide-in-from-left duration-300 flex flex-col"
+          >
+            <div className="h-14 border-b border-brand-border px-4 flex items-center justify-between">
+              <span className="font-bold text-brand-text-primary">{COPY.logoName}</span>
+              <button 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-2 -mr-2 text-brand-text-secondary hover:text-brand-text-primary"
+                aria-label={COPY.closeMobileMenu}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="flex-1 overflow-auto py-4">
+              <div className="px-4 mb-6">
+                <div className="text-[10px] font-bold text-brand-text-muted uppercase tracking-widest mb-4">导航</div>
+                <div className="space-y-1">
+                  {NAV_LINKS.map(link => {
+                    const isActive = pathname.startsWith(link.href);
+                    return (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        aria-current={isActive ? 'page' : undefined}
+                        className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+                          isActive ? 'bg-brand-primary/5 text-brand-primary font-bold' : 'text-brand-text-secondary hover:bg-brand-surface-alt'
+                        }`}
+                      >
+                        <link.icon size={18} />
+                        <span>{link.name}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+              
+              {adminLinks.length > 0 && (
+                <div className="px-4">
+                  <div className="text-[10px] font-bold text-brand-text-muted uppercase tracking-widest mb-4">管理</div>
+                  <div className="space-y-1">
+                    {adminLinks.map(link => {
+                      const isActive = pathname.startsWith(link.href);
+                      return (
+                        <Link
+                          key={link.href}
+                          href={link.href}
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          aria-current={isActive ? 'page' : undefined}
+                          className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+                            isActive ? 'bg-brand-primary/5 text-brand-primary font-bold' : 'text-brand-text-secondary hover:bg-brand-surface-alt'
+                          }`}
+                        >
+                          <link.icon size={18} />
+                          <span>{link.label}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </nav>
   );
 }

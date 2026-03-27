@@ -66,7 +66,9 @@ When implementing or modifying any page, component, or UI element, verify ALL of
 - [ ] Pages export `generateMetadata` or a static `metadata` object
 
 ### Final Gate
-- [ ] Run `/web-design-guidelines` skill on the modified file(s) and fix all reported issues before marking complete
+- [ ] Run `/audit [feature]` — review the scored report (target 14+/20), fix all P0/P1 issues using the recommended commands
+- [ ] Run `/polish [feature]` — final detail pass for alignment, spacing, and micro-consistency
+- [ ] Run `/web-design-guidelines` on the modified file(s) and fix all reported issues before marking complete
 
 ## Destructive Operations — Always Confirm First
 
@@ -483,4 +485,35 @@ openspec/
 - Verify all environment variables are set
 - Check Prisma version matches package.json (5.22.0)
 
+## Design Context
+
+### Users
+
+**Admin/Editor users** (internal team): manage content sync from Notion, monitor platform metrics, handle user credits and permissions. Context: desktop-first, operational mindset — they need to act fast and trust what they see.
+
+**Regular users** (Chinese overseas businesses / 海外华人创业者): SEO/GEO analytics, content planning, site intelligence. Context: results-oriented, time-pressured, need to quickly understand what to do next.
+
+Job to be done: "Show me what's happening and what I should do about it."
+
+### Brand Personality
+
+**专业 · 精准 · 可信** — Professional, Precise, Trustworthy.
+
+Emotional goals when opening the dashboard: **信心** (confidence in the data), **掌控感** (control over their growth), **专业感** (this is a serious tool worth trusting).
+
+### Aesthetic Direction
+
+**Reference: Stripe Dashboard** — data-rich, chart-forward, operational density. Metrics are the hero. Information is not hidden; it's organized.
+
+**Anti-references**: Avoid generic SaaS AI aesthetics — no purple gradients, no glassmorphism, no hero metric cards with fake sparklines, no card-in-card nesting, no decorative backgrounds that compete with data.
+
+**Theme**: Light mode primary. Dark mode tokens exist but are secondary.
+
+### Design Principles
+
+1. **Data is the hero** — Charts and metrics lead every view. Empty states are informative, not decorative. Placeholder content (fake percentages, "加载中") must be replaced with real data or skeleton states.
+2. **Density earns trust** — Stripe-style information density signals professionalism. Avoid over-simplified layouts that feel like marketing pages.
+3. **Token discipline** — All colors must use `--color-brand-*` CSS variables or Tailwind `brand-*` classes. Never use ad-hoc Tailwind colors (`slate-900`, `emerald-600`, `blue-50`) directly in components.
+4. **One primary action per view** — Clear action hierarchy. The most important next step is always obvious.
+5. **Accessible by default** — WCAG AA minimum. Color is never the sole state indicator — always pair with label or icon.
 

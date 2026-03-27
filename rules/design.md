@@ -17,6 +17,8 @@ Vercel's Web Interface Guidelines. Fix all reported issues before marking the ta
 - **Secondary** (Accent): `#f59e0b` (Amber) — highlights, badges, progress indicators
 - **Success**: `#16a34a`
 - **Destructive**: `#ef4444` — delete actions, error states
+- **Info**: `#3b82f6` (Blue) — informational states, tooltips
+- **Admin**: `#8b5cf6` (Violet) — admin role badges and controls
 
 ### Token Reference (CSS variables → Tailwind classes)
 | Token | Value | Tailwind class |
@@ -25,6 +27,12 @@ Vercel's Web Interface Guidelines. Fix all reported issues before marking the ta
 | `--color-brand-secondary-hover` | `#059669` | `brand-secondary-hover` |
 | `--color-brand-secondary-muted` | `#d1fae5` | `brand-secondary-muted` |
 | `--color-brand-accent` | `#f59e0b` | `brand-accent` |
+| `--color-brand-info` | `#3b82f6` | `brand-info` |
+| `--color-brand-info-hover` | `#2563eb` | `brand-info-hover` |
+| `--color-brand-info-muted` | `#eff6ff` | `brand-info-muted` |
+| `--color-brand-admin` | `#8b5cf6` | `brand-admin` |
+| `--color-brand-admin-muted` | `#f5f3ff` | `brand-admin-muted` |
+| `--color-brand-admin-border` | `#ddd6fe` | `brand-admin-border` |
 
 ### Logo Gradient
 - Applies **only** to the logo mark SVG: `linear-gradient(135deg, #34d399, #38bdf8)`

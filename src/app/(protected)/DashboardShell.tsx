@@ -35,7 +35,7 @@ export function DashboardShell({
     const currentSiteId = siteIdMatch ? siteIdMatch[1] : undefined;
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col">
+        <div className="min-h-screen bg-brand-surface flex flex-col">
             <TopNav 
                 sites={initialSites} 
                 currentSiteId={currentSiteId} 

@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { 
     Search, 
     User as UserIcon, 
@@ -40,6 +41,10 @@ export default function UserManagementPage() {
     const [loadingHistory, setLoadingHistory] = useState(false);
     const [isReverting, setIsReverting] = useState<string | null>(null);
 
+    const [openKebabUserId, setOpenKebabUserId] = useState<string | null>(null);
+    const [adjustingCreditsUserId, setAdjustingCreditsUserId] = useState<string | null>(null);
+    const kebabRef = useRef<HTMLDivElement>(null);
+
     const fetchUsers = async () => {
         setLoading(true);
         try {
@@ -72,6 +77,17 @@ export default function UserManagementPage() {
         return () => clearTimeout(timer);
     }, [search]);
 
+    // Close kebab on outside click
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (kebabRef.current && !kebabRef.current.contains(event.target as Node)) {
+                setOpenKebabUserId(null);
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
     const handleUpdateCredits = async (userId: string, amount: number) => {
         setIsUpdating(userId);
         try {
@@ -83,6 +99,7 @@ export default function UserManagementPage() {
                 if (selectedUserForHistory === userId) {
                     fetchUserHistory(userId);
                 }
+                setAdjustingCreditsUserId(null);
             } else {
                 alert(res.message);
             }
@@ -114,40 +131,41 @@ export default function UserManagementPage() {
         <div className="space-y-8 pb-20">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-900 mb-2 font-display">用户管理</h1>
-                    <p className="text-slate-500">查看、搜索、以及管理平台注册用户的积分与权限。</p>
+                    <h1 className="text-3xl font-bold text-brand-text-primary mb-2 font-display">用户管理</h1>
+                    <p className="text-brand-text-secondary">查看、搜索、以及管理平台注册用户的积分与权限。</p>
                 </div>
                 <div className="flex items-center gap-4">
                     <div className="relative group">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-primary transition-colors" size={18} />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-text-muted group-focus-within:text-brand-primary transition-colors" size={18} />
                         <input
                             type="text"
                             placeholder="搜索用户名或邮箱..."
+                            aria-label="搜索用户名或邮箱"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="bg-white border-slate-200 rounded-xl py-3 pl-12 pr-6 text-sm focus:ring-2 focus:ring-brand-primary/10 border w-full md:w-80 outline-none transition-all"
+                            className="bg-brand-surface border-brand-border rounded-lg py-3 pl-12 pr-6 text-sm focus:ring-2 focus:ring-brand-primary/10 border w-full md:w-80 outline-none transition-all"
                         />
                     </div>
                 </div>
             </div>
 
-            <Card className="border-none shadow-sm bg-white overflow-hidden">
+            <Card className="border-none shadow-sm bg-brand-surface overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-slate-50/50 border-b border-slate-100">
-                                <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-slate-400">用户信息</th>
-                                <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-slate-400">角色</th>
-                                <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-slate-400">积分余额</th>
-                                <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-slate-400">活跃度</th>
-                                <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-slate-400 text-right">操作</th>
+                            <tr className="bg-brand-surface-alt/50 border-b border-brand-border">
+                                <th scope="col" className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-brand-text-muted">用户信息</th>
+                                <th scope="col" className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-brand-text-muted">角色</th>
+                                <th scope="col" className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-brand-text-muted">积分余额</th>
+                                <th scope="col" className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-brand-text-muted">活跃度</th>
+                                <th scope="col" className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-brand-text-muted text-right">操作</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-50">
+                        <tbody className="divide-y divide-brand-border">
                             {loading ? (
                                 <tr>
                                     <td colSpan={5} className="px-8 py-20 text-center">
-                                        <div className="flex flex-col items-center gap-4 text-slate-400">
+                                        <div className="flex flex-col items-center gap-4 text-brand-text-muted">
                                             <Loader2 className="animate-spin" size={32} />
                                             <span className="text-sm font-medium">正在加载用户数据...</span>
                                         </div>
@@ -156,25 +174,25 @@ export default function UserManagementPage() {
                             ) : users.length > 0 ? (
                                 users.map((user) => (
                                     <React.Fragment key={user.id}>
-                                        <tr className={`hover:bg-slate-50/30 transition-colors group ${selectedUserForHistory === user.id ? 'bg-brand-primary/[0.02]' : ''}`}>
+                                        <tr className={`hover:bg-brand-surface-alt/30 transition-colors group ${selectedUserForHistory === user.id ? 'bg-brand-primary/[0.02]' : ''}`}>
                                             <td className="px-8 py-6">
                                                 <div className="flex items-center gap-4">
-                                                    <div className="w-12 h-12 rounded-2xl bg-brand-primary/5 flex items-center justify-center text-brand-primary border-2 border-white shadow-sm">
+                                                    <div className="w-12 h-12 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary border-2 border-white shadow-sm relative overflow-hidden">
                                                         {user.image ? (
-                                                            <img src={user.image} alt="" className="w-full h-full object-cover rounded-2xl" />
+                                                            <Image src={user.image} alt={user.name || ''} width={48} height={48} className="object-cover" />
                                                         ) : (
                                                             <UserIcon size={24} />
                                                         )}
                                                     </div>
                                                     <div>
-                                                        <div className="font-bold text-slate-900">{user.name || '未命名'}</div>
-                                                        <div className="text-xs text-slate-500">{user.email}</div>
+                                                        <div className="font-bold text-brand-text-primary">{user.name || '未命名'}</div>
+                                                        <div className="text-xs text-brand-text-secondary">{user.email}</div>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td className="px-8 py-6">
                                                 <Badge variant="outline" className={`font-mono text-[10px] uppercase border-2 ${
-                                                    user.role === 'ADMIN' ? 'text-purple-600 bg-purple-50 border-purple-100' : 'text-slate-500 bg-slate-50 border-slate-100'
+                                                    user.role === 'ADMIN' ? 'text-brand-admin bg-brand-admin-muted border-brand-admin-border' : 'text-brand-text-secondary bg-brand-surface-alt border-brand-border'
                                                 }`}>
                                                     {user.role}
                                                 </Badge>
@@ -182,10 +200,10 @@ export default function UserManagementPage() {
                                             <td className="px-8 py-6">
                                                 <div className="flex items-center gap-3">
                                                     <div className="flex items-center gap-2">
-                                                        <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600">
+                                                        <div className="w-8 h-8 rounded-lg bg-brand-accent-muted flex items-center justify-center text-brand-accent">
                                                             <Coins size={16} />
                                                         </div>
-                                                        <span className="font-mono font-bold text-slate-700">{user.credits}</span>
+                                                        <span className="font-mono font-bold text-brand-text-primary">{user.credits}</span>
                                                     </div>
                                                     <button 
                                                         onClick={() => {
@@ -196,79 +214,98 @@ export default function UserManagementPage() {
                                                                 fetchUserHistory(user.id);
                                                             }
                                                         }}
-                                                        className={`p-1.5 rounded-lg transition-all ${selectedUserForHistory === user.id ? 'bg-slate-900 text-white' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'}`}
-                                                        title="查看记录并撤销"
+                                                        className={`p-1.5 rounded-lg transition-all ${selectedUserForHistory === user.id ? 'bg-brand-text-primary text-brand-text-inverted' : 'text-brand-text-muted hover:bg-brand-surface-alt hover:text-brand-text-secondary'}`}
+                                                        aria-label="查看积分记录"
                                                     >
                                                         <HistoryIcon size={14} />
                                                     </button>
                                                 </div>
                                             </td>
-                                            <td className="px-8 py-6 text-slate-500 text-xs">
+                                            <td className="px-8 py-6 text-brand-text-secondary text-xs">
                                                 <div className="flex flex-col gap-1">
                                                     <span>文章使用: <strong>{user._count.executions}</strong></span>
                                                     <span>最近活动: {new Date(user.updatedAt).toLocaleDateString()}</span>
                                                 </div>
                                             </td>
                                             <td className="px-8 py-6">
-                                                <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <div className="flex items-center bg-slate-100 rounded-lg p-1">
-                                                        <input 
-                                                            type="number" 
-                                                            value={creditAmount}
-                                                            onChange={(e) => setCreditAmount(parseInt(e.target.value))}
-                                                            className="w-16 bg-transparent border-none text-xs font-bold text-center focus:ring-0"
-                                                        />
-                                                        <button 
-                                                            onClick={() => handleUpdateCredits(user.id, creditAmount)}
-                                                            disabled={isUpdating === user.id}
-                                                            className="p-1.5 hover:bg-emerald-500 hover:text-white rounded-md transition-all text-emerald-600"
-                                                            title="增加积分"
-                                                        >
-                                                            {isUpdating === user.id ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
-                                                        </button>
-                                                        <button 
-                                                            onClick={() => handleUpdateCredits(user.id, -creditAmount)}
-                                                            disabled={isUpdating === user.id}
-                                                            className="p-1.5 hover:bg-red-500 hover:text-white rounded-md transition-all text-red-600"
-                                                            title="扣除积分"
-                                                        >
-                                                            {isUpdating === user.id ? <Loader2 size={14} className="animate-spin" /> : <Minus size={14} />}
-                                                        </button>
-                                                    </div>
-                                                    <div className="relative group/tooltip">
-                                                        {user.id !== session?.user?.id ? (
-                                                            <Link href={`/dashboard?impersonate=${user.id}`}>
-                                                                <Button variant="ghost" size="sm" className="h-9 px-3 gap-2 rounded-lg border border-slate-200 hover:bg-brand-primary/5 hover:text-brand-primary hover:border-brand-primary/20 transition-all">
-                                                                    <ExternalLink size={14} />
-                                                                    <span className="text-xs font-bold">代理登录</span>
-                                                                </Button>
-                                                            </Link>
-                                                        ) : (
-                                                            <Link href="/dashboard">
-                                                                <Button variant="ghost" size="sm" className="h-9 px-3 gap-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-400 cursor-default">
-                                                                    <UserIcon size={14} />
-                                                                    <span className="text-xs font-bold">当前账户</span>
-                                                                </Button>
-                                                            </Link>
-                                                        )}
-                                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-slate-900 text-white text-[10px] rounded-lg opacity-0 group-hover/tooltip:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-10 shadow-xl">
-                                                            {user.id !== session?.user?.id ? `以 ${user.name || '此用户'} 的身份进入控制台` : '您当前正在使用的账户'}
-                                                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-900"></div>
+                                                <div className="flex items-center justify-end gap-3 relative" ref={openKebabUserId === user.id ? kebabRef : null}>
+                                                    {adjustingCreditsUserId === user.id ? (
+                                                        <div className="flex items-center bg-brand-surface-alt rounded-lg p-1 animate-in fade-in zoom-in-95 duration-200">
+                                                            <input 
+                                                                type="number" 
+                                                                value={creditAmount}
+                                                                onChange={(e) => setCreditAmount(parseInt(e.target.value))}
+                                                                className="w-16 bg-transparent border-none text-xs font-bold text-center focus:ring-0"
+                                                            />
+                                                            <button 
+                                                                onClick={() => handleUpdateCredits(user.id, creditAmount)}
+                                                                disabled={isUpdating === user.id}
+                                                                className="p-1.5 hover:bg-brand-success hover:text-brand-text-inverted rounded-md transition-all text-brand-success"
+                                                                aria-label={`增加积分 for ${user.name || user.email}`}
+                                                            >
+                                                                {isUpdating === user.id ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+                                                            </button>
+                                                            <button 
+                                                                onClick={() => handleUpdateCredits(user.id, -creditAmount)}
+                                                                disabled={isUpdating === user.id}
+                                                                className="p-1.5 hover:bg-brand-error hover:text-brand-text-inverted rounded-md transition-all text-brand-error"
+                                                                aria-label={`扣除积分 for ${user.name || user.email}`}
+                                                            >
+                                                                {isUpdating === user.id ? <Loader2 size={14} className="animate-spin" /> : <Minus size={14} />}
+                                                            </button>
+                                                            <button 
+                                                                onClick={() => setAdjustingCreditsUserId(null)}
+                                                                className="ml-1 p-1.5 text-brand-text-muted hover:text-brand-text-secondary"
+                                                            >
+                                                                <XCircle size={14} />
+                                                            </button>
                                                         </div>
-                                                    </div>
+                                                    ) : (
+                                                        <div className="relative">
+                                                            <button 
+                                                                onClick={() => setOpenKebabUserId(openKebabUserId === user.id ? null : user.id)}
+                                                                className="p-2 rounded-lg hover:bg-brand-surface-alt text-brand-text-muted transition-colors"
+                                                                aria-label="更多操作"
+                                                            >
+                                                                <MoreVertical size={18} />
+                                                            </button>
+
+                                                            {openKebabUserId === user.id && (
+                                                                <div className="absolute right-0 top-full mt-1 w-36 bg-brand-surface border border-brand-border rounded-lg shadow-lg py-1 z-20 animate-in fade-in slide-in-from-top-1 duration-200">
+                                                                    <button 
+                                                                        onClick={() => {
+                                                                            setAdjustingCreditsUserId(user.id);
+                                                                            setOpenKebabUserId(null);
+                                                                        }}
+                                                                        className="w-full text-left px-4 py-2 text-sm text-brand-text-secondary hover:bg-brand-surface-alt transition-colors"
+                                                                    >
+                                                                        调整积分
+                                                                    </button>
+                                                                    {user.id !== session?.user?.id && (
+                                                                        <Link 
+                                                                            href={`/dashboard?impersonate=${user.id}`}
+                                                                            className="block w-full text-left px-4 py-2 text-sm text-brand-text-secondary hover:bg-brand-surface-alt transition-colors"
+                                                                        >
+                                                                            代理登录
+                                                                        </Link>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </td>
                                         </tr>
                                         {selectedUserForHistory === user.id && (
                                             <tr className="bg-brand-primary/[0.02]">
                                                 <td colSpan={5} className="px-8 pb-8 pt-0">
-                                                    <div className="bg-white rounded-xl border border-brand-primary/10 shadow-sm p-4 animate-in slide-in-from-top-2 duration-200">
+                                                    <div className="bg-brand-surface rounded-lg border border-brand-primary/10 shadow-sm p-4 animate-in slide-in-from-top-2 duration-200">
                                                         <div className="flex items-center justify-between mb-4 px-2">
-                                                            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                                            <h4 className="text-xs font-bold text-brand-text-secondary uppercase tracking-widest flex items-center gap-2">
                                                                 <HistoryIcon size={12} />
                                                                 最近积分记录
                                                             </h4>
-                                                            <button onClick={() => setSelectedUserForHistory(null)} className="text-slate-300 hover:text-slate-500">
+                                                            <button onClick={() => setSelectedUserForHistory(null)} className="text-brand-text-muted hover:text-brand-text-secondary" aria-label="关闭积分记录">
                                                                 <XCircle size={16} />
                                                             </button>
                                                         </div>
@@ -279,25 +316,25 @@ export default function UserManagementPage() {
                                                                 </div>
                                                             ) : userTransactions.length > 0 ? (
                                                                 userTransactions.map((tx) => (
-                                                                    <div key={tx.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50/50 border border-slate-100 group/tx">
+                                                                    <div key={tx.id} className="flex items-center justify-between p-3 rounded-lg bg-brand-surface-alt/50 border border-brand-border group/tx">
                                                                         <div className="flex items-center gap-3">
-                                                                            <div className={`w-8 h-8 rounded flex items-center justify-center ${tx.amount > 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
+                                                                            <div className={`w-8 h-8 rounded flex items-center justify-center ${tx.amount > 0 ? 'bg-brand-success/10 text-brand-success' : 'bg-brand-error/10 text-brand-error'}`}>
                                                                                 <Coins size={14} />
                                                                             </div>
                                                                             <div>
-                                                                                <div className="text-xs font-bold text-slate-700">{tx.description || tx.type}</div>
-                                                                                <div className="text-[10px] text-slate-400 font-mono">{new Date(tx.createdAt).toLocaleString()}</div>
+                                                                                <div className="text-xs font-bold text-brand-text-primary">{tx.description || tx.type}</div>
+                                                                                <div className="text-[10px] text-brand-text-muted font-mono">{new Date(tx.createdAt).toLocaleString()}</div>
                                                                             </div>
                                                                         </div>
                                                                         <div className="flex items-center gap-4">
-                                                                            <span className={`font-mono text-xs font-bold ${tx.amount > 0 ? 'text-emerald-600' : 'text-slate-700'}`}>
+                                                                            <span className={`font-mono text-xs font-bold ${tx.amount > 0 ? 'text-brand-success' : 'text-brand-text-primary'}`}>
                                                                                 {tx.amount > 0 ? `+${tx.amount}` : tx.amount}
                                                                             </span>
                                                                             {tx.type !== 'PURCHASE' && (
                                                                                 <button 
                                                                                     onClick={() => handleRevert(tx.id, user.id)}
                                                                                     disabled={isReverting === tx.id}
-                                                                                    className="px-2 py-1 text-[10px] font-bold text-red-500 hover:bg-red-500 hover:text-white rounded transition-all opacity-0 group-hover/tx:opacity-100 disabled:opacity-50 flex items-center gap-1"
+                                                                                    className="px-2 py-1 text-[10px] font-bold text-brand-error hover:bg-brand-error hover:text-brand-text-inverted rounded transition-all opacity-0 group-hover/tx:opacity-100 disabled:opacity-50 flex items-center gap-1"
                                                                                 >
                                                                                     {isReverting === tx.id ? <Loader2 size={10} className="animate-spin" /> : <Undo2 size={10} />}
                                                                                     撤销
@@ -307,7 +344,7 @@ export default function UserManagementPage() {
                                                                     </div>
                                                                 ))
                                                             ) : (
-                                                                <div className="py-8 text-center text-xs text-slate-400 italic">
+                                                                <div className="py-8 text-center text-xs text-brand-text-muted italic">
                                                                     暂无积分变动记录
                                                                 </div>
                                                             )}
@@ -320,7 +357,7 @@ export default function UserManagementPage() {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={5} className="px-8 py-20 text-center text-slate-400 italic">
+                                    <td colSpan={5} className="px-8 py-20 text-center text-brand-text-muted italic">
                                         没有找到符合条件的记录。
                                     </td>
                                 </tr>
@@ -328,9 +365,9 @@ export default function UserManagementPage() {
                         </tbody>
                     </table>
                 </div>
-                <div className="bg-slate-50/50 border-t border-slate-100 px-8 py-4 flex items-center justify-between">
-                    <div className="text-xs font-medium text-slate-500">
-                        共找到 <span className="font-bold text-slate-900">{total}</span> 名用户
+                <div className="bg-brand-surface-alt/50 border-t border-brand-border px-8 py-4 flex items-center justify-between">
+                    <div className="text-xs font-medium text-brand-text-secondary">
+                        共找到 <span className="font-bold text-brand-text-primary">{total}</span> 名用户
                     </div>
                 </div>
             </Card>
