@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import Link from 'next/link';
+import { AuditScoreSparkline } from '@/components/dashboard/site-intelligence/AuditScoreSparkline';
 
 export function AuditHistoryPanel({ siteId, domain }: { siteId: string, domain: string }) {
     const [audits, setAudits] = useState<any[]>([]);
@@ -77,6 +78,16 @@ export function AuditHistoryPanel({ siteId, domain }: { siteId: string, domain: 
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {/* Audit Score Sparkline */}
+            {audits.length >= 3 && (
+                <Card className="p-4 border-slate-200 shadow-sm">
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">评分趋势</span>
+                    </div>
+                    <AuditScoreSparkline audits={audits} />
+                </Card>
+            )}
+
             <Card className="overflow-hidden border-slate-200 shadow-sm">
                 <div className="bg-slate-50/80 px-4 py-3 border-b border-slate-100 flex items-center justify-between">
                     <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
@@ -95,6 +106,11 @@ export function AuditHistoryPanel({ siteId, domain }: { siteId: string, domain: 
                         const score = audit.techScore || 0;
                         const isScoreGood = score >= 80;
                         const isScoreWarn = score >= 50 && score < 80;
+
+                        // Score delta: compare with the next item (which is the previous audit chronologically)
+                        const prevAudit = index < audits.length - 1 ? audits[index + 1] : null;
+                        const prevScore = prevAudit?.techScore ?? null;
+                        const scoreDelta = prevScore !== null ? score - prevScore : null;
 
                         return (
                             <div key={audit.id} className={`p-5 hover:bg-slate-50/50 transition-colors group ${isLatest ? 'bg-brand-primary/[0.02]' : ''}`}>
@@ -126,6 +142,11 @@ export function AuditHistoryPanel({ siteId, domain }: { siteId: string, domain: 
                                                     <span className={`w-1.5 h-1.5 rounded-full ${isScoreGood ? 'bg-emerald-500' : isScoreWarn ? 'bg-amber-500' : 'bg-rose-500'}`}></span>
                                                     健康分: {score}
                                                 </span>
+                                                {scoreDelta !== null && scoreDelta !== 0 && (
+                                                    <span className={`flex items-center gap-0.5 font-bold ${scoreDelta > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                                        {scoreDelta > 0 ? '↑' : '↓'} {Math.abs(scoreDelta)}
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
                                     </div>

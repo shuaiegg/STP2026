@@ -19,14 +19,63 @@ export default async function ArticleLibraryPage() {
         redirect("/login?callbackUrl=/dashboard/library");
     }
 
-    // Fetch user's saved articles
-    const articles = await prisma.trackedArticle.findMany({
-        where: {
-            userId: session.user.id,
-        },
-        orderBy: {
-            createdAt: 'desc',
-        },
+    // Fetch user's sites to find their GSC snapshots
+    const sites = await prisma.site.findMany({
+        where: { userId: session.user.id },
+        select: { id: true }
+    });
+    
+    // Get latest snapshot date for each site
+    const snapshotPromises = sites.map(async (site) => {
+        const latestInfo = await prisma.siteKeywordSnapshot.findFirst({
+            where: { siteId: site.id, dimensionType: 'page' },
+            orderBy: { snapshotDate: 'desc' },
+            select: { snapshotDate: true }
+        });
+        if (!latestInfo) return [];
+        return prisma.siteKeywordSnapshot.findMany({
+            where: { siteId: site.id, dimensionType: 'page', snapshotDate: latestInfo.snapshotDate },
+            select: { value: true, clicks: true, impressions: true, position: true }
+        });
+    });
+
+    const [rawArticles, ...siteSnapshots] = await Promise.all([
+        prisma.trackedArticle.findMany({
+            where: { userId: session.user.id },
+            orderBy: { createdAt: 'desc' },
+        }),
+        ...snapshotPromises
+    ]);
+
+    const allPageSnapshots = siteSnapshots.flat();
+
+    // Attach attribution to articles
+    const articles = rawArticles.map(article => {
+        let attribution = null;
+        if (article.url) {
+            let matchString = article.url;
+            try {
+                const parsed = new URL(article.url);
+                matchString = parsed.pathname;
+            } catch (e) {
+                if (!matchString.startsWith('/')) {
+                    matchString = '/' + matchString;
+                }
+            }
+            
+            const match = allPageSnapshots.find((s: any) => s.value.includes(matchString)) as { clicks: number, impressions: number, position: number } | undefined;
+            if (match) {
+                attribution = {
+                    clicks: match.clicks,
+                    impressions: match.impressions,
+                    position: match.position
+                };
+            }
+        }
+        return {
+            ...article,
+            attribution
+        };
     });
 
     return (

@@ -3,7 +3,10 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import Link from 'next/link';
 import { IntegrationGuidanceCard } from '@/components/dashboard/IntegrationGuidanceCard';
+import { KeywordTrendChart } from '@/components/dashboard/site-intelligence/KeywordTrendChart';
+import { OrganicTrafficChart } from '@/components/dashboard/site-intelligence/OrganicTrafficChart';
 import { Zap, ChevronRight, TrendingUp, Search, BarChart2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const COPY = {
   debtDetailCta: '去策略板查看'
@@ -31,6 +34,8 @@ export function OverviewPanel({
     const [competitorCount, setCompetitorCount] = useState<number>(0);
     const [loading, setLoading] = useState(true);
     const [isExtractingDNA, setIsExtractingDNA] = useState(false);
+    const [isSyncing, setIsSyncing] = useState(false);
+    const [chartRefreshKey, setChartRefreshKey] = useState(0);
     const [siteData, setSiteData] = useState<any>(null);
 
     const [selectedDebt, setSelectedDebt] = useState<any | null>(null);
@@ -79,6 +84,28 @@ export function OverviewPanel({
             console.error('Failed to load overview data:', e);
         } finally {
             setLoading(false);
+        }
+    }, [siteId]);
+
+    const handleGscSync = useCallback(async () => {
+        setIsSyncing(true);
+        try {
+            const res = await fetch(`/api/dashboard/sites/${siteId}/gsc-sync`, { method: 'POST' });
+            const data = await res.json();
+            if (!res.ok) {
+                toast.error(data.error || 'GSC 同步失败，请重试');
+                return;
+            }
+            if (data.snapshotCreated) {
+                toast.success('同步成功！再同步一次即可查看排名趋势图', { duration: 5000 });
+            } else {
+                toast.info('今日已同步过，趋势数据将在明天同步后更新');
+            }
+            setChartRefreshKey(k => k + 1);
+        } catch (e) {
+            toast.error('网络错误，请检查连接后重试');
+        } finally {
+            setIsSyncing(false);
         }
     }, [siteId]);
 
@@ -197,13 +224,14 @@ export function OverviewPanel({
                                 <button onClick={() => onSwitchTab?.('performance')} className="text-[10px] font-black text-brand-primary uppercase">查看大盘 &rarr;</button>
                             )}
                         </div>
-                        {hasGsc ? (
-                            <Card className="p-6 bg-white border-slate-200 shadow-sm h-64 flex items-center justify-center text-slate-400 italic text-sm">
-                                [ 关键词趋势组件待集成 ]
-                            </Card>
-                        ) : (
-                            <IntegrationGuidanceCard type="gsc" onClick={() => onSwitchTab?.('integrations')} />
-                        )}
+                        <KeywordTrendChart
+                            siteId={siteId}
+                            hasGsc={hasGsc}
+                            isSyncing={isSyncing}
+                            refreshKey={chartRefreshKey}
+                            onSyncClick={handleGscSync}
+                            onConnectClick={() => onSwitchTab?.('integrations')}
+                        />
                     </div>
 
                     {/* Traffic Section */}
@@ -216,13 +244,11 @@ export function OverviewPanel({
                                 <button onClick={() => onSwitchTab?.('traffic')} className="text-[10px] font-black text-brand-primary uppercase">查看详情 &rarr;</button>
                             )}
                         </div>
-                        {hasGa4 ? (
-                            <Card className="p-6 bg-white border-slate-200 shadow-sm h-64 flex items-center justify-center text-slate-400 italic text-sm">
-                                [ GA4 流量组件待集成 ]
-                            </Card>
-                        ) : (
-                            <IntegrationGuidanceCard type="ga4" onClick={() => onSwitchTab?.('integrations')} />
-                        )}
+                        <OrganicTrafficChart
+                            siteId={siteId}
+                            hasGsc={hasGsc}
+                            onConnectClick={() => onSwitchTab?.('integrations')}
+                        />
                     </div>
                 </div>
 

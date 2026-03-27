@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import {
     FileText, Calendar, Trash2, Edit3, Share2,
     ChevronRight, CheckCircle2, Clock, AlertCircle,
-    Loader2
+    Loader2, MousePointerClick, Eye, Trophy
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -68,6 +68,23 @@ export function ArticleList({ initialArticles }: { initialArticles: any[] }) {
                                     </span>
                                 ))}
                             </div>
+                            
+                            {article.attribution && (
+                                <div className="flex items-center gap-4 mt-2 bg-slate-50/50 p-2.5 rounded-xl border border-slate-100 max-w-fit">
+                                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500">
+                                        <MousePointerClick size={12} className="text-blue-500" />
+                                        点击 {article.attribution.clicks}
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500">
+                                        <Eye size={12} className="text-emerald-500" />
+                                        展示 {article.attribution.impressions}
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500">
+                                        <Trophy size={12} className="text-amber-500" />
+                                        平均排名 #{article.attribution.position?.toFixed(1) || '0.0'}
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <div className="flex items-center gap-2 self-end md:self-center">

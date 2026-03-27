@@ -150,10 +150,11 @@ model Site {
   ga4Connections   Ga4Connection[]
   gscConnections   GscConnection[]
   user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  audits           SiteAudit[]
-  keywords         SiteKeyword[]
-  ontologies       SiteOntology[]
-  semanticDebts    SemanticDebt[]
+  audits              SiteAudit[]
+  keywords            SiteKeyword[]
+  keywordSnapshots    SiteKeywordSnapshot[]
+  ontologies          SiteOntology[]
+  semanticDebts       SemanticDebt[]
 
   @@index([userId])
   @@index([domain])
@@ -224,6 +225,23 @@ model SiteKeyword {
   site        Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
 
   @@unique([siteId, keyword])
+}
+
+/// SiteKeywordSnapshot - Time-series GSC keyword/page performance snapshots
+model SiteKeywordSnapshot {
+  id            String   @id @default(cuid())
+  siteId        String
+  dimensionType String   // 'query' | 'page'
+  value         String   // keyword text or page URL
+  clicks        Int
+  impressions   Int
+  position      Float
+  snapshotDate  DateTime // UTC midnight of the sync day
+  createdAt     DateTime @default(now())
+  site          Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@index([siteId, dimensionType, snapshotDate])
+  @@index([siteId, value, dimensionType])
 }
 
 model Competitor {

@@ -47,7 +47,7 @@ export async function POST(
             expiry_date: gscConnection.expiresAt.getTime(),
         });
 
-        // 自动刷新 token 逻辑 (OAuth2 client 内部处理，但我们需要拿到新的存入数据库)
+        // 自动刷新 token 逻辑
         oauth2Client.on('tokens', async (tokens: any) => {
             if (tokens.refresh_token) {
                 await prisma.gscConnection.update({
@@ -110,11 +110,7 @@ export async function POST(
 
         const rows = response.data.rows || [];
 
-        // 准备更新到数据库
-        // 我们用批量操作更新 SiteKeyword
-        // 因为 Keyword 可能会有很多，先删除老的同步出来的数据，或者进行 upsert
-        // 简单处理：全量读取，然后 upsert
-
+        // Upsert SiteKeyword (latest state cache)
         let syncCount = 0;
         for (const row of rows) {
             const keyword = row.keys?.[0];
@@ -124,8 +120,6 @@ export async function POST(
             const clicks = row.clicks || 0;
             const position = row.position ? Math.round(row.position) : null;
 
-            // Prisma 不原生支持基于非唯一的普通字段组合的 upsert (需满足唯一约束)
-            // 所以我们先用 findFirst，如果没有再 create
             const existingKwd = await prisma.siteKeyword.findFirst({
                 where: { siteId, keyword }
             });
@@ -133,25 +127,103 @@ export async function POST(
             if (existingKwd) {
                 await prisma.siteKeyword.update({
                     where: { id: existingKwd.id },
-                    data: {
-                        impressions,
-                        clicks,
-                        position,
-                        // volume 不动，由其他 API 处理
-                    }
+                    data: { impressions, clicks, position }
                 });
             } else {
                 await prisma.siteKeyword.create({
-                    data: {
-                        siteId,
-                        keyword,
-                        impressions,
-                        clicks,
-                        position,
-                    }
+                    data: { siteId, keyword, impressions, clicks, position }
                 });
             }
             syncCount++;
+        }
+
+        // ─── Snapshot Logic ────────────────────────────────────────────────
+        const todayUTC = new Date(new Date().toISOString().split('T')[0] + 'T00:00:00.000Z');
+        let snapshotCreated = false;
+        let queriesSynced = 0;
+        let pagesSynced = 0;
+        let pagesError: string | null = null;
+
+        // Check if snapshot already exists for today
+        const existingSnapshot = await prisma.siteKeywordSnapshot.findFirst({
+            where: { siteId, snapshotDate: todayUTC, dimensionType: 'query' }
+        });
+
+        if (!existingSnapshot) {
+            // Write query dimension snapshots
+            const querySnapshots = rows
+                .filter((row: any) => row.keys?.[0])
+                .map((row: any) => ({
+                    siteId,
+                    dimensionType: 'query',
+                    value: row.keys![0],
+                    clicks: row.clicks || 0,
+                    impressions: row.impressions || 0,
+                    position: row.position || 0,
+                    snapshotDate: todayUTC,
+                }));
+
+            if (querySnapshots.length > 0) {
+                await prisma.siteKeywordSnapshot.createMany({ data: querySnapshots });
+                queriesSynced = querySnapshots.length;
+            }
+
+            // Fetch page dimension data (independent try/catch)
+            try {
+                const pageResponse = await webmasters.searchanalytics.query({
+                    siteUrl,
+                    requestBody: {
+                        startDate: formatDate(startDate),
+                        endDate: formatDate(endDate),
+                        dimensions: ['page'],
+                        rowLimit: 500,
+                    }
+                });
+
+                const pageRows = pageResponse.data.rows || [];
+                const pageSnapshots = pageRows
+                    .filter((row: any) => row.keys?.[0])
+                    .map((row: any) => ({
+                        siteId,
+                        dimensionType: 'page',
+                        value: row.keys![0],
+                        clicks: row.clicks || 0,
+                        impressions: row.impressions || 0,
+                        position: row.position || 0,
+                        snapshotDate: todayUTC,
+                    }));
+
+                if (pageSnapshots.length > 0) {
+                    await prisma.siteKeywordSnapshot.createMany({ data: pageSnapshots });
+                    pagesSynced = pageSnapshots.length;
+                }
+            } catch (pageErr: any) {
+                console.error('Page dimension sync failed (non-blocking):', pageErr.message);
+                pagesError = pageErr.message || 'Page dimension sync failed';
+            }
+
+            snapshotCreated = true;
+
+            // Async cleanup: remove oldest batch if >104 distinct dates
+            (async () => {
+                try {
+                    const distinctDates = await prisma.siteKeywordSnapshot.findMany({
+                        where: { siteId },
+                        select: { snapshotDate: true },
+                        distinct: ['snapshotDate'],
+                        orderBy: { snapshotDate: 'asc' },
+                    });
+
+                    if (distinctDates.length > 104) {
+                        const oldestDate = distinctDates[0].snapshotDate;
+                        await prisma.siteKeywordSnapshot.deleteMany({
+                            where: { siteId, snapshotDate: oldestDate }
+                        });
+                    }
+                } catch (cleanupErr) {
+                    console.error('Snapshot cleanup failed:', cleanupErr);
+                }
+            })();
         }
 
         // 更新最后同步时间
@@ -160,7 +232,14 @@ export async function POST(
             data: { lastSyncAt: new Date() }
         });
 
-        return NextResponse.json({ success: true, count: syncCount });
+        return NextResponse.json({
+            success: true,
+            count: syncCount,
+            queriesSynced,
+            pagesSynced,
+            snapshotCreated,
+            ...(pagesError ? { pagesError } : {}),
+        });
     } catch (error: any) {
         console.error("GSC Sync Error:", error);
         return NextResponse.json({ error: error.message || 'Failed to sync GSC data' }, { status: 500 });
