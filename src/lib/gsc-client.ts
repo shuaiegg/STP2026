@@ -42,8 +42,8 @@ export async function getGscClient(siteId: string) {
             // Ensure the client uses the new tokens for this request
             oauth2Client.setCredentials(credentials);
         } catch (error) {
-            console.error("Token refresh failed:", error);
-            // We ignore throwing here, as the Google API call itself will throw an auth error if the token is completely invalid.
+            console.error("GSC token refresh failed:", error);
+            throw new Error('GSC_TOKEN_EXPIRED');
         }
     }
 

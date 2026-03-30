@@ -89,7 +89,8 @@ export function TabContainer({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<TabType>('overview'); // Default to overview in phase 2
+  const [activeTab, setActiveTab] = useState<TabType>('overview');
+  const [visitedTabs, setVisitedTabs] = useState<Set<TabType>>(new Set(['overview']));
   const [issueReportLoaded, setIssueReportLoaded] = useState(false);
   const [latestIssueReport, setLatestIssueReport] = useState<any>(null);
   const [previousIssueReport, setPreviousIssueReport] = useState<any>(null);
@@ -101,6 +102,7 @@ export function TabContainer({
     const hash = window.location.hash.replace('#', '') as TabType;
     if (hash && VALID_TABS.includes(hash)) {
       setActiveTab(hash);
+      setVisitedTabs(prev => new Set([...prev, hash]));
       if (hash === 'audit') fetchReport();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -131,6 +133,7 @@ export function TabContainer({
 
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
+    setVisitedTabs(prev => new Set([...prev, tab]));
     router.replace(pathname + '#' + tab, { scroll: false });
     if (tab === 'audit') fetchReport();
   };
@@ -198,14 +201,14 @@ export function TabContainer({
       <div className="animate-in fade-in duration-500">
         <div role="tabpanel" id="tabpanel-overview" aria-labelledby="tab-overview" hidden={activeTab !== 'overview'}>
           <Suspense fallback={<OverviewPanelSkeleton />}>
-            {activeTab === 'overview' && (
-              <OverviewPanel 
-                siteId={siteId} 
-                domain={domain} 
+            {visitedTabs.has('overview') && (
+              <OverviewPanel
+                siteId={siteId}
+                domain={domain}
                 hasGsc={!!hasGsc}
                 hasGa4={!!hasGa4}
                 hasContentPlan={!!hasContentPlan}
-                onSwitchTab={(tab) => handleTabChange(tab as TabType)} 
+                onSwitchTab={(tab) => handleTabChange(tab as TabType)}
               />
             )}
           </Suspense>
@@ -213,13 +216,13 @@ export function TabContainer({
 
         <div role="tabpanel" id="tabpanel-strategy" aria-labelledby="tab-strategy" hidden={activeTab !== 'strategy'}>
           <Suspense fallback={<StrategyBoardSkeleton />}>
-            {activeTab === 'strategy' && <StrategyBoard siteId={siteId} />}
+            {visitedTabs.has('strategy') && <StrategyBoard siteId={siteId} />}
           </Suspense>
         </div>
 
         <div role="tabpanel" id="tabpanel-audit" aria-labelledby="tab-audit" hidden={activeTab !== 'audit'}>
           <Suspense fallback={<AuditHistoryPanelSkeleton />}>
-            {activeTab === 'audit' && (
+            {visitedTabs.has('audit') && (
               <div className="space-y-6">
                 {loadingReport ? (
                   <div className="flex flex-col items-center justify-center p-12 text-slate-500">
@@ -247,31 +250,31 @@ export function TabContainer({
 
         <div role="tabpanel" id="tabpanel-audits" aria-labelledby="tab-audits" hidden={activeTab !== 'audits'}>
           <Suspense fallback={<AuditHistoryPanelSkeleton />}>
-            {activeTab === 'audits' && <AuditHistoryPanel siteId={siteId} domain={domain} />}
+            {visitedTabs.has('audits') && <AuditHistoryPanel siteId={siteId} domain={domain} />}
           </Suspense>
         </div>
 
         <div role="tabpanel" id="tabpanel-competitors" aria-labelledby="tab-competitors" hidden={activeTab !== 'competitors'}>
           <Suspense fallback={<CompetitorsPanelSkeleton />}>
-            {activeTab === 'competitors' && <CompetitorsPanel siteId={siteId} />}
+            {visitedTabs.has('competitors') && <CompetitorsPanel siteId={siteId} />}
           </Suspense>
         </div>
 
         <div role="tabpanel" id="tabpanel-performance" aria-labelledby="tab-performance" hidden={activeTab !== 'performance'}>
           <Suspense fallback={<PerformancePanelSkeleton />}>
-            {activeTab === 'performance' && <PerformanceDashboard siteId={siteId} />}
+            {visitedTabs.has('performance') && <PerformanceDashboard siteId={siteId} />}
           </Suspense>
         </div>
 
         <div role="tabpanel" id="tabpanel-traffic" aria-labelledby="tab-traffic" hidden={activeTab !== 'traffic'}>
           <Suspense fallback={<PerformancePanelSkeleton />}>
-            {activeTab === 'traffic' && <Ga4PerformanceDashboard siteId={siteId} />}
+            {visitedTabs.has('traffic') && <Ga4PerformanceDashboard siteId={siteId} />}
           </Suspense>
         </div>
 
         <div role="tabpanel" id="tabpanel-integrations" aria-labelledby="tab-integrations" hidden={activeTab !== 'integrations'}>
           <Suspense fallback={<IntegrationsPanelSkeleton />}>
-            {activeTab === 'integrations' && <IntegrationsPanel siteId={siteId} onUpdate={() => {}} />}
+            {visitedTabs.has('integrations') && <IntegrationsPanel siteId={siteId} onUpdate={() => {}} />}
           </Suspense>
         </div>
       </div>

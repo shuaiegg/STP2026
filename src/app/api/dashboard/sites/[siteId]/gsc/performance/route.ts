@@ -88,7 +88,18 @@ export async function GET(
             topQueries
         });
     } catch (error: any) {
-        console.error("Failed to fetch GSC performance:", error);
-        return NextResponse.json({ error: 'Failed to fetch GSC performance data' }, { status: 500 });
+        const msg = error?.message || '';
+        console.error("Failed to fetch GSC performance:", msg, error);
+
+        if (msg === 'GSC_NOT_CONNECTED') {
+            return NextResponse.json({ error: 'GSC 尚未绑定，请前往"设置"页完成连接' }, { status: 400 });
+        }
+        if (msg === 'GSC_TOKEN_EXPIRED') {
+            return NextResponse.json({ error: 'GSC 授权已过期，请前往"设置"页重新连接' }, { status: 401 });
+        }
+        if (msg === 'GSC Property not selected') {
+            return NextResponse.json({ error: 'GSC 资源未选择，请前往"设置"页选择 Search Console 资源' }, { status: 400 });
+        }
+        return NextResponse.json({ error: `GSC 数据获取失败：${msg || '未知错误'}` }, { status: 500 });
     }
 }
