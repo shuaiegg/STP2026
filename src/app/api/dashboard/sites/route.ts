@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
+import { revalidateSiteCache } from '@/lib/site-intelligence/sites';
 
 /**
  * GET /api/dashboard/sites
@@ -102,6 +103,9 @@ export async function POST(request: Request) {
                 isCompetitor: !!isCompetitor,
             },
         });
+
+        // Revalidate cache
+        revalidateSiteCache();
 
         return NextResponse.json({
             success: true,

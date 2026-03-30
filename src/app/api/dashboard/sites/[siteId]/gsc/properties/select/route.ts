@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { revalidateSiteCache } from '@/lib/site-intelligence/sites';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 
@@ -36,6 +37,8 @@ export async function POST(
                 propertyId
             }
         });
+
+        revalidateSiteCache(siteId);
 
         return NextResponse.json({ success: true, connection: updated });
     } catch (error: any) {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import prisma from "@/lib/prisma";
+import { revalidateTag } from "next/cache";
 
 export async function POST(req: NextRequest) {
     const payload = await req.text();
@@ -86,6 +87,9 @@ export async function POST(req: NextRequest) {
                 })
             ]);
 
+            // Revalidate user cache
+            revalidateTag(`user-${userId}`, "max");
+
             console.log(`Successfully credited ${creditsToGain} credits to user ${userId}`);
             return NextResponse.json({ success: true });
         } catch (error) {
@@ -153,6 +157,9 @@ export async function POST(req: NextRequest) {
                     }
                 })
             ]);
+
+            // Revalidate user cache
+            revalidateTag(`user-${purchaseTx.userId}`, "max");
 
             console.log(`Processed refund ${refundId} for user ${purchaseTx.userId}, deducted ${actualDeduction} credits`);
             return NextResponse.json({ success: true });

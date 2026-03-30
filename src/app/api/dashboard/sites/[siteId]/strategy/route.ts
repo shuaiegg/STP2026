@@ -28,7 +28,11 @@ async function handler(
             }
         });
 
-        return NextResponse.json({ success: true, data: plans });
+        return NextResponse.json({ success: true, data: plans }, {
+            headers: {
+                'Cache-Control': 'private, max-age=60, stale-while-revalidate=120'
+            }
+        });
 
     } catch (error: any) {
         console.error("Failed to fetch Strategy Kanban data:", error);

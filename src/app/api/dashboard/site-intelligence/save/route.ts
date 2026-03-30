@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
+import { revalidateSiteCache } from '@/lib/site-intelligence/sites';
 
 export async function POST(request: Request) {
     const session = await auth.api.getSession({ headers: await headers() });
@@ -68,6 +69,9 @@ export async function POST(request: Request) {
                 } as any,
             },
         });
+
+        // Revalidate cache
+        revalidateSiteCache(site.id);
 
         return NextResponse.json({
             success: true,

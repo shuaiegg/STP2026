@@ -9,7 +9,11 @@ export const GET = withSiteContext<{ siteId: string }>(async (request, { site })
             orderBy: { domain: 'asc' }
         });
 
-        return NextResponse.json({ success: true, competitors });
+        return NextResponse.json({ success: true, competitors }, {
+            headers: {
+                'Cache-Control': 'private, max-age=120, stale-while-revalidate=240'
+            }
+        });
     } catch (error: any) {
         console.error('[Competitors GET] Error:', error);
         return NextResponse.json({ error: '获取竞品列表失败' }, { status: 500 });

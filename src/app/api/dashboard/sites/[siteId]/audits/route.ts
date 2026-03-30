@@ -54,5 +54,9 @@ export const GET = withSiteContext<{ siteId: string }>(async (_request, { site }
         };
     });
 
-    return NextResponse.json({ siteId: site.id, domain: site.domain, audits: result });
+    return NextResponse.json({ siteId: site.id, domain: site.domain, audits: result }, {
+        headers: {
+            'Cache-Control': 'private, max-age=60, stale-while-revalidate=120'
+        }
+    });
 });

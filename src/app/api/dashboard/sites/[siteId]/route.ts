@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
+import { revalidateSiteCache } from '@/lib/site-intelligence/sites';
 
 export async function GET(
     request: Request,
@@ -62,6 +63,9 @@ export async function DELETE(
         await prisma.site.delete({
             where: { id: siteId },
         });
+
+        // Clear cache
+        revalidateSiteCache(siteId);
 
         return NextResponse.json({ success: true, message: 'Site deleted successfully' });
     } catch (error: any) {

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { revalidateSiteCache } from '@/lib/site-intelligence/sites';
 import { withSiteContext } from '@/lib/api-utils';
 
 export const POST = withSiteContext<{ siteId: string }>(async (request, { site }) => {
@@ -23,6 +24,8 @@ export const POST = withSiteContext<{ siteId: string }>(async (request, { site }
             where: { id: existingAuth.id },
             data: { propertyId }
         });
+
+        revalidateSiteCache(site.id);
 
         return NextResponse.json({
             success: true,

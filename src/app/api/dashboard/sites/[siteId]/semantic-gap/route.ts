@@ -12,6 +12,10 @@ export const GET = withSiteContext<{ siteId: string }>(async (request, { site })
         return NextResponse.json({
             success: true,
             data: result
+        }, {
+            headers: {
+                'Cache-Control': 'private, max-age=300, stale-while-revalidate=600'
+            }
         });
 
     } catch (error: any) {

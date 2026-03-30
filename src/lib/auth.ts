@@ -3,6 +3,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import prisma from "./prisma";
 import { emailOTP } from "better-auth/plugins";
 import { sendEmail } from "./email";
+import { revalidateTag } from "next/cache";
 
 export const auth = betterAuth({
     secret: process.env.BETTER_AUTH_SECRET,
@@ -46,6 +47,9 @@ export const auth = betterAuth({
                             }
                         })
                     ]);
+
+                    // Revalidate user cache
+                    revalidateTag(`user-${user.id}`);
                 }
             }
         }
@@ -110,6 +114,10 @@ export const auth = betterAuth({
     session: {
         expiresIn: 60 * 60 * 24 * 7, // 7 days
         updateAge: 60 * 60 * 24, // 1 day
+        cookieCache: {
+            enabled: true,
+            maxAge: 60 * 5 // 5 minutes
+        }
     },
     trustedOrigins: [
         'https://www.scaletotop.com',

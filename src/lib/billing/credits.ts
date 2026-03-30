@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { TOOL_COSTS } from "@/lib/config/credit-costs";
+import { revalidateTag } from "next/cache";
 
 export type ChargeResult =
     | { success: true; remainingCredits: number; transactionId?: string }
@@ -46,7 +47,7 @@ export async function chargeUser(
             };
         }
 
-        return await prisma.$transaction(async (tx) => {
+        const result = await prisma.$transaction(async (tx) => {
             // 1. Get Skill Cost & Status
             const skill = await tx.skillConfig.findUnique({
                 where: { name: skillName }
@@ -105,11 +106,18 @@ export async function chargeUser(
                 success: true,
                 remainingCredits: updatedUser.credits,
                 transactionId: transaction.id
-            };
+            } as const;
         }, {
             maxWait: 10000,
             timeout: 15000,
-        });
+        }) as ChargeResult;
+
+        if (result.success) {
+            // Revalidate user cache
+            revalidateTag(`user-${userId}`, "max");
+        }
+
+        return result;
     } catch (error: any) {
 
         console.error("Credit charge failed:", error);
@@ -142,7 +150,7 @@ export async function refundUser(
 
         const amount = skill.cost;
 
-        return await prisma.$transaction(async (tx) => {
+        const result = await (prisma.$transaction(async (tx) => {
             // 2. Increment credits
             const updatedUser = await tx.user.update({
                 where: { id: userId },
@@ -165,8 +173,15 @@ export async function refundUser(
             return {
                 success: true,
                 remainingCredits: updatedUser.credits
-            };
-        });
+            } as const;
+        }) as Promise<{ success: true; remainingCredits: number } | { success: false; error: string }>);
+
+        if (result.success) {
+            // Revalidate user cache
+            revalidateTag(`user-${userId}`, "max");
+        }
+
+        return result;
     } catch (error: any) {
         console.error("Credit refund failed:", error);
         return { success: false, error: error.message };

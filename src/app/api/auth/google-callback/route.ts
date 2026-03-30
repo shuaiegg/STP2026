@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { google } from 'googleapis';
 import { prisma } from '@/lib/prisma';
+import { revalidateSiteCache } from '@/lib/site-intelligence/sites';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 
@@ -114,6 +115,9 @@ export async function GET(request: Request) {
                 });
             }
         }
+
+        // Revalidate cache (since connections changed, _count in getSiteById might change)
+        revalidateSiteCache(siteId);
 
         // Redirect back to overview
         return NextResponse.redirect(`${appUrl}/dashboard/site-intelligence/${siteId}`);

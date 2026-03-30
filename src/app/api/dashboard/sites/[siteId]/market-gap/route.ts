@@ -77,6 +77,10 @@ export const GET = withSiteContext<{ siteId: string }>(async (request, { site })
                 marketGaps,
                 ourStrengths
             }
+        }, {
+            headers: {
+                'Cache-Control': 'private, max-age=300, stale-while-revalidate=600'
+            }
         });
 
     } catch (error: any) {

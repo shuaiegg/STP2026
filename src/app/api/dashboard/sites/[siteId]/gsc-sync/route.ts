@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { google } from 'googleapis';
 import { prisma } from '@/lib/prisma';
+import { revalidateSiteCache } from '@/lib/site-intelligence/sites';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 
@@ -231,6 +232,8 @@ export async function POST(
             where: { id: gscConnection.id },
             data: { lastSyncAt: new Date() }
         });
+
+        revalidateSiteCache(siteId);
 
         return NextResponse.json({
             success: true,
