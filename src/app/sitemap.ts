@@ -1,13 +1,20 @@
 import { MetadataRoute } from 'next';
 import prisma from '@/lib/prisma';
 
+export const dynamic = 'force-dynamic';
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.scaletotop.com';
 
-  const posts = await prisma.content.findMany({
-    where: { status: 'PUBLISHED', visibility: 'PUBLIC' },
-    select: { slug: true, updatedAt: true },
-  });
+  let posts: { slug: string; updatedAt: Date }[] = [];
+  try {
+    posts = await prisma.content.findMany({
+      where: { status: 'PUBLISHED', visibility: 'PUBLIC' },
+      select: { slug: true, updatedAt: true },
+    });
+  } catch {
+    // DB unavailable — return static routes only
+  }
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: baseUrl, lastModified: new Date(), changeFrequency: 'daily', priority: 1 },

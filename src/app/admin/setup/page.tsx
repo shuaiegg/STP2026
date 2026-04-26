@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import SetupForm from "./SetupForm";
 import { ShieldCheck } from "lucide-react";
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminSetupPage() {
     // 1. Check if any admin exists to prevent unauthorized access after setup
     // Using simple string for ADMIN, Prisma Client should handle this if it matches the enum
