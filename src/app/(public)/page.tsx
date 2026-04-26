@@ -1,4 +1,6 @@
 /* eslint-disable react/no-unescaped-entities, @typescript-eslint/no-explicit-any */
+export const dynamic = 'force-dynamic';
+
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
