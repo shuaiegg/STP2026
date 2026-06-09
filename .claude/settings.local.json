@@ -64,7 +64,8 @@
       "Bash(grep -rn \"from ''@ai-sdk/react''\" /Users/apple/JSProject/STP2026/src --include=\"*.ts\" --include=\"*.tsx\")",
       "Bash(grep -rn \"import.*from ''ai''\" /Users/apple/JSProject/STP2026/src --include=\"*.ts\" --include=\"*.tsx\")",
       "Bash(grep -rn \"from ''@/lib/auth-errors''\" /Users/apple/JSProject/STP2026/src --include=\"*.ts\" --include=\"*.tsx\")",
-      "Bash(grep -rn \"from ''@/lib/email''\" /Users/apple/JSProject/STP2026/src --include=\"*.ts\" --include=\"*.tsx\")"
+      "Bash(grep -rn \"from ''@/lib/email''\" /Users/apple/JSProject/STP2026/src --include=\"*.ts\" --include=\"*.tsx\")",
+      "WebFetch(domain:github.com)"
     ]
   },
   "enabledPlugins": {
