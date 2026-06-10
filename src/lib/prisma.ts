@@ -13,6 +13,11 @@ export const prisma =
             { emit: 'stdout', level: 'error' },
             { emit: 'stdout', level: 'warn' },
         ] : ['error'],
+        datasources: {
+            db: {
+                url: process.env.DATABASE_URL,
+            },
+        },
     });
 
 if (process.env.NODE_ENV === 'development' && !globalForPrisma.prisma) {

@@ -1,7 +1,17 @@
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import prisma from '@/lib/prisma';
 
-const STORAGE_BUCKET = 'media';
+const STORAGE_BUCKET = process.env.MINIO_BUCKET || 'media';
+
+const s3 = new S3Client({
+    endpoint: process.env.MINIO_ENDPOINT,
+    region: 'us-east-1',
+    forcePathStyle: true,
+    credentials: {
+        accessKeyId: process.env.MINIO_ACCESS_KEY!,
+        secretAccessKey: process.env.MINIO_SECRET_KEY!,
+    },
+});
 
 export interface UploadResult {
     mediaId: string;
@@ -10,7 +20,7 @@ export interface UploadResult {
 }
 
 /**
- * Download an image from a URL and upload it to Supabase Storage
+ * Download an image from a URL and upload it to MinIO Storage
  */
 export async function uploadImageFromUrl(
     imageUrl: string,
@@ -67,24 +77,15 @@ export async function uploadImageFromUrl(
     const filename = options?.filename || `${crypto.randomUUID()}.${extension}`;
     const storagePath = `uploads/${new Date().getFullYear()}/${new Date().getMonth() + 1}/${filename}`;
 
-    // Upload to Supabase Storage
-    const { data, error } = await supabaseAdmin.storage
-        .from(STORAGE_BUCKET)
-        .upload(storagePath, buffer, {
-            contentType,
-            upsert: false,
-        });
+    // Upload to MinIO via S3 API
+    await s3.send(new PutObjectCommand({
+        Bucket: STORAGE_BUCKET,
+        Key: storagePath,
+        Body: Buffer.from(buffer),
+        ContentType: contentType,
+    }));
 
-    if (error) {
-        throw new Error(`Failed to upload image: ${error.message}`);
-    }
-
-    // Get public URL
-    const { data: publicUrlData } = supabaseAdmin.storage
-        .from(STORAGE_BUCKET)
-        .getPublicUrl(storagePath);
-
-    const storageUrl = publicUrlData.publicUrl;
+    const storageUrl = `${process.env.MINIO_PUBLIC_URL}/${STORAGE_BUCKET}/${storagePath}`;
 
     // Create Media record
     const media = await prisma.media.create({

@@ -1,6 +1,7 @@
 import React from 'react';
 import { HealthScoreBadge } from '@/components/ui/HealthScoreBadge';
 import { Button } from '@/components/ui/Button';
+import { DeleteSiteButton } from '@/components/dashboard/DeleteSiteButton';
 import { RefreshCw, Zap } from 'lucide-react';
 import Link from 'next/link';
 
@@ -37,6 +38,7 @@ export function SiteHeader({ site }: SiteHeaderProps) {
             {site.domain}
           </h1>
           <HealthScoreBadge score={score} />
+          <DeleteSiteButton siteId={site.id} domain={site.domain} />
           {score === null && (
             <Link
               href={`/dashboard/site-intelligence/instant-audit?siteId=${site.id}&rescan=1`}

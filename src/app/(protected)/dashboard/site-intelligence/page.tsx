@@ -7,6 +7,7 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
+import { EmptyState } from './EmptyState';
 
 interface LatestAudit {
     id: string;
@@ -112,7 +113,9 @@ export default async function SiteIntelligencePage() {
 
             {/* Body */}
             {sites.length === 0 ? (
-                <EmptyState />
+                <div className="py-8">
+                    <EmptyState />
+                </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                     {sites.map((site) => (
@@ -124,26 +127,6 @@ export default async function SiteIntelligencePage() {
     );
 }
 
-function EmptyState() {
-    return (
-        <Card className="bg-white border-slate-200 shadow-sm p-12 flex flex-col items-center text-center gap-4 rounded-2xl">
-            <div className="w-16 h-16 rounded-full bg-brand-primary/10 flex items-center justify-center text-3xl">
-                🛰
-            </div>
-            <div className="space-y-1">
-                <h2 className="text-slate-900 font-semibold text-lg">暂无扫描记录</h2>
-                <p className="text-slate-500 text-sm">
-                    运行首次即时审计以开始构建您的主题权威星图。
-                </p>
-            </div>
-            <Link href="/dashboard/site-intelligence/instant-audit">
-                <Button className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm px-6 font-bold mt-4">
-                    发起首次扫描
-                </Button>
-            </Link>
-        </Card>
-    );
-}
 
 function SiteCard({ site }: { site: SiteRecord }) {
     const audit = site.latestAudit;

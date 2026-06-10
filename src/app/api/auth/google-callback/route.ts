@@ -119,8 +119,8 @@ export async function GET(request: Request) {
         // Revalidate cache (since connections changed, _count in getSiteById might change)
         revalidateSiteCache(siteId);
 
-        // Redirect back to overview
-        return NextResponse.redirect(`${appUrl}/dashboard/site-intelligence/${siteId}`);
+        // Redirect to integrations tab so user can immediately select the GSC/GA4 property
+        return NextResponse.redirect(`${appUrl}/dashboard/site-intelligence/${siteId}#integrations`);
     } catch (error: any) {
         console.error("Google Token Auth Error:", error);
         return NextResponse.json({ error: 'Failed to authenticate with Google' }, { status: 500 });

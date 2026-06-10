@@ -78,25 +78,24 @@ export async function POST(
 
         const formatDate = (date: Date) => date.toISOString().split('T')[0];
 
-        // 优先尝试 sc-domain 属性，如果失败再试带协议的
-        let siteUrl = `sc-domain:${site.domain.replace(/^https?:\/\//, '')}`;
+        // Use the user-selected GSC property ID if available, otherwise fall back to domain-based detection
+        const rawDomain = site.domain.replace(/^https?:\/\//, '').replace(/\/$/, '');
+        const candidateUrls: string[] = gscConnection.propertyId
+            ? [gscConnection.propertyId]
+            : [
+                `sc-domain:${rawDomain}`,
+                `https://www.${rawDomain}/`,
+                `https://${rawDomain}/`,
+              ];
+
+        let siteUrl = candidateUrls[0];
         let response;
-        try {
-            response = await webmasters.searchanalytics.query({
-                siteUrl,
-                requestBody: {
-                    startDate: formatDate(startDate),
-                    endDate: formatDate(endDate),
-                    dimensions: ['query'],
-                    rowLimit: 1000,
-                }
-            });
-        } catch (e: any) {
-            if (e.code === 403 || e.message?.includes('User does not have sufficient permission')) {
-                // 回退到 https 协议
-                siteUrl = site.domain.startsWith('http') ? site.domain : `https://${site.domain}/`;
+        let lastError: any;
+
+        for (const candidate of candidateUrls) {
+            try {
                 response = await webmasters.searchanalytics.query({
-                    siteUrl,
+                    siteUrl: candidate,
                     requestBody: {
                         startDate: formatDate(startDate),
                         endDate: formatDate(endDate),
@@ -104,10 +103,18 @@ export async function POST(
                         rowLimit: 1000,
                     }
                 });
-            } else {
+                siteUrl = candidate;
+                break;
+            } catch (e: any) {
+                lastError = e;
+                if (e.code === 403 || e.message?.includes('User does not have sufficient permission')) {
+                    continue;
+                }
                 throw e;
             }
         }
+
+        if (!response) throw lastError;
 
         const rows = response.data.rows || [];
 

@@ -348,6 +348,7 @@ export function OverviewPanel({
                         )}
                     </div>
                 </div>
+
             </div>
         </div>
     );

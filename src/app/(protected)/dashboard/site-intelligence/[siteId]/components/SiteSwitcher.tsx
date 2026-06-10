@@ -170,7 +170,8 @@ export function SiteSwitcher({ currentSiteId, currentDomain }: { currentSiteId: 
                         setDeleteConfirmInput('');
                         setIsOpen(false);
                     }}
-                    className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                    className="p-1.5 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
+                    title="删除此站点"
                 >
                     <Trash2 size={13} />
                 </button>
