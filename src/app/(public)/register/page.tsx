@@ -9,6 +9,7 @@ import { Mail, Loader2, ArrowRight, User as UserIcon, KeyRound, ArrowLeft } from
 import Link from "next/link";
 import { translateAuthError } from "@/lib/auth-errors";
 import { toast } from "sonner";
+import posthog from "posthog-js";
 
 type AuthFlow = "enter-email" | "enter-name" | "enter-otp";
 
@@ -68,6 +69,7 @@ export default function UnifiedAuthPage() {
             setError("请输入至少两个字符的称呼");
             return;
         }
+        posthog.capture('signup_started', { method: 'email' });
         // 统一使用 "sign-in" 类型，支持新用户自动注册
         await sendOtpFor("sign-in", email.trim().toLowerCase());
     };
@@ -137,6 +139,9 @@ export default function UnifiedAuthPage() {
             if (authError) {
                 throw new Error(authError.message);
             } else {
+                if (isNewUser) {
+                    posthog.capture('signup_completed', { method: 'email' });
+                }
                 toast.success(isNewUser ? "注册成功！欢迎加入 ScaletoTop" : "登录成功，欢迎回来！");
                 router.push("/dashboard");
                 router.refresh();

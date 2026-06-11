@@ -1,17 +1,22 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Check, Zap, CreditCard, ShoppingCart, Info, Sparkles } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import Link from 'next/link';
+import posthog from 'posthog-js';
 
 import { CREDIT_PRODUCTS } from '@/lib/billing/products';
 import { authClient } from '@/lib/auth-client';
 
 export default function PricingClient() {
     const { data: session } = authClient.useSession();
+
+    useEffect(() => {
+        posthog.capture('pricing_viewed');
+    }, []);
 
     const getValueProp = (credits: number) => {
         if (credits === 50) return "可完成约 3 篇深度内容创作 或 10 次站点体检";
@@ -111,13 +116,18 @@ export default function PricingClient() {
                             </div>
 
                             <Link href={session ? "/dashboard/billing" : "/register"} className="block mt-auto">
-                                <Button 
+                                <Button
                                     variant={pack.recommended ? "primary" : "outline"}
                                     className={`w-full py-6 font-black uppercase tracking-widest text-xs border-2 flex gap-2 ${
-                                        pack.recommended 
-                                        ? 'bg-brand-primary text-white border-brand-primary shadow-xl shadow-brand-primary/20' 
+                                        pack.recommended
+                                        ? 'bg-brand-primary text-white border-brand-primary shadow-xl shadow-brand-primary/20'
                                         : 'bg-white text-brand-text-primary border-brand-border-heavy hover:bg-slate-50'
                                     }`}
+                                    onClick={() => posthog.capture('pricing_plan_selected', {
+                                        plan: pack.label,
+                                        credits: pack.credits,
+                                        price: pack.price,
+                                    })}
                                 >
                                     <ShoppingCart size={14} />
                                     立即购买

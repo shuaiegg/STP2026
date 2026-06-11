@@ -7,10 +7,15 @@ import { CREDIT_PRODUCTS } from '@/lib/billing/products';
 import { Check, Loader2, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSearchParams } from 'next/navigation';
+import posthog from 'posthog-js';
 
-export function BillingClient() {
+export function BillingClient({ creditsRemaining }: { creditsRemaining: number }) {
     const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
     const searchParams = useSearchParams();
+
+    useEffect(() => {
+        posthog.capture('billing_page_viewed', { credits_remaining: creditsRemaining });
+    }, [creditsRemaining]);
 
     useEffect(() => {
         if (searchParams.get('success') === '1') {

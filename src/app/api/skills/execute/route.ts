@@ -11,6 +11,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
 import { TOOL_COSTS } from "@/lib/config/credit-costs";
+import { captureServerEvent } from "@/lib/analytics/posthog-server";
 
 // Initialize skills on module load
 registerAllSkills();
@@ -33,6 +34,9 @@ function getSkillCost(skillName: string, input?: any): number {
  * Execute a skill
  */
 export async function POST(request: NextRequest) {
+    let sessionUserId: string | undefined;
+    let parsedSkillName: string | undefined;
+
     try {
         const session = await auth.api.getSession({
             headers: await headers()
@@ -45,6 +49,8 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        sessionUserId = session.user.id;
+
         const body = await request.json();
         const { skillName, input, options } = body as {
             skillName: string;
@@ -54,6 +60,7 @@ export async function POST(request: NextRequest) {
                 model?: string;
             };
         };
+        parsedSkillName = skillName;
 
         // Validate request
         if (!skillName) {
@@ -166,16 +173,36 @@ export async function POST(request: NextRequest) {
             timeout: 15000,  // max time for the transaction to complete (15s)
         });
 
+        captureServerEvent(session.user.id, 'skill_executed', {
+            skill_name: skillName,
+            credits_cost: cost,
+            duration_ms: executionTime,
+            success: true,
+        });
+
+        const remaining = dbResult.updatedUser.credits;
+        if (remaining < 50) {
+            captureServerEvent(session.user.id, 'credits_low', { remaining });
+        }
+
         return NextResponse.json({
             success: true,
             executionId,
             output: result,
             executionTime,
-            remainingCredits: dbResult.updatedUser.credits,
+            remainingCredits: remaining,
             isRepeat: isRepeat
         });
     } catch (error) {
         console.error('Skill execution error:', error);
+
+        if (sessionUserId) {
+            captureServerEvent(sessionUserId, 'skill_executed', {
+                skill_name: parsedSkillName,
+                success: false,
+                error_type: error instanceof Error ? error.constructor.name : 'UnknownError',
+            });
+        }
 
         return NextResponse.json(
             {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import prisma from "@/lib/prisma";
 import { revalidateTag } from "next/cache";
+import { captureServerEvent } from "@/lib/analytics/posthog-server";
 
 export async function POST(req: NextRequest) {
     const payload = await req.text();
@@ -89,6 +90,12 @@ export async function POST(req: NextRequest) {
 
             // Revalidate user cache
             revalidateTag(`user-${userId}`, "max");
+
+            captureServerEvent(userId, 'purchase_completed', {
+                product_id: checkout.metadata?.productId || checkout.id,
+                credits_added: creditsToGain,
+                amount_usd: checkout.amount ? checkout.amount / 100 : undefined,
+            });
 
             console.log(`Successfully credited ${creditsToGain} credits to user ${userId}`);
             return NextResponse.json({ success: true });

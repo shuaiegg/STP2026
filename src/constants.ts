@@ -29,7 +29,7 @@ export const MOCK_POSTS: Post[] = [
       ## 实战建议
       将 SEO 视为工程债务的一部分。在 CI/CD 流程中加入自动化检查点，确保每一次代码提交都不会破坏现有的 SEO 结构。
     `,
-    coverImage: 'https://picsum.photos/seed/seo/1200/630'
+    coverImage: '/logo-512.png'
   },
   {
     id: '2',
@@ -46,7 +46,7 @@ export const MOCK_POSTS: Post[] = [
       ## 如何开始？
       首先，你需要找到具备高度重复性的用户搜索意图。例如 "Best [Product] for [Role]"。
     `,
-    coverImage: 'https://picsum.photos/seed/code/1200/630'
+    coverImage: '/logo-512.png'
   },
   {
     id: '3',
@@ -57,7 +57,7 @@ export const MOCK_POSTS: Post[] = [
     publishedAt: '2024-10-15',
     readTime: '8 min',
     content: '...',
-    coverImage: 'https://picsum.photos/seed/link/1200/630'
+    coverImage: '/logo-512.png'
   },
   {
     id: '4',
@@ -68,6 +68,6 @@ export const MOCK_POSTS: Post[] = [
     publishedAt: '2024-10-10',
     readTime: '10 min',
     content: '...',
-    coverImage: 'https://picsum.photos/seed/vitals/1200/630'
+    coverImage: '/logo-512.png'
   }
 ];

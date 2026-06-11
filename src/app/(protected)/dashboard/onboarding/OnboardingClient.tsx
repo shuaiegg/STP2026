@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Globe, ArrowRight, Loader2, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
+import posthog from 'posthog-js';
 
 // ─── COPY & config (file scope for i18n readiness) ────────────────────────────
 
@@ -71,6 +72,7 @@ export function OnboardingClient() {
     setError(null);
     setState('ANALYZING');
     setStatus('INITIALIZING_PROBE');
+    posthog.capture('onboarding_started');
     setScanned(0);
     setTotal(0);
 
@@ -128,6 +130,7 @@ export function OnboardingClient() {
             });
             const saveData = await saveRes.json();
             if (saveData.success) {
+              posthog.capture('onboarding_completed', { domain });
               setState('DONE');
               router.push(`/dashboard/site-intelligence/${saveData.siteId}?onboarded=1`);
             } else {

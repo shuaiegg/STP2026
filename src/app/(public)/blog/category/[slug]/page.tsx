@@ -46,7 +46,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {posts.map((post: any) => {
-                    const coverSrc = post.coverImage?.storageUrl || post.coverImage?.originalUrl || 'https://picsum.photos/seed/placeholder/1200/630';
+                    const coverSrc = post.coverImage?.storageUrl || post.coverImage?.originalUrl || '/logo-512.png';
                     return (
                         <Link key={post.id} href={`/blog/${post.slug}`}>
                             <Card className="h-full flex flex-col group">

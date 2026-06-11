@@ -204,6 +204,7 @@ function ProcessStep({ number, title, description, icon }: {
 
 import { Suspense } from 'react';
 import { JsonLd } from '@/components/seo/JsonLd';
+import { HeroCTA, BottomCTA } from './HomePageCTA';
 
 function PostsSkeleton() {
   return (
@@ -246,7 +247,7 @@ async function FeaturedPosts() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
       {contents.map((post: any, index: number) => {
-        const coverSrc = post.coverImage?.storageUrl || post.coverImage?.originalUrl || 'https://picsum.photos/seed/placeholder/1200/630';
+        const coverSrc = post.coverImage?.storageUrl || post.coverImage?.originalUrl || '/logo-512.png';
         return (
           <Link key={post.slug} href={`/blog/${post.slug}`} className="group block h-full">
             <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
@@ -318,21 +319,11 @@ export default async function Home() {
               {COPY.hero.subtitle}
             </p>
 
-            <div className="flex flex-col items-center gap-4 mb-12 animate-slide-in-up stagger-3">
-              <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
-                <Link href="/blog" className="w-full sm:w-auto">
-                  <Button as="span" variant="primary" size="lg" className="w-full">
-                    {COPY.hero.ctaPrimary}
-                  </Button>
-                </Link>
-                <Link href="/tools" className="w-full sm:w-auto">
-                  <Button as="span" variant="outline" size="lg" className="w-full">
-                    {COPY.hero.ctaSecondary}
-                  </Button>
-                </Link>
-              </div>
-              <p className="text-xs text-brand-text-muted mt-2">{COPY.hero.ctaPrimaryMicro}</p>
-            </div>
+            <HeroCTA
+              primary={COPY.hero.ctaPrimary}
+              secondary={COPY.hero.ctaSecondary}
+              microText={COPY.hero.ctaPrimaryMicro}
+            />
           </div>
         </div>
       </section>
@@ -499,18 +490,7 @@ export default async function Home() {
           <p className="text-lg text-white/80 mb-10 leading-relaxed">
             {COPY.cta.subtitle}
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link href="/tools" className="w-full sm:w-auto">
-              <Button as="span" variant="primary" size="lg" className="w-full sm:w-auto text-white">
-                {COPY.cta.primary}
-              </Button>
-            </Link>
-            <Link href="/blog" className="w-full sm:w-auto">
-              <Button as="span" variant="outline" size="lg" className="w-full sm:w-auto text-white border-white/20 hover:bg-white/10 hover:text-white">
-                {COPY.cta.secondary}
-              </Button>
-            </Link>
-          </div>
+          <BottomCTA primary={COPY.cta.primary} secondary={COPY.cta.secondary} />
         </div>
       </section>
     </div>

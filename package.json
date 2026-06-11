@@ -43,6 +43,7 @@
     "openai": "^6.16.0",
     "postcss": "^8.5.6",
     "posthog-js": "^1.341.0",
+    "posthog-node": "^5.36.12",
     "prisma": "^5.22.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",

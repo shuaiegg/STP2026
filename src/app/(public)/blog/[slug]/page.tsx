@@ -8,6 +8,7 @@ import { CTA } from '@/components/CTA';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { JsonLd } from '@/components/seo/JsonLd';
+import { ArticleReadTracker } from './ArticleReadTracker';
 
 interface BlogPostProps {
     params: Promise<{ slug: string }>;
@@ -62,7 +63,7 @@ export default async function BlogPost({ params }: BlogPostProps) {
         });
     };
 
-    const coverSrc = post.coverImage?.storageUrl || post.coverImage?.originalUrl || 'https://picsum.photos/seed/placeholder/1200/630';
+    const coverSrc = post.coverImage?.storageUrl || post.coverImage?.originalUrl || '/logo-512.png';
 
     // JSON-LD Logic
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.scaletotop.com';
@@ -120,6 +121,7 @@ export default async function BlogPost({ params }: BlogPostProps) {
 
     return (
         <article className="relative pb-24">
+            <ArticleReadTracker slug={post.slug} category={post.category?.name} />
             <JsonLd data={blogSchema} />
             <JsonLd data={breadcrumbSchema} />
             {/* Technical Grid Background */}
@@ -344,7 +346,7 @@ export default async function BlogPost({ params }: BlogPostProps) {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {relatedPosts.map((p: any, index: number) => {
-                            const relatedCover = p.coverImage?.storageUrl || p.coverImage?.originalUrl || 'https://picsum.photos/seed/placeholder/1200/630';
+                            const relatedCover = p.coverImage?.storageUrl || p.coverImage?.originalUrl || '/logo-512.png';
                             return (
                                 <Link
                                     key={p.id}

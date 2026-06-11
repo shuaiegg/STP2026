@@ -64,7 +64,7 @@ export default async function BillingPage() {
 
             {/* Product Grid */}
             <Suspense fallback={<div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-64 animate-pulse" />}>
-                <BillingClient />
+                <BillingClient creditsRemaining={user?.credits ?? 0} />
             </Suspense>
 
             {/* Transaction History */}

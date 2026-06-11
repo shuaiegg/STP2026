@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import posthog from 'posthog-js';
 
 const COPY = {
     title: '暂无扫描记录',
@@ -33,6 +34,7 @@ export function EmptyState() {
             });
             const data = await res.json();
             if (data.success && data.site?.id) {
+                posthog.capture('first_site_added', { domain: trimmed });
                 window.location.href = `/dashboard/site-intelligence/instant-audit?siteId=${data.site.id}&rescan=1`;
             } else {
                 setError(data.error || '添加失败，请重试');

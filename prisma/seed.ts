@@ -28,6 +28,23 @@ async function main() {
     })
 
     console.log(`✅ Admin user ${admin.email} is ready.`)
+
+    // Skill configs — upsert so re-running seed is safe
+    const skillConfigs = [
+        { name: 'SITE_AUDIT_BASIC',  displayName: '站点 SEO 体检',     cost: 5,  description: '全站技术 SEO 扫描与可视化星图审计', isActive: true },
+        { name: 'GEO_WRITER_FULL',   displayName: 'StellarWriter 智作',  cost: 15, description: 'AI 驱动的深度内容生成与 SEO 优化', isActive: true },
+        { name: 'GEO_WRITER_AUDIT',  displayName: 'StellarWriter 审计',  cost: 5,  description: 'SERP 分析 + 关键词研究审计报告',   isActive: true },
+    ]
+
+    for (const skill of skillConfigs) {
+        await prisma.skillConfig.upsert({
+            where: { name: skill.name },
+            update: { cost: skill.cost, isActive: skill.isActive, displayName: skill.displayName },
+            create: skill,
+        })
+    }
+
+    console.log(`✅ SkillConfig (${skillConfigs.length} skills) seeded.`)
 }
 
 main()

@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { GscPropertySelector } from './GscPropertySelector';
 import { Ga4PropertySelector } from './Ga4PropertySelector';
+import posthog from 'posthog-js';
 
 interface SiteData {
     id: string;
@@ -151,7 +152,7 @@ export function IntegrationsPanel({ siteId, onUpdate }: { siteId: string, onUpda
                             ) : !gscPropertySelected ? (
                                 <div className="space-y-3">
                                     <p className="text-xs text-brand-primary p-2 bg-brand-primary/10 rounded">授权成功！请在下方指派该站点的具体 Property URL 属性。</p>
-                                    <GscPropertySelector siteId={siteId} onSelected={() => { fetchData(); onUpdate(); }} />
+                                    <GscPropertySelector siteId={siteId} onSelected={() => { posthog.capture('gsc_connected', { siteId }); fetchData(); onUpdate(); }} />
                                 </div>
                             ) : (
                                 <div className="flex flex-col gap-3">
@@ -200,7 +201,7 @@ export function IntegrationsPanel({ siteId, onUpdate }: { siteId: string, onUpda
                             ) : !ga4PropertySelected ? (
                                 <div className="space-y-3">
                                     <p className="text-xs text-orange-600 p-2 bg-orange-50 rounded">授权成功！请在下方指派该站点的具体 GA4 数据流 (Property ID)。</p>
-                                    <Ga4PropertySelector siteId={siteId} onSelected={() => { fetchData(); onUpdate(); }} />
+                                    <Ga4PropertySelector siteId={siteId} onSelected={() => { posthog.capture('ga4_connected', { siteId }); fetchData(); onUpdate(); }} />
                                 </div>
                             ) : (
                                 <div className="flex flex-col gap-3">

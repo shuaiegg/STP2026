@@ -169,10 +169,15 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"https://media.scaletotop.com/media/File.jpg\")",
       "Bash(curl -s \"http://localhost:3000/admin/sync\" -o /dev/null -w \"%{http_code}\")",
       "Bash(curl -s -X POST \"http://localhost:3000/api/sync/all\" -H \"Content-Type: application/json\" -d '{\"force\":true}')",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"https://media.scaletotop.com/media/uploads/2026/6/22355930-9361-400f-9547-ec739178c474.png\")"
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"https://media.scaletotop.com/media/uploads/2026/6/22355930-9361-400f-9547-ec739178c474.png\")",
+      "Bash(mkdir -p /Users/jack/Projects/STP/STP2026/src/lib/analytics)",
+      "Bash(sed -i '' \"s|'https://picsum.photos/seed/[^']*'|'/logo-512.png'|g\" \\\\ *)",
+      "Bash(DATABASE_URL='postgres://stp_user:f4f4f597052d83ca5a95b2a9cf1613471ad7f886@154.12.243.94:54320/scaletotop?connection_limit=5&pool_timeout=20&connect_timeout=20&socket_timeout=30' npx prisma db execute --stdin)"
     ],
     "additionalDirectories": [
-      "/Users/jack/Projects/STP/STP2026/src/app/api/dashboard/sites/[siteId]"
+      "/Users/jack/Projects/STP/STP2026/src/app/api/dashboard/sites/[siteId]",
+      "/Users/jack/Projects/STP/STP2026/src/lib",
+      "/Users/jack/Projects/STP/STP2026/src/app/(public)/blog/[slug]"
     ]
   },
   "enabledPlugins": {

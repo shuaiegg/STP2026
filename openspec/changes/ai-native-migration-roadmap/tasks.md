@@ -52,47 +52,47 @@
 
 ### 1.1 服务端 PostHog 基础
 
-- [ ] 1.1.1 `npm install posthog-node`
-- [ ] 1.1.2 创建 `src/lib/analytics/posthog-server.ts`：初始化 `PostHog` 客户端（lazy init），导出 `captureServerEvent(distinctId, event, properties)` 工具函数
-- [ ] 1.1.3 确认 `NEXT_PUBLIC_POSTHOG_KEY` 在服务端可用（已有）
+- [x] 1.1.1 `npm install posthog-node`
+- [x] 1.1.2 创建 `src/lib/analytics/posthog-server.ts`：初始化 `PostHog` 客户端（lazy init），导出 `captureServerEvent(distinctId, event, properties)` 工具函数
+- [x] 1.1.3 确认 `NEXT_PUBLIC_POSTHOG_KEY` 在服务端可用（已有）
 
 ### 1.2 获客漏斗（公开页，客户端）
 
-- [ ] 1.2.1 `src/app/(public)/page.tsx`：在首页主 CTA 按钮（"免费获取获客诊断报告"）和副 CTA 按钮上添加 `posthog.capture('homepage_cta_clicked', { cta: 'primary' | 'secondary' })`
-- [ ] 1.2.2 `src/app/(public)/pricing/PricingClient.tsx`：
-  - 页面加载时 `posthog.capture('pricing_viewed')`
+- [x] 1.2.1 `src/app/(public)/HomePageCTA.tsx`（新建）：首页主/副 CTA 按钮 `posthog.capture('homepage_cta_clicked', { cta: 'primary' | 'secondary' | 'bottom_primary' | 'bottom_secondary' })`
+- [x] 1.2.2 `src/app/(public)/pricing/PricingClient.tsx`：
+  - 页面加载时 `posthog.capture('pricing_viewed')`（useEffect）
   - 每个套餐的购买按钮点击 `posthog.capture('pricing_plan_selected', { plan, credits, price })`
-- [ ] 1.2.3 `src/app/(public)/blog/[slug]/page.tsx` 或对应客户端组件：文章阅读进度追踪（滚动到 50%/100%）`posthog.capture('blog_article_read', { slug, category, read_pct })`
-- [ ] 1.2.4 `src/app/(public)/tools/page.tsx`：工具页访问 `posthog.capture('tools_page_viewed')`
+- [x] 1.2.3 `src/app/(public)/blog/[slug]/ArticleReadTracker.tsx`（新建）：文章阅读进度追踪（滚动到 50%/95%）`posthog.capture('blog_article_read', { slug, category, read_pct })`
+- [ ] 1.2.4 `src/app/(public)/tools/page.tsx`：工具页访问 `posthog.capture('tools_page_viewed')`（低优先级，可延后）
 
 ### 1.3 注册与激活漏斗（客户端）
 
-- [ ] 1.3.1 `src/app/(public)/register/page.tsx` 或 RegisterForm 组件：
-  - 表单提交时 `posthog.capture('signup_started', { method: 'email' })`
-  - 注册成功回调 `posthog.capture('signup_completed', { method: 'email' })`
-- [ ] 1.3.2 Google OAuth 登录入口：`posthog.capture('signup_started', { method: 'google' })`
-- [ ] 1.3.3 `src/app/(protected)/dashboard/onboarding/OnboardingClient.tsx`：
+- [x] 1.3.1 `src/app/(public)/register/page.tsx`：
+  - 新用户提交姓名时 `posthog.capture('signup_started', { method: 'email' })`
+  - OTP 验证成功且 isNewUser 时 `posthog.capture('signup_completed', { method: 'email' })`
+- [ ] 1.3.2 Google OAuth 登录入口：当前未接入 Google OAuth，跳过
+- [x] 1.3.3 `src/app/(protected)/dashboard/onboarding/OnboardingClient.tsx`：
   - IDLE → ANALYZING 时 `posthog.capture('onboarding_started')`
-  - DONE 状态时 `posthog.capture('onboarding_completed', { domain })`
+  - saveData.success 时 `posthog.capture('onboarding_completed', { domain })`
 
 ### 1.4 核心产品使用（客户端）
 
-- [ ] 1.4.1 `src/app/(protected)/dashboard/site-intelligence/page.tsx`：添加站点成功后 `posthog.capture('first_site_added', { domain })`（仅当 site count 从 0 变 1）
-- [ ] 1.4.2 GSC 连接成功回调：`posthog.capture('gsc_connected', { siteId })`
-- [ ] 1.4.3 GA4 连接成功回调：`posthog.capture('ga4_connected', { siteId })`
-- [ ] 1.4.4 内容计划创建：`posthog.capture('content_plan_created', { siteId })`
-- [ ] 1.4.5 `src/app/(protected)/dashboard/billing/page.tsx`：页面加载 `posthog.capture('billing_page_viewed', { credits_remaining })`
+- [x] 1.4.1 `src/app/(protected)/dashboard/site-intelligence/EmptyState.tsx`：添加站点成功后 `posthog.capture('first_site_added', { domain })`
+- [x] 1.4.2 `IntegrationsPanel.tsx`：GSC 连接成功回调 `posthog.capture('gsc_connected', { siteId })`
+- [x] 1.4.3 `IntegrationsPanel.tsx`：GA4 连接成功回调 `posthog.capture('ga4_connected', { siteId })`
+- [ ] 1.4.4 内容计划创建：`posthog.capture('content_plan_created', { siteId })`（待找到创建入口）
+- [x] 1.4.5 `src/app/(protected)/dashboard/billing/BillingClient.tsx`：页面加载 `posthog.capture('billing_page_viewed', { credits_remaining })`（creditsRemaining 从 page.tsx 传入）
 
 ### 1.5 AI Skills 使用（服务端，posthog-node）
 
-- [ ] 1.5.1 `src/app/api/skills/execute/route.ts`：skill 执行成功后调用 `captureServerEvent(userId, 'skill_executed', { skill_name, credits_cost, duration_ms, success: true })`
-- [ ] 1.5.2 同文件：执行失败时 `captureServerEvent(userId, 'skill_executed', { skill_name, success: false, error_type })`
-- [ ] 1.5.3 credits 扣减后检查余量：若 `< 50` 则 `captureServerEvent(userId, 'credits_low', { remaining })`
+- [x] 1.5.1 `src/app/api/skills/execute/route.ts`：skill 执行成功后 `captureServerEvent(userId, 'skill_executed', { skill_name, credits_cost, duration_ms, success: true })`
+- [x] 1.5.2 同文件：执行失败时 `captureServerEvent(userId, 'skill_executed', { skill_name, success: false, error_type })`
+- [x] 1.5.3 credits 扣减后：若余量 `< 50` 则 `captureServerEvent(userId, 'credits_low', { remaining })`
 
 ### 1.6 付费事件（服务端）
 
-- [ ] 1.6.1 `src/app/api/webhooks/creem/route.ts`：`checkout.completed` 处理成功后，`captureServerEvent(userId, 'purchase_completed', { product_id, credits_added, amount_usd })`
-- [ ] 1.6.2 Library 保存文章：`posthog.capture('article_saved_to_library', { word_count, skill_used })`
+- [x] 1.6.1 `src/app/api/webhooks/creem/route.ts`：`checkout.completed` 成功后 `captureServerEvent(userId, 'purchase_completed', { product_id, credits_added, amount_usd })`
+- [ ] 1.6.2 Library 保存文章：`posthog.capture('article_saved_to_library', { word_count, skill_used })`（待实现）
 
 ### 1.7 验证
 

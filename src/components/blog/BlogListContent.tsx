@@ -124,7 +124,7 @@ export default function BlogListContent({ initialPosts, categories }: BlogListCo
                         <article className="grid md:grid-cols-2 gap-0 rounded-xl border border-brand-border overflow-hidden hover:shadow-md transition-shadow bg-white">
                             <div className="relative aspect-[16/10] bg-brand-surface-alt">
                                 <Image
-                                    src={featuredPost.coverImage?.storageUrl || featuredPost.coverImage?.originalUrl || 'https://picsum.photos/seed/featured/1200/630'}
+                                    src={featuredPost.coverImage?.storageUrl || featuredPost.coverImage?.originalUrl || '/logo-512.png'}
                                     alt={featuredPost.title}
                                     fill
                                     className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -172,7 +172,7 @@ export default function BlogListContent({ initialPosts, categories }: BlogListCo
                 {restPosts.length > 0 && (
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {restPosts.map((post) => {
-                            const coverSrc = post.coverImage?.storageUrl || post.coverImage?.originalUrl || `https://picsum.photos/seed/${post.id}/800/450`;
+                            const coverSrc = post.coverImage?.storageUrl || post.coverImage?.originalUrl || '/logo-512.png';
                             return (
                                 <Link key={post.id} href={`/blog/${post.slug}`} className="group block">
                                     <article className="rounded-lg border border-brand-border bg-white overflow-hidden hover:shadow-md transition-shadow h-full flex flex-col">
