@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-ScaletoTop is a Next.js 16 (App Router) full-stack CMS platform that uses Notion as a content source. It syncs content from Notion, automatically processes images to Supabase Storage, and publishes to a public blog/marketing site with an admin backend.
+ScaletoTop is a Next.js 16 (App Router) full-stack CMS platform that uses Notion as a content source. It syncs content from Notion, automatically processes images to MinIO Storage, and publishes to a public blog/marketing site with an admin backend. It also includes a consultation lead-capture system, AI model management, and email/marketing automation.
 
-**Tech Stack**: Next.js 16, React 19, Prisma ORM, PostgreSQL (Supabase), Notion API, better-auth, TailwindCSS
+**Tech Stack**: Next.js 16, React 19, Prisma ORM, PostgreSQL (self-hosted on VPS at `154.12.243.94:54320`), MinIO (self-hosted S3-compatible storage), Notion API, better-auth, TailwindCSS, Resend (email), systeme.io (marketing automation), PostHog (analytics)
 
 ## Development Commands
 
@@ -89,7 +89,7 @@ Before executing any of the following, **stop and explicitly ask the user for co
 
 ### Files & Storage
 - `rm -rf` on any directory
-- Bulk deletion of files from Supabase `media` bucket
+- Bulk deletion of files from MinIO `media` bucket
 - Overwriting `.env`, `.env.local`, or any environment config file
 
 ### Deployment
@@ -108,6 +108,7 @@ The app uses Next.js App Router with route groups:
   - `/` - Homepage; `/blog`, `/blog/[slug]`, `/blog/category/[slug]` - Blog
   - `/login`, `/register`, `/forgot-password`, `/reset-password` - User auth
   - `/pricing`, `/tools`, `/tools/geo-writer` - Marketing pages
+  - `/consultation` - Public consultation lead-capture form (3-step, service-specific)
   - `/preview/[token]` - Preview unpublished content via token
 
 - **`(protected)/dashboard/`** - Authenticated user routes
@@ -120,6 +121,9 @@ The app uses Next.js App Router with route groups:
 - **`admin/`** - CMS admin routes (ADMIN/EDITOR role required)
   - `/admin` - Dashboard; `/admin/content` - Content management; `/admin/sync` - Notion sync
   - `/admin/login` - Login; `/admin/setup` - First-run setup (unprotected); `/admin/users`, `/admin/skills`
+  - `/admin/models` - AI Model Management (provider status, API keys, context assignments)
+  - `/admin/integrations` - Integration config (Resend, systeme.io, PostHog, API keys)
+  - `/admin/consultations` - Consultation request management (view, status, notes)
 
 - **`api/`** - API routes
   - `api/auth/[...all]` - better-auth handlers
@@ -140,7 +144,7 @@ Uses **better-auth** with session cookies and Google OAuth:
 
 ### Notion Sync Architecture
 
-**Critical Flow**: Notion Database → Sync Engine → PostgreSQL + Supabase Storage → Public Site
+**Critical Flow**: Notion Database → Sync Engine → PostgreSQL + MinIO Storage → Public Site
 
 **Key Files**:
 - `src/lib/notion/sync.ts` - Core sync logic
@@ -152,8 +156,8 @@ Uses **better-auth** with session cookies and Google OAuth:
    - Extract properties: Title, Slug, Summary, Category, Cover, ReadingTime
    - Convert Notion blocks to Markdown using `notion-to-md`
    - Download ALL images from Notion URLs
-   - Upload images to Supabase Storage (`media` bucket)
-   - Replace image URLs in markdown with Supabase URLs
+   - Upload images to MinIO (`media` bucket)
+   - Replace image URLs in markdown with MinIO public URLs
    - Calculate reading time (300 chars/min for CJK, 200 words/min for English)
    - Upsert to `Content` table
 3. Log sync operation to `SyncLog` table
@@ -162,7 +166,7 @@ Uses **better-auth** with session cookies and Google OAuth:
 **Incremental Sync**: Compares `notionLastEditedAt` timestamps to skip unchanged pages (unless `force: true`)
 
 **Image Processing**:
-- All images (cover + inline) downloaded from Notion and uploaded to Supabase
+- All images (cover + inline) downloaded from Notion and uploaded to MinIO
 - Stored in `Media` table with `notionBlockId` for deduplication
 - Custom transformer in `notion-to-md` ensures images are captured
 
@@ -172,12 +176,43 @@ Uses **better-auth** with session cookies and Google OAuth:
 
 - `base-skill.ts` - Abstract base class; all skills extend `BaseSkill`
 - `skill-registry.ts` - Singleton registry; use `getSkillRegistry()` to look up skills
-- `providers/` - Multi-provider: `claude-provider.ts`, `gemini-provider.ts`, `deepseek-provider.ts`
+- `providers/` - Multi-provider: `claude-provider.ts`, `gemini-provider.ts`, `deepseek-provider.ts`, `vps-provider.ts` (CLIProxy)
 - Skills are executed via `api/skills/execute` and logged to `SkillExecution` table
 - Each execution deducts credits from `User.credits` and records a `CreditTransaction`
 - Admin can configure skills via `SkillConfig` table (cost, active status)
 
 **Server Actions**: `src/app/actions/skills.ts` — execute skills server-side
+
+### AI Model Management
+
+**Architecture**: `src/lib/skills/model-resolver.ts` + `prisma: ModelConfig` + `/admin/models`
+
+**Model resolution priority chain** (4 levels):
+1. `ModelConfig[context]` — per-context DB config (e.g., `consultation`, `embedding`)
+2. `ModelConfig['skill_default']` — global DB default
+3. `DEFAULT_AI_PROVIDER` env var
+4. Hardcoded fallback: `vps`
+
+**Key functions** (exported from `src/lib/skills/index.ts`):
+- `resolveModelForContext(context)` — returns `{ provider, modelId }`
+- `resolveSkillModel(skillId)` — per-skill override, falls back to `skill_default`
+- `resolveEmbeddingProvider()` — returns `GeminiEmbeddingProvider` + modelId from `ModelConfig['embedding']`
+
+**Provider API Key storage**:
+- Keys stored encrypted (AES-256-GCM via `BETTER_AUTH_SECRET`) in `IntegrationConfig` table as `PROVIDER_KEY_{provider}`
+- `getProviderApiKey(provider)` in `src/lib/integrations/config.ts` — DB first, env var fallback
+- Providers: `claude` → `ANTHROPIC_API_KEY`, `gemini` → `GOOGLE_API_KEY`, `deepseek` → `DEEPSEEK_API_KEY`
+- `VPS_PROXY_KEY` is NEVER stored in DB — env var only (security constraint)
+
+**Gemini Embedding**: `src/lib/skills/providers/gemini-embedding-provider.ts`
+- `embedText(text, modelId?)` → `Promise<number[]>` (768-dim, `text-embedding-004`)
+- `embedBatch(texts, modelId?)` → `Promise<number[][]>`
+- Uses `getProviderApiKey('gemini')` — no hardcoded env var reads
+
+**CLIProxy (VPS Provider)**:
+- OpenAI-compatible API, 29 chat/generation models, zero embedding models
+- Config: `VPS_PROXY_URL` + `VPS_PROXY_KEY` (env only)
+- Admin can fetch model list via `/admin/models` → VPS model list panel
 
 ### Site Intelligence System
 
@@ -227,17 +262,38 @@ Uses **better-auth** with session cookies and Google OAuth:
 - GEO citation tracking: stores optimized content and verifies AI citation status
 - Cron job checks citation status and updates `citationSource`
 
+**ModelConfig**:
+- Admin-managed per-context model assignments (context is unique key)
+- Contexts in use: `skill_default`, `consultation`, `embedding`
+- Fields: `context`, `provider`, `modelId`, `label`, `updatedBy`
+
+**IntegrationConfig**:
+- Key-value store for integration settings (Resend, systeme.io, provider API keys)
+- Sensitive values (API keys) stored AES-256-GCM encrypted, decrypted at read time
+- Key naming: `SYSTEME_IO_API_KEY`, `PROVIDER_KEY_claude`, `PROVIDER_KEY_gemini`, `SYSTEME_TAG_ON_*`
+- `getIntegrationValue(key)` / `setIntegrationValue(key, value)` in `src/lib/integrations/config.ts`
+
+**ConsultationRequest**:
+- Public lead-capture form submissions (3 service types: `ai`, `crawler`, `growth`)
+- `description` stores the primary text field per type; `details Json` stores all service-specific fields
+- Growth type: `details.competitors` (required), `details.adPlatforms[]`, `details.adStatus`
+- Status lifecycle: `PENDING` → `REVIEWED` → `CONTACTED`
+- On submit: saves to DB + sends admin notification email + sends user confirmation + adds systeme.io contact
+
 ## Important Environment Variables
 
 ```bash
-# Database (Supabase PostgreSQL)
-DATABASE_URL=              # Connection pool URL (for runtime)
+# Database (self-hosted PostgreSQL on VPS)
+DATABASE_URL=              # Connection pool URL (for runtime) — points to 154.12.243.94:54320
 DATABASE_URL_DIRECT=       # Direct connection (for Prisma migrations)
+# NOTE: Prisma CLI only reads .env (not .env.local). For migrations, ensure DATABASE_URL_DIRECT is set in .env
 
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=         # Public Supabase URL
-NEXT_PUBLIC_SUPABASE_ANON_KEY=    # Public anon key
-SUPABASE_SERVICE_ROLE_KEY=        # Admin key (for image uploads, server-side only)
+# MinIO (self-hosted S3-compatible image storage)
+MINIO_ENDPOINT=            # e.g., http://minio:9000 (internal) or https://media.scaletotop.com
+MINIO_ACCESS_KEY=          # MinIO access key (not root)
+MINIO_SECRET_KEY=          # MinIO secret key
+MINIO_BUCKET=              # Bucket name: media
+MINIO_PUBLIC_URL=          # Public base URL: https://media.scaletotop.com
 
 # Notion
 NOTION_API_KEY=           # Notion integration token
@@ -266,6 +322,19 @@ NEXT_PUBLIC_APP_URL=      # Base URL (e.g., https://scaletotop.com)
 NEXT_PUBLIC_GTM_ID=               # Google Tag Manager container ID (production only)
 NEXT_PUBLIC_POSTHOG_KEY=          # PostHog project API key
 NEXT_PUBLIC_POSTHOG_HOST=         # PostHog host (e.g., https://app.posthog.com)
+
+# Email (Resend)
+RESEND_API_KEY=            # Resend API key
+EMAIL_FROM=                # Sender address (e.g., ScaletoTop <noreply@mail.scaletotop.com>)
+EMAIL_REPLY_TO=            # Reply-to address (e.g., jack@scaletotop.com)
+ADMIN_NOTIFICATION_EMAIL=  # Where consultation notifications go (default: jack@scaletotop.com)
+
+# Marketing Automation (systeme.io)
+SYSTEME_IO_API_KEY=        # systeme.io API key (also storable in IntegrationConfig DB table)
+
+# AI Providers (also storable encrypted in IntegrationConfig)
+VPS_PROXY_URL=             # CLIProxy base URL
+VPS_PROXY_KEY=             # CLIProxy auth key — NEVER store in DB, env only
 ```
 
 ## Notion Database Requirements
@@ -293,6 +362,7 @@ All data mutations use Next.js Server Actions (`'use server'`):
 - `src/app/actions/user.ts` - User profile and credit management
 - `src/app/actions/tracked-articles.ts` - GEO citation article tracking
 - `src/app/actions/update-article.ts`, `delete-article.ts` - Library article management
+- `src/app/actions/consultation.ts` - Public consultation form submission (DB + email + systeme.io)
 
 ### Webhooks
 
@@ -341,7 +411,7 @@ await syncAllContent({ force: true });
 
 ### Handling Image Storage
 
-Images are automatically handled during sync. For manual uploads:
+Images are stored in self-hosted **MinIO** (S3-compatible). Images are automatically handled during Notion sync. For manual uploads:
 
 ```typescript
 import { uploadImageFromUrl } from '@/lib/storage';
@@ -352,10 +422,48 @@ const result = await uploadImageFromUrl(imageUrl, {
 // Returns: { mediaId, storageUrl, storagePath }
 ```
 
-**Storage bucket requirements**:
-- Name: `media`
-- Public access enabled
-- Upload policy allows Service Role Key
+**Storage config** (`src/lib/storage.ts` uses `@aws-sdk/client-s3` with `forcePathStyle: true`):
+- Bucket: `media` (public read)
+- Internal endpoint: `MINIO_ENDPOINT` (e.g. `http://minio:9000`)
+- Public URL base: `MINIO_PUBLIC_URL` (e.g. `https://media.scaletotop.com`)
+- Note: `media.scaletotop.com` → MinIO S3 port 9000 via Coolify reverse proxy (see technical-backlog.md if 504)
+
+### Email & Marketing Automation
+
+**Email** (`src/lib/email.ts` + `src/lib/email/templates/`):
+- Provider: Resend (`RESEND_API_KEY`)
+- Templates: `welcome`, `credits-warning`, `purchase-success`, `audit-complete`, `consultation-notification`, `consultation-confirmation`
+- All templates are HTML functions, not framework components
+
+**systeme.io** (`src/lib/email/systeme.ts`):
+- `addContact(email, name, tags[])` — creates contact then applies tags separately (do NOT pass tags in POST body)
+- **Known gotcha**: existing contacts return **422** (not 409) — both are handled as "contact exists, apply tags"
+- Tags must exist in systeme.io before use — API does not auto-create tags
+- Tag name→ID resolution happens via `getTags()` + `applyTagsToExistingContact()`
+- API key: DB (`IntegrationConfig['SYSTEME_IO_API_KEY']`) → env fallback
+
+**Trigger keys** (`src/lib/integrations/systeme-triggers.ts`):
+- `SYSTEME_TAG_ON_REGISTER`, `SYSTEME_TAG_ON_ONBOARDING`, `SYSTEME_TAG_ON_PURCHASE`, `SYSTEME_TAG_ON_CREDITS_LOW`, `SYSTEME_TAG_ON_CONSULTATION`
+- Each key maps to a tag name stored in `IntegrationConfig` — configured via `/admin/integrations`
+
+### Consultation System
+
+**Public form**: `src/app/(public)/consultation/` (3-step: service type → details → contact)
+
+**3 service types with different Step 2 fields**:
+- `ai` — scenario (→ description), tools, painPoints, deliveryType
+- `crawler` — dataSources (→ description), dataUse, frequency, deliveryFormat, dataVolume
+- `growth` — competitors (→ description, required), website, targetMarket, currentTraffic, mainGoal, adPlatforms[], adStatus
+
+**On submission** (`src/app/actions/consultation.ts`):
+1. Save `ConsultationRequest` to DB (description = main text, details = JSON blob)
+2. Send admin notification to `ADMIN_NOTIFICATION_EMAIL`
+3. Send user confirmation email
+4. `addContact()` to systeme.io with `SYSTEME_TAG_ON_CONSULTATION` tag
+
+**PostHog events**: `consultation_service_selected`, `consultation_step2_completed`, `consultation_submitted`
+
+**Admin management**: `/admin/consultations` — expandable cards, status change (PENDING/REVIEWED/CONTACTED), admin notes
 
 ### Working with Categories
 
@@ -392,17 +500,16 @@ Categories are pre-defined and managed separately from Notion:
 - Uses connection pooling URL (`DATABASE_URL`) for runtime
 - Direct URL (`DATABASE_URL_DIRECT`) required for migrations
 
-### Supabase Setup
+### Infrastructure (Self-hosted on VPS via Coolify)
 
-1. Create PostgreSQL database
-2. Create public storage bucket named `media`
-3. Configure RLS policies or disable for development
-4. Copy connection URLs to environment variables
+- **PostgreSQL**: `154.12.243.94:54320`, managed by Coolify
+- **MinIO**: S3-compatible object storage, public bucket `media`, exposed via `https://media.scaletotop.com`
+- Both services run in Docker containers on the same host
 
 ### Post-Deployment
 
 1. Run initial sync: Visit `/admin/sync` and trigger "Sync All"
-2. Verify images are uploaded to Supabase Storage
+2. Verify images are uploaded to MinIO (`media` bucket)
 3. Check blog pages are accessible at `/blog`
 
 ## SEO Infrastructure
@@ -466,8 +573,9 @@ openspec/
 - Check property name is exactly "Slug" (case-sensitive)
 
 **Images not syncing**:
-- Verify `SUPABASE_SERVICE_ROLE_KEY` is set
-- Check `media` bucket exists and is public
+- Verify `MINIO_ENDPOINT`, `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY`, `MINIO_BUCKET` are set
+- Check MinIO `media` bucket exists with public read policy
+- If `media.scaletotop.com` returns 504, the Coolify reverse proxy for MinIO port 9000 needs fixing (see `openspec/technical-backlog.md`)
 - Look for errors in sync logs (`SyncLog` table)
 
 **Categories not matching**:
