@@ -16,21 +16,21 @@
 
 ### 1.2 文案抽取（中文为基准，英文独立撰写）
 
-- [ ] 1.2.1 已有 `const COPY` 的 4 个文件（首页/about/consultation×2）迁移到 messages
-- [ ] 1.2.2 其余 `(public)` 页面 inline 文案全部抽取：blog 列表/详情框架、pricing、tools、login/register/forgot/reset、contact、case-studies、legal（privacy/terms/refund）、导航/页脚
-- [ ] 1.2.3 英文文案初版撰写（直接可发布的质量，禁机翻腔；首页/定价的深度重写留给 `homepage-plg-repositioning`，此处先可用版本）
-- [ ] 1.2.4 zod 校验错误信息、toast 文案、表单占位符按 locale 处理
+- [x] 1.2.1 已有 `const COPY` 的 4 个文件（首页/about/consultation×2）迁移到 messages
+- [x] 1.2.2 其余 `(public)` 页面 inline 文案全部抽取：blog 列表/详情框架、pricing、tools、login/register/forgot/reset、contact、case-studies、legal（privacy/terms/refund）、导航/页脚
+- [x] 1.2.3 英文文案初版撰写（直接可发布的质量，禁机翻腔；首页/定价的深度重写留给 `homepage-plg-repositioning`，此处先可用版本）
+- [x] 1.2.4 zod 校验错误信息、toast 文案、表单占位符按 locale 处理
 
 ### 1.3 语言切换与建议横幅
 
-- [ ] 1.3.1 导航语言切换器（en ⇄ zh，目标语言无对应页面时跳目标语言首页）
-- [ ] 1.3.2 `LanguageSuggestionBanner`：Accept-Language ≠ 当前 locale 且无 `NEXT_LOCALE` cookie 时展示；切换/关闭均写 cookie；**绝不自动跳转**
-- [ ] 1.3.3 页面级可见性 `src/lib/i18n/page-availability.ts`：未支持语言 `notFound()`，导航/页脚按 locale 过滤
+- [x] 1.3.1 导航语言切换器（en ⇄ zh，目标语言无对应页面时跳目标语言首页）
+- [x] 1.3.2 `LanguageSuggestionBanner`：Accept-Language ≠ 当前 locale 且无 `NEXT_LOCALE` cookie 时展示；切换/关闭均写 cookie；**绝不自动跳转**
+- [x] 1.3.3 页面级可见性 `src/lib/i18n/page-availability.ts`：未支持语言 `notFound()`，导航/页脚按 locale 过滤
 
 ### 1.4 301 重定向
 
-- [ ] 1.4.1 `next.config.js` redirects：存量中文路径 → `/zh/` 对应路径（`/blog/:slug*`、`/pricing`、`/consultation` 等全部 `(public)` 路由）
-- [ ] 1.4.2 验证旧 URL 全部 301 落到 `/zh/`，无重定向链
+- [x] 1.4.1 `next.config.js` redirects：存量中文路径 → `/zh/` 对应路径（`/blog/:slug*`、`/pricing`、`/consultation` 等全部 `(public)` 路由）
+- [x] 1.4.2 验证旧 URL 全部 301 落到 `/zh/`，无重定向链
 
 ---
 

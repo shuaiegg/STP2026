@@ -2,9 +2,12 @@ import React from 'react';
 import { Metadata } from 'next';
 import { Construction, ArrowLeft } from 'lucide-react';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { notFound } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Link } from '@/i18n/navigation';
 import { localeCanonical } from '@/lib/seo/locale-metadata';
+import { isPageAvailable } from '@/lib/i18n/page-availability';
+import type { Locale } from '@/i18n/routing';
 
 export async function generateMetadata({
     params,
@@ -26,6 +29,7 @@ export default async function ComingSoon({
     params: Promise<{ locale: string }>;
 }) {
     const { locale } = await params;
+    if (!isPageAvailable('/case-studies', locale as Locale)) notFound();
     setRequestLocale(locale);
     const t = await getTranslations('caseStudies');
 

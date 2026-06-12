@@ -130,6 +130,7 @@ const Header: React.FC = () => {
                     </nav>
                 </div>
                 <div className="flex items-center gap-4">
+                    <LocaleSwitcher className="hidden sm:inline-flex text-sm text-brand-text-muted hover:text-brand-primary transition-colors font-medium" />
                     {session ? (
                         <NextLink href="/dashboard">
                             <Button as="span" variant="ghost" size="sm" className="text-xs uppercase tracking-widest font-bold">{tCommon('dashboard')}</Button>

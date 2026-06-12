@@ -69,6 +69,13 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      // /en/* → /* (英文是根路径，/en 前缀不应存在)
+      { source: '/en', destination: '/', permanent: true },
+      { source: '/en/:path*', destination: '/:path*', permanent: true },
+    ];
+  },
 };
 
 export default withNextIntl(nextConfig);
