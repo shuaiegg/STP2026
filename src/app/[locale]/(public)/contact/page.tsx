@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 import { Mail, MessageCircle, Clock } from 'lucide-react';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Card } from '@/components/ui/Card';
-import { localeCanonical } from '@/lib/seo/locale-metadata';
+import { getMetadataAlternates, localeCanonical, BASE_URL } from '@/lib/seo/locale-metadata';
 
 export async function generateMetadata({
     params,
@@ -15,7 +15,21 @@ export async function generateMetadata({
     return {
         title: t('title'),
         description: t('description'),
-        alternates: { canonical: localeCanonical(locale, '/contact') },
+        alternates: {
+            canonical: localeCanonical(locale, '/contact'),
+            languages: getMetadataAlternates('/contact'),
+        },
+        openGraph: {
+            locale: locale === 'zh' ? 'zh_CN' : 'en_US',
+            images: [
+                {
+                    url: locale === 'zh' ? '/api/og?locale=zh' : '/api/og?locale=en',
+                    width: 1200,
+                    height: 630,
+                    alt: 'ScaletoTop Contact',
+                },
+            ],
+        },
     };
 }
 

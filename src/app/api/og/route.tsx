@@ -2,15 +2,15 @@ import { ImageResponse } from 'next/og';
 
 export const runtime = 'edge';
 
-const TAGLINE = '帮中国出海企业建立可预测的海外获客系统';
+const TAGLINE_ZH = '帮中国出海企业建立可预测的海外获客系统';
+const TAGLINE_EN = 'Build a predictable, low-cost overseas lead engine';
 
-async function loadNotoSansSC(): Promise<ArrayBuffer> {
-  // Fetch only the characters used in the tagline to minimize payload size
+async function loadNotoSansSC(tagline: string): Promise<ArrayBuffer> {
+  const chars = tagline + 'ScaletoTopscaletotop.com';
   const css = await fetch(
-    `https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@700&text=${encodeURIComponent(TAGLINE)}`,
+    `https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@700&text=${encodeURIComponent(chars)}`,
     {
       headers: {
-        // Desktop User-Agent required to receive woff2 format instead of woff
         'User-Agent':
           'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       },
@@ -23,8 +23,12 @@ async function loadNotoSansSC(): Promise<ArrayBuffer> {
   return fetch(fontUrl).then((r) => r.arrayBuffer());
 }
 
-export async function GET() {
-  const fontData = await loadNotoSansSC();
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const locale = searchParams.get('locale') || 'zh';
+  const tagline = locale === 'zh' ? TAGLINE_ZH : TAGLINE_EN;
+
+  const fontData = await loadNotoSansSC(tagline);
 
   return new ImageResponse(
     (
@@ -78,7 +82,7 @@ export async function GET() {
             maxWidth: '900px',
           }}
         >
-          {TAGLINE}
+          {tagline}
         </div>
 
         {/* Watermark */}

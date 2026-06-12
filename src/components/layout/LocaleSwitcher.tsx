@@ -3,6 +3,7 @@
 import { useLocale } from 'next-intl';
 import { Link, usePathname } from '@/i18n/navigation';
 import { LOCALE_COOKIE, type Locale } from '@/i18n/routing';
+import { isPageAvailable } from '@/lib/i18n/page-availability';
 
 const LOCALE_LABELS: Record<Locale, string> = {
     en: 'English',
@@ -18,10 +19,12 @@ export const LocaleSwitcher: React.FC<{ className?: string }> = ({ className }) 
     const locale = useLocale() as Locale;
     const pathname = usePathname();
     const target: Locale = locale === 'zh' ? 'en' : 'zh';
+    // 目标语言无对应版本时跳目标语言首页（不切到 404）
+    const targetHref = isPageAvailable(pathname, target) ? pathname : '/';
 
     return (
         <Link
-            href={pathname}
+            href={targetHref}
             locale={target}
             onClick={() => rememberLocale(target)}
             className={className ?? 'hover:text-brand-primary transition-colors'}

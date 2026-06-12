@@ -33,6 +33,12 @@ export default async function EditArticlePage({ params }: { params: Promise<{ id
         notFound();
     }
 
+    const otherArticles = await prisma.content.findMany({
+        where: { id: { not: id } },
+        select: { id: true, title: true, locale: true, slug: true, translationGroupId: true },
+        orderBy: { updatedAt: 'desc' }
+    });
+
     return (
         <div className="max-w-4xl mx-auto space-y-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -66,7 +72,7 @@ export default async function EditArticlePage({ params }: { params: Promise<{ id
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2">
-                    <EditForm article={article as any} />
+                    <EditForm article={article as any} otherArticles={otherArticles as any} />
                 </div>
 
                 <div className="space-y-6">

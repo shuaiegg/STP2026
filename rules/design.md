@@ -151,7 +151,7 @@ Vercel's Web Interface Guidelines. Fix all reported issues before marking the ta
 
 **Product positioning**: ScaletoTop serves any team that needs efficient, trackable SEO and SEM tooling — from beginners to experts, across markets. Phase 1 homepage copy targets Chinese overseas businesses as the current ICP beachhead; design language and components are globally neutral.
 
-**Pronoun register**: Always use **"你"** (informal) in Chinese copy — never "您". The brand is peer-to-peer, not deferential. (Resolved OQ3: Confirmed "你" register for all public pages).
+**Pronoun register**: Always use **"您"** (respectful) in Chinese copy — never "你". The audience is B2B decision-makers; the respectful register fits the 专业·可信 brand and high-trust touchpoints (consultation, email, billing). (Revised 2026-06-13: switched from "你" to "您" per brand decision.)
 
 | Dimension | Do | Don't |
 |-----------|-----|-------|

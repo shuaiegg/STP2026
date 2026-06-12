@@ -55,10 +55,26 @@
     },
     "metrics": {
       "stats": [
-        { "value": 500, "suffix": "+", "label": "Leads generated" },
-        { "value": 50, "suffix": "+", "label": "Companies served" },
-        { "value": 30, "suffix": "+", "label": "Countries covered" },
-        { "value": 3, "suffix": "x", "label": "Avg. ROI uplift" }
+        {
+          "value": 500,
+          "suffix": "+",
+          "label": "Leads generated"
+        },
+        {
+          "value": 50,
+          "suffix": "+",
+          "label": "Companies served"
+        },
+        {
+          "value": 30,
+          "suffix": "+",
+          "label": "Countries covered"
+        },
+        {
+          "value": 3,
+          "suffix": "x",
+          "label": "Avg. ROI uplift"
+        }
       ]
     },
     "clients": {
@@ -71,9 +87,21 @@
       "description": "We don't just run ads — we build a repeatable, sustainable acquisition system around your business",
       "stepLabel": "Step",
       "steps": [
-        { "num": "01", "title": "Growth audit", "desc": "We analyze your product, market, and current channels to find the acquisition mix that fits you" },
-        { "num": "02", "title": "Custom strategy", "desc": "Based on the audit, we design a combined ads + content + tooling strategy with a concrete execution plan" },
-        { "num": "03", "title": "Execute & optimize", "desc": "We run the plan, track the data, and keep optimizing for conversion" }
+        {
+          "num": "01",
+          "title": "Growth audit",
+          "desc": "We analyze your product, market, and current channels to find the acquisition mix that fits you"
+        },
+        {
+          "num": "02",
+          "title": "Custom strategy",
+          "desc": "Based on the audit, we design a combined ads + content + tooling strategy with a concrete execution plan"
+        },
+        {
+          "num": "03",
+          "title": "Execute & optimize",
+          "desc": "We run the plan, track the data, and keep optimizing for conversion"
+        }
       ]
     },
     "methods": {
@@ -86,21 +114,33 @@
           "num": "01",
           "title": "Precision paid ads",
           "desc": "Google Ads + Meta Ads that reach your target customers abroad — from audience targeting to conversion tracking",
-          "tags": ["Google Ads", "Meta", "LinkedIn"],
+          "tags": [
+            "Google Ads",
+            "Meta",
+            "LinkedIn"
+          ],
           "label": "Instant pipeline"
         },
         {
           "num": "02",
           "title": "SEO content engine",
           "desc": "A repeatable content production pipeline — from keyword research to on-page optimization — that turns content into a compounding acquisition asset",
-          "tags": ["SEO", "Blog", "Video"],
+          "tags": [
+            "SEO",
+            "Blog",
+            "Video"
+          ],
           "label": "Long-term compounding"
         },
         {
           "num": "03",
           "title": "Automation tools",
           "desc": "Productized tooling that turns repetitive manual work into scalable processes, so small teams can acquire customers at scale",
-          "tags": ["Automation", "CRM", "Email"],
+          "tags": [
+            "Automation",
+            "CRM",
+            "Email"
+          ],
           "label": "Scale multiplier"
         }
       ]
@@ -176,7 +216,9 @@
     "categoryCtaButton": "Get it free",
     "previewBanner": "Preview mode — this content is not published yet (TOKEN: {token})",
     "previewSuffix": "(preview)",
-    "previewRendering": "Rendering content..."
+    "previewRendering": "Rendering content...",
+    "notPublishedLabel": "Unpublished",
+    "newsletterPlaceholder": "Enter your email"
   },
   "pricing": {
     "meta": {
@@ -206,9 +248,21 @@
     "costRefTitle": "Credit cost reference",
     "costRefSubtitle": "Transparent pricing — every feature is open to every credit holder",
     "costRefs": [
-      { "name": "StellarWriter", "cost": "15 credits / article", "desc": "AI-driven long-form content generation with SEO optimization" },
-      { "name": "Site SEO audit", "cost": "5 credits / run", "desc": "Full-site technical SEO scan with visual constellation report" },
-      { "name": "Keyword research", "cost": "Usage-based", "desc": "Coming soon: deep niche keyword analysis" }
+      {
+        "name": "StellarWriter",
+        "cost": "15 credits / article",
+        "desc": "AI-driven long-form content generation with SEO optimization"
+      },
+      {
+        "name": "Site SEO audit",
+        "cost": "5 credits / run",
+        "desc": "Full-site technical SEO scan with visual constellation report"
+      },
+      {
+        "name": "Keyword research",
+        "cost": "Usage-based",
+        "desc": "Coming soon: deep niche keyword analysis"
+      }
     ],
     "costNote": "Note: StellarWriter consumption depends on content length and complexity; 15 credits is the average per generation.",
     "paymentTitle": "Alipay and all major payment methods",
@@ -272,17 +326,48 @@
       "successCta": "Try GEO Writer for free →",
       "selectPlaceholder": "— Select —",
       "services": [
-        { "label": "AI & automation", "desc": "Workflow automation, AI agents, intelligent chatbots" },
-        { "label": "Data crawling", "desc": "Price monitoring, competitor analysis, lead collection, market data" },
-        { "label": "Growth program", "desc": "Web build-out, SEO, Google / Meta / TikTok ads" }
+        {
+          "label": "AI & automation",
+          "desc": "Workflow automation, AI agents, intelligent chatbots"
+        },
+        {
+          "label": "Data crawling",
+          "desc": "Price monitoring, competitor analysis, lead collection, market data"
+        },
+        {
+          "label": "Growth program",
+          "desc": "Web build-out, SEO, Google / Meta / TikTok ads"
+        }
       ],
-      "budgets": ["< ¥5,000 / month", "¥5,000 – ¥20,000 / month", "¥20,000 – ¥50,000 / month", "> ¥50,000 / month", "Project-based (one-off)"],
+      "budgets": [
+        "< ¥5,000 / month",
+        "¥5,000 – ¥20,000 / month",
+        "¥20,000 – ¥50,000 / month",
+        "> ¥50,000 / month",
+        "Project-based (one-off)"
+      ],
       "budgetLabel": "Budget range",
-      "adPlatforms": ["Google Ads", "Meta Ads (Facebook / Instagram)", "TikTok Ads", "LinkedIn Ads", "Xiaohongshu", "Other"],
+      "adPlatforms": [
+        "Google Ads",
+        "Meta Ads (Facebook / Instagram)",
+        "TikTok Ads",
+        "LinkedIn Ads",
+        "Xiaohongshu",
+        "Other"
+      ],
       "titles": {
-        "ai": { "title": "Tell us what you want to automate", "sub": "The more specific you are, the sharper our proposal" },
-        "crawler": { "title": "What data do you need?", "sub": "The more specific you are, the sharper our proposal" },
-        "growth": { "title": "Your site and your competitors", "sub": "Competitor info helps us understand your market fast" }
+        "ai": {
+          "title": "Tell us what you want to automate",
+          "sub": "The more specific you are, the sharper our proposal"
+        },
+        "crawler": {
+          "title": "What data do you need?",
+          "sub": "The more specific you are, the sharper our proposal"
+        },
+        "growth": {
+          "title": "Your site and your competitors",
+          "sub": "Competitor info helps us understand your market fast"
+        }
       },
       "ai": {
         "scenarioLabel": "Business scenario to automate / AI-enable",
@@ -292,19 +377,46 @@
         "painLabel": "Main pain points",
         "painPh": "High labor cost, error-prone, slow response, scattered data…",
         "deliveryLabel": "Preferred deliverable",
-        "deliveryOptions": { "agent": "AI agent (autonomous task execution)", "workflow": "Automated workflow", "chatbot": "Intelligent chatbot", "report": "Automated data reports", "other": "Other" }
+        "deliveryOptions": {
+          "agent": "AI agent (autonomous task execution)",
+          "workflow": "Automated workflow",
+          "chatbot": "Intelligent chatbot",
+          "report": "Automated data reports",
+          "other": "Other"
+        }
       },
       "crawler": {
         "sourcesLabel": "Target data sources",
         "sourcesPh": "e.g. Amazon product prices, LinkedIn company contacts, marketplace SKU data… (one source per line)",
         "useLabel": "Data purpose",
-        "useOptions": { "price_monitor": "Price monitoring", "competitor": "Competitor analysis", "leads": "Lead collection", "research": "Market research", "other": "Other" },
+        "useOptions": {
+          "price_monitor": "Price monitoring",
+          "competitor": "Competitor analysis",
+          "leads": "Lead collection",
+          "research": "Market research",
+          "other": "Other"
+        },
         "freqLabel": "Collection frequency",
-        "freqOptions": { "once": "One-off", "daily": "Daily", "weekly": "Weekly", "realtime": "Real-time / near real-time" },
+        "freqOptions": {
+          "once": "One-off",
+          "daily": "Daily",
+          "weekly": "Weekly",
+          "realtime": "Real-time / near real-time"
+        },
         "formatLabel": "Delivery format",
-        "formatOptions": { "excel": "Excel / CSV", "api": "API", "dashboard": "Visual dashboard", "other": "Other" },
+        "formatOptions": {
+          "excel": "Excel / CSV",
+          "api": "API",
+          "dashboard": "Visual dashboard",
+          "other": "Other"
+        },
         "volumeLabel": "Estimated volume",
-        "volumeOptions": { "lt10k": "< 10k records", "10k100k": "10k – 100k records", "100k1m": "100k – 1M records", "gt1m": "> 1M records" }
+        "volumeOptions": {
+          "lt10k": "< 10k records",
+          "10k100k": "10k – 100k records",
+          "100k1m": "100k – 1M records",
+          "gt1m": "> 1M records"
+        }
       },
       "growth": {
         "websiteLabel": "Website URL",
@@ -316,10 +428,19 @@
         "trafficLabel": "Current monthly traffic",
         "trafficUnknown": "Not sure",
         "goalLabel": "Primary goal",
-        "goalOptions": { "traffic": "Grow organic traffic", "ranking": "Improve search rankings", "conversion": "Leads / conversions", "brand": "Brand visibility" },
+        "goalOptions": {
+          "traffic": "Grow organic traffic",
+          "ranking": "Improve search rankings",
+          "conversion": "Leads / conversions",
+          "brand": "Brand visibility"
+        },
         "adPlatformsLabel": "Ad platforms you've used (multi-select)",
         "adStatusLabel": "Current ad status",
-        "adStatusOptions": { "none": "No ads experience yet — starting from zero", "poor_roi": "Running ads but ROI is poor", "active_optimize": "Actively running — want to optimize or scale" }
+        "adStatusOptions": {
+          "none": "No ads experience yet — starting from zero",
+          "poor_roi": "Running ads but ROI is poor",
+          "active_optimize": "Actively running — want to optimize or scale"
+        }
       },
       "errors": {
         "serviceType": "Please pick a service type",
@@ -351,15 +472,36 @@
     "philosophyLabel": "Our methodology",
     "philosophyHeadline": "Internally driven: govern semantics with business logic",
     "principles": [
-      { "number": "01", "title": "Business DNA extraction", "description": "Every great business has its own axiomatic system. We use AI to deconstruct your core business, audience pain points, and brand voice, so the content we produce carries native commercial instinct." },
-      { "number": "02", "title": "Semantic authority", "description": "Real expertise isn't covering your competitor's keywords — it's completing your own knowledge system. When your content logic is airtight, search engines have no choice but to put you on top." },
-      { "number": "03", "title": "Traffic arbitrage radar", "description": "Replace ad spend with compute. Lock onto organic ranking opportunities for high-CPC keywords and win asymmetrically. Every dollar of budget compounds into long-term digital assets." }
+      {
+        "number": "01",
+        "title": "Business DNA extraction",
+        "description": "Every great business has its own axiomatic system. We use AI to deconstruct your core business, audience pain points, and brand voice, so the content we produce carries native commercial instinct."
+      },
+      {
+        "number": "02",
+        "title": "Semantic authority",
+        "description": "Real expertise isn't covering your competitor's keywords — it's completing your own knowledge system. When your content logic is airtight, search engines have no choice but to put you on top."
+      },
+      {
+        "number": "03",
+        "title": "Traffic arbitrage radar",
+        "description": "Replace ad spend with compute. Lock onto organic ranking opportunities for high-CPC keywords and win asymmetrically. Every dollar of budget compounds into long-term digital assets."
+      }
     ],
     "statsLabel": "As of March 2026",
     "stats": [
-      { "value": "10,000+", "label": "Sites analyzed" },
-      { "value": "2.4M+", "label": "Keywords tracked" },
-      { "value": "98%", "label": "Build success rate" }
+      {
+        "value": "10,000+",
+        "label": "Sites analyzed"
+      },
+      {
+        "value": "2.4M+",
+        "label": "Keywords tracked"
+      },
+      {
+        "value": "98%",
+        "label": "Build success rate"
+      }
     ],
     "techLabel": "Platform architecture",
     "techHeadline": "A self-evolving SEO operating system",
@@ -377,7 +519,10 @@
   },
   "auth": {
     "login": {
-      "meta": { "title": "Sign in | ScaletoTop", "description": "Sign in or create a ScaletoTop account to start your growth system." },
+      "meta": {
+        "title": "Sign in | ScaletoTop",
+        "description": "Sign in or create a ScaletoTop account to start your growth system."
+      },
       "titleEmail": "Welcome back",
       "titleName": "Start your growth journey",
       "titleOtp": "Verify your identity",

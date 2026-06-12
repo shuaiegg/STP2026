@@ -4,7 +4,7 @@ import React from 'react';
 import { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { getPublishedContent, getActiveCategories } from '@/lib/content';
-import { localeCanonical, BASE_URL } from '@/lib/seo/locale-metadata';
+import { getMetadataAlternates, localeCanonical, BASE_URL } from '@/lib/seo/locale-metadata';
 import BlogListContent from '@/components/blog/BlogListContent';
 
 export async function generateMetadata({
@@ -19,11 +19,13 @@ export async function generateMetadata({
     description: t('description'),
     alternates: {
       canonical: localeCanonical(locale, '/blog'),
+      languages: getMetadataAlternates('/blog'),
     },
     openGraph: {
+      locale: locale === 'zh' ? 'zh_CN' : 'en_US',
       images: [
         {
-          url: '/api/og',
+          url: locale === 'zh' ? '/api/og?locale=zh' : '/api/og?locale=en',
           width: 1200,
           height: 630,
           alt: 'ScaletoTop Blog',
@@ -44,7 +46,7 @@ export default async function BlogPage({
     setRequestLocale(locale);
     const t = await getTranslations('blog');
     const [{ contents }, categories] = await Promise.all([
-        getPublishedContent(),
+        getPublishedContent({ locale }),
         getActiveCategories(),
     ]);
 

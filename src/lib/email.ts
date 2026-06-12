@@ -50,27 +50,30 @@ export async function sendEmail({
   }
 }
 
-export async function sendWelcomeEmail(user: { email: string; name?: string | null }) {
+export async function sendWelcomeEmail(user: { email: string; name?: string | null; locale?: string }, locale?: string) {
+  const activeLocale = locale || user.locale || 'zh';
   return sendEmail({
     to: user.email,
-    subject: '欢迎加入 ScaletoTop 🎉',
-    html: welcomeEmailHtml(user.name || ''),
+    subject: activeLocale === 'en' ? 'Welcome to ScaletoTop 🎉' : '欢迎加入 ScaletoTop 🎉',
+    html: welcomeEmailHtml(user.name || '', activeLocale),
   });
 }
 
-export async function sendCreditsWarningEmail(user: { email: string; name?: string | null }, remaining: number) {
+export async function sendCreditsWarningEmail(user: { email: string; name?: string | null; locale?: string }, remaining: number, locale?: string) {
+  const activeLocale = locale || user.locale || 'zh';
   return sendEmail({
     to: user.email,
-    subject: '⚠️ ScaletoTop 积分余量不足提醒',
-    html: creditsWarningEmailHtml(user.name || '', remaining),
+    subject: activeLocale === 'en' ? '⚠️ Low Credits Alert — ScaletoTop' : '⚠️ ScaletoTop 积分余量不足提醒',
+    html: creditsWarningEmailHtml(user.name || '', remaining, activeLocale),
   });
 }
 
-export async function sendPurchaseSuccessEmail(user: { email: string; name?: string | null }, creditsAdded: number, newBalance: number) {
+export async function sendPurchaseSuccessEmail(user: { email: string; name?: string | null; locale?: string }, creditsAdded: number, newBalance: number, locale?: string) {
+  const activeLocale = locale || user.locale || 'zh';
   return sendEmail({
     to: user.email,
-    subject: '✅ 积分充值成功 — ScaletoTop',
-    html: purchaseSuccessEmailHtml(user.name || '', creditsAdded, newBalance),
+    subject: activeLocale === 'en' ? '✅ Credits Recharged Successfully — ScaletoTop' : '✅ 积分充值成功 — ScaletoTop',
+    html: purchaseSuccessEmailHtml(user.name || '', creditsAdded, newBalance, activeLocale),
   });
 }
 
@@ -86,7 +89,7 @@ export async function sendConsultationNotification(data: {
   email: string;
   wechat?: string | null;
   createdAt: Date;
-  details?: Record<string, any> | null;
+  details?: Record<string, unknown> | null;
 }) {
   const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL || 'jack@scaletotop.com';
   return sendEmail({
@@ -96,23 +99,26 @@ export async function sendConsultationNotification(data: {
   });
 }
 
-export async function sendConsultationConfirmation(user: { email: string; name: string }, serviceType: string) {
+export async function sendConsultationConfirmation(user: { email: string; name: string; locale?: string }, serviceType: string, locale?: string) {
+  const activeLocale = locale || user.locale || 'zh';
   return sendEmail({
     to: user.email,
-    subject: '已收到你的咨询需求 — ScaletoTop',
-    html: consultationConfirmationHtml(user.name, serviceType),
+    subject: activeLocale === 'en' ? 'We have received your request — ScaletoTop' : '已收到你的咨询需求 — ScaletoTop',
+    html: consultationConfirmationHtml(user.name, serviceType, activeLocale),
   });
 }
 
 export async function sendAuditCompleteEmail(
-  user: { email: string; name?: string | null },
+  user: { email: string; name?: string | null; locale?: string },
   siteId: string,
   domain: string,
   techScore: number | null,
+  locale?: string
 ) {
+  const activeLocale = locale || user.locale || 'zh';
   return sendEmail({
     to: user.email,
-    subject: `站点审计完成：${domain} — ScaletoTop`,
-    html: auditCompleteEmailHtml(user.name || '', domain, siteId, techScore),
+    subject: activeLocale === 'en' ? `Site Audit Completed: ${domain} — ScaletoTop` : `站点审计完成：${domain} — ScaletoTop`,
+    html: auditCompleteEmailHtml(user.name || '', domain, siteId, techScore, activeLocale),
   });
 }

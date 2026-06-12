@@ -51,7 +51,7 @@ When implementing or modifying any page, component, or UI element, verify ALL of
 - [ ] Headings use `font-display` (Plus Jakarta Sans / Noto Sans SC fallback)
 - [ ] No more than 3 font sizes on a single page
 - [ ] All user-visible text strings are extracted to a `const COPY = {...}` or `const ITEMS = [...]` at file scope — no inline hardcoded strings in JSX (i18n readiness)
-- [ ] Chinese copy uses "你" not "您"
+- [ ] Chinese copy uses "您" not "你" — respectful register for B2B audience
 - [ ] Headlines lead with the benefit, not the feature name
 
 ### Accessibility

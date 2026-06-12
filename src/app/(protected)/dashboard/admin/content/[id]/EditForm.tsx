@@ -1,11 +1,12 @@
 'use client';
 
 import React from 'react';
-import { Save, RefreshCw, ChevronDown, ChevronUp, Sparkles, CheckCircle, AlertCircle, Lightbulb } from 'lucide-react';
+import { Save, RefreshCw, ChevronDown, ChevronUp, Sparkles, CheckCircle, AlertCircle, Lightbulb, Edit } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useRouter } from 'next/navigation';
-import { updateContentMetadata, updateSeoMetadata, analyzeContentSeo } from '@/app/actions/content';
+import Link from 'next/link';
+import { updateContentMetadata, updateSeoMetadata, analyzeContentSeo, associateTranslation, dissociateTranslation } from '@/app/actions/content';
 
 interface SeoMeta {
     metaTitle?: string | null;
@@ -29,7 +30,17 @@ interface Article {
     slug: string;
     summary: string | null;
     contentMd: string | null;
+    locale: string;
+    translationGroupId: string | null;
     seo?: SeoMeta | null;
+}
+
+interface OtherArticle {
+    id: string;
+    title: string;
+    locale: string;
+    slug: string;
+    translationGroupId: string | null;
 }
 
 interface AuditResult {
@@ -116,7 +127,13 @@ function FieldComparisonControl({
     );
 }
 
-export function EditForm({ article }: { article: Article }) {
+export function EditForm({
+    article,
+    otherArticles = []
+}: {
+    article: Article;
+    otherArticles?: OtherArticle[];
+}) {
     const router = useRouter();
     const [isPending, setIsPending] = React.useState(false);
     const [isSeoSaving, setIsSeoSaving] = React.useState(false);
@@ -135,6 +152,7 @@ export function EditForm({ article }: { article: Article }) {
         slug: article.slug || '',
         summary: article.summary || '',
         contentMd: article.contentMd || '',
+        locale: article.locale || 'zh',
     });
 
     const [seoData, setSeoData] = React.useState({
@@ -149,6 +167,50 @@ export function EditForm({ article }: { article: Article }) {
         snippetTwitter: article.seo?.snippetTwitter || '',
     });
     const [advancedExpanded, setAdvancedExpanded] = React.useState(false);
+
+    const pairedArticles = otherArticles.filter(
+        x => x.translationGroupId && x.translationGroupId === article.translationGroupId
+    );
+
+    const oppositeLocaleArticles = otherArticles.filter(
+        x => x.locale !== formData.locale
+    );
+
+    const handleLinkTranslation = async (targetId: string) => {
+        if (!targetId) return;
+        setIsPending(true);
+        try {
+            const res = await associateTranslation(article.id, targetId);
+            if (res.success) {
+                alert('✅ 翻译关联成功！');
+                router.refresh();
+            } else {
+                alert('❌ 关联失败: ' + res.error);
+            }
+        } catch (err) {
+            alert('发生错误');
+        } finally {
+            setIsPending(false);
+        }
+    };
+
+    const handleUnlinkTranslation = async () => {
+        if (!confirm('确定要解除与该翻译的关联吗？')) return;
+        setIsPending(true);
+        try {
+            const res = await dissociateTranslation(article.id);
+            if (res.success) {
+                alert('✅ 已成功解除关联！');
+                router.refresh();
+            } else {
+                alert('❌ 解除关联失败: ' + res.error);
+            }
+        } catch (err) {
+            alert('发生错误');
+        } finally {
+            setIsPending(false);
+        }
+    };
 
     // Use content fields as fallback for SEO preview
     const effectiveTitle = seoData.metaTitle || formData.title;
@@ -165,6 +227,7 @@ export function EditForm({ article }: { article: Article }) {
                 slug: formData.slug,
                 summary: formData.summary,
                 contentMd: formData.contentMd,
+                locale: formData.locale,
             });
 
             if (!contentResult.success) {
@@ -403,6 +466,67 @@ export function EditForm({ article }: { article: Article }) {
                                 placeholder="my-cool-article"
                                 required
                             />
+                        </div>
+                    </div>
+
+                    {/* Language and Translation Pairing controls */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-5 bg-slate-50 rounded-xl border border-slate-100">
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">文章语言 (Locale)</label>
+                            <select
+                                value={formData.locale}
+                                onChange={(e) => setFormData({ ...formData, locale: e.target.value })}
+                                className="w-full bg-white border-slate-200 rounded-xl py-2.5 px-3 text-slate-900 font-semibold focus:ring-2 focus:ring-brand-primary/20 transition-all text-sm shadow-sm"
+                            >
+                                <option value="zh">🇨🇳 中文 (ZH)</option>
+                                <option value="en">🇺🇸 English (EN)</option>
+                            </select>
+                        </div>
+
+                        <div className="space-y-2 flex flex-col justify-end">
+                            {article.translationGroupId ? (
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1 font-sans">已关联翻译</label>
+                                    {pairedArticles.length > 0 ? (
+                                        pairedArticles.map(p => (
+                                            <div key={p.id} className="flex items-center justify-between bg-white border border-slate-200 px-3 py-1.5 rounded-lg text-xs shadow-sm">
+                                                <span className="font-semibold text-slate-700">{p.locale === 'en' ? '🇺🇸 英文' : '🇨🇳 中文'} ({p.slug})</span>
+                                                <div className="flex gap-2">
+                                                    <Link href={`/dashboard/admin/content/${p.id}`} className="text-brand-secondary hover:underline font-bold">
+                                                        编辑
+                                                    </Link>
+                                                    <button type="button" onClick={handleUnlinkTranslation} className="text-red-500 hover:underline font-bold">
+                                                        解绑
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="flex items-center justify-between bg-white border border-slate-200 px-3 py-1.5 rounded-lg text-xs shadow-sm">
+                                            <span className="text-slate-400 font-medium italic">无其它配对</span>
+                                            <button type="button" onClick={handleUnlinkTranslation} className="text-red-500 hover:underline font-bold">
+                                                清除ID
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1 font-sans">关联现有翻译</label>
+                                    <select
+                                        onChange={(e) => handleLinkTranslation(e.target.value)}
+                                        defaultValue=""
+                                        className="w-full bg-white border-slate-200 rounded-xl py-2 px-3 text-slate-900 font-semibold focus:ring-2 focus:ring-brand-primary/20 transition-all text-xs shadow-sm"
+                                    >
+                                        <option value="" disabled>选择要配对的{formData.locale === 'zh' ? '英文' : '中文'}文章...</option>
+                                        {oppositeLocaleArticles.map(p => (
+                                            <option key={p.id} value={p.id}>
+                                                [{p.locale.toUpperCase()}] {p.title}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
                         </div>
                     </div>
 

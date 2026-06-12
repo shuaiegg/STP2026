@@ -4,7 +4,7 @@ import { JsonLd } from '@/components/seo/JsonLd';
 import { CREDIT_PRODUCTS } from '@/lib/billing/products';
 import PricingClient from './PricingClient';
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.scaletotop.com';
+import { getMetadataAlternates, BASE_URL } from '@/lib/seo/locale-metadata';
 
 export async function generateMetadata({
   params,
@@ -18,11 +18,13 @@ export async function generateMetadata({
     description: t('description'),
     alternates: {
       canonical: locale === 'zh' ? `${BASE_URL}/zh/pricing` : `${BASE_URL}/pricing`,
+      languages: getMetadataAlternates('/pricing'),
     },
     openGraph: {
+      locale: locale === 'zh' ? 'zh_CN' : 'en_US',
       images: [
         {
-          url: '/api/og',
+          url: locale === 'zh' ? '/api/og?locale=zh' : '/api/og?locale=en',
           width: 1200,
           height: 630,
           alt: 'ScaletoTop Pricing',

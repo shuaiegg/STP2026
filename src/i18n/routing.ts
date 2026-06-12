@@ -11,8 +11,12 @@ export const routing = defineRouting({
     localePrefix: 'as-needed',
 
     // 绝不自动按请求跳转语言（设计决策：用建议横幅，不强制）
-    // cookie 仅用于记住用户手动选择
     localeDetection: false,
+
+    // 禁用 next-intl 自动写 NEXT_LOCALE cookie——middleware 写的 cookie 会合并进
+    // 同请求的 cookies()，导致建议横幅误判"用户已手动选择过语言"而永不展示。
+    // NEXT_LOCALE 仅由 LocaleSwitcher / 建议横幅在用户手动选择时写入。
+    localeCookie: false,
 });
 
 export type Locale = (typeof routing.locales)[number];

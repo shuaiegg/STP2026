@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useLocale } from 'next-intl';
 import { Card } from '@/components/ui/Card';
 import { Gavel, Ban, CreditCard, BrainCircuit, AlertTriangle, FileText, ChevronDown, ChevronUp, Globe } from 'lucide-react';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 
 export default function TermsPage() {
     const lastUpdated = "2026-03-21";

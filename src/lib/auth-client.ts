@@ -1,5 +1,5 @@
 import { createAuthClient } from "better-auth/react";
-import { emailOTPClient } from "better-auth/client/plugins";
+import { emailOTPClient, inferAdditionalFields } from "better-auth/client/plugins";
 // Import the server auth type to infer custom fields
 import type { auth } from "./auth";
 
@@ -7,6 +7,9 @@ export const authClient = createAuthClient({
     baseURL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
     plugins: [
         emailOTPClient(),
+        // 让客户端类型感知服务端 additionalFields（role/credits/locale），
+        // 否则 updateUser({ locale }) 报 TS2353（曾被 ignoreBuildErrors 掩盖）
+        inferAdditionalFields<typeof auth>(),
     ],
     fetchOptions: {}
 });

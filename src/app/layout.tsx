@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import { getLocale } from "next-intl/server";
 import { Plus_Jakarta_Sans, Instrument_Sans, JetBrains_Mono } from "next/font/google";
 import { CSPostHogProvider } from "@/components/providers/PostHogProvider";
@@ -26,6 +25,7 @@ const jetBrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://www.scaletotop.com'),
   title: "ScaletoTop | Digital Marketing Engineering",
   description: "Digital Marketing Engineering Platform",
   icons: {
@@ -41,8 +41,6 @@ export default async function RootLayout({
   // [locale] 段内返回 URL locale；段外（dashboard 等）回落 defaultLocale
   const locale = await getLocale();
   const htmlLang = locale === 'zh' ? 'zh-Hans' : 'en';
-  const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
-  const isProduction = process.env.NODE_ENV === 'production';
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.scaletotop.com';
 
   const organizationSchema = {
@@ -59,14 +57,16 @@ export default async function RootLayout({
     "sameAs": [
       "https://twitter.com/jack_scaletotop",
       "https://www.linkedin.com/company/scaletotop"
-    ]
+    ],
+    "inLanguage": htmlLang
   };
 
   const websiteSchema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "ScaletoTop",
-    "url": baseUrl
+    "url": baseUrl,
+    "inLanguage": htmlLang
   };
 
   return (
@@ -76,33 +76,10 @@ export default async function RootLayout({
         <JsonLd data={websiteSchema} />
       </head>
       <body className="antialiased text-brand-text-primary bg-brand-background">
-        {isProduction && gtmId && (
-          <noscript>
-            <iframe
-              src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`}
-              height="0"
-              width="0"
-              style={{ display: 'none', visibility: 'hidden' }}
-            />
-          </noscript>
-        )}
-        <CSPostHogProvider>
+        <CSPostHogProvider locale={locale}>
           {children}
         </CSPostHogProvider>
         <Toaster position="top-right" richColors />
-        {isProduction && gtmId && (
-          <Script
-            id="gtm-script"
-            strategy="afterInteractive"
-            dangerouslySetInnerHTML={{
-              __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','${gtmId}');`,
-            }}
-          />
-        )}
       </body>
     </html>
   );

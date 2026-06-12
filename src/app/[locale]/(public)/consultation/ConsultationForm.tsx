@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { ChevronRight, ChevronLeft, Loader2, CheckCircle2 } from 'lucide-react';
 import posthog from 'posthog-js';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import {
   submitConsultation,
@@ -411,6 +411,7 @@ interface FormErrors {
 
 export function ConsultationForm() {
   const t = useTranslations('consultation.form');
+  const locale = useLocale();
   const serviceCopy = t.raw('services') as { label: string; desc: string }[];
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
@@ -465,6 +466,7 @@ export function ConsultationForm() {
       email,
       wechat: wechat || undefined,
       details: details as ConsultationFormData['details'],
+      locale,
     });
 
     setSubmitting(false);

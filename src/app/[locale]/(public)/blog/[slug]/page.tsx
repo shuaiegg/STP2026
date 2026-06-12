@@ -1,6 +1,6 @@
 import React from 'react';
 import { getTranslations } from 'next-intl/server';
-import Link from 'next/link';
+import { Link, redirect } from '@/i18n/navigation';
 import Image from 'next/image';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
@@ -10,14 +10,16 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { ArticleReadTracker } from './ArticleReadTracker';
+import prisma from '@/lib/prisma';
+import { BASE_URL } from '@/lib/seo/locale-metadata';
 
 interface BlogPostProps {
-    params: Promise<{ slug: string }>;
+    params: Promise<{ slug: string; locale: string }>;
 }
 
 export async function generateMetadata({ params }: BlogPostProps): Promise<Metadata> {
-    const { slug } = await params;
-    const post = await getPublishedContentBySlug(slug);
+    const { slug, locale } = await params;
+    const post = await getPublishedContentBySlug(slug, locale);
 
     if (!post) {
         return {};
@@ -25,13 +27,45 @@ export async function generateMetadata({ params }: BlogPostProps): Promise<Metad
 
     const coverUrl = post.coverImage?.storageUrl || '/api/og';
 
+    const alternates: any = {
+        canonical: post.locale === 'zh' ? `${BASE_URL}/zh/blog/${post.slug}` : `${BASE_URL}/blog/${post.slug}`,
+    };
+
+    if (post.translationGroupId) {
+        const translations = await prisma.content.findMany({
+            where: {
+                translationGroupId: post.translationGroupId,
+                status: 'PUBLISHED',
+                visibility: 'PUBLIC',
+            },
+            select: { locale: true, slug: true }
+        });
+
+        if (translations.length > 0) {
+            const languages: Record<string, string> = {};
+            translations.forEach(t => {
+                const prefix = t.locale === 'zh' ? '/zh' : '';
+                languages[t.locale] = `${BASE_URL}${prefix}/blog/${t.slug}`;
+            });
+            const currentPrefix = post.locale === 'zh' ? '/zh' : '';
+            languages[post.locale] = `${BASE_URL}${currentPrefix}/blog/${post.slug}`;
+
+            if (languages['en']) {
+                languages['x-default'] = languages['en'];
+            } else {
+                languages['x-default'] = languages[post.locale];
+            }
+
+            alternates.languages = languages;
+        }
+    }
+
     return {
         title: `${post.title} | ScaletoTop`,
         description: post.summary || '',
-        alternates: {
-            canonical: `https://www.scaletotop.com/blog/${slug}`,
-        },
+        alternates,
         openGraph: {
+            locale: post.locale === 'zh' ? 'zh_CN' : 'en_US',
             images: [
                 {
                     url: coverUrl,
@@ -46,13 +80,19 @@ export async function generateMetadata({ params }: BlogPostProps): Promise<Metad
 
 export default async function BlogPost({ params }: BlogPostProps) {
     const t = await getTranslations('blog');
-    const { slug } = await params;
+    const { slug, locale } = await params;
     const [post, relatedPosts] = await Promise.all([
-        getPublishedContentBySlug(slug),
-        getRelatedContent(slug)
+        getPublishedContentBySlug(slug, locale),
+        getRelatedContent(slug, 3, locale)
     ]);
 
     if (!post) {
+        // 该 slug 可能存在于另一语言（如旧收录的中文 URL 落在 en 前缀）
+        // → 308 跳转到正确语言前缀，保留外链/收录权重，而不是 404
+        const otherLocalePost = await getPublishedContentBySlug(slug);
+        if (otherLocalePost) {
+            redirect({ href: `/blog/${slug}`, locale: otherLocalePost.locale });
+        }
         return notFound();
     }
 
@@ -102,17 +142,19 @@ export default async function BlogPost({ params }: BlogPostProps) {
                     "height": 512
                 }
             },
-            "description": post.summary
+            "description": post.summary,
+            "inLanguage": post.locale === 'zh' ? 'zh-Hans' : 'en'
         };
     }
 
+    const currentPrefix = locale === 'zh' ? '/zh' : '';
     const breadcrumbSchema = {
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
         "itemListElement": [
-            { "@type": "ListItem", "position": 1, "name": t('breadcrumbHome'), "item": baseUrl },
-            { "@type": "ListItem", "position": 2, "name": t('breadcrumbBlog'), "item": `${baseUrl}/blog` },
-            { "@type": "ListItem", "position": 3, "name": post.title, "item": `${baseUrl}/blog/${post.slug}` }
+            { "@type": "ListItem", "position": 1, "name": t('breadcrumbHome'), "item": `${baseUrl}${currentPrefix}` },
+            { "@type": "ListItem", "position": 2, "name": t('breadcrumbBlog'), "item": `${baseUrl}${currentPrefix}/blog` },
+            { "@type": "ListItem", "position": 3, "name": post.title, "item": `${baseUrl}${currentPrefix}/blog/${post.slug}` }
         ]
     };
 
@@ -303,6 +345,7 @@ export default async function BlogPost({ params }: BlogPostProps) {
                                         title={t('newsletterTitle')}
                                         description={t('newsletterDesc')}
                                         buttonText={t('newsletterCta')}
+                                        emailPlaceholder={t('newsletterPlaceholder')}
                                     />
                                 </div>
                             </div>

@@ -2,10 +2,12 @@
 
 import React, { useRef, useState } from 'react';
 import NextLink from 'next/link';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Link, usePathname } from '@/i18n/navigation';
 import { Button } from '../ui/Button';
 import { LocaleSwitcher } from './LocaleSwitcher';
+import { isPageAvailable } from '@/lib/i18n/page-availability';
+import type { Locale } from '@/i18n/routing';
 import { authClient } from '@/lib/auth-client';
 
 // label 为 messages key（nav.* / footer.*），渲染时翻译
@@ -84,8 +86,11 @@ const NavIcon: React.FC<{ type: 'home' | 'blog' | 'tools' | 'pricing' | 'about' 
 
 const Header: React.FC = () => {
     const pathname = usePathname();
+    const locale = useLocale() as Locale;
     const tNav = useTranslations('nav');
     const tCommon = useTranslations('common');
+    // SEO 纪律三：当前语言不可用的页面不渲染入口（避免链向 404）
+    const navItems = NAV_ITEMS.filter(item => isPageAvailable(item.href, locale));
     const { data: session } = authClient.useSession();
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -121,7 +126,7 @@ const Header: React.FC = () => {
                         <span className="text-xl font-bold tracking-tight text-brand-text-primary">ScaletoTop</span>
                     </Link>
                     <nav className="hidden md:flex items-center gap-2">
-                        {NAV_ITEMS.map(item => (
+                        {navItems.map(item => (
                             <Link key={item.href} href={item.href} className={getLinkClass(item.href)}>
                                 <NavIcon type={item.icon} />
                                 {tNav(item.labelKey)}
@@ -181,6 +186,11 @@ const Header: React.FC = () => {
 
 const Footer: React.FC = () => {
     const tFooter = useTranslations('footer');
+    const locale = useLocale() as Locale;
+    const footerGroups = FOOTER_LINKS.map(group => ({
+        ...group,
+        links: group.links.filter(link => isPageAvailable(link.href, locale)),
+    })).filter(group => group.links.length > 0);
     return (
         <footer className="bg-slate-50 border-t border-brand-border py-24">
             <div className="max-w-7xl mx-auto px-6">
@@ -203,7 +213,7 @@ const Footer: React.FC = () => {
                         </div>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-20">
-                        {FOOTER_LINKS.map(group => (
+                        {footerGroups.map(group => (
                             <div key={group.titleKey}>
                                 <h5 className="text-brand-text-primary font-bold text-sm mb-8 tracking-widest uppercase">{tFooter(group.titleKey)}</h5>
                                 <ul className="space-y-4 text-sm text-brand-text-secondary">

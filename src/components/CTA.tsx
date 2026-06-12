@@ -6,10 +6,11 @@ interface CTAProps {
   title: string;
   description: string;
   buttonText: string;
+  emailPlaceholder?: string;
   variant?: 'inline' | 'section';
 }
 
-export const CTA: React.FC<CTAProps> = ({ title, description, buttonText, variant = 'section' }) => {
+export const CTA: React.FC<CTAProps> = ({ title, description, buttonText, emailPlaceholder = 'you@example.com', variant = 'section' }) => {
   if (variant === 'inline') {
     return (
       <div className="my-12 p-8 bg-brand-surface border border-brand-border rounded-xl flex flex-col md:flex-row items-center gap-6">
@@ -32,7 +33,7 @@ export const CTA: React.FC<CTAProps> = ({ title, description, buttonText, varian
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           <input 
             type="email" 
-            placeholder="输入您的邮箱" 
+            placeholder={emailPlaceholder} 
             className="px-6 py-2.5 rounded-lg text-brand-text-primary focus:outline-none focus:ring-2 focus:ring-brand-primary-muted w-full sm:w-64"
           />
           <Button variant="secondary">{buttonText}</Button>

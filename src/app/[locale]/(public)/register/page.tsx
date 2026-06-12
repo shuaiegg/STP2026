@@ -126,10 +126,11 @@ export default function UnifiedAuthPage() {
                 });
                 authError = res.error;
 
-                // 注册成功后更新姓名
+                // 注册成功后更新姓名与语言偏好
                 if (!authError && name.trim()) {
                     await authClient.updateUser({
                         name: name.trim(),
+                        locale: locale,
                     });
                 }
             } else {

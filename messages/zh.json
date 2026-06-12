@@ -35,30 +35,46 @@
     "refund": "退款政策"
   },
   "banner": {
-    "suggestion": "看起来你偏好中文 — 要切换到中文版吗？",
+    "suggestion": "看起来您偏好中文 — 要切换到中文版吗？",
     "switch": "切换到中文",
     "dismiss": "继续用当前语言"
   },
   "home": {
     "meta": {
       "title": "ScaletoTop | 帮中国出海企业每月新增 50+ 优质询盘",
-      "description": "专为中国出海企业打造。通过精准广告投流、SEO 内容矩阵和自动化跟进工具，帮你建立可预测、低成本的海外获客闭环。"
+      "description": "专为中国出海企业打造。通过精准广告投流、SEO 内容矩阵和自动化跟进工具，帮您建立可预测、低成本的海外获客闭环。"
     },
     "hero": {
       "badge": "已服务 50+ 出海企业",
-      "titleLine1": "让你的海外业务",
+      "titleLine1": "让您的海外业务",
       "titleLine2": "平均每月新增 50+ 优质询盘",
-      "subtitle": "专为出海企业打造。通过精准广告投流、SEO 内容矩阵和自动化跟进工具，帮你建立可预测、低成本的海外获客闭环。",
+      "subtitle": "专为出海企业打造。通过精准广告投流、SEO 内容矩阵和自动化跟进工具，帮您建立可预测、低成本的海外获客闭环。",
       "ctaPrimary": "免费获取获客诊断报告",
       "ctaPrimaryMicro": "无需信用卡 · 专属增长方案",
       "ctaSecondary": "探索自动化工具"
     },
     "metrics": {
       "stats": [
-        { "value": 500, "suffix": "+", "label": "生成询盘数" },
-        { "value": 50, "suffix": "+", "label": "服务企业" },
-        { "value": 30, "suffix": "+", "label": "覆盖国家" },
-        { "value": 3, "suffix": "x", "label": "平均ROI提升" }
+        {
+          "value": 500,
+          "suffix": "+",
+          "label": "生成询盘数"
+        },
+        {
+          "value": 50,
+          "suffix": "+",
+          "label": "服务企业"
+        },
+        {
+          "value": 30,
+          "suffix": "+",
+          "label": "覆盖国家"
+        },
+        {
+          "value": 3,
+          "suffix": "x",
+          "label": "平均ROI提升"
+        }
       ]
     },
     "clients": {
@@ -66,14 +82,26 @@
     },
     "process": {
       "subtitle": "如何运作",
-      "titleLine1": "三步建立你的",
+      "titleLine1": "三步建立您的",
       "titleLine2": "海外获客系统",
-      "description": "我们不只是投广告，而是帮你建立一套可持续、可复制的获客方法",
+      "description": "我们不只是投广告，而是帮您建立一套可持续、可复制的获客方法",
       "stepLabel": "步骤",
       "steps": [
-        { "num": "01", "title": "获客诊断", "desc": "分析你的产品、市场和现有渠道，找出最适合你的获客组合" },
-        { "num": "02", "title": "策略定制", "desc": "根据诊断结果，制定广告+内容+工具的组合策略和执行计划" },
-        { "num": "03", "title": "执行优化", "desc": "落地执行获客计划，持续追踪数据，优化转化效果" }
+        {
+          "num": "01",
+          "title": "获客诊断",
+          "desc": "分析您的产品、市场和现有渠道，找出最适合您的获客组合"
+        },
+        {
+          "num": "02",
+          "title": "策略定制",
+          "desc": "根据诊断结果，制定广告+内容+工具的组合策略和执行计划"
+        },
+        {
+          "num": "03",
+          "title": "执行优化",
+          "desc": "落地执行获客计划，持续追踪数据，优化转化效果"
+        }
       ]
     },
     "methods": {
@@ -86,21 +114,33 @@
           "num": "01",
           "title": "精准广告投放",
           "desc": "Google Ads + Meta Ads 精准触达海外目标客户，从受众定位到转化追踪的完整流程",
-          "tags": ["Google Ads", "Meta", "LinkedIn"],
+          "tags": [
+            "Google Ads",
+            "Meta",
+            "LinkedIn"
+          ],
           "label": "即时获客"
         },
         {
           "num": "02",
           "title": "SEO内容矩阵",
           "desc": "建立可复用的内容生产流程，从关键词研究到文章优化，让内容成为持续获客的长期资产",
-          "tags": ["SEO", "博客", "视频"],
+          "tags": [
+            "SEO",
+            "博客",
+            "视频"
+          ],
           "label": "长期累积"
         },
         {
           "num": "03",
           "title": "自动化工具",
           "desc": "通过工具产品化，把重复的人工操作变成可规模化的流程，让小团队也能实现高效获客",
-          "tags": ["自动化", "CRM", "邮件"],
+          "tags": [
+            "自动化",
+            "CRM",
+            "邮件"
+          ],
           "label": "规模放大"
         }
       ]
@@ -144,9 +184,9 @@
       "minutes": "{count} 分钟"
     },
     "cta": {
-      "titleLine1": "准备好建立你的",
+      "titleLine1": "准备好建立您的",
       "titleLine2": "海外获客系统了吗？",
-      "subtitle": "免费获取一份专属于你的获客诊断报告，了解最适合你的获客方法组合",
+      "subtitle": "免费获取一份专属于您的获客诊断报告，了解最适合您的获客方法组合",
       "primary": "立即开启增长",
       "secondary": "查看方法论文章"
     }
@@ -154,7 +194,7 @@
   "blog": {
     "meta": {
       "title": "出海营销实战博客 | ScaletoTop",
-      "description": "深度拆解出海企业获客方法：广告投放策略、SEO 内容矩阵、自动化工具应用，助你系统化提升海外业务增长。"
+      "description": "深度拆解出海企业获客方法：广告投放策略、SEO 内容矩阵、自动化工具应用，助您系统化提升海外业务增长。"
     },
     "schemaDescription": "出海营销实战博客：深度拆解出海企业获客方法。",
     "pageLabel": "SEO 洞察 · 增长方法论",
@@ -168,7 +208,7 @@
     "breadcrumbHome": "首页",
     "breadcrumbBlog": "博客",
     "newsletterTitle": "加入 ScaletoTop 简报",
-    "newsletterDesc": "每周为你推送最前沿的技术营销策略与实战审计案例。已有 5,000+ 专家订阅。",
+    "newsletterDesc": "每周为您推送最前沿的技术营销策略与实战审计案例。已有 5,000+ 专家订阅。",
     "newsletterCta": "立即订阅",
     "related": "延伸阅读",
     "categoryCtaTitle": "掌握规模化 {name} 技术",
@@ -176,7 +216,9 @@
     "categoryCtaButton": "立即免费获取",
     "previewBanner": "预览模式 - 此内容尚未正式发布 (TOKEN: {token})",
     "previewSuffix": "(预览版)",
-    "previewRendering": "内容正在渲染中..."
+    "previewRendering": "内容正在渲染中...",
+    "notPublishedLabel": "未发布",
+    "newsletterPlaceholder": "输入您的邮箱"
   },
   "pricing": {
     "meta": {
@@ -185,11 +227,11 @@
     },
     "heroTitle1": "按需充值，",
     "heroTitle2": "即买即用",
-    "heroSubtitle": "无需订阅。$9 美金开启你的全网数据驱动的 AI 写作引擎。",
+    "heroSubtitle": "无需订阅。$9 美金开启您的全网数据驱动的 AI 写作引擎。",
     "recommended": "推荐",
     "oneTime": "/ 一次性充值",
     "packDescRecommended": "最高性价比之选，支撑持续的增长实验",
-    "packDesc": "灵活充值，随时启动你的创作流程",
+    "packDesc": "灵活充值，随时启动您的创作流程",
     "creditsLabel": "AI 积分",
     "perCredit": "约 ${value} / 积分",
     "valueEstimate": "价值预估",
@@ -206,9 +248,21 @@
     "costRefTitle": "积分消耗参考",
     "costRefSubtitle": "透明消费，所有功能对所有积分持有者平等开放",
     "costRefs": [
-      { "name": "StellarWriter 智作", "cost": "15 积分 / 篇", "desc": "AI 驱动的深度内容生成与 SEO 优化" },
-      { "name": "站点 SEO 体检", "cost": "5 积分 / 次", "desc": "全站技术 SEO 扫描与可视化星图审计" },
-      { "name": "关键词数据调研", "cost": "按需而定", "desc": "即将上线：深度利基市场关键词分析" }
+      {
+        "name": "StellarWriter 智作",
+        "cost": "15 积分 / 篇",
+        "desc": "AI 驱动的深度内容生成与 SEO 优化"
+      },
+      {
+        "name": "站点 SEO 体检",
+        "cost": "5 积分 / 次",
+        "desc": "全站技术 SEO 扫描与可视化星图审计"
+      },
+      {
+        "name": "关键词数据调研",
+        "cost": "按需而定",
+        "desc": "即将上线：深度利基市场关键词分析"
+      }
     ],
     "costNote": "注：StellarWriter 消耗取决于内容长度与复杂度，15 积分为单次生成平均参考值。",
     "paymentTitle": "支持支付宝与全球主流支付",
@@ -226,7 +280,7 @@
       {
         "name": "SEO & GEO 写作优化器",
         "description": "基于 Google 地图数据与本地 SEO 算法，一键生成针对特定地理位置的高转化 B2B 文案。",
-        "useCase": "你可以用它快速生成多个城市的本地化服务页内容，批量获取高意向的本地长尾搜索流量。",
+        "useCase": "您可以用它快速生成多个城市的本地化服务页内容，批量获取高意向的本地长尾搜索流量。",
         "cost": "50 积分 / 次",
         "badge": "热门",
         "cta": "立即使用"
@@ -234,7 +288,7 @@
       {
         "name": "Google Maps 潜在客户采集",
         "description": "深度采集全球各地区的 B2B 客户信息，包含电话、网站、社交媒体及地理位置。",
-        "useCase": "你可以用它一键批量获取目标市场经销商或客户的精准联系方式，用于冷邮件或跟进开发。",
+        "useCase": "您可以用它一键批量获取目标市场经销商或客户的精准联系方式，用于冷邮件或跟进开发。",
         "cost": "50 积分 / 次",
         "badge": "Beta",
         "cta": "申请测试"
@@ -242,7 +296,7 @@
       {
         "name": "出海独立站健康诊断",
         "description": "全方位扫描独立站的加载速度、SEO 基准、以及移动端适配情况，并提供优化方案。",
-        "useCase": "你可以用它在上线前检查网站是否符合 Google 技术规范，排查影响排名的致命隐患。",
+        "useCase": "您可以用它在上线前检查网站是否符合 Google 技术规范，排查影响排名的致命隐患。",
         "cost": "免费",
         "badge": "研发中",
         "cta": "加入等候名单"
@@ -252,37 +306,68 @@
   "consultation": {
     "meta": {
       "title": "免费咨询 — ScaletoTop",
-      "description": "告诉我们你的出海业务目标，获取定制化的 SEO + 内容 + GEO 增长方案"
+      "description": "告诉我们您的出海业务目标，获取定制化的 SEO + 内容 + GEO 增长方案"
     },
     "badge": "免费咨询",
-    "title": "让你的出海业务被更多人看见",
-    "sub": "填写下方表单，我们会在 1 个工作日内根据你的具体情况给出定制建议",
+    "title": "让您的出海业务被更多人看见",
+    "sub": "填写下方表单，我们会在 1 个工作日内根据您的具体情况给出定制建议",
     "trustLine": "已服务 50+ 出海品牌 · 响应时间 < 24h · 无套路销售",
     "form": {
-      "step1Title": "你需要哪方面的帮助？",
-      "step1Sub": "选择最符合你需求的服务方向",
+      "step1Title": "您需要哪方面的帮助？",
+      "step1Sub": "选择最符合您需求的服务方向",
       "next": "下一步",
       "back": "上一步",
       "submit": "提交咨询",
       "submitting": "提交中…",
-      "step3Title": "怎么联系你？",
+      "step3Title": "怎么联系您？",
       "step3Sub": "我们通常在 1 个工作日内回复",
-      "successTitle": "已收到你的需求！",
-      "successBody": "我们会在 1 个工作日内与你联系，请留意邮件。",
+      "successTitle": "已收到您的需求！",
+      "successBody": "我们会在 1 个工作日内与您联系，请留意邮件。",
       "successCta": "免费体验 GEO Writer →",
       "selectPlaceholder": "— 请选择 —",
       "services": [
-        { "label": "AI 与自动化", "desc": "业务流程自动化、AI Agent、智能对话机器人" },
-        { "label": "数据爬虫", "desc": "价格监控、竞品分析、线索采集、市场数据" },
-        { "label": "增长方案", "desc": "网站建设、SEO 优化、Google / Meta / TikTok 广告" }
+        {
+          "label": "AI 与自动化",
+          "desc": "业务流程自动化、AI Agent、智能对话机器人"
+        },
+        {
+          "label": "数据爬虫",
+          "desc": "价格监控、竞品分析、线索采集、市场数据"
+        },
+        {
+          "label": "增长方案",
+          "desc": "网站建设、SEO 优化、Google / Meta / TikTok 广告"
+        }
       ],
-      "budgets": ["< ¥5,000 / 月", "¥5,000 – ¥20,000 / 月", "¥20,000 – ¥50,000 / 月", "> ¥50,000 / 月", "项目制（一次性）"],
+      "budgets": [
+        "< ¥5,000 / 月",
+        "¥5,000 – ¥20,000 / 月",
+        "¥20,000 – ¥50,000 / 月",
+        "> ¥50,000 / 月",
+        "项目制（一次性）"
+      ],
       "budgetLabel": "预算范围",
-      "adPlatforms": ["Google Ads", "Meta Ads（Facebook / Instagram）", "TikTok Ads", "LinkedIn Ads", "小红书", "其他"],
+      "adPlatforms": [
+        "Google Ads",
+        "Meta Ads（Facebook / Instagram）",
+        "TikTok Ads",
+        "LinkedIn Ads",
+        "小红书",
+        "其他"
+      ],
       "titles": {
-        "ai": { "title": "告诉我们你想自动化什么", "sub": "描述越具体，我们的方案越精准" },
-        "crawler": { "title": "你需要什么数据？", "sub": "描述越具体，我们的方案越精准" },
-        "growth": { "title": "你的网站和竞争对手", "sub": "竞品信息帮我们快速理解你的市场" }
+        "ai": {
+          "title": "告诉我们您想自动化什么",
+          "sub": "描述越具体，我们的方案越精准"
+        },
+        "crawler": {
+          "title": "您需要什么数据？",
+          "sub": "描述越具体，我们的方案越精准"
+        },
+        "growth": {
+          "title": "您的网站和竞争对手",
+          "sub": "竞品信息帮我们快速理解您的市场"
+        }
       },
       "ai": {
         "scenarioLabel": "想自动化 / AI 化的业务场景",
@@ -292,38 +377,74 @@
         "painLabel": "主要痛点",
         "painPh": "人力成本高、容易出错、响应慢、数据分散…",
         "deliveryLabel": "期望交付形式",
-        "deliveryOptions": { "agent": "AI Agent（自主执行任务）", "workflow": "自动化工作流", "chatbot": "智能对话机器人", "report": "自动数据报告", "other": "其他" }
+        "deliveryOptions": {
+          "agent": "AI Agent（自主执行任务）",
+          "workflow": "自动化工作流",
+          "chatbot": "智能对话机器人",
+          "report": "自动数据报告",
+          "other": "其他"
+        }
       },
       "crawler": {
         "sourcesLabel": "目标数据来源",
         "sourcesPh": "例如：Amazon 商品价格、LinkedIn 企业联系人、各大电商平台 SKU 数据…（每行一个来源）",
         "useLabel": "数据用途",
-        "useOptions": { "price_monitor": "价格监控", "competitor": "竞品分析", "leads": "线索采集", "research": "市场研究", "other": "其他" },
+        "useOptions": {
+          "price_monitor": "价格监控",
+          "competitor": "竞品分析",
+          "leads": "线索采集",
+          "research": "市场研究",
+          "other": "其他"
+        },
         "freqLabel": "采集频率",
-        "freqOptions": { "once": "一次性", "daily": "每日", "weekly": "每周", "realtime": "实时 / 近实时" },
+        "freqOptions": {
+          "once": "一次性",
+          "daily": "每日",
+          "weekly": "每周",
+          "realtime": "实时 / 近实时"
+        },
         "formatLabel": "数据交付格式",
-        "formatOptions": { "excel": "Excel / CSV", "api": "API 接口", "dashboard": "可视化看板", "other": "其他" },
+        "formatOptions": {
+          "excel": "Excel / CSV",
+          "api": "API 接口",
+          "dashboard": "可视化看板",
+          "other": "其他"
+        },
         "volumeLabel": "预估数据量",
-        "volumeOptions": { "lt10k": "< 1 万条", "10k100k": "1 – 10 万条", "100k1m": "10 – 100 万条", "gt1m": "> 100 万条" }
+        "volumeOptions": {
+          "lt10k": "< 1 万条",
+          "10k100k": "1 – 10 万条",
+          "100k1m": "10 – 100 万条",
+          "gt1m": "> 100 万条"
+        }
       },
       "growth": {
         "websiteLabel": "网站地址",
         "competitorsLabel": "竞争对手 / 参考公司网站",
         "competitorsPh": "每行填一个，例如：\nhttps://competitor-a.com\nhttps://competitor-b.com",
-        "competitorsHint": "这是帮我们快速理解你所在市场最重要的信息",
+        "competitorsHint": "这是帮我们快速理解您所在市场最重要的信息",
         "marketLabel": "目标市场",
         "marketPh": "如：美国、东南亚、英语市场…",
         "trafficLabel": "当前月访问量",
         "trafficUnknown": "不清楚",
         "goalLabel": "主要目标",
-        "goalOptions": { "traffic": "提升自然流量", "ranking": "提升搜索排名", "conversion": "获客 / 转化", "brand": "品牌曝光" },
+        "goalOptions": {
+          "traffic": "提升自然流量",
+          "ranking": "提升搜索排名",
+          "conversion": "获客 / 转化",
+          "brand": "品牌曝光"
+        },
         "adPlatformsLabel": "已投放过的广告平台（可多选）",
         "adStatusLabel": "目前广告投放状态",
-        "adStatusOptions": { "none": "还没有投放经验，想从零开始", "poor_roi": "有投放但 ROI 不理想", "active_optimize": "正在投放，想优化或扩量" }
+        "adStatusOptions": {
+          "none": "还没有投放经验，想从零开始",
+          "poor_roi": "有投放但 ROI 不理想",
+          "active_optimize": "正在投放，想优化或扩量"
+        }
       },
       "errors": {
         "serviceType": "请选择服务类型",
-        "scenario": "请描述你的业务场景",
+        "scenario": "请描述您的业务场景",
         "dataSources": "请填写目标数据来源",
         "competitors": "请填写竞争对手/参考网站",
         "name": "请输入姓名",
@@ -332,7 +453,7 @@
       },
       "contact": {
         "nameLabel": "姓名",
-        "namePh": "你的称呼",
+        "namePh": "您的称呼",
         "emailLabel": "邮箱",
         "wechatLabel": "微信 / 手机（可选）",
         "wechatPh": "方便的话可以留个微信"
@@ -351,15 +472,36 @@
     "philosophyLabel": "我们的方法论",
     "philosophyHeadline": "内生驱动：用业务逻辑统治语义",
     "principles": [
-      { "number": "01", "title": "业务 DNA 提取", "description": "每一个伟大的业务都有其内在的公理系统。我们通过 AI 深度解构你的业务核心、受众痛点与品牌调性，确保内容产出具备天然的商业直觉。" },
-      { "number": "02", "title": "语义统治力", "description": "真正的专业不是覆盖对手的关键词，而是完善自己的知识体系。当内容逻辑严丝合缝，搜索引擎将别无选择，只能将你置于顶端。" },
-      { "number": "03", "title": "流量套利雷达", "description": "用算力替换广告费。精准锁定高 CPC 词的自然排名机会，实现降维打击。让每一分预算，都为长期的数字资产增值服务。" }
+      {
+        "number": "01",
+        "title": "业务 DNA 提取",
+        "description": "每一个伟大的业务都有其内在的公理系统。我们通过 AI 深度解构您的业务核心、受众痛点与品牌调性，确保内容产出具备天然的商业直觉。"
+      },
+      {
+        "number": "02",
+        "title": "语义统治力",
+        "description": "真正的专业不是覆盖对手的关键词，而是完善自己的知识体系。当内容逻辑严丝合缝，搜索引擎将别无选择，只能将您置于顶端。"
+      },
+      {
+        "number": "03",
+        "title": "流量套利雷达",
+        "description": "用算力替换广告费。精准锁定高 CPC 词的自然排名机会，实现降维打击。让每一分预算，都为长期的数字资产增值服务。"
+      }
     ],
     "statsLabel": "截至 2026 年 3 月",
     "stats": [
-      { "value": "10,000+", "label": "分析站点数" },
-      { "value": "2.4M+", "label": "追踪关键词" },
-      { "value": "98%", "label": "构建成功率" }
+      {
+        "value": "10,000+",
+        "label": "分析站点数"
+      },
+      {
+        "value": "2.4M+",
+        "label": "追踪关键词"
+      },
+      {
+        "value": "98%",
+        "label": "构建成功率"
+      }
     ],
     "techLabel": "平台架构",
     "techHeadline": "独立演进的 SEO 操作系统",
@@ -370,30 +512,33 @@
       "人机协同战略看板",
       "GEO 内容被引用追踪"
     ],
-    "ctaHeadline": "准备好让你的内容为你工作了吗？",
-    "ctaDescription": "分析你的站点，找出被搜索引擎忽略的内容缺口。免费开始，无需信用卡。",
+    "ctaHeadline": "准备好让您的内容为您工作了吗？",
+    "ctaDescription": "分析您的站点，找出被搜索引擎忽略的内容缺口。免费开始，无需信用卡。",
     "ctaPrimary": "免费分析我的网站",
     "ctaSecondary": "查看定价"
   },
   "auth": {
     "login": {
-      "meta": { "title": "登录 | ScaletoTop", "description": "登录或注册 ScaletoTop，开启你的数字化增长系统。" },
+      "meta": {
+        "title": "登录 | ScaletoTop",
+        "description": "登录或注册 ScaletoTop，开启您的数字化增长系统。"
+      },
       "titleEmail": "欢迎回来",
       "titleName": "开启增长之旅",
       "titleOtp": "身份验证",
       "titlePassword": "密码登录",
-      "subEmail": "登录或注册以开启你的数字化增长系统",
-      "subName": "第一次见面，该怎么称呼你？",
+      "subEmail": "登录或注册以开启您的数字化增长系统",
+      "subName": "第一次见面，该怎么称呼您？",
       "subOtp": "验证码已发送至 {email}",
-      "subPassword": "请输入你的账号密码",
+      "subPassword": "请输入您的账号密码",
       "labelEmail": "邮箱地址 / Email",
-      "labelName": "你的姓名 / Name",
+      "labelName": "您的姓名 / Name",
       "labelPassword": "密码 / Password",
-      "placeholderName": "输入你的姓名或昵称",
+      "placeholderName": "输入您的姓名或昵称",
       "btnEnter": "进入系统",
       "usePassword": "使用密码访问",
       "btnGetCode": "获取验证码",
-      "labelVerifyEmail": "验证你的邮箱",
+      "labelVerifyEmail": "验证您的邮箱",
       "labelWelcomeBack": "欢迎回来，{name}",
       "btnVerify": "验证并进入系统",
       "btnLogin": "登录",
@@ -405,16 +550,16 @@
       "errOtpWrong": "验证码错误",
       "errOtpCheck": "验证码错误，请检查",
       "errPassword": "登录失败，请检查密码",
-      "toastOtpSent": "验证码已发送至你的邮箱",
+      "toastOtpSent": "验证码已发送至您的邮箱",
       "toastRegistered": "注册成功！欢迎加入 ScaletoTop",
       "toastSignedIn": "登录成功，欢迎回来！"
     },
     "register": {
-      "titleEmail": "进入你的工作台",
-      "titleName": "很高兴认识你",
-      "titleOtp": "验证你的邮箱",
-      "subEmail": "输入邮箱，我们将向你发送登录或注册验证码",
-      "subName": "由于你是首次登录，请告诉我们该如何称呼你",
+      "titleEmail": "进入您的工作台",
+      "titleName": "很高兴认识您",
+      "titleOtp": "验证您的邮箱",
+      "subEmail": "输入邮箱，我们将向您发送登录或注册验证码",
+      "subName": "由于您是首次登录，请告诉我们该如何称呼您",
       "btnContinue": "继续以获取验证码",
       "btnSendCode": "发送验证码",
       "editEmail": "修改邮箱",
@@ -424,21 +569,21 @@
       "btnEnterDash": "进入工作台",
       "backEditName": "返回修改姓名",
       "backEditEmail": "更换邮箱",
-      "helpText": "如果你遇到任何登录问题，请联系",
+      "helpText": "如果您遇到任何登录问题，请联系",
       "support": "技术支持"
     },
     "forgot": {
       "toastSent": "重置邮件已成功投递",
       "errRequest": "请求失败，请检查邮箱是否正确",
-      "titleSent": "检查你的收件箱",
+      "titleSent": "检查您的收件箱",
       "title": "找回密码",
       "subSent": "我们已将重置链接发送至 {email}",
-      "sub": "我们将通过邮件协助你重设访问凭证",
+      "sub": "我们将通过邮件协助您重设访问凭证",
       "sentTitle": "重置链接已投递。",
-      "sentDesc": "请点击邮件中的链接来设置你的新密码。如果没有收到，请检查垃圾邮件箱。",
+      "sentDesc": "请点击邮件中的链接来设置您的新密码。如果没有收到，请检查垃圾邮件箱。",
       "reenter": "重新输入邮箱",
       "labelEmail": "注册邮箱 / Email",
-      "placeholder": "请输入你的电子邮件",
+      "placeholder": "请输入您的电子邮件",
       "btnSend": "发送重置链接",
       "backLogin": "返回登录"
     },
@@ -447,9 +592,9 @@
       "toastSuccess": "密码重置成功",
       "errFailed": "重置失败，链接可能已失效",
       "title": "设置新密码",
-      "sub": "请为你的账户设置一个强密码",
+      "sub": "请为您的账户设置一个强密码",
       "successTitle": "重置成功!",
-      "successDesc": "你的密码已更新。正在为你跳转到登录页面...",
+      "successDesc": "您的密码已更新。正在为您跳转到登录页面...",
       "goLogin": "立即去登录",
       "labelNew": "新密码",
       "phNew": "至少 8 位字符",
@@ -464,13 +609,13 @@
       "description": "有任何疑问或技术问题？通过邮件联系 ScaletoTop 支持团队，3 个工作日内回复。"
     },
     "title": "联系我们",
-    "subtitle": "有任何疑问或技术问题？我们随时为你提供支持。",
+    "subtitle": "有任何疑问或技术问题？我们随时为您提供支持。",
     "emailTitle": "电子邮件 Support",
     "emailDesc": "最直接的沟通方式，适合详细的技术咨询。",
     "responseTitle": "响应时限",
-    "responseDesc": "我们承诺在 <b>3 个工作日</b> 内回复你的咨询。",
+    "responseDesc": "我们承诺在 <b>3 个工作日</b> 内回复您的咨询。",
     "faqTitle": "常见问题",
-    "faqBody": "如果你遇到支付成功但积分未到账的情况，请在邮件中附带你的 <b>注册邮箱</b> 和 <b>支付单号</b>，以便我们快速为你补发。"
+    "faqBody": "如果您遇到支付成功但积分未到账的情况，请在邮件中附带您的 <b>注册邮箱</b> 和 <b>支付单号</b>，以便我们快速为您补发。"
   },
   "caseStudies": {
     "meta": {

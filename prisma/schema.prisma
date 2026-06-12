@@ -49,12 +49,15 @@ model Content {
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
   readingTime        Int?
+  locale             String         @default("zh")
+  translationGroupId String?
   category           Category?      @relation(fields: [categoryId], references: [id])
   coverImage         Media?         @relation("ContentCover", fields: [coverImageId], references: [id])
   previewTokens      PreviewToken[]
   seo                SeoMeta?
 
   @@index([status, visibility, publishedAt(sort: Desc)])
+  @@index([locale, status, visibility, publishedAt(sort: Desc)])
   @@index([categoryId, status])
   @@index([type, status])
 }
@@ -144,6 +147,7 @@ model User {
   updatedAt       DateTime            @updatedAt
   emailVerified   Boolean             @default(false)
   image           String?
+  locale          String              @default("zh")
   credits               Int                 @default(0)
   lastCreditWarningAt   DateTime?
   accounts        Account[]
@@ -558,6 +562,7 @@ model ConsultationRequest {
   // Admin
   status       ConsultationStatus @default(PENDING)
   adminNote    String?
+  locale       String             @default("zh")
 
   @@index([createdAt(sort: Desc)])
   @@index([status])

@@ -127,10 +127,11 @@ export default function UserLoginPage() {
                 });
                 authError = res.error;
 
-                // 如果登录成功（即账号已自动创建），则立即更新用户的姓名
+                // 如果登录成功（即账号已自动创建），则立即更新用户的姓名与语言偏好
                 if (!authError && name.trim()) {
                     await authClient.updateUser({
                         name: name.trim(),
+                        locale: locale,
                     });
                 }
             } else {

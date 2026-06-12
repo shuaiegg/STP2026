@@ -9,6 +9,8 @@ export async function updateContentMetadata(id: string, data: {
     slug?: string;
     summary?: string;
     contentMd?: string;
+    locale?: string;
+    translationGroupId?: string | null;
 }) {
     try {
         // 1. Get the content item to get the notionPageId
@@ -64,6 +66,8 @@ export async function updateContentMetadata(id: string, data: {
                 slug: data.slug,
                 summary: data.summary,
                 contentMd: data.contentMd,
+                locale: data.locale,
+                translationGroupId: data.translationGroupId,
                 updatedAt: new Date()
             }
         });
@@ -388,6 +392,52 @@ export async function analyzeContentSeo(contentId: string) {
         };
     } catch (error) {
         console.error('Failed to analyze content SEO:', error);
+        return { success: false, error: String(error) };
+    }
+}
+
+export async function associateTranslation(articleId1: string, articleId2: string) {
+    try {
+        const [a1, a2] = await Promise.all([
+            prisma.content.findUnique({ where: { id: articleId1 }, select: { translationGroupId: true } }),
+            prisma.content.findUnique({ where: { id: articleId2 }, select: { translationGroupId: true } })
+        ]);
+
+        if (!a1 || !a2) {
+            return { success: false, error: 'One or both articles not found' };
+        }
+
+        const groupId = a1.translationGroupId || a2.translationGroupId || `tg-${Math.random().toString(36).substring(2, 11)}`;
+
+        await prisma.content.updateMany({
+            where: { id: { in: [articleId1, articleId2] } },
+            data: { translationGroupId: groupId }
+        });
+
+        revalidatePath('/dashboard/admin/content');
+        revalidatePath(`/dashboard/admin/content/${articleId1}`);
+        revalidatePath(`/dashboard/admin/content/${articleId2}`);
+
+        return { success: true, groupId };
+    } catch (error) {
+        console.error('Failed to associate translation:', error);
+        return { success: false, error: String(error) };
+    }
+}
+
+export async function dissociateTranslation(articleId: string) {
+    try {
+        await prisma.content.update({
+            where: { id: articleId },
+            data: { translationGroupId: null }
+        });
+
+        revalidatePath('/dashboard/admin/content');
+        revalidatePath(`/dashboard/admin/content/${articleId}`);
+
+        return { success: true };
+    } catch (error) {
+        console.error('Failed to dissociate translation:', error);
         return { success: false, error: String(error) };
     }
 }

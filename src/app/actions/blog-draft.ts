@@ -23,6 +23,7 @@ export async function saveToBlogDraft(params: {
     title: string;
     content: string;
     summary?: string;
+    locale?: string;
 }) {
     try {
         // 7.2 Verify role === 'ADMIN'
@@ -34,7 +35,7 @@ export async function saveToBlogDraft(params: {
             return { success: false, message: 'Unauthorized' };
         }
 
-        const { title, content, summary } = params;
+        const { title, content, summary, locale = 'en' } = params;
 
         // 7.3 Implement Content creation logic
         // Generate slug with random suffix to ensure uniqueness
@@ -52,6 +53,7 @@ export async function saveToBlogDraft(params: {
                 source: 'MANUAL',
                 visibility: 'PRIVATE',
                 type: 'BLOG',
+                locale,
             }
         });
 

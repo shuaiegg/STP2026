@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { authClient } from "@/lib/auth-client";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { Lock, Loader2, CheckCircle2, ShieldCheck, KeyRound, AlertCircle, Mail, ArrowRight, ArrowLeft } from "lucide-react";
+import { Lock, Loader2, CheckCircle2, ShieldCheck, KeyRound, AlertCircle, Mail, ArrowRight, ArrowLeft, Globe } from "lucide-react";
 import { toast } from "sonner";
 import { translateAuthError } from "@/lib/auth-errors";
 import Link from "next/link";
@@ -22,6 +22,7 @@ export default function SettingsPage() {
     const [hasPassword, setHasPassword] = useState<boolean | null>(null);
     const [isOtpSent, setIsOtpSent] = useState(false);
     const [userEmail, setUserEmail] = useState("");
+    const [localePreference, setLocalePreference] = useState<string>("zh");
 
     // Fetch user session to determine if they have a password and get email
     useEffect(() => {
@@ -29,6 +30,10 @@ export default function SettingsPage() {
             const { data } = await authClient.getSession();
             if (data?.user) {
                 setUserEmail(data.user.email);
+                const user = data.user as any;
+                if (user.locale) {
+                    setLocalePreference(user.locale);
+                }
                 // In better-auth, we might not directly know if password is set from basic session
                 // We'll assume if they reach here and trigger a credential error later, they don't have one.
                 // But as a robust UX, we offer setting password via OTP natively.
@@ -174,6 +179,47 @@ export default function SettingsPage() {
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
                 {/* Left: Security Section */}
                 <div className="md:col-span-8 space-y-8">
+                    <Card className="p-8 border-2 border-brand-border-heavy bg-white">
+                        <div className="flex items-center gap-3 mb-8">
+                            <div className="w-10 h-10 rounded-xl bg-brand-primary/10 flex items-center justify-center text-brand-primary">
+                                <Globe size={24} />
+                            </div>
+                            <div>
+                                <h2 className="text-xl font-bold text-brand-text-primary">通用设置</h2>
+                                <p className="text-xs text-brand-text-muted font-medium">配置您的个人偏好和系统显示语言</p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <label className="font-mono text-[10px] font-bold text-brand-text-muted uppercase tracking-widest ml-1">界面语言 (Language)</label>
+                                <select
+                                    value={localePreference}
+                                    onChange={async (e) => {
+                                        const newLocale = e.target.value;
+                                        setLocalePreference(newLocale);
+                                        setIsPending(true);
+                                        try {
+                                            const { error } = await authClient.updateUser({
+                                                locale: newLocale,
+                                            });
+                                            if (error) throw new Error(error.message);
+                                            toast.success("语言偏好设置已更新");
+                                        } catch (err: any) {
+                                            toast.error(err.message || "更新失败");
+                                        } finally {
+                                            setIsPending(false);
+                                        }
+                                    }}
+                                    className="w-full bg-brand-surface border-2 border-brand-border rounded-xl py-3 px-4 text-brand-text-primary focus:border-brand-primary transition-all outline-none text-sm font-semibold"
+                                >
+                                    <option value="zh">🇨🇳 中文 (Chinese)</option>
+                                    <option value="en">🇺🇸 English (English)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </Card>
+
                     <Card className="p-8 border-2 border-brand-border-heavy bg-white">
                         <div className="flex items-center gap-3 mb-8">
                             <div className="w-10 h-10 rounded-xl bg-brand-primary/10 flex items-center justify-center text-brand-primary">

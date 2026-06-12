@@ -6,6 +6,7 @@ import { sendEmail, sendWelcomeEmail } from "./email";
 import { addContact } from "./email/systeme";
 import { getIntegrationValue } from "./integrations/config";
 import { revalidateTag } from "next/cache";
+import { headers } from "next/headers";
 
 export const auth = betterAuth({
     secret: process.env.BETTER_AUTH_SECRET,
@@ -17,6 +18,27 @@ export const auth = betterAuth({
         user: {
             create: {
                 after: async (user) => {
+                    // 注册 locale 检测链：NEXT_LOCALE cookie（用户手动选过语言，最强信号）
+                    // → referer 路径前缀 → Accept-Language → 'en'（站点默认语言）
+                    let clientLocale = "en";
+                    try {
+                        const reqHeaders = await headers();
+                        const cookieHeader = reqHeaders.get("cookie") || "";
+                        const cookieMatch = cookieHeader.match(/(?:^|;\s*)NEXT_LOCALE=(zh|en)/);
+                        const referer = reqHeaders.get("referer") || "";
+                        const acceptLanguage = reqHeaders.get("accept-language") || "";
+
+                        if (cookieMatch) {
+                            clientLocale = cookieMatch[1];
+                        } else if (referer) {
+                            clientLocale = (referer.includes("/zh/") || referer.endsWith("/zh")) ? "zh" : "en";
+                        } else if (/(^|,)\s*zh\b/i.test(acceptLanguage)) {
+                            clientLocale = "zh";
+                        }
+                    } catch {
+                        // headers 不可用时保持默认 'en'
+                    }
+
                     // Check if already has registration bonus to ensure idempotency
                     const existingBonus = await prisma.creditTransaction.findFirst({
                         where: {
@@ -30,14 +52,15 @@ export const auth = betterAuth({
 
                     if (existingBonus) return;
 
-                    // Grant bonus credits
+                    // Grant bonus credits and set locale
                     await prisma.$transaction([
                         prisma.user.update({
                             where: { id: user.id },
                             data: {
                                 credits: {
                                     increment: 10
-                                }
+                                },
+                                locale: clientLocale
                             }
                         }),
                         prisma.creditTransaction.create({
@@ -51,11 +74,11 @@ export const auth = betterAuth({
                     ]);
 
                     // Revalidate user cache
-                    // @ts-ignore — Next.js 16 type requires 2 args but 1-arg form works at runtime
+                    // @ts-expect-error — Next.js 16 type requires 2 args but 1-arg form works at runtime
                     revalidateTag(`user-${user.id}`);
 
                     // Send welcome email (non-blocking)
-                    sendWelcomeEmail({ email: user.email, name: user.name }).catch((err) => {
+                    sendWelcomeEmail({ email: user.email, name: user.name }, clientLocale).catch((err) => {
                         console.error('[Auth] Failed to send welcome email:', err);
                     });
 
@@ -66,7 +89,7 @@ export const auth = betterAuth({
                     ]).then(([newTag, legacyTag]) => {
                         const tag = newTag ?? legacyTag;
                         const tags = tag ? [tag] : [];
-                        return addContact(user.email, user.name || '', tags);
+                        return addContact(user.email, user.name || '', tags, clientLocale);
                     }).catch((err) => {
                         console.error('[Auth] Failed to add systeme.io contact:', err);
                     });
@@ -127,6 +150,12 @@ export const auth = betterAuth({
                 type: "number",
                 defaultValue: 0,
                 input: false
+            },
+            locale: {
+                type: "string",
+                required: false,
+                defaultValue: "zh",
+                input: true
             }
         }
     },

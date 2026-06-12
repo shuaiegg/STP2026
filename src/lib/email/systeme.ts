@@ -44,7 +44,7 @@ export type ContactResult =
 
 // ─── Contacts ─────────────────────────────────────────────────────────────────
 
-export async function addContact(email: string, name: string, tags: string[] = []): Promise<void> {
+export async function addContact(email: string, name: string, tags: string[] = [], locale?: string): Promise<void> {
   const apiKey = await getApiKey();
   if (!apiKey) {
     console.warn('[systeme.io] API key not configured — skipping contact sync');
@@ -63,7 +63,7 @@ export async function addContact(email: string, name: string, tags: string[] = [
     if (!res.ok) {
       if (res.status === 409 || res.status === 422) {
         // Contact already exists — apply tags to the existing one
-        await applyTagsToExistingContact(email, tags, apiKey);
+        await applyTagsToExistingContact(email, tags, apiKey, locale);
         return;
       }
       console.error('[systeme.io] Failed to add contact:', res.status, await res.text());
@@ -72,7 +72,7 @@ export async function addContact(email: string, name: string, tags: string[] = [
 
     // New contact created — apply tags separately (name→ID resolution)
     if (tags.length > 0) {
-      await applyTagsToExistingContact(email, tags, apiKey);
+      await applyTagsToExistingContact(email, tags, apiKey, locale);
     }
   } catch (error) {
     console.error('[systeme.io] Network error:', error);
@@ -133,11 +133,20 @@ export async function addTagToContact(contactId: number, tagId: number): Promise
 }
 
 // Resolve tag name → ID then add — used by automated trigger points
-export async function addTagToContactByName(contactId: number, tagName: string): Promise<{ ok: boolean; error?: string }> {
+export async function addTagToContactByName(contactId: number, tagName: string, locale?: string): Promise<{ ok: boolean; error?: string }> {
   const tagsResult = await getTags();
   if (!tagsResult.ok) return { ok: false, error: '获取标签列表失败' };
-  const tag = tagsResult.tags.find((t) => t.name === tagName);
-  if (!tag) return { ok: false, error: `标签「${tagName}」不存在` };
+
+  let targetTagName = tagName;
+  if (locale === 'en') {
+    const enTagName = `${tagName}_en`;
+    if (tagsResult.tags.some((t) => t.name === enTagName)) {
+      targetTagName = enTagName;
+    }
+  }
+
+  const tag = tagsResult.tags.find((t) => t.name === targetTagName);
+  if (!tag) return { ok: false, error: `标签「${targetTagName}」不存在` };
   return addTagToContact(contactId, tag.id);
 }
 
@@ -160,7 +169,7 @@ export async function removeTagFromContact(contactId: number, tagId: number): Pr
   }
 }
 
-async function applyTagsToExistingContact(email: string, tagNames: string[], apiKey: string): Promise<void> {
+async function applyTagsToExistingContact(email: string, tagNames: string[], apiKey: string, locale?: string): Promise<void> {
   if (!tagNames.length) return;
   try {
     const res = await fetch(`${BASE_URL}/contacts?email=${encodeURIComponent(email)}`, {
@@ -172,7 +181,7 @@ async function applyTagsToExistingContact(email: string, tagNames: string[], api
     const contactId = Number((data['hydra:member'] ?? data.items ?? [])[0]?.id);
     if (!contactId) return;
     for (const tagName of tagNames) {
-      await addTagToContactByName(contactId, tagName);
+      await addTagToContactByName(contactId, tagName, locale);
     }
   } catch (error) {
     console.error('[systeme.io] Failed to apply tags to existing contact:', error);

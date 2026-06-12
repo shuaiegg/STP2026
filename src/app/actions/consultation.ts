@@ -41,6 +41,7 @@ export interface ConsultationFormData {
   email: string;
   wechat?: string;
   details: ServiceDetails;
+  locale?: string;
 }
 
 export async function submitConsultation(data: ConsultationFormData): Promise<{
@@ -92,6 +93,7 @@ export async function submitConsultation(data: ConsultationFormData): Promise<{
         email: data.email.trim().toLowerCase(),
         wechat: data.wechat?.trim() || null,
         details: data.details as object,
+        locale: data.locale || 'zh',
       },
     });
   } catch (err) {
@@ -103,9 +105,9 @@ export async function submitConsultation(data: ConsultationFormData): Promise<{
   const tags = tagName ? [tagName] : [];
 
   const [emailNotify, emailConfirm, systemeResult] = await Promise.allSettled([
-    sendConsultationNotification({ ...record, details: record.details as Record<string, any> | null }),
-    sendConsultationConfirmation({ email: record.email, name: record.name }, record.serviceType),
-    addContact(record.email, record.name, tags),
+    sendConsultationNotification({ ...record, details: record.details as Record<string, unknown> | null }),
+    sendConsultationConfirmation({ email: record.email, name: record.name }, record.serviceType, record.locale),
+    addContact(record.email, record.name, tags, record.locale),
   ]);
 
   if (emailNotify.status === 'rejected') console.error('[consultation] admin email failed:', emailNotify.reason);

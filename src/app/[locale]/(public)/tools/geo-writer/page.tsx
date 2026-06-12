@@ -103,7 +103,8 @@ export default function GEOWriterPage() {
         type: 'blog',
         originalContent: '',
         url: '', // Target domain for internal linking
-        autoVisuals: false // Default to false: Auto-insert visuals into content
+        autoVisuals: false, // Default to false: Auto-insert visuals into content
+        locale: 'en'
     });
 
     const fetchRealMetadata = async (generatedContent: string, forcedTitle?: string) => {
@@ -230,6 +231,7 @@ export default function GEOWriterPage() {
                 title: finalResult?.seoMetadata?.title || selectedKeyword || '未命名文章',
                 content: fullContent,
                 summary: finalResult?.seoMetadata?.description || '',
+                locale: form.locale,
             });
 
             if (result.success) {
@@ -895,6 +897,17 @@ export default function GEOWriterPage() {
                                                 className="w-full bg-white border-2 border-slate-100 p-3 rounded-xl outline-none focus:border-brand-primary transition-all text-xs font-bold shadow-sm"
                                             >
                                                 <option value="blog">深度博客文章</option>
+                                            </select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase">输出语言 (Language)</label>
+                                            <select
+                                                value={form.locale}
+                                                onChange={(e) => setForm({ ...form, locale: e.target.value })}
+                                                className="w-full bg-white border-2 border-slate-100 p-3 rounded-xl outline-none focus:border-brand-primary transition-all text-xs font-bold shadow-sm"
+                                            >
+                                                <option value="en">English (英文)</option>
+                                                <option value="zh">Chinese (中文)</option>
                                             </select>
                                         </div>
                                         <div className="space-y-2">

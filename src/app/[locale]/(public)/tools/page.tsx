@@ -5,7 +5,7 @@ import { Link } from '@/i18n/navigation';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { JsonLd } from '@/components/seo/JsonLd';
-import { localeCanonical, BASE_URL } from '@/lib/seo/locale-metadata';
+import { getMetadataAlternates, localeCanonical, BASE_URL } from '@/lib/seo/locale-metadata';
 
 export async function generateMetadata({
   params,
@@ -19,11 +19,13 @@ export async function generateMetadata({
     description: t('description'),
     alternates: {
       canonical: localeCanonical(locale, '/tools'),
+      languages: getMetadataAlternates('/tools'),
     },
     openGraph: {
+      locale: locale === 'zh' ? 'zh_CN' : 'en_US',
       images: [
         {
-          url: '/api/og',
+          url: locale === 'zh' ? '/api/og?locale=zh' : '/api/og?locale=en',
           width: 1200,
           height: 630,
           alt: 'ScaletoTop Tools',

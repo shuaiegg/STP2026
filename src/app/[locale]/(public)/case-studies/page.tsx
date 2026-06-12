@@ -5,7 +5,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Link } from '@/i18n/navigation';
-import { localeCanonical } from '@/lib/seo/locale-metadata';
+import { getMetadataAlternates, localeCanonical, BASE_URL } from '@/lib/seo/locale-metadata';
 import { isPageAvailable } from '@/lib/i18n/page-availability';
 import type { Locale } from '@/i18n/routing';
 
@@ -19,7 +19,21 @@ export async function generateMetadata({
     return {
         title: t('title'),
         description: t('description'),
-        alternates: { canonical: localeCanonical(locale, '/case-studies') },
+        alternates: {
+            canonical: localeCanonical(locale, '/case-studies'),
+            languages: getMetadataAlternates('/case-studies'),
+        },
+        openGraph: {
+            locale: locale === 'zh' ? 'zh_CN' : 'en_US',
+            images: [
+                {
+                    url: locale === 'zh' ? '/api/og?locale=zh' : '/api/og?locale=en',
+                    width: 1200,
+                    height: 630,
+                    alt: 'ScaletoTop Case Studies',
+                },
+            ],
+        },
     };
 }
 

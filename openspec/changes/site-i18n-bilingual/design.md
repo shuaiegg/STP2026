@@ -87,7 +87,7 @@ model Content {
 - `messages/en.json` + `messages/zh.json`，next-intl 标准结构，按页面命名空间组织（`home.*`、`pricing.*`、`consultation.*`...）
 - 独立开发者 = 营销人员就是自己，文案改动走代码提交，不建 DB 文案管理
 - 现有 `const COPY` 提取（仅 4 个文件已做）作为迁移起点，其余 inline 文案借此一次性抽干净
-- **英文文案不是翻译**：英文 voice 独立撰写（禁止机翻腔），中文规则（"你不是您"）不适用于英文，英文 voice 准则后续在 `homepage-plg-repositioning` change 中定义
+- **英文文案不是翻译**：英文 voice 独立撰写（禁止机翻腔），中文规则（统一用"您"）不适用于英文，英文 voice 准则后续在 `homepage-plg-repositioning` change 中定义
 
 ---
 

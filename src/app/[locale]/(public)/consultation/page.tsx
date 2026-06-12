@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { ConsultationForm } from './ConsultationForm';
-import { localeCanonical } from '@/lib/seo/locale-metadata';
+import { getMetadataAlternates, localeCanonical, BASE_URL } from '@/lib/seo/locale-metadata';
 
 export async function generateMetadata({
   params,
@@ -13,7 +13,21 @@ export async function generateMetadata({
   return {
     title: t('title'),
     description: t('description'),
-    alternates: { canonical: localeCanonical(locale, '/consultation') },
+    alternates: {
+      canonical: localeCanonical(locale, '/consultation'),
+      languages: getMetadataAlternates('/consultation'),
+    },
+    openGraph: {
+      locale: locale === 'zh' ? 'zh_CN' : 'en_US',
+      images: [
+        {
+          url: locale === 'zh' ? '/api/og?locale=zh' : '/api/og?locale=en',
+          width: 1200,
+          height: 630,
+          alt: 'ScaletoTop Consultation',
+        },
+      ],
+    },
   };
 }
 

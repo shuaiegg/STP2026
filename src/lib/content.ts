@@ -6,6 +6,7 @@ export interface ContentFilters {
     visibility?: Visibility;
     categoryId?: string;
     type?: ContentType;
+    locale?: string;
 }
 
 export interface PaginationOptions {
@@ -27,6 +28,8 @@ export async function getPublishedContent(
     const where: any = {
         status: filters?.status || ContentStatus.PUBLISHED,
         visibility: filters?.visibility || Visibility.PUBLIC,
+        // locale 仅在显式传入时过滤（公开页必须显式传，避免静默吞掉另一语言内容）
+        ...(filters?.locale && { locale: filters.locale }),
         ...(filters?.categoryId && { categoryId: filters.categoryId }),
         ...(filters?.type && { type: filters.type }),
     };
@@ -77,12 +80,13 @@ export async function getPublishedContent(
 /**
  * Get a single published content by slug
  */
-export async function getPublishedContentBySlug(slug: string) {
+export async function getPublishedContentBySlug(slug: string, locale?: string) {
     return prisma.content.findFirst({
         where: {
             slug,
             status: ContentStatus.PUBLISHED,
             visibility: Visibility.PUBLIC,
+            ...(locale && { locale }),
         },
         include: {
             category: true,
@@ -157,7 +161,8 @@ export async function getCategoryBySlug(slug: string) {
  */
 export async function getContentByCategory(
     categorySlug: string,
-    pagination?: PaginationOptions
+    pagination?: PaginationOptions,
+    locale?: string
 ) {
     const category = await prisma.category.findUnique({
         where: { slug: categorySlug },
@@ -165,7 +170,7 @@ export async function getContentByCategory(
 
     if (!category) return null;
 
-    return getPublishedContent({ categoryId: category.id }, pagination);
+    return getPublishedContent({ categoryId: category.id, locale }, pagination);
 }
 
 /**
@@ -173,12 +178,15 @@ export async function getContentByCategory(
  */
 export async function getRelatedContent(
     currentSlug: string,
-    limit: number = 3
+    limit: number = 3,
+    locale?: string
 ) {
     const current = await prisma.content.findUnique({
         where: { slug: currentSlug },
-        select: { categoryId: true },
+        select: { categoryId: true, locale: true },
     });
+
+    const targetLocale = locale || current?.locale || 'zh';
 
     if (!current?.categoryId) {
         // Return latest content if no category
@@ -187,6 +195,7 @@ export async function getRelatedContent(
                 slug: { not: currentSlug },
                 status: ContentStatus.PUBLISHED,
                 visibility: Visibility.PUBLIC,
+                locale: targetLocale,
             },
             include: { category: true, coverImage: true },
             orderBy: { publishedAt: 'desc' },
@@ -200,6 +209,7 @@ export async function getRelatedContent(
             slug: { not: currentSlug },
             status: ContentStatus.PUBLISHED,
             visibility: Visibility.PUBLIC,
+            locale: targetLocale,
         },
         include: { category: true, coverImage: true },
         orderBy: { publishedAt: 'desc' },

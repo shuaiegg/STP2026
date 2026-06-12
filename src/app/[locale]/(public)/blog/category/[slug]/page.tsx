@@ -1,22 +1,22 @@
 import React from 'react';
 import { getTranslations } from 'next-intl/server';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { getCategoryBySlug, getContentByCategory } from '@/lib/content';
 import { Card } from '@/components/ui/Card';
 
 interface CategoryPageProps {
-    params: Promise<{ slug: string }>;
+    params: Promise<{ slug: string; locale: string }>;
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
     const t = await getTranslations('blog');
-    const { slug } = await params;
+    const { slug, locale } = await params;
 
     const [category, contentResult] = await Promise.all([
         getCategoryBySlug(slug),
-        getContentByCategory(slug),
+        getContentByCategory(slug, undefined, locale),
     ]);
 
     if (!category) {
@@ -26,8 +26,8 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     const posts = contentResult?.contents || [];
 
     const formatDate = (date: Date | null) => {
-        if (!date) return 'Not Published';
-        return date.toLocaleDateString('zh-CN', {
+        if (!date) return t('notPublishedLabel');
+        return date.toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
             year: 'numeric',
             month: 'long',
             day: 'numeric'

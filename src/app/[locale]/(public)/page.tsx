@@ -11,7 +11,7 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { getPublishedContent } from '@/lib/content';
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.scaletotop.com';
+import { getMetadataAlternates, BASE_URL } from '@/lib/seo/locale-metadata';
 
 export async function generateMetadata({
   params,
@@ -25,11 +25,13 @@ export async function generateMetadata({
     description: t('description'),
     alternates: {
       canonical: locale === 'zh' ? `${BASE_URL}/zh` : BASE_URL,
+      languages: getMetadataAlternates(''),
     },
     openGraph: {
+      locale: locale === 'zh' ? 'zh_CN' : 'en_US',
       images: [
         {
-          url: '/api/og',
+          url: locale === 'zh' ? '/api/og?locale=zh' : '/api/og?locale=en',
           width: 1200,
           height: 630,
           alt: 'ScaletoTop Home',
@@ -152,7 +154,7 @@ async function FeaturedPosts({ locale }: { locale: string }) {
   const t = await getTranslations('home.resources');
   let contents: any[] = [];
   try {
-    const result = await getPublishedContent({}, { limit: 3 });
+    const result = await getPublishedContent({ locale }, { limit: 3 });
     contents = result?.contents || [];
   } catch (error) {
     console.error('Failed to fetch published content for home page:', error);
