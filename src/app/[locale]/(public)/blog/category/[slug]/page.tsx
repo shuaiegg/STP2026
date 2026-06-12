@@ -1,0 +1,92 @@
+import React from 'react';
+import { getTranslations } from 'next-intl/server';
+import Link from 'next/link';
+import Image from 'next/image';
+import { notFound } from 'next/navigation';
+import { getCategoryBySlug, getContentByCategory } from '@/lib/content';
+import { Card } from '@/components/ui/Card';
+
+interface CategoryPageProps {
+    params: Promise<{ slug: string }>;
+}
+
+export default async function CategoryPage({ params }: CategoryPageProps) {
+    const t = await getTranslations('blog');
+    const { slug } = await params;
+
+    const [category, contentResult] = await Promise.all([
+        getCategoryBySlug(slug),
+        getContentByCategory(slug),
+    ]);
+
+    if (!category) {
+        return notFound();
+    }
+
+    const posts = contentResult?.contents || [];
+
+    const formatDate = (date: Date | null) => {
+        if (!date) return 'Not Published';
+        return date.toLocaleDateString('zh-CN', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    };
+
+    return (
+        <div className="max-w-7xl mx-auto px-6 py-16">
+            <header className="mb-16 max-w-3xl">
+                <div className="flex items-center gap-4 mb-6">
+                    <div className="w-1.5 h-10 bg-brand-primary rounded-full"></div>
+                    <h1 className="text-4xl font-bold text-brand-text-primary tracking-tight">{category.name}</h1>
+                </div>
+                <p className="text-xl text-brand-text-secondary leading-relaxed">
+                    {category.description}
+                </p>
+            </header>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {posts.map((post: any) => {
+                    const coverSrc = post.coverImage?.storageUrl || post.coverImage?.originalUrl || '/logo-512.png';
+                    return (
+                        <Link key={post.id} href={`/blog/${post.slug}`}>
+                            <Card className="h-full flex flex-col group">
+                                <div className="aspect-[16/10] bg-brand-surface relative overflow-hidden">
+                                    <Image 
+                                        src={coverSrc} 
+                                        alt={post.title} 
+                                        fill 
+                                        className="object-cover transition-transform duration-500 group-hover:scale-105" 
+                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                    />
+                                </div>
+                                <div className="p-6">
+                                    <h3 className="text-lg font-bold text-brand-text-primary mb-3 group-hover:text-brand-primary transition-colors">
+                                        {post.title}
+                                    </h3>
+                                    <p className="text-sm text-brand-text-secondary mb-4 line-clamp-2 leading-relaxed">
+                                        {post.summary}
+                                    </p>
+                                    <div className="text-[10px] font-bold text-brand-text-muted uppercase tracking-widest">
+                                        {formatDate(post.publishedAt)}
+                                    </div>
+                                </div>
+                            </Card>
+                        </Link>
+                    );
+                })}
+            </div>
+
+            <div className="mt-20 p-12 bg-brand-primary rounded-2xl text-white flex flex-col md:flex-row items-center gap-8 shadow-xl shadow-brand-primary/10">
+                <div className="flex-1 text-center md:text-left">
+                    <h3 className="text-2xl font-bold mb-2">{t('categoryCtaTitle', { name: category.name })}</h3>
+                    <p className="text-brand-primary-muted">{t('categoryCtaDesc')}</p>
+                </div>
+                <button className="bg-white text-brand-primary px-8 py-3 rounded-lg font-bold hover:bg-brand-primary-muted transition-colors">
+                    {t('categoryCtaButton')}
+                </button>
+            </div>
+        </div>
+    );
+}

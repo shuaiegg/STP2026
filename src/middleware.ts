@@ -1,4 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import createMiddleware from "next-intl/middleware";
+import { routing } from "@/i18n/routing";
+
+// 公开站点的 locale 解析（en 根路径 / zh 前缀），不做自动语言跳转
+const intlMiddleware = createMiddleware(routing);
 
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
@@ -8,53 +13,50 @@ export async function middleware(request: NextRequest) {
         request.cookies.get("__Secure-better-auth.session_token");
 
     // --- 1. Unified Dashboard Redirect Rules ---
-    
-    // 2.1 Whitelist /admin/setup (Keep independent)
+
+    // 1.1 Whitelist /admin/setup (Keep independent)
     if (pathname === '/admin/setup') {
         return NextResponse.next();
     }
 
-    // 2.2 /admin/login → /login (301)
+    // 1.2 /admin/login → /login (301)
     if (pathname === '/admin/login') {
         return NextResponse.redirect(new URL('/login', request.url), 301);
     }
 
-    // 2.3 /admin → /dashboard (301)
+    // 1.3 /admin → /dashboard (301)
     if (pathname === '/admin') {
         return NextResponse.redirect(new URL('/dashboard', request.url), 301);
     }
 
-    // 2.4 /admin/:path* → /dashboard/admin/:path* (301)
-    // This handles sub-routes like /admin/content, /admin/sync etc.
+    // 1.4 /admin/:path* → /dashboard/admin/:path* (301)
     if (pathname.startsWith('/admin/')) {
         const newPath = pathname.replace('/admin/', '/dashboard/admin/');
         return NextResponse.redirect(new URL(newPath, request.url), 301);
     }
 
-    // --- 2. Standard Protection Logic ---
+    // --- 2. Protected app routes (no locale segment, skip intl) ---
 
-    // Redirect already-authenticated users away from /login
-    if (pathname === '/login' && sessionCookie) {
-        return NextResponse.redirect(new URL('/dashboard', request.url));
-    }
-
-    const isPathDashboard = pathname.startsWith('/dashboard');
-    const isPathApiAuth = pathname.startsWith('/api/auth');
-
-    // Allow API auth and non-dashboard routes to pass through
-    if (isPathApiAuth || !isPathDashboard) {
+    if (pathname.startsWith('/dashboard')) {
+        // Redirect unauthenticated users to /login
+        if (!sessionCookie) {
+            return NextResponse.redirect(new URL('/login', request.url));
+        }
         return NextResponse.next();
     }
 
-    // Protected dashboard paths: redirect unauthenticated users to /login
-    if (!sessionCookie) {
-        return NextResponse.redirect(new URL('/login', request.url));
+    // --- 3. Public routes (locale-aware) ---
+
+    // Redirect already-authenticated users away from login pages (/login, /zh/login)
+    if ((pathname === '/login' || pathname === '/zh/login') && sessionCookie) {
+        return NextResponse.redirect(new URL('/dashboard', request.url));
     }
 
-    return NextResponse.next();
+    // next-intl: locale 前缀解析/规范化（/en/* → /*，/zh 保持前缀）
+    return intlMiddleware(request);
 }
 
 export const config = {
-    // 2.5 Ensure matcher includes /admin/:path* and /dashboard/:path*
-    matcher: ['/admin/:path*', '/dashboard/:path*', '/api/auth/:path*', '/login'],
+    // 覆盖除 api、Next 内部资源、静态文件（含点号）外的全部路径
+    matcher: ['/((?!api|_next|_vercel|.*\\..*).*)'],
 };

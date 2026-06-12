@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { getLocale } from "next-intl/server";
 import { Plus_Jakarta_Sans, Instrument_Sans, JetBrains_Mono } from "next/font/google";
 import { CSPostHogProvider } from "@/components/providers/PostHogProvider";
 import { Toaster } from "sonner";
@@ -32,11 +33,14 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // [locale] 段内返回 URL locale；段外（dashboard 等）回落 defaultLocale
+  const locale = await getLocale();
+  const htmlLang = locale === 'zh' ? 'zh-Hans' : 'en';
   const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
   const isProduction = process.env.NODE_ENV === 'production';
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.scaletotop.com';
@@ -66,7 +70,7 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="zh-Hans" className={`${plusJakartaSans.variable} ${instrumentSans.variable} ${jetBrainsMono.variable}`}>
+    <html lang={htmlLang} className={`${plusJakartaSans.variable} ${instrumentSans.variable} ${jetBrainsMono.variable}`}>
       <head>
         <JsonLd data={organizationSchema} />
         <JsonLd data={websiteSchema} />

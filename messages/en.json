@@ -1,0 +1,486 @@
+{
+  "common": {
+    "siteName": "ScaletoTop",
+    "dashboard": "Dashboard",
+    "login": "Log in",
+    "register": "Get started",
+    "signOut": "Sign out",
+    "loading": "Loading…",
+    "language": "English"
+  },
+  "nav": {
+    "home": "Home",
+    "blog": "Blog",
+    "tools": "Tools",
+    "pricing": "Pricing",
+    "about": "About"
+  },
+  "footer": {
+    "tagline": "Engineering-driven digital marketing. Technical depth that compounds into measurable, repeatable growth.",
+    "productTitle": "Product",
+    "productTools": "pSEO automation tools",
+    "productPricing": "Pricing",
+    "productConsultation": "Consulting (limited)",
+    "resourcesTitle": "Resources",
+    "resourcesBlog": "Latest articles",
+    "resourcesCaseStudies": "Case studies",
+    "resourcesContact": "Contact",
+    "aboutTitle": "Company",
+    "aboutUs": "About ScaletoTop",
+    "aboutPrivacy": "Privacy policy",
+    "aboutTerms": "Terms of service",
+    "aboutRefund": "Refund policy",
+    "copyright": "© 2026 ScaletoTop Engineering. Built for high-growth teams.",
+    "contact": "Contact",
+    "refund": "Refund policy"
+  },
+  "banner": {
+    "suggestion": "Looks like you prefer English — switch to the English version?",
+    "switch": "Switch to English",
+    "dismiss": "Stay on this language"
+  },
+  "home": {
+    "meta": {
+      "title": "ScaletoTop | 50+ Qualified Overseas Leads Every Month",
+      "description": "Built for companies expanding internationally. Precision paid acquisition, SEO content systems, and automation tools that create a predictable, low-cost overseas lead engine."
+    },
+    "hero": {
+      "badge": "Trusted by 50+ companies expanding globally",
+      "titleLine1": "Turn your overseas business into",
+      "titleLine2": "50+ qualified leads every month",
+      "subtitle": "Built for companies expanding internationally. Precision paid acquisition, SEO content systems, and automation tools that create a predictable, low-cost overseas lead engine.",
+      "ctaPrimary": "Get your free growth audit",
+      "ctaPrimaryMicro": "No credit card · Tailored growth plan",
+      "ctaSecondary": "Explore the tools"
+    },
+    "metrics": {
+      "stats": [
+        { "value": 500, "suffix": "+", "label": "Leads generated" },
+        { "value": 50, "suffix": "+", "label": "Companies served" },
+        { "value": 30, "suffix": "+", "label": "Countries covered" },
+        { "value": 3, "suffix": "x", "label": "Avg. ROI uplift" }
+      ]
+    },
+    "clients": {
+      "title": "Teams that chose ScaletoTop"
+    },
+    "process": {
+      "subtitle": "How it works",
+      "titleLine1": "Three steps to build your",
+      "titleLine2": "overseas lead engine",
+      "description": "We don't just run ads — we build a repeatable, sustainable acquisition system around your business",
+      "stepLabel": "Step",
+      "steps": [
+        { "num": "01", "title": "Growth audit", "desc": "We analyze your product, market, and current channels to find the acquisition mix that fits you" },
+        { "num": "02", "title": "Custom strategy", "desc": "Based on the audit, we design a combined ads + content + tooling strategy with a concrete execution plan" },
+        { "num": "03", "title": "Execute & optimize", "desc": "We run the plan, track the data, and keep optimizing for conversion" }
+      ]
+    },
+    "methods": {
+      "subtitle": "Acquisition methods",
+      "titleLine1": "Three methods, combined",
+      "titleLine2": "into one closed loop",
+      "description": "Ads bring instant traffic, content compounds into a long-term asset, and tools multiply your efficiency",
+      "items": [
+        {
+          "num": "01",
+          "title": "Precision paid ads",
+          "desc": "Google Ads + Meta Ads that reach your target customers abroad — from audience targeting to conversion tracking",
+          "tags": ["Google Ads", "Meta", "LinkedIn"],
+          "label": "Instant pipeline"
+        },
+        {
+          "num": "02",
+          "title": "SEO content engine",
+          "desc": "A repeatable content production pipeline — from keyword research to on-page optimization — that turns content into a compounding acquisition asset",
+          "tags": ["SEO", "Blog", "Video"],
+          "label": "Long-term compounding"
+        },
+        {
+          "num": "03",
+          "title": "Automation tools",
+          "desc": "Productized tooling that turns repetitive manual work into scalable processes, so small teams can acquire customers at scale",
+          "tags": ["Automation", "CRM", "Email"],
+          "label": "Scale multiplier"
+        }
+      ]
+    },
+    "testimonials": {
+      "subtitle": "Customer stories",
+      "titleLine1": "What our clients say",
+      "titleLine2": "about working with us",
+      "items": [
+        {
+          "quote": "We went from knowing nothing about overseas marketing to a steady 20+ inquiries a month. ScaletoTop built our entire acquisition pipeline",
+          "author": "Mr. Chen",
+          "role": "Founder",
+          "company": "Smart manufacturing company, East China",
+          "result": "Leads +280%"
+        },
+        {
+          "quote": "The most valuable part: they didn't just run our ads — their AI content tools gave us the ability to produce at scale, at low cost",
+          "author": "Sarah",
+          "role": "Head of Marketing",
+          "company": "Cross-border DTC brand",
+          "result": "ROI 4.2x"
+        },
+        {
+          "quote": "The SEO content engine won us top-3 rankings on 30+ core keywords within six months. Most of our inquiries now come from precise organic traffic",
+          "author": "Mr. Zhang",
+          "role": "CEO",
+          "company": "New materials brand, Shenzhen",
+          "result": "Traffic +500%"
+        }
+      ]
+    },
+    "resources": {
+      "subtitle": "Resources",
+      "titleLine1": "Playbooks",
+      "titleLine2": "& case breakdowns",
+      "cta": "View all articles",
+      "emptyTitle": "More content coming soon",
+      "emptyDesc": "We're putting together hands-on case studies. Stay tuned.",
+      "notPublished": "Unpublished",
+      "minutes": "{count} min read"
+    },
+    "cta": {
+      "titleLine1": "Ready to build your",
+      "titleLine2": "overseas lead engine?",
+      "subtitle": "Get a free, personalized growth audit and find the acquisition mix that fits your business",
+      "primary": "Start growing now",
+      "secondary": "Read the methodology"
+    }
+  },
+  "blog": {
+    "meta": {
+      "title": "International Growth Blog | ScaletoTop",
+      "description": "Hands-on breakdowns of customer acquisition for global businesses: paid ad strategy, SEO content systems, and automation workflows that compound overseas growth."
+    },
+    "schemaDescription": "International growth blog: hands-on breakdowns of acquisition methods for businesses expanding globally.",
+    "pageLabel": "SEO insights · Growth methodology",
+    "headline": "Blog",
+    "subheadline": "Engineering-grade deep dives into SEO, GEO, and digital growth.",
+    "allLabel": "All",
+    "readMoreLabel": "Read article",
+    "emptyTitle": "No articles in this category yet",
+    "emptyDescription": "Try another category, or check back soon.",
+    "minutes": "{count} min",
+    "breadcrumbHome": "Home",
+    "breadcrumbBlog": "Blog",
+    "newsletterTitle": "Join the ScaletoTop briefing",
+    "newsletterDesc": "Cutting-edge technical marketing strategy and real audit case studies, weekly. 5,000+ experts subscribed.",
+    "newsletterCta": "Subscribe",
+    "related": "Related insights",
+    "categoryCtaTitle": "Master {name} at scale",
+    "categoryCtaDesc": "Get our internal playbooks, built for high-growth engineering teams.",
+    "categoryCtaButton": "Get it free",
+    "previewBanner": "Preview mode — this content is not published yet (TOKEN: {token})",
+    "previewSuffix": "(preview)",
+    "previewRendering": "Rendering content..."
+  },
+  "pricing": {
+    "meta": {
+      "title": "Credits & Pricing | ScaletoTop",
+      "description": "Flexible pay-as-you-go pricing with no monthly subscription. AI content generation, site SEO audits, and more — billed in credits, built for lean teams."
+    },
+    "heroTitle1": "Top up as needed, ",
+    "heroTitle2": "use instantly",
+    "heroSubtitle": "No subscription. $9 unlocks your data-driven AI writing engine.",
+    "recommended": "Best value",
+    "oneTime": "/ one-time top-up",
+    "packDescRecommended": "The best price-to-value pick for sustained growth experiments",
+    "packDesc": "Flexible top-up — start your content workflow anytime",
+    "creditsLabel": "AI credits",
+    "perCredit": "≈ ${value} / credit",
+    "valueEstimate": "What you get",
+    "valueProp50": "Roughly 3 long-form articles or 10 site audits",
+    "valueProp130": "Roughly 8 long-form articles or 26 site audits",
+    "valueProp300": "Roughly 20 long-form articles or 60 site audits",
+    "features": [
+      "Unlock every AI marketing tool",
+      "Full data analysis access",
+      "Credits never expire",
+      "Real-time balance tracking"
+    ],
+    "buyNow": "Buy now",
+    "costRefTitle": "Credit cost reference",
+    "costRefSubtitle": "Transparent pricing — every feature is open to every credit holder",
+    "costRefs": [
+      { "name": "StellarWriter", "cost": "15 credits / article", "desc": "AI-driven long-form content generation with SEO optimization" },
+      { "name": "Site SEO audit", "cost": "5 credits / run", "desc": "Full-site technical SEO scan with visual constellation report" },
+      { "name": "Keyword research", "cost": "Usage-based", "desc": "Coming soon: deep niche keyword analysis" }
+    ],
+    "costNote": "Note: StellarWriter consumption depends on content length and complexity; 15 credits is the average per generation.",
+    "paymentTitle": "Alipay and all major payment methods",
+    "paymentDesc": "Securely processed by Creem. Alipay QR supported for users in China, converted at live exchange rates."
+  },
+  "tools": {
+    "meta": {
+      "title": "International Marketing Toolbox | ScaletoTop",
+      "description": "AI-powered tools for international marketing: multilingual content generation, site SEO analysis, and competitive intelligence — everything you need to acquire customers abroad."
+    },
+    "title": "The growth efficiency toolkit",
+    "intro": "Automation tools built for global-facing teams. Turn repetitive work into pipelines and make every decision measurable and traceable.",
+    "howToUse": "💡 How to use:",
+    "items": [
+      {
+        "name": "SEO & GEO Writing Optimizer",
+        "description": "Generate high-converting, location-targeted B2B copy in one click, powered by Google Maps data and local SEO algorithms.",
+        "useCase": "Spin up localized service pages for multiple cities and capture high-intent local long-tail search traffic at scale.",
+        "cost": "50 credits / run",
+        "badge": "Popular",
+        "cta": "Use now"
+      },
+      {
+        "name": "Google Maps Lead Finder",
+        "description": "Collect B2B prospect data across global regions — phone numbers, websites, social profiles, and locations.",
+        "useCase": "Pull accurate contact lists of distributors or prospects in your target market for cold outreach and follow-up.",
+        "cost": "50 credits / run",
+        "badge": "Beta",
+        "cta": "Request access"
+      },
+      {
+        "name": "Site Health Audit",
+        "description": "Scan loading speed, SEO baselines, and mobile readiness across your site, with an actionable fix list.",
+        "useCase": "Verify your site meets Google's technical guidelines before launch and catch ranking-killers early.",
+        "cost": "Free",
+        "badge": "In development",
+        "cta": "Join waitlist"
+      }
+    ]
+  },
+  "consultation": {
+    "meta": {
+      "title": "Free Consultation — ScaletoTop",
+      "description": "Tell us about your international growth goals and get a tailored SEO + content + GEO growth plan."
+    },
+    "badge": "Free consultation",
+    "title": "Get your business seen in global markets",
+    "sub": "Fill in the form below and we'll send tailored recommendations within 1 business day",
+    "trustLine": "50+ brands served · Response time < 24h · No pushy sales",
+    "form": {
+      "step1Title": "What do you need help with?",
+      "step1Sub": "Pick the service that best matches your needs",
+      "next": "Next",
+      "back": "Back",
+      "submit": "Submit",
+      "submitting": "Submitting…",
+      "step3Title": "How can we reach you?",
+      "step3Sub": "We usually reply within 1 business day",
+      "successTitle": "We've got your request!",
+      "successBody": "We'll get back to you within 1 business day — keep an eye on your inbox.",
+      "successCta": "Try GEO Writer for free →",
+      "selectPlaceholder": "— Select —",
+      "services": [
+        { "label": "AI & automation", "desc": "Workflow automation, AI agents, intelligent chatbots" },
+        { "label": "Data crawling", "desc": "Price monitoring, competitor analysis, lead collection, market data" },
+        { "label": "Growth program", "desc": "Web build-out, SEO, Google / Meta / TikTok ads" }
+      ],
+      "budgets": ["< ¥5,000 / month", "¥5,000 – ¥20,000 / month", "¥20,000 – ¥50,000 / month", "> ¥50,000 / month", "Project-based (one-off)"],
+      "budgetLabel": "Budget range",
+      "adPlatforms": ["Google Ads", "Meta Ads (Facebook / Instagram)", "TikTok Ads", "LinkedIn Ads", "Xiaohongshu", "Other"],
+      "titles": {
+        "ai": { "title": "Tell us what you want to automate", "sub": "The more specific you are, the sharper our proposal" },
+        "crawler": { "title": "What data do you need?", "sub": "The more specific you are, the sharper our proposal" },
+        "growth": { "title": "Your site and your competitors", "sub": "Competitor info helps us understand your market fast" }
+      },
+      "ai": {
+        "scenarioLabel": "Business scenario to automate / AI-enable",
+        "scenarioPh": "e.g. Manually compiling quotes for customers takes 2 hours a day; support keeps answering the same questions…",
+        "toolsLabel": "Tools / systems you currently use",
+        "toolsPh": "e.g. Lark, WeCom, Salesforce, Excel, in-house systems…",
+        "painLabel": "Main pain points",
+        "painPh": "High labor cost, error-prone, slow response, scattered data…",
+        "deliveryLabel": "Preferred deliverable",
+        "deliveryOptions": { "agent": "AI agent (autonomous task execution)", "workflow": "Automated workflow", "chatbot": "Intelligent chatbot", "report": "Automated data reports", "other": "Other" }
+      },
+      "crawler": {
+        "sourcesLabel": "Target data sources",
+        "sourcesPh": "e.g. Amazon product prices, LinkedIn company contacts, marketplace SKU data… (one source per line)",
+        "useLabel": "Data purpose",
+        "useOptions": { "price_monitor": "Price monitoring", "competitor": "Competitor analysis", "leads": "Lead collection", "research": "Market research", "other": "Other" },
+        "freqLabel": "Collection frequency",
+        "freqOptions": { "once": "One-off", "daily": "Daily", "weekly": "Weekly", "realtime": "Real-time / near real-time" },
+        "formatLabel": "Delivery format",
+        "formatOptions": { "excel": "Excel / CSV", "api": "API", "dashboard": "Visual dashboard", "other": "Other" },
+        "volumeLabel": "Estimated volume",
+        "volumeOptions": { "lt10k": "< 10k records", "10k100k": "10k – 100k records", "100k1m": "100k – 1M records", "gt1m": "> 1M records" }
+      },
+      "growth": {
+        "websiteLabel": "Website URL",
+        "competitorsLabel": "Competitors / reference companies",
+        "competitorsPh": "One per line, e.g.\nhttps://competitor-a.com\nhttps://competitor-b.com",
+        "competitorsHint": "This is the single most useful input for understanding your market quickly",
+        "marketLabel": "Target market",
+        "marketPh": "e.g. US, Southeast Asia, English-speaking markets…",
+        "trafficLabel": "Current monthly traffic",
+        "trafficUnknown": "Not sure",
+        "goalLabel": "Primary goal",
+        "goalOptions": { "traffic": "Grow organic traffic", "ranking": "Improve search rankings", "conversion": "Leads / conversions", "brand": "Brand visibility" },
+        "adPlatformsLabel": "Ad platforms you've used (multi-select)",
+        "adStatusLabel": "Current ad status",
+        "adStatusOptions": { "none": "No ads experience yet — starting from zero", "poor_roi": "Running ads but ROI is poor", "active_optimize": "Actively running — want to optimize or scale" }
+      },
+      "errors": {
+        "serviceType": "Please pick a service type",
+        "scenario": "Please describe your business scenario",
+        "dataSources": "Please list your target data sources",
+        "competitors": "Please list competitors / reference sites",
+        "name": "Please enter your name",
+        "email": "Please enter your email",
+        "emailInvalid": "Enter a valid email address"
+      },
+      "contact": {
+        "nameLabel": "Name",
+        "namePh": "What should we call you?",
+        "emailLabel": "Email",
+        "wechatLabel": "WeChat / phone (optional)",
+        "wechatPh": "Leave a WeChat ID if convenient"
+      }
+    }
+  },
+  "about": {
+    "meta": {
+      "title": "About | ScaletoTop",
+      "description": "The ScaletoTop methodology: internally driven, governing semantics with business logic. Every piece of content becomes a measurable asset."
+    },
+    "badge": "ScaletoTop · About",
+    "heroHeadline": "Why does 99% of content burn money?",
+    "heroHighlight": "When results are on the line, volume was never a moat.",
+    "heroDescription": "In the age of AI content floods, we don't chase \"more\" — we chase more complete logic. Every piece of content should be a measurable asset, not a sunk cost.",
+    "philosophyLabel": "Our methodology",
+    "philosophyHeadline": "Internally driven: govern semantics with business logic",
+    "principles": [
+      { "number": "01", "title": "Business DNA extraction", "description": "Every great business has its own axiomatic system. We use AI to deconstruct your core business, audience pain points, and brand voice, so the content we produce carries native commercial instinct." },
+      { "number": "02", "title": "Semantic authority", "description": "Real expertise isn't covering your competitor's keywords — it's completing your own knowledge system. When your content logic is airtight, search engines have no choice but to put you on top." },
+      { "number": "03", "title": "Traffic arbitrage radar", "description": "Replace ad spend with compute. Lock onto organic ranking opportunities for high-CPC keywords and win asymmetrically. Every dollar of budget compounds into long-term digital assets." }
+    ],
+    "statsLabel": "As of March 2026",
+    "stats": [
+      { "value": "10,000+", "label": "Sites analyzed" },
+      { "value": "2.4M+", "label": "Keywords tracked" },
+      { "value": "98%", "label": "Build success rate" }
+    ],
+    "techLabel": "Platform architecture",
+    "techHeadline": "A self-evolving SEO operating system",
+    "techDescription": "STP isn't a toolbox — it's an organic system that monitors and corrects itself. From Site Intelligence reconnaissance to GEO Writer execution, it eliminates the cognitive load between spotting an opportunity and shipping the result.",
+    "techFeatures": [
+      "Real-time site health audits",
+      "Automated semantic debt scoring",
+      "Human-AI strategy board",
+      "GEO citation tracking"
+    ],
+    "ctaHeadline": "Ready to make your content work for you?",
+    "ctaDescription": "Analyze your site and find the content gaps search engines are ignoring. Free to start, no credit card required.",
+    "ctaPrimary": "Analyze my site for free",
+    "ctaSecondary": "View pricing"
+  },
+  "auth": {
+    "login": {
+      "meta": { "title": "Sign in | ScaletoTop", "description": "Sign in or create a ScaletoTop account to start your growth system." },
+      "titleEmail": "Welcome back",
+      "titleName": "Start your growth journey",
+      "titleOtp": "Verify your identity",
+      "titlePassword": "Password sign-in",
+      "subEmail": "Sign in or create an account to start your growth system",
+      "subName": "Nice to meet you — what should we call you?",
+      "subOtp": "We sent a verification code to {email}",
+      "subPassword": "Enter your account password",
+      "labelEmail": "Email",
+      "labelName": "Name",
+      "labelPassword": "Password",
+      "placeholderName": "Your name or nickname",
+      "btnEnter": "Continue",
+      "usePassword": "Use password instead",
+      "btnGetCode": "Get verification code",
+      "labelVerifyEmail": "Verify your email",
+      "labelWelcomeBack": "Welcome back, {name}",
+      "btnVerify": "Verify & continue",
+      "btnLogin": "Sign in",
+      "oldFriend": "friend",
+      "errInvalidEmail": "Enter a valid email address",
+      "errServer": "Server error — please try again later",
+      "errNameLen": "Your name needs at least 2 characters",
+      "errOtpSend": "Failed to send the verification code",
+      "errOtpWrong": "Incorrect verification code",
+      "errOtpCheck": "Incorrect code — please check and retry",
+      "errPassword": "Sign-in failed — check your password",
+      "toastOtpSent": "Verification code sent to your email",
+      "toastRegistered": "Account created — welcome to ScaletoTop!",
+      "toastSignedIn": "Signed in — welcome back!"
+    },
+    "register": {
+      "titleEmail": "Enter your workspace",
+      "titleName": "Nice to meet you",
+      "titleOtp": "Verify your email",
+      "subEmail": "Enter your email and we'll send you a sign-in code",
+      "subName": "Since this is your first visit, tell us what to call you",
+      "btnContinue": "Continue to get the code",
+      "btnSendCode": "Send verification code",
+      "editEmail": "Edit email",
+      "otpHintNew": "Check your inbox and enter the 6-digit code",
+      "otpHintBack": "Welcome back, {name}! Enter the 6-digit code",
+      "btnFinishNew": "Finish sign-up & claim 10 credits",
+      "btnEnterDash": "Enter workspace",
+      "backEditName": "Back to edit name",
+      "backEditEmail": "Change email",
+      "helpText": "Having trouble signing in? Contact",
+      "support": "support"
+    },
+    "forgot": {
+      "toastSent": "Reset email sent",
+      "errRequest": "Request failed — check that the email address is correct",
+      "titleSent": "Check your inbox",
+      "title": "Reset your password",
+      "subSent": "We sent a reset link to {email}",
+      "sub": "We'll email you a link to reset your credentials",
+      "sentTitle": "Reset link delivered.",
+      "sentDesc": "Click the link in the email to set a new password. If you don't see it, check your spam folder.",
+      "reenter": "Re-enter email",
+      "labelEmail": "Account email",
+      "placeholder": "you@example.com",
+      "btnSend": "Send reset link",
+      "backLogin": "Back to sign in"
+    },
+    "reset": {
+      "errMismatch": "The passwords don't match",
+      "toastSuccess": "Password reset successful",
+      "errFailed": "Reset failed — the link may have expired",
+      "title": "Set a new password",
+      "sub": "Choose a strong password for your account",
+      "successTitle": "Success!",
+      "successDesc": "Your password has been updated. Redirecting to sign in…",
+      "goLogin": "Go to sign in",
+      "labelNew": "New password",
+      "phNew": "At least 8 characters",
+      "labelConfirm": "Confirm new password",
+      "phConfirm": "Repeat the password",
+      "btnReset": "Reset & save password"
+    }
+  },
+  "contact": {
+    "meta": {
+      "title": "Contact | ScaletoTop",
+      "description": "Questions or technical issues? Reach the ScaletoTop support team by email — we respond within 3 business days."
+    },
+    "title": "Contact us",
+    "subtitle": "Questions or technical issues? We're here to help.",
+    "emailTitle": "Email support",
+    "emailDesc": "The most direct channel, best for detailed technical questions.",
+    "responseTitle": "Response time",
+    "responseDesc": "We respond to every inquiry within <b>3 business days</b>.",
+    "faqTitle": "Common questions",
+    "faqBody": "If a payment succeeded but credits haven't arrived, include your <b>account email</b> and <b>payment reference</b> in the message so we can credit you quickly."
+  },
+  "caseStudies": {
+    "meta": {
+      "title": "Case Studies | ScaletoTop",
+      "description": "Growth case breakdowns for businesses expanding globally. Coming soon."
+    },
+    "title": "Under construction...",
+    "desc": "We're hard at work building this module. Stay tuned!",
+    "backHome": "Back to home"
+  },
+  "legal": {},
+  "notFound": {}
+}

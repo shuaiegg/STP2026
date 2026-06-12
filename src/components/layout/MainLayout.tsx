@@ -1,43 +1,46 @@
 "use client";
 
 import React, { useRef, useState } from 'react';
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import NextLink from 'next/link';
+import { useTranslations } from 'next-intl';
+import { Link, usePathname } from '@/i18n/navigation';
 import { Button } from '../ui/Button';
+import { LocaleSwitcher } from './LocaleSwitcher';
 import { authClient } from '@/lib/auth-client';
 
+// label 为 messages key（nav.* / footer.*），渲染时翻译
 const NAV_ITEMS = [
-    { href: '/', label: '首页', icon: 'home' as const },
-    { href: '/blog', label: '博客文章', icon: 'blog' as const },
-    { href: '/tools', label: '效率工具', icon: 'tools' as const },
-    { href: '/pricing', label: '定价方案', icon: 'pricing' as const },
-    { href: '/about', label: '关于我们', icon: 'about' as const }
+    { href: '/', labelKey: 'home', icon: 'home' as const },
+    { href: '/blog', labelKey: 'blog', icon: 'blog' as const },
+    { href: '/tools', labelKey: 'tools', icon: 'tools' as const },
+    { href: '/pricing', labelKey: 'pricing', icon: 'pricing' as const },
+    { href: '/about', labelKey: 'about', icon: 'about' as const }
 ];
 
 const FOOTER_LINKS = [
     {
-        title: '产品服务',
+        titleKey: 'productTitle',
         links: [
-            { label: 'pSEO 自动化工具', href: '/tools', disabled: false },
-            { label: '定价方案', href: '/pricing', disabled: false },
-            { label: '业务咨询（限量）', href: '/consultation', disabled: false }
+            { labelKey: 'productTools', href: '/tools', disabled: false },
+            { labelKey: 'productPricing', href: '/pricing', disabled: false },
+            { labelKey: 'productConsultation', href: '/consultation', disabled: false }
         ]
     },
     {
-        title: '知识库',
+        titleKey: 'resourcesTitle',
         links: [
-            { label: '最新文章', href: '/blog', disabled: false },
-            { label: '案例拆解', href: '/case-studies', disabled: false },
-            { label: '联系我们', href: '/contact', disabled: false }
+            { labelKey: 'resourcesBlog', href: '/blog', disabled: false },
+            { labelKey: 'resourcesCaseStudies', href: '/case-studies', disabled: false },
+            { labelKey: 'resourcesContact', href: '/contact', disabled: false }
         ]
     },
     {
-        title: '关于',
+        titleKey: 'aboutTitle',
         links: [
-            { label: '关于 STP2026', href: '/about', disabled: false },
-            { label: '隐私声明', href: '/privacy', disabled: false },
-            { label: '服务条款', href: '/terms', disabled: false },
-            { label: '退款政策', href: '/refund', disabled: false }
+            { labelKey: 'aboutUs', href: '/about', disabled: false },
+            { labelKey: 'aboutPrivacy', href: '/privacy', disabled: false },
+            { labelKey: 'aboutTerms', href: '/terms', disabled: false },
+            { labelKey: 'aboutRefund', href: '/refund', disabled: false }
         ]
     }
 ];
@@ -81,6 +84,8 @@ const NavIcon: React.FC<{ type: 'home' | 'blog' | 'tools' | 'pricing' | 'about' 
 
 const Header: React.FC = () => {
     const pathname = usePathname();
+    const tNav = useTranslations('nav');
+    const tCommon = useTranslations('common');
     const { data: session } = authClient.useSession();
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -119,19 +124,19 @@ const Header: React.FC = () => {
                         {NAV_ITEMS.map(item => (
                             <Link key={item.href} href={item.href} className={getLinkClass(item.href)}>
                                 <NavIcon type={item.icon} />
-                                {item.label}
+                                {tNav(item.labelKey)}
                             </Link>
                         ))}
                     </nav>
                 </div>
                 <div className="flex items-center gap-4">
                     {session ? (
-                        <Link href="/dashboard">
-                            <Button as="span" variant="ghost" size="sm" className="text-xs uppercase tracking-widest font-bold">控制台</Button>
-                        </Link>
+                        <NextLink href="/dashboard">
+                            <Button as="span" variant="ghost" size="sm" className="text-xs uppercase tracking-widest font-bold">{tCommon('dashboard')}</Button>
+                        </NextLink>
                     ) : (
                         <Link href="/login">
-                            <Button as="span" variant="ghost" size="sm" className="text-xs uppercase tracking-widest font-bold">登录</Button>
+                            <Button as="span" variant="ghost" size="sm" className="text-xs uppercase tracking-widest font-bold">{tCommon('login')}</Button>
                         </Link>
                     )}
                     
@@ -145,26 +150,26 @@ const Header: React.FC = () => {
                             </button>
                             {dropdownOpen && (
                                 <div className="absolute right-0 top-12 w-40 bg-white border border-brand-border rounded-lg shadow-md z-50 overflow-hidden">
-                                    <Link
+                                    <NextLink
                                         href="/dashboard"
                                         onClick={() => setDropdownOpen(false)}
                                         className="block px-4 py-3 text-xs font-bold uppercase tracking-widest text-brand-text-secondary hover:bg-brand-surface hover:text-brand-text-primary transition-colors"
                                     >
-                                        控制台
-                                    </Link>
+                                        {tCommon('dashboard')}
+                                    </NextLink>
                                     <div className="border-t border-brand-border" />
                                     <button
                                         onClick={handleSignOut}
                                         className="w-full text-left px-4 py-3 text-xs font-bold uppercase tracking-widest text-brand-error hover:bg-brand-error/5 transition-colors"
                                     >
-                                        退出登录
+                                        {tCommon('signOut')}
                                     </button>
                                 </div>
                             )}
                         </div>
                     ) : (
                         <Link href="/register">
-                            <Button as="span" variant="gradient" size="sm" className="hidden sm:inline-flex text-xs uppercase tracking-widest font-bold">开启旅程</Button>
+                            <Button as="span" variant="gradient" size="sm" className="hidden sm:inline-flex text-xs uppercase tracking-widest font-bold">{tCommon('register')}</Button>
                         </Link>
                     )}
                 </div>
@@ -174,6 +179,7 @@ const Header: React.FC = () => {
 };
 
 const Footer: React.FC = () => {
+    const tFooter = useTranslations('footer');
     return (
         <footer className="bg-slate-50 border-t border-brand-border py-24">
             <div className="max-w-7xl mx-auto px-6">
@@ -186,7 +192,7 @@ const Footer: React.FC = () => {
                             <span className="text-base font-bold tracking-tight text-brand-text-primary">ScaletoTop</span>
                         </div>
                         <p className="text-brand-text-secondary text-base leading-relaxed mb-8">
-                            引领数字营销的工程化革命。通过技术深度驱动持续、可量化的业务增长。
+                            {tFooter('tagline')}
                         </p>
                         <div className="flex gap-5">
                             <a href="https://twitter.com/jack_scaletotop" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-brand-border flex items-center justify-center text-brand-text-muted hover:text-brand-primary hover:border-brand-primary transition-all">
@@ -197,15 +203,15 @@ const Footer: React.FC = () => {
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-20">
                         {FOOTER_LINKS.map(group => (
-                            <div key={group.title}>
-                                <h5 className="text-brand-text-primary font-bold text-sm mb-8 tracking-widest uppercase">{group.title}</h5>
+                            <div key={group.titleKey}>
+                                <h5 className="text-brand-text-primary font-bold text-sm mb-8 tracking-widest uppercase">{tFooter(group.titleKey)}</h5>
                                 <ul className="space-y-4 text-sm text-brand-text-secondary">
                                     {group.links.map(link => (
-                                        <li key={link.label} className={link.disabled ? "opacity-50 cursor-not-allowed" : ""}>
+                                        <li key={link.labelKey} className={link.disabled ? "opacity-50 cursor-not-allowed" : ""}>
                                             {link.disabled ? (
-                                                link.label
+                                                tFooter(link.labelKey)
                                             ) : (
-                                                <Link href={link.href} className="hover:text-brand-text-primary transition-colors">{link.label}</Link>
+                                                <Link href={link.href} className="hover:text-brand-text-primary transition-colors">{tFooter(link.labelKey)}</Link>
                                             )}
                                         </li>
                                     ))}
@@ -216,12 +222,12 @@ const Footer: React.FC = () => {
                 </div>
                 <div className="mt-24 pt-10 border-t border-brand-border flex flex-col sm:flex-row justify-between items-center gap-6">
                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-text-muted">
-                        © 2026 ScaletoTop 工程部。为高增长团队打造。
+                        {tFooter('copyright')}
                     </p>
                     <div className="flex gap-8 text-[10px] font-bold uppercase tracking-[0.2em] text-brand-text-muted">
-                        <Link href="/contact" className="hover:text-brand-primary">联系我们</Link>
-                        <Link href="/refund" className="hover:text-brand-primary">退款政策</Link>
-                        <button className="hover:text-brand-primary cursor-default">中文 (简体)</button>
+                        <Link href="/contact" className="hover:text-brand-primary">{tFooter('contact')}</Link>
+                        <Link href="/refund" className="hover:text-brand-primary">{tFooter('refund')}</Link>
+                        <LocaleSwitcher className="hover:text-brand-primary transition-colors" />
                     </div>
                 </div>
             </div>
