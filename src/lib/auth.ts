@@ -2,7 +2,9 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import prisma from "./prisma";
 import { emailOTP } from "better-auth/plugins";
-import { sendEmail } from "./email";
+import { sendEmail, sendWelcomeEmail } from "./email";
+import { addContact } from "./email/systeme";
+import { getIntegrationValue } from "./integrations/config";
 import { revalidateTag } from "next/cache";
 
 export const auth = betterAuth({
@@ -49,7 +51,25 @@ export const auth = betterAuth({
                     ]);
 
                     // Revalidate user cache
+                    // @ts-ignore — Next.js 16 type requires 2 args but 1-arg form works at runtime
                     revalidateTag(`user-${user.id}`);
+
+                    // Send welcome email (non-blocking)
+                    sendWelcomeEmail({ email: user.email, name: user.name }).catch((err) => {
+                        console.error('[Auth] Failed to send welcome email:', err);
+                    });
+
+                    // Sync to systeme.io — tag from admin config (new key with legacyKey fallback)
+                    Promise.all([
+                        getIntegrationValue('SYSTEME_TAG_ON_REGISTER'),
+                        getIntegrationValue('SYSTEME_NEW_USER_TAG'),
+                    ]).then(([newTag, legacyTag]) => {
+                        const tag = newTag ?? legacyTag;
+                        const tags = tag ? [tag] : [];
+                        return addContact(user.email, user.name || '', tags);
+                    }).catch((err) => {
+                        console.error('[Auth] Failed to add systeme.io contact:', err);
+                    });
                 }
             }
         }

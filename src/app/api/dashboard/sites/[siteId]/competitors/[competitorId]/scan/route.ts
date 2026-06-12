@@ -22,20 +22,21 @@ export const POST = withSiteContext<{ siteId: string; competitorId: string }>(as
 
         // 1. Crawl the competitor home page and some internal links
         const normalizedDomain = CrawlerService.normalizeDomain(competitor.domain);
-        const homePage = await CrawlerService.scrapePage(normalizedDomain);
+        const homeResult = await CrawlerService.scrapePage(normalizedDomain);
+        const homePage = homeResult.page;
 
         let allPages = [];
         if (homePage) {
             allPages.push(homePage);
             // Get up to 5 internal links to get better topic coverage
             const subLinks = homePage.internalLinks
-                .filter(l => l.startsWith(normalizedDomain) && l !== normalizedDomain)
+                .filter((l: string) => l.startsWith(normalizedDomain) && l !== normalizedDomain)
                 .slice(0, 5);
 
             for (const link of subLinks) {
                 try {
-                    const p = await CrawlerService.scrapePage(link);
-                    if (p) allPages.push(p);
+                    const result = await CrawlerService.scrapePage(link);
+                    if (result.page) allPages.push(result.page);
                 } catch (e) {
                     console.warn(`[Competitor Scan] Failed to scrape ${link}:`, e);
                 }
@@ -91,7 +92,7 @@ Do NOT include markdown formatting or extra text.
                 }
             } catch (error) {
                 console.error('[Competitors Scan] LLM extraction failed:', error);
-                formattedTopics = [homePage?.title || competitor.domain];
+                formattedTopics = [homePage?.title ?? competitor.domain];
             }
         } else {
             // Fallback if scrape fails

@@ -6,6 +6,7 @@
 import OpenAI from 'openai';
 import { BaseAIProvider } from './base-provider';
 import { AIModel, AIResponse, AIGenerateOptions } from '../types';
+import { getProviderApiKey } from '@/lib/integrations/config';
 
 export class DeepSeekProvider extends BaseAIProvider {
     name: 'deepseek' = 'deepseek';
@@ -29,30 +30,14 @@ export class DeepSeekProvider extends BaseAIProvider {
         },
     ];
 
-    private client: OpenAI | null = null;
-
-    /**
-     * Get API key from environment
-     */
     protected getApiKey(): string | undefined {
         return process.env.DEEPSEEK_API_KEY;
     }
 
-    /**
-     * Get or initialize DeepSeek client
-     */
-    private getClient(): OpenAI {
-        if (!this.client) {
-            const apiKey = this.getApiKey();
-            if (!apiKey) {
-                throw new Error('DEEPSEEK_API_KEY not found in environment variables');
-            }
-            this.client = new OpenAI({
-                apiKey,
-                baseURL: 'https://api.deepseek.com',
-            });
-        }
-        return this.client;
+    private async resolveKey(): Promise<string> {
+        const key = await getProviderApiKey('deepseek');
+        if (!key) throw new Error('DeepSeek API Key 未配置（env 或 DB）');
+        return key;
     }
 
     /**
@@ -65,7 +50,7 @@ export class DeepSeekProvider extends BaseAIProvider {
         const modelId = options?.model || this.getDefaultModel().id;
 
         return this.withRetry(async () => {
-            const client = this.getClient();
+            const client = new OpenAI({ apiKey: await this.resolveKey(), baseURL: 'https://api.deepseek.com' });
 
             const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [];
 

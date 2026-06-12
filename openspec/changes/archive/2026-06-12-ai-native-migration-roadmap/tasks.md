@@ -46,9 +46,10 @@
 
 ---
 
-## Sprint 1 — PostHog 全面追踪（~2-3 天）
+## Sprint 1 — PostHog 全面追踪（~2-3 天）✅ 主体完成
 
 > 目标：在用户增长前建立完整的数据基础，覆盖获客→激活→付费全链路
+> 完成时间：2026-06-11
 
 ### 1.1 服务端 PostHog 基础
 
@@ -63,14 +64,14 @@
   - 页面加载时 `posthog.capture('pricing_viewed')`（useEffect）
   - 每个套餐的购买按钮点击 `posthog.capture('pricing_plan_selected', { plan, credits, price })`
 - [x] 1.2.3 `src/app/(public)/blog/[slug]/ArticleReadTracker.tsx`（新建）：文章阅读进度追踪（滚动到 50%/95%）`posthog.capture('blog_article_read', { slug, category, read_pct })`
-- [ ] 1.2.4 `src/app/(public)/tools/page.tsx`：工具页访问 `posthog.capture('tools_page_viewed')`（低优先级，可延后）
+- [ ] 1.2.4 ~~工具页访问追踪~~ **延后至 Sprint 4**（工具页改版时一并补充）
 
 ### 1.3 注册与激活漏斗（客户端）
 
 - [x] 1.3.1 `src/app/(public)/register/page.tsx`：
   - 新用户提交姓名时 `posthog.capture('signup_started', { method: 'email' })`
   - OTP 验证成功且 isNewUser 时 `posthog.capture('signup_completed', { method: 'email' })`
-- [ ] 1.3.2 Google OAuth 登录入口：当前未接入 Google OAuth，跳过
+- [x] 1.3.2 Google OAuth：当前未接入，不适用，跳过
 - [x] 1.3.3 `src/app/(protected)/dashboard/onboarding/OnboardingClient.tsx`：
   - IDLE → ANALYZING 时 `posthog.capture('onboarding_started')`
   - saveData.success 时 `posthog.capture('onboarding_completed', { domain })`
@@ -80,8 +81,8 @@
 - [x] 1.4.1 `src/app/(protected)/dashboard/site-intelligence/EmptyState.tsx`：添加站点成功后 `posthog.capture('first_site_added', { domain })`
 - [x] 1.4.2 `IntegrationsPanel.tsx`：GSC 连接成功回调 `posthog.capture('gsc_connected', { siteId })`
 - [x] 1.4.3 `IntegrationsPanel.tsx`：GA4 连接成功回调 `posthog.capture('ga4_connected', { siteId })`
-- [ ] 1.4.4 内容计划创建：`posthog.capture('content_plan_created', { siteId })`（待找到创建入口）
-- [x] 1.4.5 `src/app/(protected)/dashboard/billing/BillingClient.tsx`：页面加载 `posthog.capture('billing_page_viewed', { credits_remaining })`（creditsRemaining 从 page.tsx 传入）
+- [ ] 1.4.4 `content_plan_created` **延后至 Strategy Board 迭代时补充**
+- [x] 1.4.5 `src/app/(protected)/dashboard/billing/BillingClient.tsx`：页面加载 `posthog.capture('billing_page_viewed', { credits_remaining })`
 
 ### 1.5 AI Skills 使用（服务端，posthog-node）
 
@@ -92,58 +93,80 @@
 ### 1.6 付费事件（服务端）
 
 - [x] 1.6.1 `src/app/api/webhooks/creem/route.ts`：`checkout.completed` 成功后 `captureServerEvent(userId, 'purchase_completed', { product_id, credits_added, amount_usd })`
-- [ ] 1.6.2 Library 保存文章：`posthog.capture('article_saved_to_library', { word_count, skill_used })`（待实现）
+- [ ] 1.6.2 `article_saved_to_library` **延后至 Library 功能迭代时补充**
 
 ### 1.7 验证
 
-- [ ] 1.7.1 PostHog Live Events 面板确认所有事件正常到达
-- [ ] 1.7.2 完整走一遍注册 → onboarding → 触发审计 → billing 页面，确认 person 下有完整事件序列
+- [x] 1.7.1 PostHog Live Events 面板本地验证通过，事件正常到达
+- [x] 1.7.2 走通注册 → onboarding → 站点审计 → billing 链路，person 下事件序列正常
 
 ---
 
-## Sprint 2 — 邮件营销接入（~3 天）
+## Sprint 2 — 邮件营销接入（~3 天）✅ 代码层完成
 
 > 目标：Resend 事务邮件上线 + systeme.io 营销序列接入
+> 完成时间：2026-06-11
 
 ### 2.1 Resend 邮件模板
 
-- [ ] 2.1.1 创建 `src/lib/email/templates/` 目录
-- [ ] 2.1.2 `welcome.ts`：欢迎邮件模板（HTML，含用户名、入门步骤、dashboard 链接）
-- [ ] 2.1.3 `credits-warning.ts`：积分低预警模板（含剩余积分、充值链接）
-- [ ] 2.1.4 `purchase-success.ts`：购买成功确认（含积分数量、当前余额）
-- [ ] 2.1.5 `audit-complete.ts`：站点审计完成通知（含站点域名、查看报告链接）
-- [ ] 2.1.6 更新 `src/lib/email.ts`，增加各模板的具名导出函数：`sendWelcomeEmail(user)`, `sendCreditsWarningEmail(user, remaining)`, `sendPurchaseSuccessEmail(user, credits)`, `sendAuditCompleteEmail(user, siteId, domain)`
+- [x] 2.1.1 创建 `src/lib/email/templates/` 目录
+- [x] 2.1.2 `welcome.ts`：欢迎邮件模板（HTML，含用户名、入门步骤、dashboard 链接）
+- [x] 2.1.3 `credits-warning.ts`：积分低预警模板（含剩余积分、充值链接）
+- [x] 2.1.4 `purchase-success.ts`：购买成功确认（含积分数量、当前余额）
+- [x] 2.1.5 `audit-complete.ts`：站点审计完成通知（含站点域名、查看报告链接）
+- [x] 2.1.6 更新 `src/lib/email.ts`，增加各模板的具名导出函数：`sendWelcomeEmail(user)`, `sendCreditsWarningEmail(user, remaining)`, `sendPurchaseSuccessEmail(user, credits)`, `sendAuditCompleteEmail(user, siteId, domain)`
 
 ### 2.2 better-auth 邮件配置
 
-- [ ] 2.2.1 在 `src/lib/auth.ts` 配置 `emailAndPassword.sendResetPassword`，使用 `sendEmail()` 发送密码重置邮件
+- [x] 2.2.1 密码重置邮件已由现有 `emailOTP` 插件的 `forget-password` 类型处理（OTP 方式），无需额外配置 `sendResetPassword`
 - [ ] 2.2.2 测试密码重置流程，确认邮件正常到达
 
 ### 2.3 事务邮件触发点
 
-- [ ] 2.3.1 `src/app/actions/auth.ts` 注册成功后：`await sendWelcomeEmail(user)`（非阻塞，try/catch 包裹）
-- [ ] 2.3.2 `src/app/api/skills/execute/route.ts` credits 低于 50 时：`await sendCreditsWarningEmail(user, remaining)`（每 24 小时最多发一次，用 `User.lastCreditWarningAt` 字段控制）
-- [ ] 2.3.3 `src/app/api/webhooks/creem/route.ts` 购买成功后：`await sendPurchaseSuccessEmail(user, creditsAdded)`
-- [ ] 2.3.4 站点审计完成后（找到 audit complete 的回调位置）：`await sendAuditCompleteEmail(user, siteId, domain)`
+- [x] 2.3.1 `src/lib/auth.ts` databaseHook `user.create.after`：注册赠分后 `sendWelcomeEmail(user)`（非阻塞）
+- [x] 2.3.2 `src/app/api/skills/execute/route.ts` credits 低于 50 时：`sendCreditsWarningEmail(user, remaining)`（每 24 小时最多发一次，`User.lastCreditWarningAt` 字段控制）
+- [x] 2.3.3 `src/app/api/webhooks/creem/route.ts` 购买成功后：`sendPurchaseSuccessEmail(user, creditsAdded)`
+- [x] 2.3.4 `src/app/api/dashboard/site-intelligence/save/route.ts` 审计完成后（仅用户自己的站点）：`sendAuditCompleteEmail(user, siteId, domain, techScore)`
 
 ### 2.4 systeme.io 集成
 
-- [ ] 2.4.1 创建 `src/lib/email/systeme.ts`：封装 systeme.io API（添加联系人、添加标签）
-  - `addContact(email, name, tags[])` — 添加联系人并打标签
-  - 环境变量 `SYSTEME_IO_API_KEY`
-- [ ] 2.4.2 注册成功后：`await addContact(email, name, ['registered'])` 触发 systeme.io 注册引导序列
-- [ ] 2.4.3 Onboarding 完成后：`await addContact(email, name, ['onboarding_completed'])`
-- [ ] 2.4.4 在 systeme.io 配置自动化规则：`registered` 标签 → 7天引导邮件序列
+- [x] 2.4.1 创建 `src/lib/email/systeme.ts`：`addContact(email, name, tags[])`，API Key 缺失时打 warn 日志而非报错
+- [x] 2.4.2 注册成功后：`addContact(email, name, ['registered'])`（在 auth.ts databaseHook 中）
+- [x] 2.4.3 首次站点保存（site count = 1）：`addContact(email, name, ['onboarding_completed'])`（在 save/route.ts 中）
+- [ ] 2.4.4 **待操作** 在 systeme.io 平台配置自动化规则：`registered` 标签 → 7天引导邮件序列
 
 ### 2.5 n8n 再营销 Workflow
 
-- [ ] 2.5.1 在 n8n 创建 Workflow：每日 cron → 查询注册超 7 天且未完成 onboarding（`siteCount = 0`）的用户 → 调用 systeme.io API 打 `inactive_7d` 标签
-- [ ] 2.5.2 在 n8n 创建 Workflow：每日 cron → 查询注册超 14 天未消耗任何 credits 的用户 → 打 `inactive_14d` 标签
+- [ ] 2.5.1 **延后** 在 n8n 创建 Workflow：每日 cron → 注册超 7 天且 siteCount=0 → 打 `inactive_7d` 标签
+- [ ] 2.5.2 **延后** 在 n8n 创建 Workflow：每日 cron → 注册超 14 天无 credits 消耗 → 打 `inactive_14d` 标签
 
 ### 2.6 Prisma Schema 更新
 
-- [ ] 2.6.1 在 `User` 模型添加 `lastCreditWarningAt DateTime?` 字段（防止低积分邮件重复发送）
-- [ ] 2.6.2 `npx prisma db push` 应用
+- [x] 2.6.1 在 `User` 模型添加 `lastCreditWarningAt DateTime?` 字段
+- [x] 2.6.2 `npx prisma db push` 已应用（数据库同步）
+
+### 2.7 Admin 集成管理页面（新增）
+
+- [x] 2.7.1 创建 `/dashboard/admin/integrations` 页面（映射自 `/admin/integrations`）
+  - 分三组展示：邮件营销（Resend + systeme.io）、数据分析（PostHog + Notion）、自动化（n8n 占位）
+  - 实时读取 env var 状态，显示 已连接 / 未配置 / 待接入
+  - Resend：一键发送测试邮件到管理员邮箱
+  - systeme.io：一键测试 API 连接，API Key 加密存储于 DB
+- [x] 2.7.2 在 TopNav `ADMIN_LINK_CONFIG` 增加"集成管理"入口（仅 ADMIN 可见）
+
+### 2.8 systeme.io 多事件标签规则（新增）
+
+- [x] 2.8.1 创建 `src/lib/integrations/systeme-triggers.ts`：定义 4 个触发点（注册/Onboarding/购买/积分不足）
+- [x] 2.8.2 扩展 `src/lib/email/systeme.ts`：新增 `getContactByEmail`, `addTagToContact`, `removeTagFromContact`, `ContactResult` 类型
+- [x] 2.8.3 创建 `SystemeTagRules.tsx`：集成管理页内展示4个触发规则行，每行独立选标签+保存
+- [x] 2.8.4 集成管理 `actions.ts`：新增 `saveTagRule(triggerKey, tagName)`, `getTagRules()` server actions
+- [x] 2.8.5 更新触发点：`auth.ts` 读 `SYSTEME_TAG_ON_REGISTER`（legacyKey fallback），`creem/route.ts` 购买后打 `SYSTEME_TAG_ON_PURCHASE` 标签，`save/route.ts` 用 `SYSTEME_TAG_ON_ONBOARDING`
+
+### 2.9 用户管理页 systeme.io 标签操作（新增）
+
+- [x] 2.9.1 创建 `users/systeme-actions.ts`：`fetchUserContact`, `addUserTag`, `removeUserTag`, `fetchAvailableTags` server actions（含自动创建联系人逻辑）
+- [x] 2.9.2 创建 `UserSystemePanel.tsx`：展开面板，显示当前标签 chips + X 移除，添加标签下拉选择
+- [x] 2.9.3 用户管理 `page.tsx`：kebab 菜单加"systeme.io 标签"入口，点击展开 `UserSystemePanel`
 
 ---
 

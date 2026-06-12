@@ -96,7 +96,7 @@ export default function MarketingToolsPage() {
                 {tools.map((tool) => {
                     const Icon = tool.icon;
                     const isActive = tool.status === 'ACTIVE';
-                    const cost = (tool.skillName && skillCosts[tool.skillName]) ?? tool.credits;
+                    const cost = Number((tool.skillName && skillCosts[tool.skillName]) ?? tool.credits);
                     const hasEnoughCredits = currentCredits >= cost;
                     
                     return (

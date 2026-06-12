@@ -12,6 +12,7 @@ import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
 import { TOOL_COSTS } from "@/lib/config/credit-costs";
 import { captureServerEvent } from "@/lib/analytics/posthog-server";
+import { sendCreditsWarningEmail } from "@/lib/email";
 
 // Initialize skills on module load
 registerAllSkills();
@@ -183,6 +184,25 @@ export async function POST(request: NextRequest) {
         const remaining = dbResult.updatedUser.credits;
         if (remaining < 50) {
             captureServerEvent(session.user.id, 'credits_low', { remaining });
+
+            // Throttle: send warning email at most once per 24h
+            const user = await prisma.user.findUnique({
+                where: { id: session.user.id },
+                select: { email: true, name: true, lastCreditWarningAt: true },
+            });
+            if (user) {
+                const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+                const shouldSend = !user.lastCreditWarningAt || user.lastCreditWarningAt < oneDayAgo;
+                if (shouldSend) {
+                    await prisma.user.update({
+                        where: { id: session.user.id },
+                        data: { lastCreditWarningAt: new Date() },
+                    });
+                    sendCreditsWarningEmail(user, remaining).catch((err) => {
+                        console.error('[Skills] Failed to send credits warning email:', err);
+                    });
+                }
+            }
         }
 
         return NextResponse.json({

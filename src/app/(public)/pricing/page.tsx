@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { CREDIT_PRODUCTS } from '@/lib/billing/products';
 import PricingClient from './PricingClient';

@@ -6,7 +6,7 @@
 import { IAIProvider, AIModel, AIResponse, AIGenerateOptions } from '../types';
 
 export abstract class BaseAIProvider implements IAIProvider {
-    abstract name: 'gemini' | 'claude' | 'deepseek';
+    abstract name: 'gemini' | 'claude' | 'deepseek' | 'vps';
     abstract models: AIModel[];
 
     /**

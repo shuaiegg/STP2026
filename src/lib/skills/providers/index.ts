@@ -75,19 +75,22 @@ export async function getAvailableProviders(): Promise<AIProviderName[]> {
 }
 
 /**
- * Get the default provider based on environment configuration
+ * Get the default provider, respecting ModelConfig DB settings.
+ * Falls back to DEFAULT_AI_PROVIDER env var → 'vps' → 'deepseek'.
  */
 export async function getDefaultProvider(): Promise<IAIProvider> {
-    // FORCE DEFAULT TO VPS
-    const preferred = (process.env.DEFAULT_AI_PROVIDER || 'vps') as AIProviderName;
-
     try {
-        const provider = getProvider(preferred);
-        return provider;
-    } catch (error) {
-        console.warn(`Preferred provider ${preferred} not available:`, error);
+        const { resolveModelForContext } = await import('../model-resolver');
+        const resolved = await resolveModelForContext('skill_default');
+        return getProvider(resolved.provider);
+    } catch {
+        // DB unavailable or resolver failed — use env var fallback
     }
 
-    // Fallback to deepseek
-    return getProvider('deepseek');
+    const preferred = (process.env.DEFAULT_AI_PROVIDER || 'vps') as AIProviderName;
+    try {
+        return getProvider(preferred);
+    } catch {
+        return getProvider('deepseek');
+    }
 }

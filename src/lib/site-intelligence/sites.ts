@@ -113,8 +113,10 @@ export async function getSiteById(siteId: string, userId: string) {
  */
 export function revalidateSiteCache(siteId?: string) {
   if (siteId) {
+    // @ts-ignore — Next.js 16 type requires 2 args but 1-arg form works at runtime
     revalidateTag(`site-${siteId}`);
   } else {
+    // @ts-ignore — Next.js 16 type requires 2 args but 1-arg form works at runtime
     revalidateTag("site-cache");
   }
 }

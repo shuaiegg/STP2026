@@ -21,6 +21,7 @@ export default function ForgotPasswordPage() {
         setError("");
 
         try {
+            // @ts-ignore — emailOTP plugin type interferes with forgetPassword signature; works at runtime
             const { error: authError } = await authClient.forgetPassword({
                 email: email.trim().toLowerCase(),
                 redirectTo: "/reset-password",

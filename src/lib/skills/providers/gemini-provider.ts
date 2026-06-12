@@ -5,6 +5,7 @@
 import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
 import { BaseAIProvider } from './base-provider';
 import { AIModel, AIResponse, AIGenerateOptions } from '../types';
+import { getProviderApiKey } from '@/lib/integrations/config';
 
 export class GeminiProvider extends BaseAIProvider {
     name: 'gemini' = 'gemini';
@@ -36,35 +37,18 @@ export class GeminiProvider extends BaseAIProvider {
         },
     ];
 
-    private client: GoogleGenerativeAI | null = null;
-
-    /**
-     * Get API key from environment
-     */
     protected getApiKey(): string | undefined {
-        return process.env.GEMINI_API_KEY;
+        return process.env.GOOGLE_API_KEY ?? process.env.GOOGLE_AI_API_KEY ?? process.env.GEMINI_API_KEY;
     }
 
-    /**
-     * Get or initialize Gemini client
-     */
-    private getClient(): GoogleGenerativeAI {
-        if (!this.client) {
-            const apiKey = this.getApiKey();
-            if (!apiKey) {
-                throw new Error('GEMINI_API_KEY not found in environment variables');
-            }
-            this.client = new GoogleGenerativeAI(apiKey);
-        }
-        return this.client;
+    private async resolveKey(): Promise<string> {
+        const key = await getProviderApiKey('gemini');
+        if (!key) throw new Error('Gemini API Key 未配置（env 或 DB）');
+        return key;
     }
 
-    /**
-     * Get a generative model instance
-     */
-    private getGeminiModel(modelId: string): GenerativeModel {
-        const client = this.getClient();
-        return client.getGenerativeModel({ model: modelId });
+    private getGeminiModel(apiKey: string, modelId: string): GenerativeModel {
+        return new GoogleGenerativeAI(apiKey).getGenerativeModel({ model: modelId });
     }
 
     /**
@@ -77,7 +61,8 @@ export class GeminiProvider extends BaseAIProvider {
         const modelId = options?.model || this.getDefaultModel().id;
 
         return this.withRetry(async () => {
-            const model = this.getGeminiModel(modelId);
+            const apiKey = await this.resolveKey();
+            const model = this.getGeminiModel(apiKey, modelId);
 
             const generationConfig: any = {
                 temperature: options?.temperature ?? 0.7,

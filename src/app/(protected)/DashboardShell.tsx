@@ -15,7 +15,7 @@ interface User {
     name?: string | null;
     email: string;
     image?: string | null;
-    role?: string;
+    role?: string | null;
     credits?: number;
 }
 
@@ -26,7 +26,7 @@ export function DashboardShell({
 }: {
     children: React.ReactNode;
     initialSites: Site[];
-    session: { user: User } | null;
+    session: { user: User };
 }) {
     const pathname = usePathname();
 
@@ -36,10 +36,10 @@ export function DashboardShell({
 
     return (
         <div className="min-h-screen bg-brand-surface flex flex-col">
-            <TopNav 
-                sites={initialSites} 
-                currentSiteId={currentSiteId} 
-                user={session?.user} 
+            <TopNav
+                sites={initialSites}
+                currentSiteId={currentSiteId}
+                user={session.user}
             />
             
             <main className="flex-1 p-6 md:p-10 overflow-auto">

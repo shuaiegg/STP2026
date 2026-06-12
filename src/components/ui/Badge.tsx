@@ -3,7 +3,7 @@ import React from 'react';
 
 interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   children: React.ReactNode;
-  variant?: 'default' | 'muted' | 'success';
+  variant?: 'default' | 'muted' | 'success' | 'outline';
 }
 
 export const Badge: React.FC<BadgeProps> = ({ children, variant = 'default', className = '', ...props }) => {
@@ -11,6 +11,7 @@ export const Badge: React.FC<BadgeProps> = ({ children, variant = 'default', cla
     default: "bg-brand-primary-muted text-brand-primary",
     muted: "bg-brand-surface text-brand-text-muted border border-brand-border",
     success: "bg-brand-success/10 text-brand-success",
+    outline: "bg-transparent border border-brand-border text-brand-text-secondary",
   };
 
   return (

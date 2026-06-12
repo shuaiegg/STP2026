@@ -2,22 +2,24 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { 
-    Search, 
-    User as UserIcon, 
-    Coins, 
-    MoreVertical, 
-    ExternalLink, 
-    Shield, 
-    Plus, 
+import {
+    Search,
+    User as UserIcon,
+    Coins,
+    MoreVertical,
+    ExternalLink,
+    Shield,
+    Plus,
     Minus,
     Loader2,
     CheckCircle2,
     XCircle,
     RotateCcw,
     Undo2,
-    History as HistoryIcon
+    History as HistoryIcon,
+    Tag,
 } from 'lucide-react';
+import { UserSystemePanel } from './UserSystemePanel';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -40,6 +42,8 @@ export default function UserManagementPage() {
     const [userTransactions, setUserTransactions] = useState<any[]>([]);
     const [loadingHistory, setLoadingHistory] = useState(false);
     const [isReverting, setIsReverting] = useState<string | null>(null);
+
+    const [systemeUserId, setSystemeUserId] = useState<string | null>(null);
 
     const [openKebabUserId, setOpenKebabUserId] = useState<string | null>(null);
     const [adjustingCreditsUserId, setAdjustingCreditsUserId] = useState<string | null>(null);
@@ -272,7 +276,7 @@ export default function UserManagementPage() {
 
                                                             {openKebabUserId === user.id && (
                                                                 <div className="absolute right-0 top-full mt-1 w-36 bg-brand-surface border border-brand-border rounded-lg shadow-lg py-1 z-20 animate-in fade-in slide-in-from-top-1 duration-200">
-                                                                    <button 
+                                                                    <button
                                                                         onClick={() => {
                                                                             setAdjustingCreditsUserId(user.id);
                                                                             setOpenKebabUserId(null);
@@ -281,8 +285,19 @@ export default function UserManagementPage() {
                                                                     >
                                                                         调整积分
                                                                     </button>
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            setSystemeUserId(systemeUserId === user.id ? null : user.id);
+                                                                            setSelectedUserForHistory(null);
+                                                                            setOpenKebabUserId(null);
+                                                                        }}
+                                                                        className="w-full text-left px-4 py-2 text-sm text-brand-text-secondary hover:bg-brand-surface-alt transition-colors flex items-center gap-2"
+                                                                    >
+                                                                        <Tag size={13} />
+                                                                        systeme.io 标签
+                                                                    </button>
                                                                     {user.id !== session?.user?.id && (
-                                                                        <Link 
+                                                                        <Link
                                                                             href={`/dashboard?impersonate=${user.id}`}
                                                                             className="block w-full text-left px-4 py-2 text-sm text-brand-text-secondary hover:bg-brand-surface-alt transition-colors"
                                                                         >
@@ -296,6 +311,18 @@ export default function UserManagementPage() {
                                                 </div>
                                             </td>
                                         </tr>
+                                        {systemeUserId === user.id && (
+                                            <tr className="bg-brand-primary/[0.02]">
+                                                <td colSpan={5} className="px-8 pb-8 pt-0">
+                                                    <UserSystemePanel
+                                                        userId={user.id}
+                                                        email={user.email}
+                                                        name={user.name || ''}
+                                                        onClose={() => setSystemeUserId(null)}
+                                                    />
+                                                </td>
+                                            </tr>
+                                        )}
                                         {selectedUserForHistory === user.id && (
                                             <tr className="bg-brand-primary/[0.02]">
                                                 <td colSpan={5} className="px-8 pb-8 pt-0">

@@ -20,7 +20,7 @@ const FOOTER_LINKS = [
         links: [
             { label: 'pSEO 自动化工具', href: '/tools', disabled: false },
             { label: '定价方案', href: '/pricing', disabled: false },
-            { label: '增长咨询服务 (预约已满)', href: '#', disabled: true }
+            { label: '业务咨询（限量）', href: '/consultation', disabled: false }
         ]
     },
     {

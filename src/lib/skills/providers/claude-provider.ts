@@ -5,6 +5,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { BaseAIProvider } from './base-provider';
 import { AIModel, AIResponse, AIGenerateOptions } from '../types';
+import { getProviderApiKey } from '@/lib/integrations/config';
 
 export class ClaudeProvider extends BaseAIProvider {
     name: 'claude' = 'claude';
@@ -36,27 +37,14 @@ export class ClaudeProvider extends BaseAIProvider {
         },
     ];
 
-    private client: Anthropic | null = null;
-
-    /**
-     * Get API key from environment
-     */
     protected getApiKey(): string | undefined {
         return process.env.ANTHROPIC_API_KEY;
     }
 
-    /**
-     * Get or initialize Claude client
-     */
-    private getClient(): Anthropic {
-        if (!this.client) {
-            const apiKey = this.getApiKey();
-            if (!apiKey) {
-                throw new Error('ANTHROPIC_API_KEY not found in environment variables');
-            }
-            this.client = new Anthropic({ apiKey });
-        }
-        return this.client;
+    private async resolveKey(): Promise<string> {
+        const key = await getProviderApiKey('claude');
+        if (!key) throw new Error('Anthropic API Key 未配置（env 或 DB）');
+        return key;
     }
 
     /**
@@ -69,7 +57,7 @@ export class ClaudeProvider extends BaseAIProvider {
         const modelId = options?.model || this.getDefaultModel().id;
 
         return this.withRetry(async () => {
-            const client = this.getClient();
+            const client = new Anthropic({ apiKey: await this.resolveKey() });
 
             const requestParams: Anthropic.MessageCreateParams = {
                 model: modelId,

@@ -59,8 +59,12 @@ import { saveSnapshot, getVersionHistory, VersionSnapshot } from '@/lib/utils/ve
 import { saveTrackedArticle } from '@/app/actions/tracked-articles';
 import { saveToBlogDraft } from '@/app/actions/blog-draft';
 import posthog from 'posthog-js';
+import { useRouter } from 'next/navigation';
+import { authClient } from '@/lib/auth-client';
 
 export default function GEOWriterPage() {
+    const router = useRouter();
+    const { data: session } = authClient.useSession();
     const [step, setStep] = useState(1); // 1: Research, 2: Strategy, 3: Creation
     const [loading, setLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);

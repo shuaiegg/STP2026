@@ -10,3 +10,5 @@ export * from './providers';
 // Re-export commonly used functions
 export { getSkillRegistry } from './skill-registry';
 export { getProvider, getDefaultProvider, getAvailableProviders } from './providers';
+export { resolveModelForContext, resolveSkillModel, resolveEmbeddingProvider } from './model-resolver';
+export { GeminiEmbeddingProvider } from './providers/gemini-embedding-provider';

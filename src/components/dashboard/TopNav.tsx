@@ -19,7 +19,10 @@ import {
   ShoppingBag,
   CreditCard,
   Menu,
-  X
+  X,
+  Plug,
+  Cpu,
+  MessageSquare,
 } from 'lucide-react';
 import { HealthScoreBadge } from '@/components/ui/HealthScoreBadge';
 import { authClient } from '@/lib/auth-client';
@@ -36,7 +39,7 @@ interface User {
   name?: string | null;
   email: string;
   image?: string | null;
-  role?: string;
+  role?: string | null;
   credits?: number;
 }
 
@@ -79,6 +82,9 @@ const ADMIN_LINK_CONFIG = [
   { href: '/admin/orders', icon: ShoppingBag, label: '订单管理' },
   { href: '/admin/skills', icon: Zap, label: '技能管理' },
   { href: '/admin/credit-refund', icon: CreditCard, label: '积分管理' },
+  { href: '/admin/integrations', icon: Plug, label: '集成管理' },
+  { href: '/admin/models', icon: Cpu, label: '模型管理' },
+  { href: '/admin/consultations', icon: MessageSquare, label: '咨询管理' },
 ] as const;
 
 // ─── TopNav ───────────────────────────────────────────────────────────────────

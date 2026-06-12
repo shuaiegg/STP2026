@@ -114,6 +114,26 @@ model PreviewToken {
   @@index([expiresAt])
 }
 
+/// IntegrationConfig - Admin-managed API keys and integration settings
+model IntegrationConfig {
+  id        String   @id @default(uuid())
+  key       String   @unique  // e.g. "SYSTEME_IO_API_KEY"
+  value     String            // AES-256-GCM encrypted value
+  updatedAt DateTime @updatedAt
+  updatedBy String?           // userId of last editor
+}
+
+/// ModelConfig - Admin-managed model assignments per business context
+model ModelConfig {
+  id        String   @id @default(uuid())
+  context   String   @unique  // 'skill_default' | 'consultation' | 'embedding' | 'skill:{skillId}'
+  provider  String            // 'vps' | 'claude' | 'gemini' | 'deepseek'
+  modelId   String            // e.g. 'claude-opus-4-5-20251101'
+  label     String?           // admin notes
+  updatedAt DateTime @updatedAt
+  updatedBy String?
+}
+
 /// User - Admin and editor users for the backend
 model User {
   id              String              @id @default(uuid())
@@ -124,7 +144,8 @@ model User {
   updatedAt       DateTime            @updatedAt
   emailVerified   Boolean             @default(false)
   image           String?
-  credits         Int                 @default(0)
+  credits               Int                 @default(0)
+  lastCreditWarningAt   DateTime?
   accounts        Account[]
   transactions    CreditTransaction[]
   sessions        Session[]
@@ -508,4 +529,42 @@ enum TransactionType {
   CONSUMPTION
   REFUND
   BONUS
+}
+
+/// ConsultationRequest - Inbound enquiries from the public consultation form
+model ConsultationRequest {
+  id          String             @id @default(uuid())
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  // Step 1 — service type
+  serviceType  String
+
+  // Step 2 — business detail
+  website      String?
+  description  String
+  targetMarket String?
+  goals        String?
+  budget       String?
+
+  // Step 3 — contact
+  name         String
+  email        String
+  wechat       String?
+
+  // Service-specific structured fields (JSON by service type)
+  details      Json?
+
+  // Admin
+  status       ConsultationStatus @default(PENDING)
+  adminNote    String?
+
+  @@index([createdAt(sort: Desc)])
+  @@index([status])
+}
+
+enum ConsultationStatus {
+  PENDING
+  REVIEWED
+  CONTACTED
 }

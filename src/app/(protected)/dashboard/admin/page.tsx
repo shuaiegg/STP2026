@@ -35,7 +35,7 @@ async function getStats() {
         prisma.user.count({
             where: {
                 role: 'USER',
-                skillExecution: {
+                executions: {
                     some: {
                         createdAt: { gte: thirtyDaysAgo }
                     }

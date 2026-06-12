@@ -3,6 +3,9 @@ import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import { revalidateSiteCache } from '@/lib/site-intelligence/sites';
+import { sendAuditCompleteEmail } from '@/lib/email';
+import { addContact, getContactByEmail, addTagToContactByName } from '@/lib/email/systeme';
+import { getIntegrationValue } from '@/lib/integrations/config';
 
 export async function POST(request: Request) {
     const session = await auth.api.getSession({ headers: await headers() });
@@ -72,6 +75,36 @@ export async function POST(request: Request) {
 
         // Revalidate cache
         revalidateSiteCache(site.id);
+
+        // Post-save notifications (non-blocking, only for user's own sites)
+        if (!isCompetitor) {
+            const auditUser = await prisma.user.findUnique({
+                where: { id: session.user.id },
+                select: { email: true, name: true },
+            });
+            if (auditUser) {
+                sendAuditCompleteEmail(auditUser, site.id, domain, techScore ?? null).catch((err) => {
+                    console.error('[SiteIntelligence] Failed to send audit complete email:', err);
+                });
+
+                // Onboarding complete: tag in systeme.io if this is the user's first site
+                const siteCount = await prisma.site.count({
+                    where: { userId: session.user.id, isCompetitor: false },
+                });
+                if (siteCount === 1) {
+                    getIntegrationValue('SYSTEME_TAG_ON_ONBOARDING').then(async (tagName) => {
+                        if (!tagName) return;
+                        const contactResult = await getContactByEmail(auditUser.email);
+                        if (contactResult.ok) {
+                            return addTagToContactByName(contactResult.contact.id, tagName);
+                        }
+                        return addContact(auditUser.email, auditUser.name || '', [tagName]);
+                    }).catch((err) => {
+                        console.error('[SiteIntelligence] Failed to sync systeme.io onboarding tag:', err);
+                    });
+                }
+            }
+        }
 
         return NextResponse.json({
             success: true,

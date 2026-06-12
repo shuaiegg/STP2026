@@ -182,7 +182,7 @@ export function OnboardingClient() {
                   if (validationError) setValidationError(null);
                 }}
                 placeholder={COPY.placeholder}
-                disabled={state === 'ANALYZING'}
+                disabled={(state as OnboardingState) === 'ANALYZING'}
                 aria-invalid={!!validationError}
                 aria-describedby={validationError ? 'domain-error' : undefined}
                 className={`w-full bg-slate-50 border-2 rounded-lg py-4 pl-12 pr-6 text-lg font-bold focus:ring-4 focus:ring-brand-primary/10 focus:outline-none transition-all ${
@@ -219,10 +219,10 @@ export function OnboardingClient() {
 
           <Button
             type="submit"
-            disabled={state === 'ANALYZING'}
+            disabled={(state as OnboardingState) === 'ANALYZING'}
             className="w-full bg-slate-900 hover:bg-slate-800 text-white rounded-lg py-8 text-xl font-black group shadow-xl hover:shadow-2xl transition-all"
           >
-            {state === 'ANALYZING' ? COPY.submitAnalyzing : COPY.submitIdle}
+            {(state as OnboardingState) === 'ANALYZING' ? COPY.submitAnalyzing : COPY.submitIdle}
             <ArrowRight aria-hidden="true" className="ml-2 group-hover:translate-x-1 transition-transform" />
           </Button>
 
