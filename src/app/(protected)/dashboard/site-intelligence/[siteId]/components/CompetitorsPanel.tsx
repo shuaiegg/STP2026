@@ -3,8 +3,10 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { MarketGapAnalysis } from './MarketGapAnalysis';
+import { useTranslations } from 'next-intl';
 
 export function CompetitorsPanel({ siteId }: { siteId: string }) {
+    const t = useTranslations('dashboard.competitorsPanel');
     const [competitors, setCompetitors] = useState<any[]>([]);
     const [marketGap, setMarketGap] = useState<any>(null);
     const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -56,18 +58,18 @@ export function CompetitorsPanel({ siteId }: { siteId: string }) {
                 setNewDomain('');
                 fetchData();
             } else {
-                alert(data.error);
+                alert(data.error || t('addFailed'));
             }
         } catch (e) {
             console.error(e);
-            alert("添加失败");
+            alert(t('addFailed'));
         } finally {
             setIsAdding(false);
         }
     };
 
     const handleDelete = async (compId: string) => {
-        if (!confirm("确定要删除此竞品吗？")) return;
+        if (!confirm(t('confirmDelete'))) return;
         try {
             const res = await fetch(`/api/dashboard/sites/${siteId}/competitors/${compId}`, {
                 method: 'DELETE'
@@ -76,11 +78,11 @@ export function CompetitorsPanel({ siteId }: { siteId: string }) {
             if (data.success) {
                 fetchData();
             } else {
-                alert(data.error);
+                alert(data.error || t('deleteFailed'));
             }
         } catch (e) {
             console.error(e);
-            alert("删除失败");
+            alert(t('deleteFailed'));
         }
     };
 
@@ -94,11 +96,11 @@ export function CompetitorsPanel({ siteId }: { siteId: string }) {
             if (data.success) {
                 fetchData();
             } else {
-                alert(data.error || "扫描失败");
+                alert(data.error || t('scanFailed'));
             }
         } catch (e) {
             console.error(e);
-            alert("扫描发生错误");
+            alert(t('scanError'));
         } finally {
             setScanningId(null);
         }
@@ -112,11 +114,11 @@ export function CompetitorsPanel({ siteId }: { siteId: string }) {
             if (data.success) {
                 setSuggestedCompetitors(data.suggestions);
             } else {
-                alert(data.error || "获取建议失败");
+                alert(data.error || t('suggestFailed'));
             }
         } catch (e) {
             console.error(e);
-            alert("请求建议时发生错误");
+            alert(t('suggestError'));
         } finally {
             setIsSuggesting(false);
         }
@@ -134,11 +136,11 @@ export function CompetitorsPanel({ siteId }: { siteId: string }) {
                 setSuggestedCompetitors(prev => prev.filter(s => s.domain !== domain));
                 fetchData();
             } else {
-                alert(data.error);
+                alert(data.error || t('addFailed'));
             }
         } catch (e) {
             console.error(e);
-            alert("添加失败");
+            alert(t('addFailed'));
         }
     };
 
@@ -147,21 +149,21 @@ export function CompetitorsPanel({ siteId }: { siteId: string }) {
             <div className="flex flex-col md:flex-row gap-6">
                 <Card className="flex-1 p-6 space-y-4">
                     <div className="space-y-1">
-                        <h3 className="font-semibold text-slate-900">添加竞争对手</h3>
-                        <p className="text-sm text-slate-500">输入竞品的裸域名以抓取其核心内容主题并进行空白分析。（最多 5 个）</p>
+                        <h3 className="font-semibold text-slate-900">{t('addTitle')}</h3>
+                        <p className="text-sm text-slate-500">{t('addDesc')}</p>
                     </div>
                     <form onSubmit={handleAdd} className="flex gap-2">
                         <input
                             type="text"
-                            placeholder="例如: copy.ai"
+                            placeholder={t('placeholder')}
                             className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all"
                             value={newDomain}
                             onChange={(e) => setNewDomain(e.target.value)}
                         />
                         <Button type="submit" disabled={isAdding || !newDomain.trim()} className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm group">
-                            {isAdding ? "处理中..." : (
+                            {isAdding ? t('processing') : (
                                 <>
-                                    <span>添加并分析</span>
+                                    <span>{t('addAndAnalyze')}</span>
                                     <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
                                 </>
                             )}
@@ -170,7 +172,7 @@ export function CompetitorsPanel({ siteId }: { siteId: string }) {
                 </Card>
                 <div className="w-full md:w-64 bg-slate-900 rounded-2xl p-6 border border-slate-800 flex items-center justify-center text-center shadow-xl">
                     <div className="space-y-1">
-                        <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500 font-bold">追踪限额</p>
+                        <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500 font-bold">{t('quotaLabel')}</p>
                         <p className="text-4xl font-extrabold text-white tabular-nums">
                             {competitors.length} <span className="text-xl text-slate-600 font-medium">/ 5</span>
                         </p>
@@ -184,13 +186,13 @@ export function CompetitorsPanel({ siteId }: { siteId: string }) {
                     <div className="flex items-center justify-between px-1">
                         <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
                             <span className="flex h-2 w-2 rounded-full bg-brand-primary animate-pulse" />
-                            AI 发现的潜在对手
+                            {t('aiSuggestions')}
                         </h4>
                         <button
                             onClick={() => setSuggestedCompetitors([])}
                             className="text-[10px] text-slate-400 hover:text-slate-600 font-medium"
                         >
-                            清除建议
+                            {t('clearSuggestions')}
                         </button>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -199,7 +201,7 @@ export function CompetitorsPanel({ siteId }: { siteId: string }) {
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between">
                                         <p className="font-bold text-slate-900">{s.domain}</p>
-                                        <Badge variant="default" className="text-[10px] py-0 border-brand-primary/20 text-brand-primary bg-white">推荐</Badge>
+                                        <Badge variant="default" className="text-[10px] py-0 border-brand-primary/20 text-brand-primary bg-white">{t('recommended')}</Badge>
                                     </div>
                                     <p className="text-[11px] text-slate-500 leading-relaxed italic">“{s.reason}”</p>
                                 </div>
@@ -209,7 +211,7 @@ export function CompetitorsPanel({ siteId }: { siteId: string }) {
                                         onClick={() => handleAddFromSuggest(s.domain)}
                                         className="h-7 text-[10px] px-3 bg-brand-primary hover:bg-brand-primary/90 text-white rounded-lg flex-1 font-bold"
                                     >
-                                        快速添加
+                                        {t('quickAdd')}
                                     </Button>
                                     <button
                                         onClick={() => setSuggestedCompetitors(prev => prev.filter((_, idx) => idx !== i))}
@@ -230,9 +232,9 @@ export function CompetitorsPanel({ siteId }: { siteId: string }) {
                         className="text-[11px] text-brand-primary hover:text-brand-primary/80 font-bold flex items-center gap-1.5 px-3 py-1.5 bg-brand-primary/5 rounded-full border border-brand-primary/10 transition-all hover:shadow-sm disabled:opacity-50"
                     >
                         {isSuggesting ? (
-                            <><svg className="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> 行业深度测绘中...</>
+                            <><svg className="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> {t('scanning')}</>
                         ) : (
-                            <><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" /></svg> 自动寻找对手</>
+                            <><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" /></svg> {t('autoFind')}</>
                         )}
                     </button>
                 </div>
@@ -242,12 +244,12 @@ export function CompetitorsPanel({ siteId }: { siteId: string }) {
                 <div className="bg-slate-50/80 px-4 py-3 border-b border-slate-100 flex items-center justify-between">
                     <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-brand-primary"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="4" /><line x1="21.17" x2="12" y1="8" y2="8" /><line x1="3.95" x2="8.58" y1="6.06" y2="14" /><line x1="10.88" x2="15.46" y1="21.94" y2="14" /></svg>
-                        情报雷达
+                        {t('radarTitle')}
                     </h3>
                     {(isListRefreshing || isGapRefreshing) && (
                         <div className="flex items-center gap-2 animate-in fade-in duration-300">
                             <svg className="animate-spin h-3 w-3 text-brand-primary/60" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                            <span className="text-[10px] font-medium text-slate-400 uppercase tracking-widest">同步中</span>
+                            <span className="text-[10px] font-medium text-slate-400 uppercase tracking-widest">{t('syncing')}</span>
                         </div>
                     )}
                 </div>
@@ -274,8 +276,8 @@ export function CompetitorsPanel({ siteId }: { siteId: string }) {
                         <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
                             <span className="text-2xl opacity-80">🕵️‍♂️</span>
                         </div>
-                        <h4 className="text-slate-900 font-medium mb-1">雷达待命</h4>
-                        <p className="text-sm text-slate-500 max-w-[260px]">还没有追踪任何竞品，添加一个网域即可开启全自动内容探测。</p>
+                        <h4 className="text-slate-900 font-medium mb-1">{t('emptyTitle')}</h4>
+                        <p className="text-sm text-slate-500 max-w-[260px]">{t('emptyDesc')}</p>
                     </div>
                 ) : (
                     <div className="divide-y divide-slate-100/80">
@@ -294,7 +296,7 @@ export function CompetitorsPanel({ siteId }: { siteId: string }) {
                                                     {comp.domain}
                                                     {hasTopics && (
                                                         <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
-                                                            情报已获取
+                                                            {t('infoAcquired')}
                                                         </span>
                                                     )}
                                                 </p>
@@ -308,7 +310,7 @@ export function CompetitorsPanel({ siteId }: { siteId: string }) {
                                                             ))}
                                                         </div>
                                                     ) : (
-                                                        <p className="text-[11px] text-slate-400 font-medium">尚未扫描该站点的内容基因</p>
+                                                        <p className="text-[11px] text-slate-400 font-medium">{t('noInfo')}</p>
                                                     )}
                                                 </div>
                                             </div>
@@ -322,14 +324,14 @@ export function CompetitorsPanel({ siteId }: { siteId: string }) {
                                                 className={`h-8 text-xs font-semibold rounded-lg shadow-sm border-slate-200 transition-all ${isScanning ? 'bg-slate-100 text-slate-400' : 'hover:bg-brand-primary hover:text-white hover:border-brand-primary'}`}
                                             >
                                                 {isScanning ? (
-                                                    <span className="flex items-center gap-1.5"><svg className="animate-spin h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> 扫描中...</span>
-                                                ) : hasTopics ? "重新扫描" : "获取情报"}
+                                                    <span className="flex items-center gap-1.5"><svg className="animate-spin h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> {t('scanning')}</span>
+                                                ) : hasTopics ? t('rescan') : t('getInfo')}
                                             </Button>
                                             <button
                                                 onClick={() => handleDelete(comp.id)}
                                                 className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-transparent shadow-[0_0_0_1px_transparent] hover:shadow-red-100"
                                             >
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /><line x1="10" x2="10" y1="11" y2="17" /><line x1="14" x2="14" y1="11" y2="17" /></svg>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /><line x1="10" x2="10" y1="11" y2="17" /><line x1="14" x2="14" y1="11" y2="17" /></svg>
                                             </button>
                                         </div>
                                     </div>

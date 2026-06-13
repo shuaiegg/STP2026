@@ -11,15 +11,7 @@ import Link from 'next/link';
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 import { Globe, ShieldCheck, Copy, Check, TrendingUp, TrendingDown, Minus } from 'lucide-react';
-
-const COPY = {
-    START_SCAN: "发起扫描",
-    SCANNING: "扫描中...",
-    BETA_TAG: "公测版",
-    NO_SITE_TITLE: "请先选择审计站点",
-    NO_SITE_DESC: "请前往站点管家选择一个站点，然后点击「查看最新星图」或「重新扫描」进入即时审计。",
-    NO_SITE_BUTTON: "返回站点管家",
-};
+import { useTranslations } from 'next-intl';
 
 interface PageMeta {
     url?: string;
@@ -55,34 +47,35 @@ interface AuditHistoryItem {
     issueReport: any | null;
 }
 
-function timeAgo(iso: string) {
-    const diff = Date.now() - new Date(iso).getTime();
-    const mins = Math.floor(diff / 60000);
-    if (mins < 2) return '刚刚';
-    if (mins < 60) return `${mins} 分钟前`;
-    const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs} 小时前`;
-    return `${Math.floor(hrs / 24)} 天前`;
-}
-
-const STATUS_LABELS: Record<string, string> = {
-    'READY_FOR_SCAN': '准备就绪',
-    'INITIALIZING_PROBE': '正在初始化探针…',
-    'SITE_STRUCTURE_DISCOVERED': '站点结构已探明',
-    'SCANNING_GALAXY': '页面深度扫描中…',
-    'GALAXY_CONSTRUCTED': '审计完成',
-    'PROBE_FAILED': '扫描失败',
-    'SYSTEM_ERROR': '系统异常',
-    'LOADING_LATEST_AUDIT': '加载最新审计…',
-    'LOADING_HISTORY': '加载历史审计…',
-    'HISTORY_LOAD_FAILED': '历史记录加载失败',
-    'SAVING_RESULTS': '正在自动保存审计结果…',
-};
-
 function InstantAuditInner() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const { data: session } = authClient.useSession();
+    const t = useTranslations('dashboard.instantAudit');
+
+    const timeAgo = (iso: string) => {
+        const diff = Date.now() - new Date(iso).getTime();
+        const mins = Math.floor(diff / 60000);
+        if (mins < 2) return t('status.justNow');
+        if (mins < 60) return t('status.minsAgo', { mins });
+        const hrs = Math.floor(mins / 60);
+        if (hrs < 24) return t('status.hrsAgo', { hrs });
+        return t('status.daysAgo', { days: Math.floor(hrs / 24) });
+    };
+
+    const STATUS_LABELS: Record<string, string> = {
+        'READY_FOR_SCAN': t('status.READY_FOR_SCAN'),
+        'INITIALIZING_PROBE': t('status.INITIALIZING_PROBE'),
+        'SITE_STRUCTURE_DISCOVERED': t('status.SITE_STRUCTURE_DISCOVERED'),
+        'SCANNING_GALAXY': t('status.SCANNING_GALAXY'),
+        'GALAXY_CONSTRUCTED': t('status.GALAXY_CONSTRUCTED'),
+        'PROBE_FAILED': t('status.PROBE_FAILED'),
+        'SYSTEM_ERROR': t('status.SYSTEM_ERROR'),
+        'LOADING_LATEST_AUDIT': t('status.LOADING_LATEST_AUDIT'),
+        'LOADING_HISTORY': t('status.LOADING_HISTORY'),
+        'HISTORY_LOAD_FAILED': t('status.HISTORY_LOAD_FAILED'),
+        'SAVING_RESULTS': t('status.SAVING_RESULTS'),
+    };
 
     // Site & Data states
     const [activeSiteId] = useState<string | null>(searchParams.get('siteId'));
@@ -121,13 +114,13 @@ function InstantAuditInner() {
         const handleBeforeUnload = (e: BeforeUnloadEvent) => {
             if (!activeSiteId && status === 'GALAXY_CONSTRUCTED' && !activeAuditId) {
                 e.preventDefault();
-                e.returnValue = '扫描结果尚未保存，确认离开？';
+                e.returnValue = t('confirmLeave');
                 return e.returnValue;
             }
         };
         window.addEventListener('beforeunload', handleBeforeUnload);
         return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-    }, [activeSiteId, status, activeAuditId]);
+    }, [activeSiteId, status, activeAuditId, t]);
 
     useEffect(() => {
         if (!activeSiteId) return;
@@ -371,11 +364,11 @@ function InstantAuditInner() {
 
                 setTimeout(() => setJustSaved(false), 4000);
             } else {
-                toast.error("保存失败: " + data.error);
+                toast.error(t('status.SYSTEM_ERROR') + ": " + data.error);
             }
         } catch (error) {
             console.error(error);
-            toast.error("保存到仪表盘时出错，请重试");
+            toast.error(t('status.SYSTEM_ERROR'));
         } finally {
             setIsSaving(false);
             if (activeSiteId) setStatus('GALAXY_CONSTRUCTED');
@@ -484,11 +477,11 @@ ${issuesMarkdown}
                             className="flex items-center gap-1 text-slate-500 hover:text-slate-900 transition-colors text-sm font-medium"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
-                            返回
+                            {t('back')}
                         </Link>
                         <span className="text-slate-300">/</span>
-                        <h1 className="text-2xl font-bold tracking-tight text-slate-900">即时审计</h1>
-                        <Badge variant="default" className="bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20 border-0">公测版</Badge>
+                        <h1 className="text-2xl font-bold tracking-tight text-slate-900">{t('title')}</h1>
+                        <Badge variant="default" className="bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20 border-0">{t('betaTag')}</Badge>
                     </div>
                 </div>
 
@@ -499,7 +492,7 @@ ${issuesMarkdown}
                             disabled={loading}
                             className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm px-6 font-bold flex-shrink-0"
                         >
-                            {loading ? COPY.SCANNING : COPY.START_SCAN}
+                            {loading ? t('scanning') : t('startScan')}
                         </Button>
                     )}
                 </div>
@@ -509,7 +502,7 @@ ${issuesMarkdown}
             {justSaved && (
                 <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 text-sm w-fit animate-in fade-in slide-in-from-left-4">
                     <ShieldCheck size={18} />
-                    <span className="font-bold">审计结果已持久化保存至站点历史</span>
+                    <span className="font-bold">{t('justSaved')}</span>
                 </div>
             )}
 
@@ -517,7 +510,7 @@ ${issuesMarkdown}
             {!activeSiteId && status === 'GALAXY_CONSTRUCTED' && !activeAuditId && (
                 <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 text-sm w-fit animate-in fade-in slide-in-from-left-4">
                     <span className="text-lg">⚠️</span>
-                    <span className="font-bold">扫描结果未保存，离开页面将丢失。请绑定站点或手动点击同步。</span>
+                    <span className="font-bold">{t('unsavedWarning')}</span>
                 </div>
             )}
 
@@ -528,12 +521,12 @@ ${issuesMarkdown}
                         <Globe size={40} className="text-slate-400" strokeWidth={1.5} />
                     </div>
                     <div className="space-y-2 max-w-sm">
-                        <h2 className="text-2xl font-black text-slate-900 tracking-tight">{COPY.NO_SITE_TITLE}</h2>
-                        <p className="text-sm text-slate-500 leading-relaxed">{COPY.NO_SITE_DESC}</p>
+                        <h2 className="text-2xl font-black text-slate-900 tracking-tight">{t('noSiteTitle')}</h2>
+                        <p className="text-sm text-slate-500 leading-relaxed">{t('noSiteDesc')}</p>
                     </div>
                     <Link href="/dashboard/site-intelligence">
                         <Button className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl px-8 font-bold">
-                            {COPY.NO_SITE_BUTTON}
+                            {t('noSiteButton')}
                         </Button>
                     </Link>
                 </div>
@@ -555,15 +548,15 @@ ${issuesMarkdown}
                             <div className="w-20 h-20 rounded-3xl bg-brand-primary/8 flex items-center justify-center mb-6">
                                 <Globe size={40} className="text-brand-primary opacity-60" />
                             </div>
-                            <h2 className="text-xl font-bold text-slate-900 mb-2">准备就绪：{domain}</h2>
+                            <h2 className="text-xl font-bold text-slate-900 mb-2">{t('readyTitle', { domain })}</h2>
                             <p className="text-sm text-slate-500 max-w-sm mb-8 leading-relaxed">
-                                系统已绑定到站点，点击右上角「发起扫描」按钮即可生成最新的主题星图与技术报告。
+                                {t('readyDesc')}
                             </p>
                             <Button
                                 onClick={handleStartAudit}
                                 className="bg-brand-primary hover:bg-brand-primary-hover text-white rounded-xl shadow-lg shadow-brand-primary/20 px-10 py-6 font-bold flex-shrink-0"
                             >
-                                立即开始审计
+                                {t('readyButton')}
                             </Button>
                         </Card>
                     ) : (
@@ -579,7 +572,7 @@ ${issuesMarkdown}
                                 <div className="absolute top-6 left-6 pointer-events-none">
                                     <div className="bg-white/90 backdrop-blur-md border border-slate-200 p-4 rounded-2xl shadow-xl flex items-center gap-4 animate-in slide-in-from-left-4">
                                         <div className="flex flex-col">
-                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">技术健康得分</span>
+                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">{t('techScoreLabel')}</span>
                                             <div className="flex items-center gap-2">
                                                 <span className={`text-3xl font-black font-display italic ${techScore >= 80 ? 'text-emerald-600' : techScore >= 50 ? 'text-amber-600' : 'text-rose-600'}`}>
                                                     {techScore}
@@ -603,7 +596,7 @@ ${issuesMarkdown}
                 <div className="space-y-4">
                     <Card className="bg-white border-slate-200 p-5 shadow-sm space-y-4">
                         <div className="space-y-3">
-                            <h3 className="text-[10px] font-black tracking-widest text-slate-400 uppercase">系统状态</h3>
+                            <h3 className="text-[10px] font-black tracking-widest text-slate-400 uppercase">{t('systemStatus')}</h3>
                             <div className="flex items-center gap-3">
                                 <div className={`w-2 h-2 rounded-full flex-shrink-0 ${loading ? 'bg-amber-500 animate-pulse' : status === 'GALAXY_CONSTRUCTED' ? 'bg-emerald-500 shadow-sm shadow-emerald-200' : status.includes('FAILED') || status.includes('ERROR') ? 'bg-rose-500' : 'bg-slate-300'}`} />
                                 <span className="font-mono text-[11px] font-bold text-slate-600 break-all">{STATUS_LABELS[status] ?? status}</span>
@@ -613,7 +606,7 @@ ${issuesMarkdown}
                         {loading && total > 0 && (
                             <div className="space-y-2 pt-2 border-t border-slate-50">
                                 <div className="flex justify-between text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                                    <span>扫描中</span>
+                                    <span>{t('scannedPages')}</span>
                                     <span>{scanned} / {total}</span>
                                 </div>
                                 <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
@@ -629,10 +622,10 @@ ${issuesMarkdown}
                     {/* Nodes Summary */}
                     {graphData.nodes.length > 0 && (
                         <Card className="bg-brand-primary text-white p-5 shadow-xl shadow-brand-primary/10 border-none">
-                            <h3 className="text-[10px] font-black tracking-widest text-white/60 uppercase mb-1">探明页面规模</h3>
+                            <h3 className="text-[10px] font-black tracking-widest text-white/60 uppercase mb-1">{t('scaleLabel')}</h3>
                             <div className="flex items-end gap-2">
                                 <div className="text-4xl font-black tracking-tight leading-none italic font-display">{graphData.nodes.length}</div>
-                                <span className="text-[10px] font-black uppercase tracking-widest mb-1">Nodes</span>
+                                <span className="text-[10px] font-black uppercase tracking-widest mb-1">{t('nodesUnit')}</span>
                             </div>
                         </Card>
                     )}
@@ -641,27 +634,27 @@ ${issuesMarkdown}
                     {issueReport && (
                         <Card className="bg-white border-slate-200 shadow-sm overflow-hidden">
                             <div className="p-5 space-y-4">
-                                <h3 className="text-[10px] font-black tracking-widest text-slate-400 uppercase">核心检测结论</h3>
+                                <h3 className="text-[10px] font-black tracking-widest text-slate-400 uppercase">{t('conclusionsTitle')}</h3>
                                 <div className="flex justify-between items-center">
                                     <div className="flex gap-2">
                                         <div className="flex flex-col items-center px-2 py-1.5 bg-rose-50 rounded-xl min-w-[40px] border border-rose-100">
                                             <span className="text-xs font-black text-rose-600">{issueReport.stats.critical}</span>
-                                            <span className="text-[8px] font-black text-rose-400 uppercase tracking-tighter">严重</span>
+                                            <span className="text-[8px] font-black text-rose-400 uppercase tracking-tighter">{t('severity.critical')}</span>
                                         </div>
                                         <div className="flex flex-col items-center px-2 py-1.5 bg-amber-50 rounded-xl min-w-[40px] border border-amber-100">
                                             <span className="text-xs font-black text-amber-600">{issueReport.stats.warning}</span>
-                                            <span className="text-[8px] font-black text-amber-400 uppercase tracking-tighter">警告</span>
+                                            <span className="text-[8px] font-black text-amber-400 uppercase tracking-tighter">{t('severity.warning')}</span>
                                         </div>
                                         <div className="flex flex-col items-center px-2 py-1.5 bg-blue-50 rounded-xl min-w-[40px] border border-blue-100">
                                             <span className="text-xs font-black text-blue-600">{issueReport.stats.info}</span>
-                                            <span className="text-[8px] font-black text-blue-400 uppercase tracking-tighter">提示</span>
+                                            <span className="text-[8px] font-black text-blue-400 uppercase tracking-tighter">{t('severity.info')}</span>
                                         </div>
                                     </div>
                                     <button
                                         onClick={() => setShowInlineReport(v => !v)}
                                         className="text-[11px] font-black text-brand-primary hover:text-brand-primary-hover transition-colors"
                                     >
-                                        {showInlineReport ? '收起详情' : '详细报告'}
+                                        {showInlineReport ? t('collapseDetails') : t('viewDetails')}
                                     </button>
                                 </div>
                             </div>
@@ -679,7 +672,7 @@ ${issuesMarkdown}
                     {/* Audit History List */}
                     {auditHistory.length > 0 && (
                         <Card className="bg-white border-slate-200 p-5 shadow-sm space-y-4">
-                            <h3 className="text-[10px] font-black tracking-widest text-slate-400 uppercase">站点审计演化史</h3>
+                            <h3 className="text-[10px] font-black tracking-widest text-slate-400 uppercase">{t('historyTitle')}</h3>
                             <div className="space-y-2">
                                 {auditHistory.slice(0, 5).map((audit) => (
                                     <button
@@ -694,9 +687,9 @@ ${issuesMarkdown}
                                         <div className="min-w-0 flex-1">
                                             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">{timeAgo(audit.createdAt)}</p>
                                             <div className="flex items-center gap-2">
-                                                <p className="text-xs font-black text-slate-700">{audit.pageCount} 页面节点</p>
+                                                <p className="text-xs font-black text-slate-700">{t('pageNodes', { count: audit.pageCount })}</p>
                                                 {!audit.graphData && (
-                                                    <span className="text-[8px] font-black bg-slate-100 text-slate-400 px-1 rounded uppercase">↗ 加载</span>
+                                                    <span className="text-[8px] font-black bg-slate-100 text-slate-400 px-1 rounded uppercase">↗ {t('loadMore')}</span>
                                                 )}
                                             </div>
                                         </div>
@@ -717,23 +710,23 @@ ${issuesMarkdown}
                     {selectedNode && (
                         <Card className="bg-white border-slate-200 p-6 shadow-xl border-brand-primary/10 space-y-5 animate-in slide-in-from-right-4">
                             <div className="flex justify-between items-start">
-                                <h3 className="text-[10px] font-black tracking-widest text-brand-primary uppercase">节点全量情报</h3>
+                                <h3 className="text-[10px] font-black tracking-widest text-brand-primary uppercase">{t('nodeIntelligence')}</h3>
                                 <button onClick={() => setSelectedNode(null)} className="text-slate-400 hover:text-slate-600">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
                                 </button>
                             </div>
                             <div className="space-y-4">
                                 <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">页面标题</p>
+                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">{t('pageTitle')}</p>
                                     <p className="text-sm text-slate-900 font-black leading-tight line-clamp-2 italic">{selectedNode.meta?.title || selectedNode.name}</p>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1">
-                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">权重</p>
+                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{t('weight')}</p>
                                         <p className="text-sm font-black text-brand-primary italic">{selectedNode.val.toFixed(1)}</p>
                                     </div>
                                     <div className="space-y-1 text-right">
-                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">加载耗时</p>
+                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{t('loadTime')}</p>
                                         <p className="text-sm font-bold text-slate-700 font-mono italic">{selectedNode.meta?.loadTime || '--'}ms</p>
                                     </div>
                                 </div>
@@ -749,7 +742,7 @@ ${issuesMarkdown}
                                 )}
 
                                 <div className="pt-2 border-t border-slate-50 space-y-3">
-                                    <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest">命中 SEO 问题</h4>
+                                    <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{t('hitIssues')}</h4>
                                     <div className="space-y-2">
                                         {nodeIssues.length > 0 ? (
                                             nodeIssues.map((issue: any) => (
@@ -758,14 +751,14 @@ ${issuesMarkdown}
                                                         issue.severity === 'critical' ? 'bg-rose-100 text-rose-600' :
                                                         issue.severity === 'warning' ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-blue-600'
                                                     }`}>
-                                                        {issue.severity === 'critical' ? '严重' : issue.severity === 'warning' ? '警告' : '提示'}
+                                                        {t(`severity.${issue.severity}`)}
                                                     </span>
                                                     <span className="text-[11px] font-bold text-slate-700 leading-tight">{issue.title}</span>
                                                 </div>
                                             ))
                                         ) : (
                                             <div className="text-[11px] font-bold text-emerald-600 flex items-center gap-1.5 px-1">
-                                                <Check size={12} /> 该页面未检测到问题
+                                                <Check size={12} /> {t('noIssuesDetected')}
                                             </div>
                                         )}
                                     </div>
@@ -783,7 +776,7 @@ ${issuesMarkdown}
                                 className={`w-full font-black tracking-[0.2em] uppercase py-7 rounded-2xl shadow-xl transition-all
                                     ${isSaving ? 'bg-slate-100 text-slate-400' : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-200'}`}
                             >
-                                {isSaving ? '同步中...' : '💾 持久化同步'}
+                                {isSaving ? t('syncing') : t('syncButton')}
                             </Button>
                         )}
                         
@@ -794,9 +787,9 @@ ${issuesMarkdown}
                                 className="w-full border-2 border-slate-100 hover:border-brand-primary/30 hover:bg-brand-primary/5 text-slate-600 text-xs font-black tracking-[0.2em] uppercase py-7 rounded-2xl group flex items-center justify-center gap-2"
                             >
                                 {isCopied ? (
-                                    <>已复制到剪贴板 <Check size={16} className="text-emerald-500" /></>
+                                    <>{t('copied')} <Check size={16} className="text-emerald-500" /></>
                                 ) : (
-                                    <>导出星图数据 (LLM) <Copy size={16} className="group-hover:scale-110 transition-transform" /></>
+                                    <>{t('exportButton')} <Copy size={16} className="group-hover:scale-110 transition-transform" /></>
                                 )}
                             </Button>
                         )}

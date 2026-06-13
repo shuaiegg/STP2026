@@ -11,6 +11,8 @@ import { useLocale, useTranslations } from "next-intl";
 import { translateAuthError } from "@/lib/auth-errors";
 import { toast } from "sonner";
 import posthog from "posthog-js";
+import { useSearchParams } from "next/navigation";
+import { Globe } from "lucide-react";
 
 type AuthFlow = "enter-email" | "enter-name" | "enter-otp";
 
@@ -18,6 +20,8 @@ export default function UnifiedAuthPage() {
     const t = useTranslations("auth.register");
     const tL = useTranslations("auth.login");
     const locale = useLocale();
+    const searchParams = useSearchParams();
+    const domainFromUrl = searchParams.get("domain");
     const localizeError = (msg: string) => (locale === "zh" ? translateAuthError(msg) : msg);
     const [email, setEmail] = useState("");
     const [name, setName] = useState("");
@@ -27,6 +31,21 @@ export default function UnifiedAuthPage() {
     const [error, setError] = useState("");
     const [isNewUser, setIsNewUser] = useState<boolean | null>(null);
     const router = useRouter();
+
+    // Persist domain in sessionStorage for recovery after OAuth or refresh
+    React.useEffect(() => {
+        if (domainFromUrl && typeof window !== "undefined") {
+            window.sessionStorage.setItem("pending_audit_domain", domainFromUrl);
+        }
+    }, [domainFromUrl]);
+
+    const getTargetDomain = () => {
+        if (domainFromUrl) return domainFromUrl;
+        if (typeof window !== "undefined") {
+            return window.sessionStorage.getItem("pending_audit_domain");
+        }
+        return null;
+    };
 
     // 1. Check if user exists based on email
     const handleCheckEmail = async (e: React.FormEvent) => {
@@ -145,11 +164,20 @@ export default function UnifiedAuthPage() {
             if (authError) {
                 throw new Error(authError.message);
             } else {
+                const targetDomain = getTargetDomain();
                 if (isNewUser) {
-                    posthog.capture('signup_completed', { method: 'email' });
+                    posthog.capture('signup_completed', { 
+                        method: 'email',
+                        source: targetDomain ? 'homepage_hero' : 'direct'
+                    });
                 }
                 toast.success(isNewUser ? tL("toastRegistered") : tL("toastSignedIn"));
-                router.push("/dashboard");
+                
+                if (targetDomain) {
+                    router.push(`/dashboard/onboarding?domain=${encodeURIComponent(targetDomain)}`);
+                } else {
+                    router.push("/dashboard");
+                }
                 router.refresh();
             }
         } catch (err: any) {
@@ -186,6 +214,17 @@ export default function UnifiedAuthPage() {
                 </div>
 
                 <Card className="p-8 border-2 border-brand-border-heavy bg-white shadow-[8px_8px_0_0_rgba(10,10,10,1)] stagger-2 animate-slide-in-up">
+                    {getTargetDomain() && (
+                        <div className="mb-6 p-3 bg-brand-secondary/10 border border-brand-secondary/30 rounded-lg flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-500">
+                            <Globe className="w-5 h-5 text-brand-secondary animate-pulse" />
+                            <div className="text-xs font-bold text-brand-text-primary">
+                                {locale === 'zh' 
+                                    ? `注册后立即为 ${getTargetDomain()} 开启体检` 
+                                    : `Audit ${getTargetDomain()} immediately after joining`}
+                            </div>
+                        </div>
+                    )}
+                    
                     {error && (
                         <div className="mb-6 bg-brand-accent/5 border-2 border-brand-accent/20 text-brand-accent text-xs py-3 px-4 font-bold text-center animate-in fade-in slide-in-from-top-2 duration-300">
                             {error}

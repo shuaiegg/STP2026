@@ -247,8 +247,10 @@ export class CrawlerService {
    */
   static async performFullAuditWithProgress(
     domain: string,
-    onProgress: (event: AuditProgressEvent) => void
+    onProgress: (event: AuditProgressEvent) => void,
+    options?: { locale?: 'zh' | 'en' }
   ): Promise<SiteAuditResult> {
+    const locale = options?.locale || 'zh';
     const normalized = this.normalizeDomain(domain);
     const { urls, sitemapFound } = await this.discoverUrls(normalized);
 
@@ -263,7 +265,7 @@ export class CrawlerService {
     const aboutUrl = urls.find(u => u.toLowerCase().includes('/about') || u.toLowerCase().includes('about-us'));
 
     // Fire off the DNA extraction asynchronously so it doesn't block the crawl startup
-    this.extractBusinessDna(homeUrl, aboutUrl).then(dna => {
+    this.extractBusinessDna(homeUrl, aboutUrl, { locale }).then(dna => {
       if (dna) {
         businessDna = dna;
         onProgress({ type: 'dna_extracted', dna });
@@ -295,9 +297,9 @@ export class CrawlerService {
       domain: normalized,
       sitemapUrl: `${normalized}/sitemap.xml`,
       sitemapFound,
-      pageCount: urls.length,
+      pageCount: totalCount,
       allUrls: urls,
-      pages: await this.clusterPages(pages),
+      pages: await this.clusterPages(pages, { locale }),
       averageLoadTime,
       businessDna
     };
@@ -306,7 +308,8 @@ export class CrawlerService {
   /**
    * Reads the homepage and about page to extract core business context using LLM
    */
-  static async extractBusinessDna(homeUrl: string, aboutUrl?: string): Promise<BusinessDna | null> {
+  static async extractBusinessDna(homeUrl: string, aboutUrl?: string, options?: { locale?: 'zh' | 'en' }): Promise<BusinessDna | null> {
+    const locale = options?.locale || 'zh';
     try {
       const { page: homePage } = await this.scrapePage(homeUrl);
       let aboutPage = null;
@@ -340,6 +343,7 @@ export class CrawlerService {
 
       CRITICAL INSTRUCTIONS:
       Return YOUR ANALYSIS as a strict JSON object with EXACTLY these four keys. Do not include markdown formatting or extra text.
+      ${locale === 'zh' ? 'IMPORTANT: Please provide the values in Chinese (Simplified).' : 'IMPORTANT: Please provide the values in English.'}
       1. "coreOfferings": Array of strings (What are the 2-4 main products or services they sell?)
       2. "targetAudience": Array of strings (Who are the 2-4 specific types of customers they are targeting?)
       3. "painPoints": Array of strings (What are the 2-4 main customer problems they solve?)
@@ -376,7 +380,8 @@ export class CrawlerService {
   /**
    * 使用 LLM 对审计后的页面进行语义聚类 (Semantic Clustering)
    */
-  static async clusterPages(pages: ScrapedPage[]): Promise<ScrapedPage[]> {
+  static async clusterPages(pages: ScrapedPage[], options?: { locale?: 'zh' | 'en' }): Promise<ScrapedPage[]> {
+    const locale = options?.locale || 'zh';
     if (pages.length === 0) return pages;
 
     try {
@@ -388,7 +393,7 @@ export class CrawlerService {
       const boilerplatePages = pages.filter(p => isBlacklistedTopic(new URL(p.url).pathname));
 
       if (meaningfulPages.length === 0) {
-        return pages.map(p => ({ ...p, topic: 'System/Boilerplate' }));
+        return pages.map(p => ({ ...p, topic: locale === 'zh' ? '系统/模板页面' : 'System/Boilerplate' }));
       }
 
       const pageData = meaningfulPages.map((p, i) => ({
@@ -404,6 +409,7 @@ Your goal is to group these pages into 5-10 "Semantic Topic Clusters" that repre
 CRITICAL INSTRUCTIONS:
 1. Focus on extracting semantic topics that would be valuable for competitive analysis and content planning.
 2. Each page must be assigned to exactly one cluster.
+${locale === 'zh' ? '3. IMPORTANT: Please provide the cluster names in Chinese (Simplified).' : '3. IMPORTANT: Please provide the cluster names in English.'}
 
 Pages List:
 ${JSON.stringify(pageData, null, 2)}
@@ -433,12 +439,12 @@ Do NOT include markdown formatting or extra text.
       // 2. 合并结果：meaningfulPages 使用 LLM 映射，boilerplatePages 直接归类
       const clusteredMeaningful = meaningfulPages.map((p, i) => ({
         ...p,
-        topic: mapping[i.toString()] || 'Uncategorized',
+        topic: mapping[i.toString()] || (locale === 'zh' ? '未分类' : 'Uncategorized'),
       }));
 
       const clusteredBoilerplate = boilerplatePages.map(p => ({
         ...p,
-        topic: 'System/Boilerplate',
+        topic: locale === 'zh' ? '系统/模板页面' : 'System/Boilerplate',
       }));
 
       // 保持原始顺序或重新组合。这里我们直接组合即可，顺序在前端渲染时通常不敏感

@@ -8,8 +8,12 @@ import { Lock, Loader2, CheckCircle2, ShieldCheck, KeyRound, AlertCircle, Mail, 
 import { toast } from "sonner";
 import { translateAuthError } from "@/lib/auth-errors";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 export default function SettingsPage() {
+    const router = useRouter();
+    const t = useTranslations("dashboard.settings");
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -34,27 +38,49 @@ export default function SettingsPage() {
                 if (user.locale) {
                     setLocalePreference(user.locale);
                 }
-                // In better-auth, we might not directly know if password is set from basic session
-                // We'll assume if they reach here and trigger a credential error later, they don't have one.
-                // But as a robust UX, we offer setting password via OTP natively.
-                // For now, we default to the "Change Password" view, and gracefully fallback to "Set Password via OTP" on specific errors.
                 setHasPassword(true);
             }
         }
         fetchUserStatus();
     }, []);
 
+    const handleUpdateLocale = async (newLocale: string) => {
+        if (newLocale === localePreference) return;
+        
+        setIsPending(true);
+        try {
+            const { error: authError } = await authClient.updateUser({
+                locale: newLocale
+            });
+
+            if (authError) throw new Error(authError.message || "Failed to update language preference");
+
+            setLocalePreference(newLocale);
+            toast.success(t("general.success"));
+            
+            // Full refresh to ensure all i18n providers catch the new locale
+            router.refresh();
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
+        } catch (err: any) {
+            toast.error(err.message || "Operation failed");
+        } finally {
+            setIsPending(false);
+        }
+    };
+
     // Action: Change existing password
     const handleChangePassword = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (newPassword !== confirmPassword) {
-            setError("两次输入的密码不一致");
+            setError(t("security.errorMismatch"));
             return;
         }
 
         if (newPassword.length < 8) {
-            setError("新密码长度至少需要 8 位");
+            setError(t("security.errorLength"));
             return;
         }
 
@@ -72,14 +98,14 @@ export default function SettingsPage() {
                 // Automatically switch to OTP flow if the user doesn't have a password set
                 const errMsg = authError.message || "";
                 if (errMsg.includes("credential") || errMsg.includes("password")) {
-                    console.log("User might not have a password set, switching to OTP flow...");
                     setHasPassword(false);
-                    throw new Error("检测到您尚未设置初始密码，请通过邮箱验证码进行设置。");
+                    setError(translateAuthError(errMsg));
+                    return;
                 }
                 throw new Error(errMsg || "修改密码失败");
             }
 
-            toast.success("密码已成功修改");
+            toast.success(t("security.success"));
             setCurrentPassword("");
             setNewPassword("");
             setConfirmPassword("");
@@ -110,7 +136,7 @@ export default function SettingsPage() {
             }
 
             setIsOtpSent(true);
-            toast.success("验证码已发送至您的邮箱");
+            toast.success(t("security.otpSent"));
         } catch (err: any) {
             setError(translateAuthError(err.message || "发送验证码失败"));
         } finally {
@@ -123,12 +149,12 @@ export default function SettingsPage() {
         if (e) e.preventDefault();
 
         if (newPassword !== confirmPassword) {
-            setError("两次输入的密码不一致");
+            setError(t("security.errorMismatch"));
             return;
         }
 
         if (newPassword.length < 8) {
-            setError("新密码长度至少需要 8 位");
+            setError(t("security.errorLength"));
             return;
         }
 
@@ -153,7 +179,7 @@ export default function SettingsPage() {
                 throw new Error(data.error || data.message || "设置密码失败，请检查验证码是否正确");
             }
 
-            toast.success("初始密码设置成功！");
+            toast.success(t("security.success"));
             setHasPassword(true);
             setNewPassword("");
             setConfirmPassword("");
@@ -170,64 +196,81 @@ export default function SettingsPage() {
         <div className="max-w-4xl mx-auto px-6 py-12">
             <div className="mb-10">
                 <Link href="/dashboard" className="inline-flex items-center text-sm font-bold text-brand-text-muted hover:text-brand-primary transition-colors gap-2 mb-6">
-                    <ArrowLeft size={16} /> 返回控制台
+                    <ArrowLeft size={16} /> {t("back")}
                 </Link>
-                <h1 className="font-display text-4xl font-black text-brand-text-primary mb-2">账号设置</h1>
-                <p className="text-brand-text-secondary">管理您的个人资料与账号安全。</p>
+                <h1 className="font-display text-4xl font-black text-brand-text-primary mb-2">{t("title")}</h1>
+                <p className="text-brand-text-secondary">{t("subtitle")}</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-                {/* Left: Security Section */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-start">
+                {/* Left: Settings Forms */}
                 <div className="md:col-span-8 space-y-8">
-                    <Card className="p-8 border-2 border-brand-border-heavy bg-white">
+                    {/* General Settings: Language */}
+                    <Card className="p-8 border-2 border-brand-border shadow-[8px_8px_0_0_rgba(10,10,10,0.05)] overflow-hidden relative">
                         <div className="flex items-center gap-3 mb-8">
                             <div className="w-10 h-10 rounded-xl bg-brand-primary/10 flex items-center justify-center text-brand-primary">
                                 <Globe size={24} />
                             </div>
                             <div>
-                                <h2 className="text-xl font-bold text-brand-text-primary">通用设置</h2>
-                                <p className="text-xs text-brand-text-muted font-medium">配置您的个人偏好和系统显示语言</p>
+                                <h2 className="text-xl font-black text-brand-text-primary">{t("general.title")}</h2>
+                                <p className="text-xs text-brand-text-secondary mt-1">{t("general.desc")}</p>
                             </div>
                         </div>
 
-                        <div className="space-y-4">
-                            <div className="space-y-2">
-                                <label className="font-mono text-[10px] font-bold text-brand-text-muted uppercase tracking-widest ml-1">界面语言 (Language)</label>
-                                <select
-                                    value={localePreference}
-                                    onChange={async (e) => {
-                                        const newLocale = e.target.value;
-                                        setLocalePreference(newLocale);
-                                        setIsPending(true);
-                                        try {
-                                            const { error } = await authClient.updateUser({
-                                                locale: newLocale,
-                                            });
-                                            if (error) throw new Error(error.message);
-                                            toast.success("语言偏好设置已更新");
-                                        } catch (err: any) {
-                                            toast.error(err.message || "更新失败");
-                                        } finally {
-                                            setIsPending(false);
-                                        }
-                                    }}
-                                    className="w-full bg-brand-surface border-2 border-brand-border rounded-xl py-3 px-4 text-brand-text-primary focus:border-brand-primary transition-all outline-none text-sm font-semibold"
-                                >
-                                    <option value="zh">🇨🇳 中文 (Chinese)</option>
-                                    <option value="en">🇺🇸 English (English)</option>
-                                </select>
-                            </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <button
+                                onClick={() => handleUpdateLocale("zh")}
+                                disabled={isPending}
+                                className={`p-4 rounded-xl border-2 transition-all flex items-center justify-between group ${
+                                    localePreference === "zh"
+                                        ? "border-brand-primary bg-brand-primary/5 ring-4 ring-brand-primary/5"
+                                        : "border-brand-border hover:border-brand-primary/40 bg-brand-surface"
+                                }`}
+                            >
+                                <div className="flex items-center gap-3">
+                                    <span className="text-2xl">🇨🇳</span>
+                                    <div className="text-left">
+                                        <p className="text-sm font-bold text-brand-text-primary">{t("general.zh")}</p>
+                                        <p className="text-[10px] text-brand-text-secondary">Chinese (Simplified)</p>
+                                    </div>
+                                </div>
+                                {localePreference === "zh" && (
+                                    <CheckCircle2 size={20} className="text-brand-primary animate-in zoom-in duration-300" />
+                                )}
+                            </button>
+
+                            <button
+                                onClick={() => handleUpdateLocale("en")}
+                                disabled={isPending}
+                                className={`p-4 rounded-xl border-2 transition-all flex items-center justify-between group ${
+                                    localePreference === "en"
+                                        ? "border-brand-primary bg-brand-primary/5 ring-4 ring-brand-primary/5"
+                                        : "border-brand-border hover:border-brand-primary/40 bg-brand-surface"
+                                }`}
+                            >
+                                <div className="flex items-center gap-3">
+                                    <span className="text-2xl">🇺🇸</span>
+                                    <div className="text-left">
+                                        <p className="text-sm font-bold text-brand-text-primary">{t("general.en")}</p>
+                                        <p className="text-[10px] text-brand-text-secondary">English (US)</p>
+                                    </div>
+                                </div>
+                                {localePreference === "en" && (
+                                    <CheckCircle2 size={20} className="text-brand-primary animate-in zoom-in duration-300" />
+                                )}
+                            </button>
                         </div>
                     </Card>
 
-                    <Card className="p-8 border-2 border-brand-border-heavy bg-white">
+                    {/* Security Section */}
+                    <Card className="p-8 border-2 border-brand-border shadow-[8px_8px_0_0_rgba(10,10,10,0.05)] overflow-hidden relative">
                         <div className="flex items-center gap-3 mb-8">
                             <div className="w-10 h-10 rounded-xl bg-brand-primary/10 flex items-center justify-center text-brand-primary">
                                 <ShieldCheck size={24} />
                             </div>
                             <div>
-                                <h2 className="text-xl font-bold text-brand-text-primary">访问安全</h2>
-                                <p className="text-xs text-brand-text-muted font-medium">建议定期更换密码或设置初始密码以保障安全</p>
+                                <h2 className="text-xl font-black text-brand-text-primary">{t("security.title")}</h2>
+                                <p className="text-xs text-brand-text-secondary mt-1">{t("security.desc")}</p>
                             </div>
                         </div>
 
@@ -244,7 +287,7 @@ export default function SettingsPage() {
                         {hasPassword === true && (
                             <form onSubmit={handleChangePassword} className="space-y-6 animate-in fade-in duration-300">
                                 <div className="space-y-2">
-                                    <label className="font-mono text-[10px] font-bold text-brand-text-muted uppercase tracking-widest ml-1">当前密码</label>
+                                    <label className="font-mono text-[10px] font-bold text-brand-text-muted uppercase tracking-widest ml-1">{t("security.currentPassword")}</label>
                                     <div className="relative group">
                                         <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-text-muted group-focus-within:text-brand-primary transition-colors" />
                                         <input
@@ -252,7 +295,7 @@ export default function SettingsPage() {
                                             value={currentPassword}
                                             onChange={(e) => setCurrentPassword(e.target.value)}
                                             className="w-full bg-brand-surface border-2 border-brand-border rounded-xl py-3 pl-11 pr-4 text-brand-text-primary focus:border-brand-primary transition-all outline-none text-sm"
-                                            placeholder="请输入您当前的登录密码"
+                                            placeholder="••••••••"
                                             required
                                         />
                                     </div>
@@ -260,7 +303,7 @@ export default function SettingsPage() {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="font-mono text-[10px] font-bold text-brand-text-muted uppercase tracking-widest ml-1">新密码</label>
+                                        <label className="font-mono text-[10px] font-bold text-brand-text-muted uppercase tracking-widest ml-1">{t("security.newPassword")}</label>
                                         <div className="relative group">
                                             <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-text-muted group-focus-within:text-brand-primary transition-colors" />
                                             <input
@@ -268,7 +311,7 @@ export default function SettingsPage() {
                                                 value={newPassword}
                                                 onChange={(e) => setNewPassword(e.target.value)}
                                                 className="w-full bg-brand-surface border-2 border-brand-border rounded-xl py-3 pl-11 pr-4 text-brand-text-primary focus:border-brand-primary transition-all outline-none text-sm"
-                                                placeholder="至少 8 位字符"
+                                                placeholder={t("security.errorLength")}
                                                 minLength={8}
                                                 required
                                             />
@@ -276,7 +319,7 @@ export default function SettingsPage() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="font-mono text-[10px] font-bold text-brand-text-muted uppercase tracking-widest ml-1">确认新密码</label>
+                                        <label className="font-mono text-[10px] font-bold text-brand-text-muted uppercase tracking-widest ml-1">{t("security.confirmPassword")}</label>
                                         <div className="relative group">
                                             <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-text-muted group-focus-within:text-brand-primary transition-colors" />
                                             <input
@@ -284,7 +327,7 @@ export default function SettingsPage() {
                                                 value={confirmPassword}
                                                 onChange={(e) => setConfirmPassword(e.target.value)}
                                                 className="w-full bg-brand-surface border-2 border-brand-border rounded-xl py-3 pl-11 pr-4 text-brand-text-primary focus:border-brand-primary transition-all outline-none text-sm"
-                                                placeholder="请再次输入新密码"
+                                                placeholder={t("security.confirmPassword")}
                                                 required
                                             />
                                         </div>
@@ -296,7 +339,7 @@ export default function SettingsPage() {
                                     disabled={isPending}
                                     className="bg-brand-primary hover:bg-brand-primary-hover text-white px-8 py-4 font-bold text-sm shadow-lg shadow-brand-primary/20 transition-all active:scale-95"
                                 >
-                                    {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <>保存新密码</>}
+                                    {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <>{t("security.save")}</>}
                                 </Button>
 
                                 <button
@@ -304,7 +347,7 @@ export default function SettingsPage() {
                                     onClick={() => setHasPassword(false)}
                                     className="block mt-4 text-[10px] font-black uppercase tracking-widest text-brand-text-muted hover:text-brand-primary transition-colors underline underline-offset-4"
                                 >
-                                    我没有初始密码，通过邮件验证设置
+                                    {t("security.noPassword")}
                                 </button>
                             </form>
                         )}
@@ -313,8 +356,8 @@ export default function SettingsPage() {
                         {hasPassword === false && (
                             <div className="space-y-6 animate-in slide-in-from-right-4 fade-in duration-300">
                                 <div className="p-4 bg-brand-secondary/10 border-2 border-brand-secondary/20 rounded-xl mb-6">
-                                    <p className="text-sm font-bold text-brand-text-primary mb-1">您尚未设置登录密码</p>
-                                    <p className="text-xs text-brand-text-secondary">为了您的账号安全，建议您绑定一个专属的访问密码。</p>
+                                    <p className="text-sm font-bold text-brand-text-primary mb-1">{t("security.noPasswordSet")}</p>
+                                    <p className="text-xs text-brand-text-secondary">{t("security.noPasswordSetDesc")}</p>
                                 </div>
 
                                 {!isOtpSent ? (
@@ -325,7 +368,7 @@ export default function SettingsPage() {
                                             className="w-full h-12 bg-brand-secondary hover:bg-brand-secondary-hover text-brand-text-primary border-2 border-brand-border-heavy shadow-[4px_4px_0_0_rgba(10,10,10,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all font-bold text-sm flex items-center justify-center gap-2 group"
                                         >
                                             {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : (
-                                                <>发送验证码至 {userEmail} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></>
+                                                <>{t("security.btnSendOtpTo", { email: userEmail })} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></>
                                             )}
                                         </Button>
                                         <button
@@ -333,13 +376,13 @@ export default function SettingsPage() {
                                             onClick={() => setHasPassword(true)}
                                             className="text-[10px] font-black uppercase tracking-widest text-brand-text-muted hover:text-brand-primary transition-colors mt-2"
                                         >
-                                            取消，返回修改密码
+                                            {t("security.btnCancelBack")}
                                         </button>
                                     </div>
                                 ) : (
                                     <form onSubmit={handleSetInitialPassword} className="space-y-6">
                                         <div className="space-y-2">
-                                            <label className="font-mono text-[10px] font-bold text-brand-text-muted uppercase tracking-widest ml-1">邮箱验证码</label>
+                                            <label className="font-mono text-[10px] font-bold text-brand-text-muted uppercase tracking-widest ml-1">{t("security.otpTitle")}</label>
                                             <div className="relative group">
                                                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-text-muted group-focus-within:text-brand-primary transition-colors" />
                                                 <input
@@ -347,7 +390,7 @@ export default function SettingsPage() {
                                                     value={otp}
                                                     onChange={(e) => setOtp(e.target.value)}
                                                     className="w-full bg-brand-surface border-2 border-brand-border rounded-xl py-3 pl-11 pr-4 text-brand-text-primary focus:border-brand-primary transition-all outline-none text-sm tracking-[0.5em] font-mono font-bold"
-                                                    placeholder="000000"
+                                                    placeholder={t("security.otpPlaceholder")}
                                                     maxLength={6}
                                                     required
                                                 />
@@ -356,7 +399,7 @@ export default function SettingsPage() {
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div className="space-y-2">
-                                                <label className="font-mono text-[10px] font-bold text-brand-text-muted uppercase tracking-widest ml-1">设置新密码</label>
+                                                <label className="font-mono text-[10px] font-bold text-brand-text-muted uppercase tracking-widest ml-1">{t("security.setInitialPassword")}</label>
                                                 <div className="relative group">
                                                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-text-muted group-focus-within:text-brand-primary transition-colors" />
                                                     <input
@@ -364,7 +407,7 @@ export default function SettingsPage() {
                                                         value={newPassword}
                                                         onChange={(e) => setNewPassword(e.target.value)}
                                                         className="w-full bg-brand-surface border-2 border-brand-border rounded-xl py-3 pl-11 pr-4 text-brand-text-primary focus:border-brand-primary transition-all outline-none text-sm"
-                                                        placeholder="至少 8 位字符"
+                                                        placeholder={t("security.setInitialPasswordPh")}
                                                         minLength={8}
                                                         required
                                                     />
@@ -372,7 +415,7 @@ export default function SettingsPage() {
                                             </div>
 
                                             <div className="space-y-2">
-                                                <label className="font-mono text-[10px] font-bold text-brand-text-muted uppercase tracking-widest ml-1">确认新密码</label>
+                                                <label className="font-mono text-[10px] font-bold text-brand-text-muted uppercase tracking-widest ml-1">{t("security.confirmInitialPassword")}</label>
                                                 <div className="relative group">
                                                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-text-muted group-focus-within:text-brand-primary transition-colors" />
                                                     <input
@@ -380,7 +423,7 @@ export default function SettingsPage() {
                                                         value={confirmPassword}
                                                         onChange={(e) => setConfirmPassword(e.target.value)}
                                                         className="w-full bg-brand-surface border-2 border-brand-border rounded-xl py-3 pl-11 pr-4 text-brand-text-primary focus:border-brand-primary transition-all outline-none text-sm"
-                                                        placeholder="请再次输入新密码"
+                                                        placeholder={t("security.confirmInitialPasswordPh")}
                                                         required
                                                     />
                                                 </div>
@@ -393,7 +436,7 @@ export default function SettingsPage() {
                                                 disabled={isPending || otp.length < 6 || newPassword.length < 8}
                                                 className="flex-1 bg-brand-primary hover:bg-brand-primary-hover text-white px-8 py-4 font-bold text-sm shadow-lg shadow-brand-primary/20 transition-all active:scale-95"
                                             >
-                                                {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <>验证并设置密码</>}
+                                                {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <>{t("security.btnSetInitialPassword")}</>}
                                             </Button>
                                             <Button
                                                 type="button"
@@ -401,7 +444,7 @@ export default function SettingsPage() {
                                                 onClick={() => setIsOtpSent(false)}
                                                 className="px-6 border-2 border-brand-border hover:bg-brand-surface"
                                             >
-                                                重发
+                                                {t("security.btnResend")}
                                             </Button>
                                         </div>
                                     </form>
@@ -416,27 +459,23 @@ export default function SettingsPage() {
                     <Card className="p-6 bg-slate-50 border-2 border-dashed border-slate-200">
                         <h3 className="font-bold text-brand-text-primary mb-4 flex items-center gap-2">
                             <CheckCircle2 size={18} className="text-emerald-500" />
-                            安全贴士
+                            {t("security.tipsTitle")}
                         </h3>
                         <ul className="space-y-3 text-xs text-brand-text-secondary leading-relaxed">
-                            <li className="flex gap-2">
-                                <span className="text-brand-primary">•</span>
-                                使用包含字母、数字和特殊字符的复杂密码。
-                            </li>
-                            <li className="flex gap-2">
-                                <span className="text-brand-primary">•</span>
-                                首次通过邮件验证码登录的用户，可以直接通过验证码设置初始密码。
-                            </li>
-                            <li className="flex gap-2">
-                                <span className="text-brand-primary">•</span>
-                                修改密码后，系统将自动登出您在其他浏览器上的会话。
-                            </li>
+                            {t.rich("security.tips", {
+                                li: (children) => (
+                                    <li className="flex gap-2">
+                                        <span className="text-brand-primary">•</span>
+                                        {children}
+                                    </li>
+                                ),
+                            }) as any}
                         </ul>
                     </Card>
 
                     <Card className="p-6 bg-brand-primary/5 border-2 border-brand-primary/10">
-                        <p className="text-[10px] font-black text-brand-primary uppercase tracking-widest mb-2">需要帮助?</p>
-                        <p className="text-xs text-brand-text-secondary leading-relaxed mb-4">如果您无法修改密码或账号遇到异常，请联系我们的技术支持。</p>
+                        <p className="text-[10px] font-black text-brand-primary uppercase tracking-widest mb-2">{t("security.helpTitle")}</p>
+                        <p className="text-xs text-brand-text-secondary leading-relaxed mb-4">{t("security.helpDesc")}</p>
                         <a href="mailto:jack@scaletotop.com" className="text-xs font-bold text-brand-primary underline">jack@scaletotop.com</a>
                     </Card>
                 </div>

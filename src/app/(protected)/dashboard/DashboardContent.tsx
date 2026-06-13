@@ -23,24 +23,7 @@ import { Badge } from '@/components/ui/Badge';
 import { authClient } from "@/lib/auth-client";
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-
-const COPY = {
-    empty: {
-        title: "欢迎开启出海获客之旅",
-        subtitle: "ScaletoTop 是专为 B2B 企业打造的自动化获客与内容管理系统。请先添加你的第一个站点，即可查收深度优化的策略建议。",
-        ctaPrimary: "添加第一个站点",
-        ctaSecondary: "免费即时审计"
-    },
-    checklist: {
-        title: "配置指南",
-        steps: [
-            { id: 'site', label: '添加站点' },
-            { id: 'audit', label: '运行审计' },
-            { id: 'gsc', label: '连接 GSC', optional: true },
-            { id: 'strategy', label: '查看战略看板' }
-        ]
-    }
-};
+import { useTranslations } from 'next-intl';
 
 export function DashboardContent({
     user,
@@ -70,6 +53,7 @@ export function DashboardContent({
     auditCount?: number;
 }) {
     const router = useRouter();
+    const t = useTranslations('dashboard.overview');
 
     const gscCount = useMemo(
         () => metrics.sitesOptions.filter(s => s.hasGsc).length,
@@ -114,7 +98,12 @@ export function DashboardContent({
     const isSetupState = metrics.totalSites > 0 && !checklistDismissed;
     const showChecklist = mounted && isSetupState && !checklistAutoHidden;
 
-    const checklistSteps = COPY.checklist.steps.map(step => {
+    const checklistSteps = [
+        { id: 'site', label: t('checklist.steps.site') },
+        { id: 'audit', label: t('checklist.steps.audit') },
+        { id: 'gsc', label: t('checklist.steps.gsc'), optional: true },
+        { id: 'strategy', label: t('checklist.steps.strategy') }
+    ].map(step => {
         let isCompleted = false;
         let href = '';
         let onClick: (() => void) | undefined = undefined;
@@ -141,11 +130,11 @@ export function DashboardContent({
                 <div className="bg-amber-50 border-2 border-amber-200 p-4 flex items-center justify-between rounded-xl">
                     <div className="flex items-center gap-3 text-amber-800 font-bold text-sm">
                         <ShieldAlert size={20} />
-                        代理预览模式：正在查看用户 {user?.email} 的账户
+                        {t('impersonating', { email: user?.email })}
                     </div>
                     <Link href="/dashboard/admin/users">
                         <Button size="sm" variant="outline" className="border-amber-200 bg-white text-amber-700 hover:bg-amber-100 flex items-center gap-2">
-                            <ArrowLeft size={14} /> 返回管理后台
+                            <ArrowLeft size={14} /> {t('backToAdmin')}
                         </Button>
                     </Link>
                 </div>
@@ -153,8 +142,8 @@ export function DashboardContent({
 
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
-                    <h1 className="font-display text-4xl font-black text-brand-text-primary italic leading-none mb-4">概览中心</h1>
-                    <p className="text-brand-text-secondary font-medium">欢迎回来，{user?.name || '用户'}。系统已为你聚合全局情报。</p>
+                    <h1 className="font-display text-4xl font-black text-brand-text-primary italic leading-none mb-4">{t('title')}</h1>
+                    <p className="text-brand-text-secondary font-medium">{t('welcome', { name: user?.name || 'User' })}</p>
                 </div>
             </div>
 
@@ -164,19 +153,19 @@ export function DashboardContent({
                         <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-6 shadow-sm text-brand-secondary">
                             <Plus size={32} />
                         </div>
-                        <h2 className="font-display text-3xl font-black text-brand-text-primary mb-4">{COPY.empty.title}</h2>
+                        <h2 className="font-display text-3xl font-black text-brand-text-primary mb-4">{t('empty.title')}</h2>
                         <p className="text-brand-text-secondary max-w-lg mx-auto mb-10 leading-relaxed">
-                            {COPY.empty.subtitle}
+                            {t('empty.subtitle')}
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4">
                             <Link href="/dashboard/site-intelligence">
                                 <Button as="span" className="bg-brand-secondary hover:bg-brand-secondary-hover text-brand-text-primary font-bold border-none rounded-lg px-8 shadow-sm">
-                                    {COPY.empty.ctaPrimary}
+                                    {t('empty.ctaPrimary')}
                                 </Button>
                             </Link>
                             <Link href="/dashboard/site-intelligence/instant-audit">
                                 <Button as="span" variant="outline" className="font-bold rounded-lg px-8 border-brand-secondary/30 text-brand-text-primary hover:bg-brand-secondary/10">
-                                    {COPY.empty.ctaSecondary}
+                                    {t('empty.ctaSecondary')}
                                 </Button>
                             </Link>
                         </div>
@@ -199,10 +188,12 @@ export function DashboardContent({
                             <div className="mb-4">
                                 <h4 className="font-bold text-brand-text-primary text-lg flex items-center gap-2">
                                     <ShieldCheck size={20} className="text-brand-secondary" />
-                                    {COPY.checklist.title}
+                                    {t('checklist.title')}
                                 </h4>
                                 <div className="flex items-center gap-4 mt-2">
-                                    <div className="text-sm font-medium text-brand-text-secondary">{completedSteps}/{checklistSteps.length} 完成</div>
+                                    <div className="text-sm font-medium text-brand-text-secondary">
+                                        {t('checklist.completed', { completed: completedSteps, total: checklistSteps.length })}
+                                    </div>
                                     <div className="flex-1 max-w-xs h-2 bg-white rounded-full overflow-hidden">
                                         <div className="h-full bg-brand-secondary transition-all" style={{ width: `${(completedSteps / checklistSteps.length) * 100}%` }} />
                                     </div>
@@ -218,11 +209,11 @@ export function DashboardContent({
                                             <div className="flex items-center gap-2 group">
                                                 {step.href ? (
                                                     <Link href={step.href} className={`text-sm font-bold hover:text-brand-secondary transition-colors ${step.isCompleted ? 'text-brand-text-secondary line-through opacity-70' : 'text-brand-text-primary'}`}>
-                                                        {step.label} {step.optional && <span className="text-[10px] font-normal text-brand-text-muted ml-1 no-underline">(可选)</span>}
+                                                        {step.label} {step.optional && <span className="text-[10px] font-normal text-brand-text-muted ml-1 no-underline">{t('checklist.optional')}</span>}
                                                     </Link>
                                                 ) : (
                                                     <button onClick={step.onClick} className={`text-sm font-bold hover:text-brand-secondary transition-colors ${step.isCompleted ? 'text-brand-text-secondary line-through opacity-70' : 'text-brand-text-primary'}`}>
-                                                        {step.label} {step.optional && <span className="text-[10px] font-normal text-brand-text-muted ml-1 no-underline">(可选)</span>}
+                                                        {step.label} {step.optional && <span className="text-[10px] font-normal text-brand-text-muted ml-1 no-underline">{t('checklist.optional')}</span>}
                                                     </button>
                                                 )}
                                             </div>
@@ -241,13 +232,13 @@ export function DashboardContent({
                         <Library size={80} className="text-brand-primary" />
                     </div>
                     <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
-                        <FileText size={12} className="text-brand-primary" /> 全球内容资产 (Planned Assets)
+                        <FileText size={12} className="text-brand-primary" /> {t('stats.assets')}
                     </div>
                     <div className="text-5xl font-black text-brand-text-primary mb-4 font-display">
                         {metrics.totalPlannedArticles}
                     </div>
                     <div className="text-[10px] text-slate-500 font-bold flex items-center gap-1">
-                        跨 <span className="font-black text-slate-800">{metrics.totalSites}</span> 个站点正在运作的内容节点
+                        {t('stats.assetsSub', { count: metrics.totalSites })}
                     </div>
                 </Card>
 
@@ -261,13 +252,13 @@ export function DashboardContent({
                             <Zap size={80} className="text-rose-500" />
                         </div>
                         <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
-                            <AlertCircle size={12} className="text-rose-500" /> 高优语义债 (High Priority Debts)
+                            <AlertCircle size={12} className="text-rose-500" /> {t('stats.debts')}
                         </div>
                         <div className="text-5xl font-black text-rose-600 mb-4 font-display">
                             {metrics.totalHighPriorityDebts}
                         </div>
                         <div className="text-[10px] text-slate-400 font-bold flex items-center gap-1">
-                            识别到 <span className="text-rose-600 font-black">{metrics.totalHighPriorityDebts}</span> 个必须立即抢占的流量缺口
+                            {t('stats.debtsSub', { count: metrics.totalHighPriorityDebts })}
                             <ArrowRight size={10} className="ml-1 text-brand-primary group-hover:translate-x-1 transition-transform" />
                         </div>
                     </Card>
@@ -276,10 +267,9 @@ export function DashboardContent({
                 {/* Quick Action Card */}
                 <Card className="p-8 border-none bg-brand-primary text-white shadow-xl shadow-brand-primary/20 flex flex-col justify-between">
                     <div>
-                        <h3 className="text-xl font-black italic mb-2 tracking-tight">智能战略自愈</h3>
+                        <h3 className="text-xl font-black italic mb-2 tracking-tight">{t('stats.strategy')}</h3>
                         <p className="text-white/70 text-xs font-medium leading-relaxed">
-                            系统检测到流量异常下跌，<br />
-                            自动标记需重构的内容节点。
+                            {t('stats.strategyDesc')}
                         </p>
                     </div>
                     <Button 
@@ -287,7 +277,7 @@ export function DashboardContent({
                         variant="outline" 
                         className="w-full mt-6 bg-white/10 border-white/20 hover:bg-white text-white hover:text-brand-primary font-black text-xs uppercase tracking-tighter transition-all"
                     >
-                        进入战略枢纽 <ArrowRight className="ml-2" size={14} />
+                        {t('stats.strategyCta')} <ArrowRight className="ml-2" size={14} />
                     </Button>
                 </Card>
             </div>
@@ -296,7 +286,7 @@ export function DashboardContent({
             <div className="space-y-6">
                 <h3 className="font-display text-2xl font-black text-brand-text-primary italic flex items-center gap-3">
                     <TrendingUp size={24} className="text-brand-primary" />
-                    各站点战略情报 (Site Insights)
+                    {t('sites.title')}
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -318,7 +308,7 @@ export function DashboardContent({
                             
                             {site.topDebt ? (
                                 <div className="space-y-2">
-                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">急需补齐的话题 (Lowest Coverage)</div>
+                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('sites.topicToFill')}</div>
                                     <div className="p-3 bg-rose-50 border border-rose-100 rounded-xl">
                                         <div className="text-sm font-bold text-rose-900 line-clamp-1">{site.topDebt}</div>
                                         <div className="flex items-center gap-2 mt-1">
@@ -331,12 +321,12 @@ export function DashboardContent({
                                 </div>
                             ) : (
                                 <div className="py-6 text-center text-slate-400 text-xs italic font-medium">
-                                    尚未进行语义分析
+                                    {t('sites.noAnalysis')}
                                 </div>
                             )}
                             
                             <div className="mt-4 pt-4 border-t border-slate-50 flex justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                <span className="text-[10px] font-black text-brand-primary uppercase">查看星图 &rarr;</span>
+                                <span className="text-[10px] font-black text-brand-primary uppercase">{t('sites.viewMap')} &rarr;</span>
                             </div>
                         </Card>
                     ))}
@@ -344,7 +334,7 @@ export function DashboardContent({
                     <Link href="/dashboard/site-intelligence">
                         <Card className="h-full border-2 border-dashed border-slate-200 bg-slate-50/50 hover:bg-slate-50 hover:border-brand-primary/30 transition-all flex flex-col items-center justify-center p-6 text-center space-y-2">
                             <Plus className="text-slate-400" />
-                            <span className="text-sm font-bold text-slate-500">添加新站点</span>
+                            <span className="text-sm font-bold text-slate-500">{t('sites.addSite')}</span>
                         </Card>
                     </Link>
                 </div>
@@ -356,9 +346,8 @@ export function DashboardContent({
             <div className="space-y-6">
                 <h3 className="font-display text-2xl font-black text-brand-text-primary italic flex items-center gap-3">
                     <ShieldCheck size={24} className="text-brand-primary" />
-                    系统安全与状态
+                    {t('system.title')}
                 </h3>
-...
 
                 <Card className="p-8 bg-white border-2 border-slate-100 rounded-3xl space-y-6">
                     <div className="flex items-center justify-between p-4 bg-emerald-50/50 rounded-2xl border border-emerald-100 group hover:border-emerald-200 transition-all cursor-default">
@@ -367,8 +356,8 @@ export function DashboardContent({
                                 <ShieldCheck size={20} />
                             </div>
                             <div>
-                                <div className="text-sm font-black text-emerald-900 leading-none mb-1">账号安全等级：高</div>
-                                <div className="text-[10px] text-emerald-600/70 font-bold uppercase tracking-widest">已启用动态验证保护</div>
+                                <div className="text-sm font-black text-emerald-900 leading-none mb-1">{t('system.securityLevel')}</div>
+                                <div className="text-[10px] text-emerald-600/70 font-bold uppercase tracking-widest">{t('system.securitySub')}</div>
                             </div>
                         </div>
                         <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -380,8 +369,8 @@ export function DashboardContent({
                                 <TrendingUp size={20} />
                             </div>
                             <div>
-                                <div className="text-sm font-black text-blue-900 leading-none mb-1">GEO 引擎状态</div>
-                                <div className="text-[10px] text-blue-600/70 font-bold uppercase tracking-widest">运行状态：正常 (100%)</div>
+                                <div className="text-sm font-black text-blue-900 leading-none mb-1">{t('system.geoStatus')}</div>
+                                <div className="text-[10px] text-blue-600/70 font-bold uppercase tracking-widest">{t('system.geoSub')}</div>
                             </div>
                         </div>
                         <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
@@ -393,7 +382,7 @@ export function DashboardContent({
                                 <Library size={20} />
                             </div>
                             <div>
-                                <div className="text-sm font-black text-purple-900 leading-none mb-1">站群与连接健康度</div>
+                                <div className="text-sm font-black text-purple-900 leading-none mb-1">{t('system.healthStatus')}</div>
                                 <div className="text-[10px] text-purple-600/70 font-bold uppercase tracking-widest">
                                     GSC ({gscCount}) • GA4 ({ga4Count})
                                 </div>
@@ -404,10 +393,10 @@ export function DashboardContent({
 
                     <div className="pt-4 border-t border-slate-50 flex items-center justify-between px-2">
                         <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                            <Coins size={12} /> 当前剩余能量: <span className="text-brand-primary">{user?.credits?.toLocaleString() || 0} 点</span>
+                            <Coins size={12} /> {t('system.credits', { count: user?.credits?.toLocaleString() || 0 })}
                         </div>
                         <Link href="/dashboard/billing" className="text-[10px] font-black text-slate-500 hover:text-brand-primary transition-colors flex items-center gap-1">
-                            能量与账单 <ArrowUpRight size={10} />
+                            {t('system.billing')} <ArrowUpRight size={10} />
                         </Link>
                     </div>
                 </Card>

@@ -6,7 +6,10 @@
     "register": "开启旅程",
     "signOut": "退出登录",
     "loading": "加载中…",
-    "language": "中文 (简体)"
+    "language": "中文 (简体)",
+    "confirm": "确定",
+    "cancel": "取消",
+    "unrated": "未评分"
   },
   "nav": {
     "home": "首页",
@@ -41,154 +44,61 @@
   },
   "home": {
     "meta": {
-      "title": "ScaletoTop | 帮中国出海企业每月新增 50+ 优质询盘",
-      "description": "专为中国出海企业打造。通过精准广告投流、SEO 内容矩阵和自动化跟进工具，帮您建立可预测、低成本的海外获客闭环。"
+      "title": "精准诊断，工程化增长 — ScaletoTop SEO 智能星图",
+      "description": "输入网址即刻获取 14 维度全站 SEO+GEO 体检报告。专为高增长团队打造的 AI 内容生产与引用追踪引擎。"
     },
     "hero": {
-      "badge": "已服务 50+ 出海企业",
-      "titleLine1": "让您的海外业务",
-      "titleLine2": "平均每月新增 50+ 优质询盘",
-      "subtitle": "专为出海企业打造。通过精准广告投流、SEO 内容矩阵和自动化跟进工具，帮您建立可预测、低成本的海外获客闭环。",
-      "ctaPrimary": "免费获取获客诊断报告",
-      "ctaPrimaryMicro": "无需信用卡 · 专属增长方案",
-      "ctaSecondary": "探索自动化工具"
+      "title": "精准诊断，工程化增长",
+      "subtitle": "一眼看穿流量空洞。通过 14 维度语义体检与 AI 生产闭环，让您的出海业务建立可预测的增长引擎。",
+      "inputPlaceholder": "输入您的网址 (e.g. example.com)",
+      "cta": "免费获取体检报告",
+      "microcopy": "60 秒即出 · 零成本 · 无需信用卡"
     },
-    "metrics": {
-      "stats": [
-        {
-          "value": 500,
-          "suffix": "+",
-          "label": "生成询盘数"
-        },
-        {
-          "value": 50,
-          "suffix": "+",
-          "label": "服务企业"
-        },
-        {
-          "value": 30,
-          "suffix": "+",
-          "label": "覆盖国家"
-        },
-        {
-          "value": 3,
-          "suffix": "x",
-          "label": "平均ROI提升"
-        }
-      ]
-    },
-    "clients": {
-      "title": "他们选择了 ScaletoTop"
+    "pillars": {
+      "diagnosis": {
+        "title": "诊断：测绘您的流量星图",
+        "desc": "智能星图深度扫描。不再盲目猜测，精准定位您的语义覆盖率与技术健康度。"
+      },
+      "production": {
+        "title": "生产：能上榜的内容",
+        "desc": "AI 驱动的高性能内容生成。针对 CJK/EN 市场深度优化的 geo-writer 生产线。"
+      },
+      "verification": {
+        "title": "验证：可见度的实证",
+        "desc": "闭环引用追踪。实时监测您的内容在搜索引擎与 AI 答复中的可见度。"
+      },
+      "learnMore": "了解更多"
     },
     "process": {
-      "subtitle": "如何运作",
-      "titleLine1": "三步建立您的",
-      "titleLine2": "海外获客系统",
-      "description": "我们不只是投广告，而是帮您建立一套可持续、可复制的获客方法",
-      "stepLabel": "步骤",
+      "title": "三步开启 PLG 增长旅程",
       "steps": [
         {
-          "num": "01",
-          "title": "获客诊断",
-          "desc": "分析您的产品、市场和现有渠道，找出最适合您的获客组合"
+          "title": "输入域名",
+          "desc": "输入您想要优化的网址，我们的探针将立即启动全量扫描。"
         },
         {
-          "num": "02",
-          "title": "策略定制",
-          "desc": "根据诊断结果，制定广告+内容+工具的组合策略和执行计划"
+          "title": "一键注册",
+          "desc": "注册您的账户，体检结果将自动保存至您的个人控制台。"
         },
         {
-          "num": "03",
-          "title": "执行优化",
-          "desc": "落地执行获客计划，持续追踪数据，优化转化效果"
+          "title": "获取报告",
+          "desc": "在 60 秒内获得深度审计报告与针对性的 AI 优化建议。"
         }
       ]
     },
-    "methods": {
-      "subtitle": "获客方法",
-      "titleLine1": "三种方法组合",
-      "titleLine2": "形成获客闭环",
-      "description": "广告带来即时流量，内容积累长期资产，工具提升规模效率",
-      "items": [
-        {
-          "num": "01",
-          "title": "精准广告投放",
-          "desc": "Google Ads + Meta Ads 精准触达海外目标客户，从受众定位到转化追踪的完整流程",
-          "tags": [
-            "Google Ads",
-            "Meta",
-            "LinkedIn"
-          ],
-          "label": "即时获客"
-        },
-        {
-          "num": "02",
-          "title": "SEO内容矩阵",
-          "desc": "建立可复用的内容生产流程，从关键词研究到文章优化，让内容成为持续获客的长期资产",
-          "tags": [
-            "SEO",
-            "博客",
-            "视频"
-          ],
-          "label": "长期累积"
-        },
-        {
-          "num": "03",
-          "title": "自动化工具",
-          "desc": "通过工具产品化，把重复的人工操作变成可规模化的流程，让小团队也能实现高效获客",
-          "tags": [
-            "自动化",
-            "CRM",
-            "邮件"
-          ],
-          "label": "规模放大"
-        }
+    "pricing": {
+      "title": "按需付费，透明增长",
+      "subtitle": "无需高昂订阅。免费起步，仅为您真正使用的工具支付积分。",
+      "cta": "查看定价方案",
+      "features": [
+        "零预付",
+        "即时开通",
+        "积分永不过期"
       ]
     },
-    "testimonials": {
-      "subtitle": "客户评价",
-      "titleLine1": "他们这样评价",
-      "titleLine2": "我们的服务",
-      "items": [
-        {
-          "quote": "从完全不懂海外营销，到现在每月稳定收到20+询盘，ScaletoTop 帮我们建立了完整的获客流程",
-          "author": "陈先生",
-          "role": "创始人",
-          "company": "华东某智能制造企业",
-          "result": "询盘 +280%"
-        },
-        {
-          "quote": "最有价值的是他们不只是帮我们投广告，而是真正通过 AI 智作工具，让我们具备了低成本规模化产出的能力",
-          "author": "Sarah",
-          "role": "市场负责人",
-          "company": "某跨境电商独立站",
-          "result": "ROI 4.2x"
-        },
-        {
-          "quote": "SEO内容矩阵让我们在半年内拿下了 30 多个核心词的前三名，现在的询盘大多来自精准的自然流量",
-          "author": "张总",
-          "role": "CEO",
-          "company": "深圳某新材料出海品牌",
-          "result": "流量 +500%"
-        }
-      ]
-    },
-    "resources": {
-      "subtitle": "学习资源",
-      "titleLine1": "实战方法",
-      "titleLine2": "与拆解案例",
-      "cta": "查看全部文章",
-      "emptyTitle": "即将推出更多内容",
-      "emptyDesc": "我们的内容团队正在整理实战案例，敬请期待。",
-      "notPublished": "未发布",
-      "minutes": "{count} 分钟"
-    },
-    "cta": {
-      "titleLine1": "准备好建立您的",
-      "titleLine2": "海外获客系统了吗？",
-      "subtitle": "免费获取一份专属于您的获客诊断报告，了解最适合您的获客方法组合",
-      "primary": "立即开启增长",
-      "secondary": "查看方法论文章"
+    "consultation": {
+      "text": "需要专家为您量身打造方案？",
+      "cta": "预约业务咨询"
     }
   },
   "blog": {
@@ -625,6 +535,624 @@
     "title": "功能建设中...",
     "desc": "我们正在紧锣密鼓地开发这个模块，敬请期待！",
     "backHome": "返回首页"
+  },
+  "dashboard": {
+    "topNav": {
+      "mySite": "我的站点",
+      "noSites": "暂无站点",
+      "addSite": "添加新站点",
+      "adminSection": "平台管理",
+      "settings": "账号设置",
+      "signOut": "退出登录",
+      "credits": "积分",
+      "openSiteSwitcher": "打开站点切换器",
+      "openUserMenu": "打开用户菜单",
+      "siteSwitcherLabel": "站点切换列表",
+      "userMenuLabel": "用户菜单",
+      "openMobileMenu": "打开移动端菜单",
+      "closeMobileMenu": "关闭移动端菜单",
+      "mobileMenuLabel": "导航菜单",
+      "navSection": "导航",
+      "library": "内容库",
+      "tools": "工具箱",
+      "billing": "积分",
+      "admin": {
+        "content": "内容管理",
+        "users": "用户管理",
+        "orders": "订单管理",
+        "skills": "技能管理",
+        "creditRefund": "积分管理",
+        "integrations": "集成管理",
+        "models": "模型管理",
+        "consultations": "咨询管理"
+      }
+    },
+    "overview": {
+      "title": "概览中心",
+      "welcome": "欢迎回来，{name}。系统已为你聚合全局情报。",
+      "empty": {
+        "title": "欢迎开启出海获客之旅",
+        "subtitle": "ScaletoTop 是专为 B2B 企业打造的自动化获客与内容管理系统。请先添加你的第一个站点，即可查收深度优化的策略建议。",
+        "ctaPrimary": "添加第一个站点",
+        "ctaSecondary": "免费即时审计"
+      },
+      "checklist": {
+        "title": "配置指南",
+        "steps": {
+          "site": "添加站点",
+          "audit": "运行审计",
+          "gsc": "连接 GSC",
+          "strategy": "查看战略看板"
+        },
+        "completed": "{completed}/{total} 完成",
+        "optional": "(可选)"
+      },
+      "stats": {
+        "assets": "全球内容资产 (Planned Assets)",
+        "assetsSub": "跨 {count} 个站点正在运作的内容节点",
+        "debts": "高优语义债 (High Priority Debts)",
+        "debtsSub": "识别到 {count} 个必须立即抢占的流量缺口",
+        "strategy": "智能战略自愈",
+        "strategyDesc": "系统检测到流量异常下跌，自动标记需重构的内容节点。",
+        "strategyCta": "进入战略枢纽"
+      },
+      "sites": {
+        "title": "各站点战略情报 (Site Insights)",
+        "topicToFill": "急需补齐的话题 (Lowest Coverage)",
+        "noAnalysis": "尚未进行语义分析",
+        "viewMap": "查看星图",
+        "addSite": "添加新站点"
+      },
+      "system": {
+        "title": "系统安全与状态",
+        "securityLevel": "账号安全等级：高",
+        "securitySub": "已启用动态验证保护",
+        "geoStatus": "GEO 引擎状态",
+        "geoSub": "运行状态：正常 (100%)",
+        "healthStatus": "网络与连接健康度",
+        "credits": "当前能量：{count} 点",
+        "billing": "能量与账单"
+      },
+      "impersonating": "代理预览模式：正在查看用户 {email} 的账户",
+      "backToAdmin": "返回管理后台"
+    },
+    "audit": {
+      "issues": {
+        "MISSING_SITEMAP": {
+          "title": "缺失 Sitemap",
+          "explanation": "未在站点根目录发现有效的 sitemap.xml 文件。Sitemap 能够帮助搜索引擎更高效地发现和爬取您的页面。",
+          "howToFix": "生成一个 sitemap.xml 文件并将其放置在网站根目录下，同时在 Google Search Console 中进行提交。"
+        },
+        "DEAD_LINK": {
+          "title": "死链",
+          "explanation": "页面返回了 4xx 或 5xx 错误。死链会严重损害用户体验，并阻碍搜索引擎爬取。",
+          "howToFix": "修复这些链接，确保它们返回 200 OK 状态码，或设置 301 重定向到新页面。"
+        },
+        "MISSING_H1": {
+          "title": "缺失 H1 标签",
+          "explanation": "H1 标签是页面最重要的标题，它告诉搜索引擎和用户页面的核心主题。",
+          "howToFix": "为每个页面添加一个描述性的 H1 标签。"
+        },
+        "TITLE_TOO_LONG": {
+          "title": "标题过长",
+          "explanation": "页面标题超过 60 个字符，在搜索结果中可能会被截断。",
+          "howToFix": "缩短标题，确保核心关键词靠前，总长度控制在 60 字符以内。"
+        },
+        "TITLE_TOO_SHORT": {
+          "title": "标题过短",
+          "explanation": "标题太短无法提供足够的语义上下文，不利于排名。",
+          "howToFix": "扩充标题，加入更多相关的描述性词汇。"
+        },
+        "MISSING_TITLE": {
+          "title": "缺失标题",
+          "explanation": "页面没有定义 <title> 标签。",
+          "howToFix": "为页面添加具有吸引力且包含关键词的标题。"
+        },
+        "MISSING_META_DESC": {
+          "title": "缺失 Meta 描述",
+          "explanation": "Meta 描述虽不直接影响排名，但会极大影响搜索结果的点击率 (CTR)。",
+          "howToFix": "为每个页面编写 120-160 字符的吸引人的描述。"
+        },
+        "META_DESC_TOO_LONG": {
+          "title": "Meta 描述过长",
+          "explanation": "描述超过 160 字符会被搜索引擎截断。",
+          "howToFix": "精简描述，确保最重要的信息在前面。"
+        },
+        "DUPLICATE_H1": {
+          "title": "多个 H1 标签",
+          "explanation": "一个页面应该只包含一个 H1 标签。多个 H1 标签可能会混淆搜索引擎对页面主题的理解。",
+          "howToFix": "确保每个页面只有一个 H1 标签，将其他标题改为 H2 或 H3。"
+        },
+        "DUPLICATE_TITLE": {
+          "title": "重复标题",
+          "explanation": "多个页面使用完全相同的标题，会让搜索引擎难以区分哪个页面最相关。",
+          "howToFix": "为每个页面提供独特的、针对性的标题。"
+        },
+        "DUPLICATE_META_DESC": {
+          "title": "重复 Meta 描述",
+          "explanation": "重复的 Meta 描述会降低每个页面的独特性。",
+          "howToFix": "为每个页面编写独特的 Meta 描述。"
+        },
+        "MISSING_OG_IMAGE": {
+          "title": "缺失 OG 图",
+          "explanation": "缺失 Open Graph 图片会降低页面在社交媒体（如 Twitter, LinkedIn）分享时的美观度和点击率。",
+          "howToFix": "在 <head> 中添加 og:image 标签。"
+        },
+        "THIN_CONTENT": {
+          "title": "薄内容",
+          "explanation": "页面内容少于 300 词，可能被搜索引擎视为低质量页面。",
+          "howToFix": "增加更多高质量、有深度的原创内容。"
+        },
+        "SLOW_PAGE": {
+          "title": "加载缓慢",
+          "explanation": "页面加载时间超过 3s，会增加用户跳出率。",
+          "howToFix": "优化图片大小，减少重定向，或使用 CDN。"
+        },
+        "VERY_SLOW_PAGE": {
+          "title": "加载极慢",
+          "explanation": "页面加载时间超过 5s，严重影响体验和排名。",
+          "howToFix": "需要重点优化，检查服务器响应时间或过重的脚本。"
+        },
+        "MISSING_CANONICAL": {
+          "title": "缺失 Canonical 标签",
+          "explanation": "Canonical 标签缺失可能导致搜索引擎在处理 URL 参数或重复内容时产生歧义。",
+          "howToFix": "为每个页面添加 rel=\"canonical\" 链接。"
+        },
+        "ORPHAN_PAGE": {
+          "title": "孤儿页面",
+          "explanation": "这些页面没有任何内部链接指向它们。搜索引擎和用户很难发现这些页面。",
+          "howToFix": "在网站的其他相关页面中添加指向这些页面的链接。"
+        },
+        "MISSING_H2": {
+          "title": "缺失 H2 标签",
+          "explanation": "页面正文较长但没有使用 H2 标题进行结构化。这不利于用户阅读和搜索引擎理解内容层级。",
+          "howToFix": "使用 H2 标签为页面内容添加子标题，提高可读性。"
+        },
+        "HEADING_HIERARCHY_BROKEN": {
+          "title": "标题层级跳跃",
+          "explanation": "页面的标题层级不连续（例如 H1 后面直接使用了 H3 而没有 H2）。良好的结构应该是层级递进的。",
+          "howToFix": "调整标题层级，确保在 H3 之前使用了 H2 标签。"
+        },
+        "MISSING_VIEWPORT": {
+          "title": "缺失 Viewport 设置",
+          "explanation": "页面缺失 viewport meta 标签，这会导致页面在移动设备上无法正确缩放和显示。",
+          "howToFix": "在 <head> 中添加 <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"> 标签。"
+        },
+        "MISSING_STRUCTURED_DATA": {
+          "title": "缺失结构化数据",
+          "explanation": "页面没有使用 JSON-LD 结构化数据。结构化数据可以帮助搜索引擎在搜索结果中显示富摘要。",
+          "howToFix": "根据页面内容类型（如 Article, Product, Organization）添加相应的 Schema.org JSON-LD 标记。"
+        }
+      }
+    },
+    "onboarding": {
+      "badge": "AI 驱动的 SEO 增长",
+      "headline": "开启你的",
+      "headlineAccent": "Stellar",
+      "headlineSuffix": "增长之旅",
+      "subtitle": "只需输入你的网站域名，我们的 AI 引擎将立即扫描并生成全量 SEO 星图。",
+      "placeholder": "example.com",
+      "submitIdle": "立即分析网站",
+      "submitAnalyzing": "分析中...",
+      "costHint": "消耗 5 积分 · 预计耗时 15-30 秒",
+      "errorTitle": "分析失败",
+      "analyzingTitle": "正在分析网站情报...",
+      "doneTitle": "分析完成！",
+      "scanProgress": "扫描进度",
+      "buildingMap": "技术健康星图",
+      "buildingMapLabel": "正在构建",
+      "findingGaps": "市场增长空白",
+      "findingGapsLabel": "正在探寻",
+      "validationEmpty": "请输入网站域名",
+      "validationInvalid": "请输入有效的网站域名 (例如 example.com)",
+      "status": {
+        "INITIALIZING_PROBE": "正在初始化探针...",
+        "SITE_STRUCTURE_DISCOVERED": "站点结构已探明",
+        "SCANNING_GALAXY": "正在深度扫描页面...",
+        "GALAXY_CONSTRUCTED": "审计分析完成",
+        "SAVING_RESULTS": "正在为你准备工作台...",
+        "preparing": "准备中..."
+      },
+      "errStart": "分析启动失败",
+      "errStream": "无法读取响应流",
+      "errSave": "保存失败",
+      "errAnalysis": "分析过程中发生错误",
+      "errGeneric": "系统繁忙，请稍后再试"
+    },
+    "instantAudit": {
+      "title": "即时审计",
+      "back": "返回",
+      "startScan": "发起扫描",
+      "scanning": "扫描中...",
+      "betaTag": "公测版",
+      "justSaved": "审计结果已持久化保存至站点历史",
+      "unsavedWarning": "扫描结果未保存，离开页面将丢失。请绑定站点或手动点击同步。",
+      "confirmLeave": "扫描结果尚未保存，确认离开？",
+      "noSiteTitle": "请先选择审计站点",
+      "noSiteDesc": "请前往站点管家选择一个站点，然后点击「查看最新星图」或「重新扫描」进入即时审计。",
+      "noSiteButton": "返回站点管家",
+      "readyTitle": "准备就绪：{domain}",
+      "readyDesc": "系统已绑定到站点，点击右上角「发起扫描」按钮即可生成最新的主题星图与技术报告。",
+      "readyButton": "立即开始审计",
+      "techScoreLabel": "技术健康得分",
+      "systemStatus": "系统状态",
+      "scannedPages": "扫描中",
+      "scaleLabel": "探明页面规模",
+      "nodesUnit": "Nodes",
+      "conclusionsTitle": "核心检测结论",
+      "severity": {
+        "critical": "严重",
+        "warning": "警告",
+        "info": "提示"
+      },
+      "viewDetails": "详细报告",
+      "collapseDetails": "收起详情",
+      "historyTitle": "站点审计演化史",
+      "pageNodes": "{count} 页面节点",
+      "loadMore": "加载",
+      "nodeIntelligence": "节点全量情报",
+      "pageTitle": "页面标题",
+      "weight": "权重",
+      "loadTime": "加载耗时",
+      "hitIssues": "命中 SEO 问题",
+      "noIssuesDetected": "该页面未检测到问题",
+      "syncing": "同步中...",
+      "syncButton": "💾 持久化同步",
+      "exportButton": "导出星图数据 (LLM)",
+      "copied": "已复制到剪贴板",
+      "status": {
+        "READY_FOR_SCAN": "准备就绪",
+        "INITIALIZING_PROBE": "正在初始化探针…",
+        "SITE_STRUCTURE_DISCOVERED": "站点结构已探明",
+        "SCANNING_GALAXY": "页面深度扫描中…",
+        "GALAXY_CONSTRUCTED": "审计完成",
+        "PROBE_FAILED": "扫描失败",
+        "SYSTEM_ERROR": "系统异常",
+        "LOADING_LATEST_AUDIT": "加载最新审计…",
+        "LOADING_HISTORY": "加载历史审计…",
+        "HISTORY_LOAD_FAILED": "历史记录加载失败",
+        "SAVING_RESULTS": "正在自动保存审计结果…",
+        "justNow": "刚刚",
+        "minsAgo": "{mins} 分钟前",
+        "hrsAgo": "{hrs} 小时前",
+        "daysAgo": "{days} 天前"
+      }
+    },
+    "healthReport": {
+      "noData": "无体检数据",
+      "noDataDesc": "此次历史审计无体检数据，请重新扫描网站以生成最新的健康报告。",
+      "techLabel": "技术健康",
+      "contentLabel": "内容质量",
+      "seoLabel": "SEO 合规",
+      "delta": {
+        "title": "对比上次审计",
+        "noChange": "与上次审计相比无变化",
+        "newIssues": "新增 {count} 个问题",
+        "fixedIssues": "修复了 {count} 个问题",
+        "pages": "{count}页",
+        "allFixed": "全部修复 ✓"
+      },
+      "issues": {
+        "title": "检测发现的问题 ({count})",
+        "critical": "严重",
+        "warning": "警告",
+        "info": "提示",
+        "notFound": "未发现问题",
+        "notFoundDesc": "您的网站在本次审计中表现完美，未检测到任何 SEO 风险。"
+      }
+    },
+    "issueCard": {
+      "severity": {
+        "critical": "严重",
+        "warning": "警告",
+        "info": "提示"
+      },
+      "affectedPages": "影响 {count} 个页面",
+      "explanation": "问题说明",
+      "howToFix": "修复建议",
+      "affectedPagesTitle": "受影响页面 ({count})"
+    },
+    "siteIntelligence": {
+      "title": "站点智能管家",
+      "betaTag": "公测版",
+      "subtitle": "监控您的网站 · 追踪 SEO 进展 · 测绘内容权威度星图",
+      "newScan": "+ 新建扫描",
+      "card": {
+        "addedAt": "添加于 {time}",
+        "pages": "页面数",
+        "techScore": "技术得分",
+        "latestScan": "最新扫描",
+        "noAudit": "暂无审计数据",
+        "workbench": "控制台",
+        "rescan": "重新扫描"
+      }
+    },
+    "siteDetail": {
+      "tabs": {
+        "overview": "概览",
+        "strategy": "内容策略",
+        "competitors": "竞争分析",
+        "performance": "搜索表现",
+        "traffic": "流量表现",
+        "audit": "体检报告",
+        "audits": "审计历史",
+        "settings": "设置"
+      },
+      "ariaLabel": "站点分析功能",
+      "loadingReport": "生成健康报告中…",
+      "fetchErrorTitle": "报告加载失败",
+      "fetchErrorDesc": "无法获取审计报告，请重试。",
+      "retry": "重试"
+    },
+    "overviewPanel": {
+      "healthScore": "全站健康得分",
+      "healthScoreDesc": "基于星图扫描的技术 SEO 指标计算得出。",
+      "pageScale": "版图页面规模",
+      "pageScaleDesc": "已在星图中探明的有效 URL 节点。",
+      "competitors": "已追踪竞争对手",
+      "manageList": "管理追踪列表",
+      "keywords": "关键词表现",
+      "viewAll": "查看大盘",
+      "traffic": "流量趋势",
+      "viewDetail": "查看详情",
+      "contentPlan": "内容执行进度",
+      "enterWorkbench": "进入工作台",
+      "coreDna": "核心业务 DNA",
+      "extractDna": "建议提取业务 DNA 以优化策略",
+      "extractNow": "立即提取",
+      "semanticDebts": "高优语义债",
+      "coverage": "覆盖度",
+      "topicName": "话题名称",
+      "viewInStrategy": "去策略板查看",
+      "noGaps": "尚未发现明显的语义缺口",
+      "syncSuccess": "同步成功！再同步一次即可查看排名趋势图",
+      "syncInfo": "今日已同步过，趋势数据将在明天同步后更新",
+      "syncError": "GSC 同步失败，请重试",
+      "networkError": "网络错误，请检查连接。",
+      "extractDnaError": "DNA 提取失败",
+      "generalError": "发生错误"
+    },
+    "competitorsPanel": {
+      "confirmDelete": "确定要删除此竞品吗？",
+      "deleteFailed": "删除失败",
+      "scanFailed": "扫描失败",
+      "scanError": "扫描发生错误",
+      "suggestFailed": "获取建议失败",
+      "suggestError": "请求建议时发生错误",
+      "addFailed": "添加失败",
+      "addTitle": "添加竞争对手",
+      "addDesc": "输入竞品的裸域名以抓取其核心内容主题并进行空白分析。（最多 5 个）",
+      "placeholder": "例如: copy.ai",
+      "processing": "处理中...",
+      "addAndAnalyze": "添加并分析",
+      "quotaLabel": "追踪限额",
+      "aiSuggestions": "AI 发现的潜在对手",
+      "clearSuggestions": "清除建议",
+      "recommended": "推荐",
+      "quickAdd": "快速添加",
+      "autoFind": "自动寻找对手",
+      "radarTitle": "情报雷达",
+      "syncing": "同步中",
+      "emptyTitle": "雷达待命",
+      "emptyDesc": "还没有追踪任何竞品，添加一个网域即可开启全自动内容探测。",
+      "infoAcquired": "情报已获取",
+      "noInfo": "尚未扫描该站点的内容基因",
+      "rescan": "重新扫描",
+      "getInfo": "获取情报",
+      "scanning": "扫描中..."
+    },
+    "performanceDashboard": {
+      "errorSuffix": "(请确认已在“概览”页绑定 GSC 资源)",
+      "emptyTitle": "暂无数据",
+      "emptyDesc": "该资源过去 30 天没有搜索展示数据或尚未准备好，请稍后再试。",
+      "totalImpressions": "总曝光 (Impressions)",
+      "totalClicks": "总点击 (Clicks)",
+      "avgCtr": "平均点击率 (CTR)",
+      "daysCount": "近30天天数",
+      "trendTitle": "搜索表现趋势 (30天)",
+      "impressions": "曝光 (Impressions)",
+      "clicks": "点击 (Clicks)",
+      "topQueries": "热门搜索词 (Top Queries)",
+      "queryCol": "搜索词",
+      "clicksCol": "点击",
+      "impressionsCol": "曝光",
+      "ctrCol": "点击率",
+      "notProvided": "(未提供)"
+    },
+    "auditHistory": {
+      "emptyTitle": "暂无审计历史",
+      "emptyDesc": "您还没有对该站点进行过深度审计。发起一次扫描以开始建立您的情报档案。",
+      "startScan": "开始全面扫描",
+      "scoreTrend": "评分趋势",
+      "timeline": "审计时间线",
+      "totalRecords": "共 {count} 次记录",
+      "reportTitle": "深度扫描报告",
+      "latest": "最新",
+      "pageNodes": "{count} 个页面节点",
+      "healthScore": "健康分: {score}",
+      "viewSnapshot": "查看星图快照"
+    },
+    "integrationsPanel": {
+      "title": "系统集成与数据源 (Integrations)",
+      "desc": "关联外部工具和 API 数据源，以解锁更多维度的洞察图谱和更精准的审计引擎。",
+      "statusConnected": "已绑定稳定",
+      "statusDisconnected": "尚未映射数据流",
+      "buttonGscAuth": "使用谷歌账号认证接入 GSC",
+      "connectingGsc": "正在请求授权...",
+      "authSuccessGsc": "授权成功！请在下方指派该站点的具体 Property URL 属性。",
+      "mapped": "数据流已映射：",
+      "reauth": "重新授权或更改绑定",
+      "buttonGa4Auth": "使用谷歌账号认证接入 GA4",
+      "connectingGa4": "正在请求授权...",
+      "authSuccessGa4": "授权成功！请在下方指派该站点的具体 GA4 数据流 (Property ID)。",
+      "ga4Desc": "解锁高精确的真实活跃访客数量(AU)、独立会话驻留行为(Session Duration)以及访客流失热点测算。",
+      "gscDesc": "解锁关键词排名、展示、点击漏斗追踪，并辅助判定 Semantic Debts 的真实自然搜寻权重。",
+      "loadError": "无法加载站点配置数据",
+      "initError": "初始化连接失败",
+      "generalError": "连接服务时发生错误"
+    },
+    "siteSwitcher": {
+      "switchSite": "切换站点",
+      "mySites": "我的站点 (Owned Sites)",
+      "noSites": "暂无站点",
+      "addSite": "添加新站点",
+      "addTitle": "添加我的站点",
+      "addDesc": "输入需要追踪和审计的网站域名",
+      "addButton": "添加并进入",
+      "addCancel": "取消",
+      "adding": "添加中...",
+      "placeholder": "例如: example.com",
+      "deleteTitle": "确认删除站点？",
+      "deleteDesc": "此操作将永久删除该站点及其所有历史审计记录、语义债务和竞争对手数据，无法恢复。",
+      "deleteConfirmPrefix": "请输入域名",
+      "deleteConfirmSuffix": "以确认删除：",
+      "deleteButton": "确认删除",
+      "deleting": "删除中...",
+      "deleteCancel": "取消",
+      "deletePlaceholder": "输入域名以确认",
+      "domainLabel": "域名 (Domain)"
+    },
+    "strategyBoard": {
+      "status": {
+        "COMPLETED": "已完成",
+        "IN_PROGRESS": "编写中",
+        "PLANNED": "待执行",
+        "REFACTORING_NEEDED": "需要重构",
+        "IDEATION": "构思中"
+      },
+      "article": {
+        "viewArticle": "查看文章",
+        "optimizeNow": "立即优化",
+        "aiWrite": "交给 AI 撰写"
+      },
+      "column": {
+        "pillar": "PILLAR",
+        "corePillar": "核心支柱"
+      },
+      "empty": {
+        "title": "未发现主题战略大纲",
+        "desc": "引擎可以通过分析您的“高优语义债”，为您自动编排以抢占流量为目标的主题支柱 (Pillar) 以及下辖的集群文章 (Cluster)。",
+        "generating": "正在根据语义债重写战略图谱...",
+        "generate": "一键生成内容战略计划"
+      },
+      "header": {
+        "title": "内容战略实施看板 (Omnichannel Kanban)",
+        "subtitle": "拖拽文章卡片调整执行优先级。每一个垂直泳道代表一个旨在吃透特定语义流量的主题支柱。",
+        "refresh": "强制刷新"
+      },
+      "toasts": {
+        "fetchError": "获取战略管线失败",
+        "networkError": "网络错误",
+        "generateSuccess": "基于高优语义债的战略计划生成完毕！",
+        "generateConflict": "已存在进行中的计划，是否归档并重新生成？",
+        "generateError": "生成失败",
+        "generateNetworkError": "生成过程中发生网络错误",
+        "reorderError": "保存拖拽排序失败，已自动回滚"
+      }
+    },
+    "integrationGuidance": {
+      "gsc": {
+        "title": "连接 Search Console",
+        "desc": "获取真实的关键词排名、印象数和点击率。",
+        "cta": "立即连接"
+      },
+      "ga4": {
+        "title": "连接 Google Analytics",
+        "desc": "洞察流量来源、跳出率和用户转化路径。",
+        "cta": "立即连接"
+      },
+      "content-plan": {
+        "title": "创建内容策略",
+        "desc": "基于语义差异分析生成第一份 AI 内容计划。",
+        "cta": "开始规划"
+      }
+    },
+    "marketGap": {
+      "title": "市场空白分析 (Market Gaps)",
+      "competitorsScanned": "已分析 {count} 个竞品",
+      "competitorsHave": "竞品有的，我们没有的 ({count})",
+      "ourStrengths": "我们的绝对优势 ({count})",
+      "intents": {
+        "Informational": "ℹ️ 信息",
+        "Commercial": "💰 商业",
+        "Transactional": "🛒 转化",
+        "Navigational": "🧭 导航"
+      },
+      "tooltip": {
+        "coreCompetitors": "核心竞品",
+        "viewAnalysis": "点击查看深度剖析"
+      },
+      "deepProfile": {
+        "title": "竞品深度剖析: {topic}",
+        "loading": "正在抓取竞品大纲结构...",
+        "contentThickness": "内容厚度",
+        "words": "词",
+        "headingStructure": "标题结构",
+        "levels": "个层级",
+        "structureBreakdown": "内容结构拆解 (H1 ➡️ H3)",
+        "originalSource": "原文出处",
+        "noStructure": "未能提取到清晰的标题结构",
+        "aiWriteCta": "基于此骨架生成文章 (即将推出)",
+        "fetchError": "无法提取该竞品页面的结构数据，可能存在反爬虫限制或页面已被移除。"
+      },
+      "noStrengths": "您的特有内容尚未建立，或已被竞品反超。"
+    },
+    "settings": {
+      "title": "账号设置",
+      "subtitle": "管理您的个人资料与账号安全。",
+      "back": "返回控制台",
+      "general": {
+        "title": "通用设置",
+        "desc": "配置您的个人偏好和系统显示语言",
+        "language": "界面语言 (Language)",
+        "zh": "简体中文",
+        "en": "English",
+        "success": "语言设置已更新"
+      },
+      "security": {
+        "title": "访问安全",
+        "desc": "建议定期更换密码或设置初始密码以保障安全",
+        "currentPassword": "当前密码",
+        "newPassword": "新密码",
+        "confirmPassword": "确认新密码",
+        "save": "保存新密码",
+        "noPassword": "我没有初始密码，通过邮件验证设置",
+        "success": "密码已成功修改",
+        "errorMismatch": "两次输入的密码不一致",
+        "errorLength": "新密码长度至少需要 8 位",
+        "otpTitle": "邮箱验证码",
+        "otpPlaceholder": "000000",
+        "otpSent": "验证码已发送至您的邮箱",
+        "setInitialPassword": "设置新密码",
+        "confirmInitialPassword": "确认新密码",
+        "setInitialPasswordPh": "至少 8 位字符",
+        "confirmInitialPasswordPh": "请再次输入新密码",
+        "btnSetInitialPassword": "验证并设置密码",
+        "btnResend": "重发",
+        "noPasswordSet": "您尚未设置登录密码",
+        "noPasswordSetDesc": "为了您的账号安全，建议您绑定一个专属的访问密码。",
+        "btnSendOtpTo": "发送验证码至 {email}",
+        "btnCancelBack": "取消，返回修改密码",
+        "tipsTitle": "安全贴士",
+        "tips": [
+          "使用包含字母、数字和特殊字符的复杂密码。",
+          "首次通过邮件验证码登录的用户，可以直接通过验证码设置初始密码。",
+          "修改密码后，系统将自动登出您在其他浏览器上的会话。"
+        ],
+        "helpTitle": "需要帮助?",
+        "helpDesc": "如果您无法修改密码或账号遇到异常，请联系我们的技术支持。"
+      }
+    },
+    "galaxyMap": {
+      "mapping": "正在测绘星图数据...",
+      "enterDomain": "输入域名并发起扫描",
+      "mode2d": "2D 模式",
+      "mode3d": "3D 模式",
+      "legendRoot": "根节点",
+      "legendPillar": "支柱页",
+      "legendContent": "内容页",
+      "legendGap": "内容缺口"
+    }
   },
   "legal": {},
   "notFound": {}

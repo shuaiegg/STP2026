@@ -2,6 +2,9 @@
 
 import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { ContentStatus } from '@prisma/client';
 
 /**
  * Centrally manage revalidation for all paths affected by a content change.
@@ -31,8 +34,6 @@ async function revalidateContentPaths(content: { slug: string, locale: string, c
     // 5. Sitemap
     revalidatePath('/sitemap.xml');
 }
-
-import { ContentStatus } from '@prisma/client';
 
 const BASE_URL = (process.env.NEXT_PUBLIC_APP_URL || 'https://www.scaletotop.com').replace(/\/$/, '');
 
@@ -570,6 +571,67 @@ export async function createAuthor(name: string) {
         return { success: true, author };
     } catch (error) {
         console.error('Failed to create author:', error);
+        return { success: false, error: String(error) };
+    }
+}
+
+/**
+ * Delete content and clean up related entities (TrackedArticle, PlannedArticle, Redirects).
+ * Cascade delete handles SeoMeta and PreviewTokens via DB schema.
+ */
+export async function deleteContent(id: string) {
+    try {
+        const session = await auth.api.getSession({
+            headers: await headers()
+        });
+
+        if (!session || session.user.role !== 'ADMIN') {
+            throw new Error('Unauthorized');
+        }
+
+        const content = await prisma.content.findUnique({
+            where: { id },
+            include: { category: true }
+        });
+
+        if (!content) throw new Error('Content not found');
+
+        // Build both locale paths — design spec requires cleaning up BOTH,
+        // regardless of which locale the article belongs to.
+        const enPath = `/blog/${content.slug}`;
+        const zhPath = `/zh/blog/${content.slug}`;
+        const enUrl = `${BASE_URL}${enPath}`;
+        const zhUrl = `${BASE_URL}${zhPath}`;
+
+        await prisma.$transaction([
+            // 1. Clean up PlannedArticle association
+            prisma.plannedArticle.updateMany({
+                where: { articleId: id },
+                data: { articleId: null, status: 'PLANNED' }
+            }),
+            // 2. Clean up TrackedArticle — both locale URLs
+            prisma.trackedArticle.deleteMany({
+                where: { url: { in: [enUrl, zhUrl] } }
+            }),
+            // 3. Clean up Redirects FROM this path — both locale paths
+            prisma.redirect.deleteMany({
+                where: { fromPath: { in: [enPath, zhPath] } }
+            }),
+            // 4. Delete the content itself (cascade: SeoMeta, PreviewToken)
+            prisma.content.delete({
+                where: { id }
+            })
+        ]);
+
+        // 5. Revalidate affected paths
+        if (content.status === 'PUBLISHED') {
+            await revalidateContentPaths(content);
+        }
+        revalidatePath('/dashboard/admin/content');
+
+        return { success: true };
+    } catch (error) {
+        console.error('Failed to delete content:', error);
         return { success: false, error: String(error) };
     }
 }

@@ -10,12 +10,17 @@ import { Mail, Loader2, ArrowRight, User as UserIcon, KeyRound, ArrowLeft, Lock 
 import { Link } from "@/i18n/navigation";
 import { translateAuthError } from "@/lib/auth-errors";
 import { toast } from "sonner";
+import { useSearchParams } from "next/navigation";
+import { Globe } from "lucide-react";
 
 type AuthFlow = "enter-email" | "enter-name" | "enter-otp" | "enter-password";
 
 export default function UserLoginPage() {
     const t = useTranslations("auth.login");
     const locale = useLocale();
+    const searchParams = useSearchParams();
+    const domainFromUrl = searchParams.get("domain");
+    
     // translateAuthError 是中文错误映射器，仅中文界面使用
     const localizeError = (msg: string) => (locale === "zh" ? translateAuthError(msg) : msg);
     const [email, setEmail] = useState("");
@@ -27,6 +32,21 @@ export default function UserLoginPage() {
     const [error, setError] = useState("");
     const [isNewUser, setIsNewUser] = useState<boolean | null>(null);
     const router = useRouter();
+
+    // Persist domain in sessionStorage for recovery after OAuth or refresh
+    React.useEffect(() => {
+        if (domainFromUrl && typeof window !== "undefined") {
+            window.sessionStorage.setItem("pending_audit_domain", domainFromUrl);
+        }
+    }, [domainFromUrl]);
+
+    const getTargetDomain = () => {
+        if (domainFromUrl) return domainFromUrl;
+        if (typeof window !== "undefined") {
+            return window.sessionStorage.getItem("pending_audit_domain");
+        }
+        return null;
+    };
 
     // 1. Check if user exists based on email
     const handleCheckEmail = async (e: React.FormEvent) => {
@@ -149,7 +169,12 @@ export default function UserLoginPage() {
                 throw new Error(authError.message);
             } else {
                 toast.success(isNewUser ? t("toastRegistered") : t("toastSignedIn"));
-                window.location.href = "/dashboard";
+                const targetDomain = getTargetDomain();
+                if (targetDomain) {
+                    window.location.href = `/dashboard/onboarding?domain=${encodeURIComponent(targetDomain)}`;
+                } else {
+                    window.location.href = "/dashboard";
+                }
             }
         } catch (err: any) {
             setError(localizeError(err.message || t("errOtpCheck")));
@@ -173,7 +198,12 @@ export default function UserLoginPage() {
             if (authError) {
                 throw new Error(authError.message);
             } else {
-                window.location.href = "/dashboard";
+                const targetDomain = getTargetDomain();
+                if (targetDomain) {
+                    window.location.href = `/dashboard/onboarding?domain=${encodeURIComponent(targetDomain)}`;
+                } else {
+                    window.location.href = "/dashboard";
+                }
             }
         } catch (err: any) {
             setError(localizeError(err.message || t("errPassword")));
@@ -211,6 +241,17 @@ export default function UserLoginPage() {
                 </div>
 
                 <Card className="p-8 border-2 border-brand-border-heavy bg-white shadow-[8px_8px_0_0_rgba(10,10,10,1)] stagger-2 animate-slide-in-up">
+                    {getTargetDomain() && (
+                        <div className="mb-6 p-3 bg-brand-secondary/10 border border-brand-secondary/30 rounded-lg flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-500">
+                            <Globe className="w-5 h-5 text-brand-secondary animate-pulse" />
+                            <div className="text-xs font-bold text-brand-text-primary">
+                                {locale === 'zh' 
+                                    ? `登录后立即为 ${getTargetDomain()} 开启体检` 
+                                    : `Audit ${getTargetDomain()} immediately after signing in`}
+                            </div>
+                        </div>
+                    )}
+                    
                     {error && (
                         <div className="mb-6 bg-brand-error/10 border-2 border-brand-error text-brand-error text-xs py-3 px-4 font-black text-center animate-shake">
                             {error}

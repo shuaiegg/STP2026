@@ -2,6 +2,7 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
+import { useTranslations } from 'next-intl';
 
 const ForceGraph3D = dynamic(() => import('react-force-graph-3d'), { ssr: false });
 const ForceGraph2D = dynamic(() => import('react-force-graph-2d'), { ssr: false });
@@ -42,6 +43,7 @@ function toGlowColor(hex: string): string {
 }
 
 export default function GalaxyMap({ siteId, data, onNodeClick, isLoading }: GalaxyMapProps) {
+  const t = useTranslations('dashboard.galaxyMap');
   const fgRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [use3D, setUse3D] = useState(false); // default 2D — more legible
@@ -272,7 +274,7 @@ export default function GalaxyMap({ siteId, data, onNodeClick, isLoading }: Gala
             <div className="absolute inset-0 rounded-full border-2 border-indigo-500/20 border-t-indigo-400 animate-spin" />
             <div className="absolute inset-2 rounded-full border border-blue-500/10 border-t-blue-400/60 animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
           </div>
-          <p className="mt-5 text-[10px] font-mono text-slate-400 uppercase tracking-[0.2em]">正在测绘星图数据...</p>
+          <p className="mt-5 text-[10px] font-mono text-slate-400 uppercase tracking-[0.2em]">{t('mapping')}</p>
         </div>
       )}
 
@@ -280,7 +282,7 @@ export default function GalaxyMap({ siteId, data, onNodeClick, isLoading }: Gala
       {!isLoading && mergedData.nodes.length === 0 && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
           <div className="text-4xl opacity-30">🛸</div>
-          <p className="text-slate-500 text-xs font-mono tracking-widest uppercase">输入域名并发起扫描</p>
+          <p className="text-slate-500 text-xs font-mono tracking-widest uppercase">{t('enterDomain')}</p>
         </div>
       )}
 
@@ -329,7 +331,7 @@ export default function GalaxyMap({ siteId, data, onNodeClick, isLoading }: Gala
           onClick={() => setUse3D(!use3D)}
           className="px-3 py-1.5 bg-slate-800/80 backdrop-blur-sm border border-slate-600/40 rounded-lg text-[10px] font-bold text-slate-400 hover:text-white hover:border-slate-500/60 transition-all shadow-lg"
         >
-          {use3D ? '2D 模式' : '3D 模式'}
+          {use3D ? t('mode2d') : t('mode3d')}
         </button>
       </div>
 
@@ -337,10 +339,10 @@ export default function GalaxyMap({ siteId, data, onNodeClick, isLoading }: Gala
       {mergedData.nodes.length > 0 && (
         <div className="absolute bottom-4 left-4 flex items-center gap-4 px-3 py-2 bg-slate-900/70 backdrop-blur-sm rounded-xl border border-slate-700/30">
           {[
-            { color: '#818cf8', label: '根节点' },
-            { color: '#34d399', label: '支柱页' },
-            { color: '#60a5fa', label: '内容页' },
-            { color: '#a78bfa', label: '内容缺口', dashed: true },
+            { color: '#818cf8', label: t('legendRoot') },
+            { color: '#34d399', label: t('legendPillar') },
+            { color: '#60a5fa', label: t('legendContent') },
+            { color: '#a78bfa', label: t('legendGap'), dashed: true },
           ].map(({ color, label, dashed }) => (
             <div key={label} className="flex items-center gap-1.5">
               <div

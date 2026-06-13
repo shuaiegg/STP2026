@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react';
 import { Button } from './Button';
 import { AlertTriangle, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface AlertDialogProps {
     isOpen: boolean;
@@ -13,18 +14,24 @@ interface AlertDialogProps {
     onConfirm: () => void;
     onCancel: () => void;
     isDestructive?: boolean;
+    isConfirmDisabled?: boolean;
 }
 
 export function AlertDialog({
     isOpen,
     title,
     description,
-    confirmLabel = "确定",
-    cancelLabel = "取消",
+    confirmLabel,
+    cancelLabel,
     onConfirm,
     onCancel,
-    isDestructive = false
+    isDestructive = false,
+    isConfirmDisabled = false
 }: AlertDialogProps) {
+    const t = useTranslations('common');
+    const finalConfirmLabel = confirmLabel || t('confirm');
+    const finalCancelLabel = cancelLabel || t('cancel');
+
     // Close on Escape key
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
@@ -79,16 +86,17 @@ export function AlertDialog({
                         onClick={onCancel}
                         className="flex-1 font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-50"
                     >
-                        {cancelLabel}
+                        {finalCancelLabel}
                     </Button>
                     <Button
                         onClick={onConfirm}
+                        disabled={isConfirmDisabled}
                         className={`flex-1 font-black shadow-md transition-transform active:scale-95 ${isDestructive
-                                ? 'bg-red-500 hover:bg-red-600 text-white shadow-red-500/20'
-                                : 'bg-brand-primary hover:bg-brand-primary/90 text-white'
+                                ? 'bg-red-500 hover:bg-red-600 text-white shadow-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed'
+                                : 'bg-brand-primary hover:bg-brand-primary/90 text-white disabled:opacity-50 disabled:cursor-not-allowed'
                             }`}
                     >
-                        {confirmLabel}
+                        {finalConfirmLabel}
                     </Button>
                 </div>
             </div>

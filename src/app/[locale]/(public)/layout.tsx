@@ -16,9 +16,13 @@ async function getLanguageSuggestion(currentLocale: string) {
 
     const headerStore = await headers();
     const acceptLanguage = headerStore.get('accept-language') ?? '';
-    const prefersZh = /(^|,)\s*zh\b/i.test(acceptLanguage);
-    const preferred: Locale = prefersZh ? 'zh' : 'en';
-    if (preferred === currentLocale) return null;
+    // 只看首选语言（最高优先级那一项）。无明确信号（空 / 既非 zh 也非 en）→ 不建议，
+    // 避免在 /zh 上对没有英文偏好的访客误显 "Switch to English"。
+    const primary = acceptLanguage.split(',')[0]?.trim().toLowerCase() ?? '';
+    let preferred: Locale | null = null;
+    if (primary.startsWith('zh')) preferred = 'zh';
+    else if (primary.startsWith('en')) preferred = 'en';
+    if (!preferred || preferred === currentLocale) return null;
 
     const t = await getTranslations({ locale: preferred, namespace: 'banner' });
     return {

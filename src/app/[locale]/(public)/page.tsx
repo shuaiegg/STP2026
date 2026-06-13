@@ -10,8 +10,21 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { getPublishedContent } from '@/lib/content';
+import { 
+  Search, 
+  PenTool, 
+  LineChart, 
+  ChevronRight, 
+  Zap, 
+  ShieldCheck, 
+  ArrowUpRight,
+  MessageCircle,
+  BarChart3
+} from 'lucide-react';
 
 import { getMetadataAlternates, BASE_URL } from '@/lib/seo/locale-metadata';
+import { Suspense } from 'react';
+import { HeroAuditInput } from './HomePageCTA';
 
 export async function generateMetadata({
   params,
@@ -41,111 +54,44 @@ export async function generateMetadata({
   };
 }
 
-// Animated counter component
-function AnimatedCounter({ value, suffix = '', label }: { value: number; suffix?: string; label: string }) {
-  return (
-    <div className="text-center">
-      <div className="font-mono text-4xl font-bold text-brand-secondary mb-2">
-        {value}{suffix}
-      </div>
-      <div className="text-sm text-brand-text-muted">
-        {label}
-      </div>
-    </div>
-  );
-}
-
-// Client logo component
-function ClientLogos() {
-  const clients = [
-    { name: 'IndustrialAI', initial: 'AI' },
-    { name: 'SmartTrade', initial: 'ST' },
-    { name: 'ExportPro', initial: 'EP' },
-    { name: 'GlobalSync', initial: 'GS' },
-    { name: 'NeoMarket', initial: 'NM' },
-  ];
-
-  return (
-    <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12">
-      {clients.map((client) => (
-        <div
-          key={client.name}
-          className="px-6 py-4 flex items-center justify-center font-display text-lg font-black italic tracking-tighter text-brand-text-muted hover:text-brand-text-primary transition-colors cursor-default"
-        >
-          {client.name.toUpperCase()}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// Testimonial card component
-function TestimonialCard({ quote, author, role, company, result }: {
-  quote: string;
-  author: string;
-  role: string;
-  company: string;
-  result: string;
+function SectionHeading({ subtitle, title, description, centered = false }: { 
+  subtitle: string; 
+  title: string; 
+  description?: string;
+  centered?: boolean;
 }) {
   return (
-    <div className="border border-brand-border rounded-lg bg-white p-8 transition-shadow hover:shadow-md cursor-pointer flex flex-col h-full">
-      <div className="mb-6">
-        <svg className="w-8 h-8 text-brand-secondary/40" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h4v10h-10z" />
-        </svg>
+    <div className={`mb-16 ${centered ? 'text-center max-w-2xl mx-auto' : 'max-w-3xl'}`}>
+      <span className="text-sm text-brand-secondary font-bold mb-4 block uppercase tracking-wider">
+        {subtitle}
+      </span>
+      <h2 className="font-display text-3xl md:text-5xl font-black text-brand-text-primary mb-6 leading-tight tracking-tight">
+        {title}
+      </h2>
+      {description && (
+        <p className="text-lg text-brand-text-secondary leading-relaxed">
+          {description}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function PillarCard({ title, desc, learnMore, icon: Icon, color }: { title: string; desc: string; learnMore: string; icon: any; color: string }) {
+  return (
+    <div className="group border border-brand-border rounded-xl p-8 bg-white hover:shadow-xl transition-[border-color,transform,box-shadow] duration-300 h-full flex flex-col">
+      <div className={`w-14 h-14 rounded-xl ${color} flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-300`}>
+        <Icon className="w-7 h-7" />
       </div>
-      <p className="text-base text-brand-text-primary mb-6 leading-relaxed flex-1">
-        "{quote}"
+      <h3 className="text-xl font-bold text-brand-text-primary mb-4">{title}</h3>
+      <p className="text-brand-text-secondary leading-relaxed flex-1">
+        {desc}
       </p>
-      <div className="flex items-center justify-between pt-6 border-t border-brand-border mt-auto">
-        <div>
-          <div className="font-bold text-sm text-brand-text-primary mb-1">{author}</div>
-          <div className="text-xs text-brand-text-muted">{role}，{company}</div>
-        </div>
-        <Badge variant="success" className="font-mono">
-          {result}
-        </Badge>
-      </div>
-    </div>
-  );
-}
-
-// Process step component
-function ProcessStep({ number, stepLabel, title, description, icon }: {
-  number: string;
-  stepLabel: string;
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-}) {
-  return (
-    <div className="relative group h-full">
-      <div className="border border-brand-border rounded-lg p-8 bg-white transition-shadow hover:shadow-md cursor-pointer h-full">
-        <div className="flex flex-col sm:flex-row items-start gap-6">
-          <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-brand-secondary/10 flex items-center justify-center text-brand-secondary">
-            {icon}
-          </div>
-          <div className="flex-1">
-            <div className="font-mono text-xs text-brand-text-muted mb-2">{stepLabel} {number}</div>
-            <h3 className="text-lg font-bold text-brand-text-primary mb-2">{title}</h3>
-            <p className="text-sm text-brand-text-secondary leading-relaxed">{description}</p>
-          </div>
+      <div className="mt-8 pt-6 border-t border-brand-border/50">
+        <div className="flex items-center text-sm font-bold text-brand-text-muted group-hover:text-brand-secondary transition-colors duration-200">
+          {learnMore} <ChevronRight className="ml-1 w-4 h-4" />
         </div>
       </div>
-    </div>
-  );
-}
-
-import { Suspense } from 'react';
-import { JsonLd } from '@/components/seo/JsonLd';
-import { HeroCTA, BottomCTA } from './HomePageCTA';
-
-function PostsSkeleton() {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-      {[0, 1, 2].map((i) => (
-        <div key={i} className="border border-brand-border rounded-lg bg-white h-[320px] animate-pulse" />
-      ))}
     </div>
   );
 }
@@ -161,64 +107,31 @@ async function FeaturedPosts({ locale }: { locale: string }) {
     contents = [];
   }
 
-  const formatDate = (date: Date | null) => {
-    if (!date) return t('notPublished');
-    return date.toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-
-  if (contents.length === 0) {
-    return (
-      <div className="text-center py-16 border border-dashed border-brand-border rounded-lg bg-white">
-        <h3 className="font-bold text-brand-text-primary mb-2">{t('emptyTitle')}</h3>
-        <p className="text-brand-text-secondary text-sm">{t('emptyDesc')}</p>
-      </div>
-    );
-  }
+  if (contents.length === 0) return null;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-      {contents.map((post: any, index: number) => {
+      {contents.map((post: any) => {
         const coverSrc = post.coverImage?.storageUrl || post.coverImage?.originalUrl || '/logo-512.png';
         return (
-          <Link key={post.slug} href={`/blog/${post.slug}`} className="group block h-full">
-            <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
-              <div className="aspect-[16/10] overflow-hidden relative border-b border-brand-border">
+          <Link key={post.slug} href={`/blog/${post.slug}`} className="group block">
+            <Card className="h-full border-brand-border/50 hover:border-brand-secondary/50 overflow-hidden flex flex-col transition-[border-color,box-shadow] duration-300">
+              <div className="aspect-video relative overflow-hidden">
                 <Image
                   src={coverSrc}
                   alt={post.title}
                   fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
                   className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  priority={index === 0}
                 />
-                {post.category?.name && (
-                  <div className="absolute top-4 left-4">
-                    <Badge className="bg-white/90 backdrop-blur text-brand-text-primary">
-                      {post.category.name}
-                    </Badge>
-                  </div>
-                )}
               </div>
-              <div className="p-6 flex flex-col flex-1">
-                <h3 className="font-display text-lg font-bold text-brand-text-primary group-hover:text-brand-secondary transition-colors mb-2 line-clamp-2">
+              <div className="p-6">
+                <h3 className="font-bold text-brand-text-primary mb-2 line-clamp-2 group-hover:text-brand-secondary transition-colors">
                   {post.title}
                 </h3>
-                <p className="text-sm text-brand-text-secondary leading-relaxed mb-4 line-clamp-2 flex-1">
+                <p className="text-sm text-brand-text-secondary line-clamp-2">
                   {post.summary}
                 </p>
-                <div className="flex items-center gap-3 pt-4 border-t border-brand-border mt-auto">
-                  <span className="text-xs text-brand-text-muted">
-                    {formatDate(post.publishedAt)}
-                  </span>
-                  <div className="w-1 h-1 bg-brand-border rounded-full"></div>
-                  <span className="text-xs text-brand-text-muted">
-                    {t('minutes', { count: post.readingTime || 5 })}
-                  </span>
-                </div>
               </div>
             </Card>
           </Link>
@@ -236,198 +149,180 @@ export default async function Home({
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations('home');
-  const stats = t.raw('metrics.stats') as { value: number; suffix: string; label: string }[];
-  const steps = t.raw('process.steps') as { num: string; title: string; desc: string }[];
-  const methods = t.raw('methods.items') as { num: string; title: string; desc: string; tags: string[]; label: string }[];
-  const testimonials = t.raw('testimonials.items') as { quote: string; author: string; role: string; company: string; result: string }[];
+  const steps = t.raw('process.steps') as { title: string; desc: string }[];
+  const pricingFeatures = t.raw('pricing.features') as string[];
 
   return (
     <div className="flex flex-col">
-      {/* Hero Section */}
+      {/* ① Hero Section */}
+      <section className="relative pt-32 pb-24 md:pt-48 md:pb-40 overflow-hidden bg-white">
+        {/* Background Decorative elements */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full pointer-events-none">
+          <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-brand-secondary/5 rounded-full blur-[100px]" />
+          <div className="absolute bottom-[10%] left-[-5%] w-[400px] h-[400px] bg-brand-primary/5 rounded-full blur-[80px]" />
+        </div>
 
-      <section className="relative py-24 md:py-32 overflow-hidden bg-brand-surface">
         <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
           <div className="max-w-4xl mx-auto">
-            <div className="inline-flex items-center gap-4 mb-8 animate-slide-in-up">
-              <Badge className="bg-brand-secondary/10 text-brand-secondary">
-                {t('hero.badge')}
-              </Badge>
+            <div className="inline-flex items-center px-4 py-2 rounded-full bg-brand-surface border border-brand-border mb-8 animate-slide-in-up">
+              <Zap className="w-4 h-4 text-brand-secondary mr-2 fill-brand-secondary" />
+              <span className="text-xs font-bold text-brand-text-primary tracking-wide uppercase">
+                {locale === 'zh' ? '14 维度全站语义审计已就绪' : '14-Dimension Semantic Audit Ready'}
+              </span>
             </div>
 
-            <h1 className="font-display text-4xl md:text-6xl font-black leading-tight mb-6 tracking-tight">
-              <span className="text-brand-text-primary">{t('hero.titleLine1')}</span>
-              <br />
-              <span className="text-brand-secondary">
-                {t('hero.titleLine2')}
-              </span>
+            <h1 className="font-display text-5xl md:text-7xl font-black leading-[1.1] mb-8 tracking-tight text-brand-text-primary">
+              {t('hero.title')}
             </h1>
 
-            <p className="text-lg md:text-xl text-brand-text-secondary leading-relaxed mb-10 max-w-2xl mx-auto animate-slide-in-up stagger-2">
+            <p className="text-lg md:text-xl text-brand-text-secondary leading-relaxed mb-12 max-w-2xl mx-auto animate-slide-in-up stagger-2">
               {t('hero.subtitle')}
             </p>
 
-            <HeroCTA
-              primary={t('hero.ctaPrimary')}
-              secondary={t('hero.ctaSecondary')}
-              microText={t('hero.ctaPrimaryMicro')}
+            <HeroAuditInput 
+              placeholder={t('hero.inputPlaceholder')}
+              cta={t('hero.cta')}
+              microcopy={t('hero.microcopy')}
+              locale={locale}
             />
           </div>
         </div>
       </section>
 
-      {/* Metrics Bar */}
-      <section className="py-20 border-y border-brand-border bg-white">
+      {/* ③ Pillars Section */}
+      <section className="py-24 md:py-32 bg-brand-surface border-y border-brand-border">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map(stat => (
-              <AnimatedCounter key={stat.label} value={stat.value} suffix={stat.suffix} label={stat.label} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Client Logos */}
-      <section className="py-20 bg-brand-surface border-b border-brand-border">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-10">
-            <p className="text-sm text-brand-text-muted">
-              {t('clients.title')}
-            </p>
-          </div>
-          <ClientLogos />
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section className="py-24 bg-white border-b border-brand-border">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <span className="text-sm text-brand-secondary font-bold mb-4 block">{t('process.subtitle')}</span>
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-brand-text-primary mb-4 leading-tight">
-              {t('process.titleLine1')} <span className="text-brand-secondary">{t('process.titleLine2')}</span>
-            </h2>
-            <p className="text-brand-text-secondary leading-relaxed">
-              {t('process.description')}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
-            {steps.map((step, idx) => (
-              <ProcessStep
-                key={step.num}
-                number={step.num}
-                stepLabel={t('process.stepLabel')}
-                title={step.title}
-                description={step.desc}
-                icon={
-                  idx === 0 ? <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg> :
-                  idx === 1 ? <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" /></svg> :
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
-                }
-              />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Method Combination */}
-      <section className="py-24 bg-brand-surface border-b border-brand-border">
-        <div className="max-w-7xl mx-auto px-6 mb-16">
-          <div className="max-w-2xl">
-            <span className="text-sm text-brand-secondary font-bold mb-4 block">{t('methods.subtitle')}</span>
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-brand-text-primary mb-4 leading-tight">
-              {t('methods.titleLine1')} <span className="text-brand-secondary">{t('methods.titleLine2')}</span>
-            </h2>
-            <p className="text-brand-text-secondary leading-relaxed">
-              {t('methods.description')}
-            </p>
-          </div>
-        </div>
-
-        <div className="max-w-7xl mx-auto px-6">
+          <SectionHeading 
+            subtitle={locale === 'zh' ? '核心能力' : 'Capabilities'}
+            title={locale === 'zh' ? '诊断 → 生产 → 验证' : 'Diagnose → Produce → Verify'}
+            description={locale === 'zh' ? '全链路闭环，让 SEO 变成可计算、可观测的工程指标。' : 'A closed-loop system that turns SEO into a measurable, engineered metric.'}
+          />
+          
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {methods.map(method => (
-              <div key={method.num} className="border border-brand-border rounded-lg p-8 bg-white transition-shadow hover:shadow-md h-full flex flex-col">
-                <div className="mb-6 flex items-center justify-between">
-                  <div className="font-mono text-xl text-brand-text-muted">{method.num}</div>
-                  <div className="text-xs font-bold text-brand-secondary bg-brand-secondary/10 px-2 py-1 rounded">{method.label}</div>
+            <PillarCard
+              title={t('pillars.diagnosis.title')}
+              desc={t('pillars.diagnosis.desc')}
+              learnMore={t('pillars.learnMore')}
+              icon={Search}
+              color="bg-emerald-50 text-emerald-600"
+            />
+            <PillarCard
+              title={t('pillars.production.title')}
+              desc={t('pillars.production.desc')}
+              learnMore={t('pillars.learnMore')}
+              icon={PenTool}
+              color="bg-amber-50 text-amber-600"
+            />
+            <PillarCard
+              title={t('pillars.verification.title')}
+              desc={t('pillars.verification.desc')}
+              learnMore={t('pillars.learnMore')}
+              icon={LineChart}
+              color="bg-blue-50 text-blue-600"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* ④ How It Works (Steps) */}
+      <section className="py-24 md:py-32 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <SectionHeading 
+            centered
+            subtitle={locale === 'zh' ? '运作机制' : 'How It Works'}
+            title={t('process.title')}
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
+            {/* Step Connecting Line (Desktop) */}
+            <div className="hidden md:block absolute top-1/2 left-[15%] right-[15%] h-px bg-dashed border-t border-dashed border-brand-border -translate-y-1/2 z-0" />
+            
+            {steps.map((step, idx) => (
+              <div key={idx} className="relative z-10 flex flex-col items-center text-center group">
+                <div className="w-16 h-16 rounded-full bg-white border-2 border-brand-border flex items-center justify-center font-display text-2xl font-black text-brand-text-muted mb-8 group-hover:border-brand-secondary group-hover:text-brand-secondary transition-[border-color,color] duration-300">
+                  {idx + 1}
                 </div>
-                <h3 className="text-xl font-bold text-brand-text-primary mb-4">{method.title}</h3>
-                <p className="text-sm text-brand-text-secondary leading-relaxed mb-6 flex-1">
-                  {method.desc}
+                <h3 className="text-xl font-bold text-brand-text-primary mb-4">{step.title}</h3>
+                <p className="text-brand-text-secondary leading-relaxed max-w-xs">
+                  {step.desc}
                 </p>
-                <div className="flex flex-wrap items-center gap-2 mt-auto">
-                  {method.tags.map(tag => (
-                    <Badge key={tag} variant="muted" className="text-[10px]">{tag}</Badge>
-                  ))}
-                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="py-24 bg-white border-b border-brand-border">
+      {/* ⑤ Pricing Section */}
+      <section className="py-24 md:py-32 bg-brand-surface border-t border-brand-border">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <span className="text-sm text-brand-secondary font-bold mb-4 block">{t('testimonials.subtitle')}</span>
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-brand-text-primary leading-tight">
-              {t('testimonials.titleLine1')} <span className="text-brand-secondary">{t('testimonials.titleLine2')}</span>
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map(item => (
-              <TestimonialCard
-                key={item.author}
-                quote={item.quote}
-                author={item.author}
-                role={item.role}
-                company={item.company}
-                result={item.result}
-              />
-            ))}
+          <div className="rounded-3xl bg-brand-primary p-8 md:p-16 overflow-hidden relative shadow-2xl">
+            {/* Decorative circles */}
+            <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4 w-96 h-96 bg-brand-secondary/20 rounded-full blur-[80px]" />
+            
+            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-12">
+              <div className="max-w-xl text-center md:text-left">
+                <h2 className="text-3xl md:text-5xl font-black text-white mb-6 tracking-tight">
+                  {t('pricing.title')}
+                </h2>
+                <p className="text-lg text-white/80 leading-relaxed mb-8">
+                  {t('pricing.subtitle')}
+                </p>
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-6 text-white/90 font-bold text-sm">
+                  <div className="flex items-center"><ShieldCheck className="w-5 h-5 mr-2 text-brand-secondary" /> {pricingFeatures[0]}</div>
+                  <div className="flex items-center"><Zap className="w-5 h-5 mr-2 text-brand-secondary" /> {pricingFeatures[1]}</div>
+                  <div className="flex items-center"><ArrowUpRight className="w-5 h-5 mr-2 text-brand-secondary" /> {pricingFeatures[2]}</div>
+                </div>
+              </div>
+              
+              <Link href="/pricing" className="flex-shrink-0">
+                <Button size="lg" className="px-10 h-16 text-lg bg-white text-brand-primary hover:bg-white/90 font-black rounded-xl">
+                  {t('pricing.cta')}
+                  <ChevronRight className="ml-2 w-6 h-6" />
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Featured Content */}
-      <section className="py-24 bg-brand-surface border-b border-brand-border">
-        <div className="max-w-7xl mx-auto px-6 mb-16">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-            <div className="max-w-2xl">
-              <span className="text-sm text-brand-secondary font-bold mb-4 block">{t('resources.subtitle')}</span>
-              <h2 className="font-display text-3xl md:text-4xl font-bold text-brand-text-primary leading-tight">
-                {t('resources.titleLine1')} <br/> {t('resources.titleLine2')}
-              </h2>
-            </div>
+      {/* Featured Articles Section */}
+      <section className="py-24 md:py-32 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
+            <SectionHeading 
+              subtitle={locale === 'zh' ? '增长洞察' : 'Insights'}
+              title={locale === 'zh' ? '实战指南与案例' : 'Playbooks & Case Studies'}
+            />
             <Link href="/blog">
-              <Button as="span" variant="outline">
-                {t('resources.cta')}
+              <Button variant="outline" className="mb-4">
+                {locale === 'zh' ? '浏览全部文章' : 'View all articles'}
               </Button>
             </Link>
           </div>
-        </div>
-
-        <div className="max-w-7xl mx-auto px-6">
-          <Suspense fallback={<PostsSkeleton />}>
+          
+          <Suspense fallback={<div className="h-64 animate-pulse bg-brand-surface rounded-xl" />}>
             <FeaturedPosts locale={locale} />
           </Suspense>
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="py-24 px-6 bg-brand-primary">
-        <div className="max-w-7xl mx-auto text-center max-w-3xl">
-          <h2 className="font-display text-3xl md:text-5xl font-bold text-white mb-6 leading-tight">
-            {t('cta.titleLine1')} <br/>
-            <span className="text-brand-secondary">{t('cta.titleLine2')}</span>
-          </h2>
-          <p className="text-lg text-white/80 mb-10 leading-relaxed">
-            {t('cta.subtitle')}
-          </p>
-          <BottomCTA primary={t('cta.primary')} secondary={t('cta.secondary')} />
+      {/* ⑥ Consultation Section */}
+      <section className="py-16 bg-white border-t border-brand-border">
+        <div className="max-w-7xl mx-auto px-6 text-center">
+          <div className="inline-flex items-center gap-4 p-4 rounded-2xl bg-brand-surface border border-brand-border">
+            <div className="w-10 h-10 rounded-full bg-brand-secondary/10 flex items-center justify-center text-brand-secondary">
+              <MessageCircle className="w-5 h-5" />
+            </div>
+            <p className="font-bold text-brand-text-primary mr-4">
+              {t('consultation.text')}
+            </p>
+            <Link href="/consultation">
+              <Button variant="ghost" className="font-black text-brand-secondary hover:text-brand-secondary/80 p-0 h-auto">
+                {t('consultation.cta')}
+                <ChevronRight className="ml-1 w-5 h-5" />
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
     </div>

@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import IssueCard from './IssueCard';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export interface HealthReportProps {
   issueReport: {
@@ -22,15 +23,17 @@ export interface HealthReportProps {
 }
 
 export default function HealthReport({ issueReport, previousIssueReport }: HealthReportProps) {
+  const t = useTranslations('dashboard.healthReport');
+
   if (!issueReport) {
     return (
       <Card className="bg-slate-50 border-slate-200 border-dashed p-12 shadow-sm flex flex-col items-center justify-center text-center">
         <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-4">
           <span className="text-xl text-slate-400">?</span>
         </div>
-        <h3 className="text-sm font-bold text-slate-900 mb-1">无体检数据</h3>
+        <h3 className="text-sm font-bold text-slate-900 mb-1">{t('noData')}</h3>
         <p className="text-xs text-slate-500 max-w-xs">
-          此次历史审计无体检数据，请重新扫描网站以生成最新的健康报告。
+          {t('noDataDesc')}
         </p>
       </Card>
     );
@@ -43,9 +46,9 @@ export default function HealthReport({ issueReport, previousIssueReport }: Healt
   };
 
   const scoreCards = [
-    { label: '技术健康', score: issueReport.techScore },
-    { label: '内容质量', score: issueReport.contentScore },
-    { label: 'SEO 合规', score: issueReport.seoScore },
+    { label: t('techLabel'), score: issueReport.techScore },
+    { label: t('contentLabel'), score: issueReport.contentScore },
+    { label: t('seoLabel'), score: issueReport.seoScore },
   ];
 
   // Calculate Delta
@@ -81,33 +84,33 @@ export default function HealthReport({ issueReport, previousIssueReport }: Healt
       {deltaInfo && (
         <Card className="px-4 py-3 border-slate-200 bg-slate-50/50 flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">对比上次审计</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('delta.title')}</span>
             <div className="h-3 w-[1px] bg-slate-200 mx-1" />
             <div className="flex items-center gap-4">
               {deltaInfo.newCount === 0 && deltaInfo.fixedCount === 0 ? (
                 <div className="flex items-center gap-1.5">
                   <Minus className="w-3.5 h-3.5 text-slate-400" />
-                  <span className="text-xs font-bold text-slate-600">与上次审计相比无变化</span>
+                  <span className="text-xs font-bold text-slate-600">{t('delta.noChange')}</span>
                 </div>
               ) : (
                 <>
                   {deltaInfo.newCount > 0 && (
                     <div className="flex items-center gap-1.5">
                       <TrendingDown className="w-3.5 h-3.5 text-rose-500" />
-                      <span className="text-xs font-bold text-slate-700">新增 {deltaInfo.newCount} 个问题</span>
+                      <span className="text-xs font-bold text-slate-700">{t('delta.newIssues', { count: deltaInfo.newCount })}</span>
                     </div>
                   )}
                   {deltaInfo.fixedCount > 0 && (
                     <div className="flex items-center gap-1.5">
                       <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
-                      <span className="text-xs font-bold text-slate-700">修复了 {deltaInfo.fixedCount} 个问题</span>
+                      <span className="text-xs font-bold text-slate-700">{t('delta.fixedIssues', { count: deltaInfo.fixedCount })}</span>
                     </div>
                   )}
                   {deltaInfo.pageCountChanges.slice(0, 2).map((change) => (
                     <div key={change.code} className="flex items-center gap-1.5 px-2 py-0.5 bg-white rounded border border-slate-100">
                       {change.diff > 0 ? <TrendingDown className="w-3 h-3 text-rose-400" /> : <TrendingUp className="w-3 h-3 text-emerald-400" />}
                       <span className="text-[10px] font-bold text-slate-500">
-                        {change.title}: {change.diff > 0 ? '↑' : '↓'} {Math.abs(change.diff)}页
+                        {change.title}: {change.diff > 0 ? '↑' : '↓'} {t('delta.pages', { count: Math.abs(change.diff) })}
                       </span>
                     </div>
                   ))}
@@ -117,7 +120,7 @@ export default function HealthReport({ issueReport, previousIssueReport }: Healt
           </div>
           {deltaInfo.fixedCount > 0 && deltaInfo.newCount === 0 && issueReport.issues.length === 0 && (
             <Badge className="bg-emerald-500 text-white border-0 text-[10px] font-bold animate-pulse">
-              全部修复 ✓
+              {t('delta.allFixed')}
             </Badge>
           )}
         </Card>
@@ -136,19 +139,19 @@ export default function HealthReport({ issueReport, previousIssueReport }: Healt
       {/* Issues List */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold text-slate-900">检测发现的问题 ({issueReport.issues.length})</h3>
+          <h3 className="text-sm font-bold text-slate-900">{t('issues.title', { count: issueReport.issues.length })}</h3>
           <div className="flex gap-3">
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-red-500" />
-              <span className="text-[10px] font-bold text-slate-500">{issueReport.stats.critical} 严重</span>
+              <span className="text-[10px] font-bold text-slate-500">{issueReport.stats.critical} {t('issues.critical')}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-amber-500" />
-              <span className="text-[10px] font-bold text-slate-500">{issueReport.stats.warning} 警告</span>
+              <span className="text-[10px] font-bold text-slate-500">{issueReport.stats.warning} {t('issues.warning')}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-blue-500" />
-              <span className="text-[10px] font-bold text-slate-500">{issueReport.stats.info} 提示</span>
+              <span className="text-[10px] font-bold text-slate-500">{issueReport.stats.info} {t('issues.info')}</span>
             </div>
           </div>
         </div>
@@ -164,9 +167,9 @@ export default function HealthReport({ issueReport, previousIssueReport }: Healt
             <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-4">
               <span className="text-xl text-green-600">✓</span>
             </div>
-            <h3 className="text-sm font-bold text-green-800">未发现问题</h3>
+            <h3 className="text-sm font-bold text-green-800">{t('issues.notFound')}</h3>
             <p className="text-xs text-green-600/70">
-              您的网站在本次审计中表现完美，未检测到任何 SEO 风险。
+              {t('issues.notFoundDesc')}
             </p>
           </Card>
         )}

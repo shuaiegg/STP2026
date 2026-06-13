@@ -6,7 +6,10 @@
     "register": "Get started",
     "signOut": "Sign out",
     "loading": "Loading…",
-    "language": "English"
+    "language": "English",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "unrated": "Unrated"
   },
   "nav": {
     "home": "Home",
@@ -41,154 +44,61 @@
   },
   "home": {
     "meta": {
-      "title": "ScaletoTop | 50+ Qualified Overseas Leads Every Month",
-      "description": "Built for companies expanding internationally. Precision paid acquisition, SEO content systems, and automation tools that create a predictable, low-cost overseas lead engine."
+      "title": "Secure Your Traffic Gaps — ScaletoTop Site Intelligence",
+      "description": "Enter your domain for an instant 14-dimension SEO+GEO audit. AI-driven content production and citation tracking built for high-growth teams."
     },
     "hero": {
-      "badge": "Trusted by 50+ companies expanding globally",
-      "titleLine1": "Turn your overseas business into",
-      "titleLine2": "50+ qualified leads every month",
-      "subtitle": "Built for companies expanding internationally. Precision paid acquisition, SEO content systems, and automation tools that create a predictable, low-cost overseas lead engine.",
-      "ctaPrimary": "Get your free growth audit",
-      "ctaPrimaryMicro": "No credit card · Tailored growth plan",
-      "ctaSecondary": "Explore the tools"
+      "title": "Secure Your Traffic Gaps",
+      "subtitle": "Stop guessing. Map your traffic galaxy with 14-dimension semantic audits and close performance gaps with automated AI production.",
+      "inputPlaceholder": "Enter your domain (e.g. example.com)",
+      "cta": "Get Free Audit Report",
+      "microcopy": "60 Seconds · $0 Cost · No Credit Card Required"
     },
-    "metrics": {
-      "stats": [
-        {
-          "value": 500,
-          "suffix": "+",
-          "label": "Leads generated"
-        },
-        {
-          "value": 50,
-          "suffix": "+",
-          "label": "Companies served"
-        },
-        {
-          "value": 30,
-          "suffix": "+",
-          "label": "Countries covered"
-        },
-        {
-          "value": 3,
-          "suffix": "x",
-          "label": "Avg. ROI uplift"
-        }
-      ]
-    },
-    "clients": {
-      "title": "Teams that chose ScaletoTop"
+    "pillars": {
+      "diagnosis": {
+        "title": "Diagnosis: Map Your Traffic Galaxy",
+        "desc": "Deep semantic scanning. Identify precisely where your authority is missing and which topics need immediate reinforcement."
+      },
+      "production": {
+        "title": "Production: Content that Ranks",
+        "desc": "AI-powered high-performance content. A purpose-built geo-writer pipeline optimized for global CJK and English markets."
+      },
+      "verification": {
+        "title": "Verification: Proof of Performance",
+        "desc": "Closed-loop citation tracking. Monitor your content’s visibility across search engines and AI response engines in real-time."
+      },
+      "learnMore": "Learn more"
     },
     "process": {
-      "subtitle": "How it works",
-      "titleLine1": "Three steps to build your",
-      "titleLine2": "overseas lead engine",
-      "description": "We don't just run ads — we build a repeatable, sustainable acquisition system around your business",
-      "stepLabel": "Step",
+      "title": "Three Steps to Growth",
       "steps": [
         {
-          "num": "01",
-          "title": "Growth audit",
-          "desc": "We analyze your product, market, and current channels to find the acquisition mix that fits you"
+          "title": "Enter Domain",
+          "desc": "Provide the URL you want to optimize. Our probes start scanning your site structure immediately."
         },
         {
-          "num": "02",
-          "title": "Custom strategy",
-          "desc": "Based on the audit, we design a combined ads + content + tooling strategy with a concrete execution plan"
+          "title": "Quick Register",
+          "desc": "Create your account. Your audit results will be automatically saved to your private workbench."
         },
         {
-          "num": "03",
-          "title": "Execute & optimize",
-          "desc": "We run the plan, track the data, and keep optimizing for conversion"
+          "title": "Get Report",
+          "desc": "Receive a comprehensive audit report and targeted AI optimization suggestions within 60 seconds."
         }
       ]
     },
-    "methods": {
-      "subtitle": "Acquisition methods",
-      "titleLine1": "Three methods, combined",
-      "titleLine2": "into one closed loop",
-      "description": "Ads bring instant traffic, content compounds into a long-term asset, and tools multiply your efficiency",
-      "items": [
-        {
-          "num": "01",
-          "title": "Precision paid ads",
-          "desc": "Google Ads + Meta Ads that reach your target customers abroad — from audience targeting to conversion tracking",
-          "tags": [
-            "Google Ads",
-            "Meta",
-            "LinkedIn"
-          ],
-          "label": "Instant pipeline"
-        },
-        {
-          "num": "02",
-          "title": "SEO content engine",
-          "desc": "A repeatable content production pipeline — from keyword research to on-page optimization — that turns content into a compounding acquisition asset",
-          "tags": [
-            "SEO",
-            "Blog",
-            "Video"
-          ],
-          "label": "Long-term compounding"
-        },
-        {
-          "num": "03",
-          "title": "Automation tools",
-          "desc": "Productized tooling that turns repetitive manual work into scalable processes, so small teams can acquire customers at scale",
-          "tags": [
-            "Automation",
-            "CRM",
-            "Email"
-          ],
-          "label": "Scale multiplier"
-        }
+    "pricing": {
+      "title": "Pay-as-you-grow Pricing",
+      "subtitle": "No expensive subscriptions. Start for free and only pay for the tools you actually use.",
+      "cta": "View Pricing",
+      "features": [
+        "$0 Upfront",
+        "Instant Activation",
+        "Credits Never Expire"
       ]
     },
-    "testimonials": {
-      "subtitle": "Customer stories",
-      "titleLine1": "What our clients say",
-      "titleLine2": "about working with us",
-      "items": [
-        {
-          "quote": "We went from knowing nothing about overseas marketing to a steady 20+ inquiries a month. ScaletoTop built our entire acquisition pipeline",
-          "author": "Mr. Chen",
-          "role": "Founder",
-          "company": "Smart manufacturing company, East China",
-          "result": "Leads +280%"
-        },
-        {
-          "quote": "The most valuable part: they didn't just run our ads — their AI content tools gave us the ability to produce at scale, at low cost",
-          "author": "Sarah",
-          "role": "Head of Marketing",
-          "company": "Cross-border DTC brand",
-          "result": "ROI 4.2x"
-        },
-        {
-          "quote": "The SEO content engine won us top-3 rankings on 30+ core keywords within six months. Most of our inquiries now come from precise organic traffic",
-          "author": "Mr. Zhang",
-          "role": "CEO",
-          "company": "New materials brand, Shenzhen",
-          "result": "Traffic +500%"
-        }
-      ]
-    },
-    "resources": {
-      "subtitle": "Resources",
-      "titleLine1": "Playbooks",
-      "titleLine2": "& case breakdowns",
-      "cta": "View all articles",
-      "emptyTitle": "More content coming soon",
-      "emptyDesc": "We're putting together hands-on case studies. Stay tuned.",
-      "notPublished": "Unpublished",
-      "minutes": "{count} min read"
-    },
-    "cta": {
-      "titleLine1": "Ready to build your",
-      "titleLine2": "overseas lead engine?",
-      "subtitle": "Get a free, personalized growth audit and find the acquisition mix that fits your business",
-      "primary": "Start growing now",
-      "secondary": "Read the methodology"
+    "consultation": {
+      "text": "Need an expert to build your strategy?",
+      "cta": "Book a Consultation"
     }
   },
   "blog": {
@@ -625,6 +535,624 @@
     "title": "Under construction...",
     "desc": "We're hard at work building this module. Stay tuned!",
     "backHome": "Back to home"
+  },
+  "dashboard": {
+    "topNav": {
+      "mySite": "My Site",
+      "noSites": "No sites yet",
+      "addSite": "Add new site",
+      "adminSection": "Admin",
+      "settings": "Account Settings",
+      "signOut": "Sign Out",
+      "credits": "Credits",
+      "openSiteSwitcher": "Open site switcher",
+      "openUserMenu": "Open user menu",
+      "siteSwitcherLabel": "Site list",
+      "userMenuLabel": "User menu",
+      "openMobileMenu": "Open mobile menu",
+      "closeMobileMenu": "Close mobile menu",
+      "mobileMenuLabel": "Navigation Menu",
+      "navSection": "Navigation",
+      "library": "Library",
+      "tools": "Tools",
+      "billing": "Credits",
+      "admin": {
+        "content": "Content",
+        "users": "Users",
+        "orders": "Orders",
+        "skills": "Skills",
+        "creditRefund": "Credits",
+        "integrations": "Integrations",
+        "models": "Models",
+        "consultations": "Consultations"
+      }
+    },
+    "overview": {
+      "title": "Overview Center",
+      "welcome": "Welcome back, {name}. Global insights aggregated for you.",
+      "empty": {
+        "title": "Start Your Growth Journey",
+        "subtitle": "ScaletoTop is an automated acquisition and content management system for B2B. Add your first site to unlock deeply optimized strategic recommendations.",
+        "ctaPrimary": "Add First Site",
+        "ctaSecondary": "Free Instant Audit"
+      },
+      "checklist": {
+        "title": "Setup Guide",
+        "steps": {
+          "site": "Add Site",
+          "audit": "Run Audit",
+          "gsc": "Connect GSC",
+          "strategy": "View Strategy Board"
+        },
+        "completed": "{completed}/{total} Completed",
+        "optional": "(Optional)"
+      },
+      "stats": {
+        "assets": "Planned Assets",
+        "assetsSub": "Content nodes operating across {count} sites",
+        "debts": "High Priority Debts",
+        "debtsSub": "{count} traffic gaps that must be secured immediately",
+        "strategy": "Smart Strategic Healing",
+        "strategyDesc": "Traffic drops detected; restructuring content nodes automatically.",
+        "strategyCta": "Enter Strategy Hub"
+      },
+      "sites": {
+        "title": "Site Insights",
+        "topicToFill": "Lowest Coverage Topic",
+        "noAnalysis": "No semantic analysis performed yet",
+        "viewMap": "View Star Map",
+        "addSite": "Add New Site"
+      },
+      "system": {
+        "title": "System Security & Status",
+        "securityLevel": "Security Level: High",
+        "securitySub": "Dynamic verification enabled",
+        "geoStatus": "GEO Engine Status",
+        "geoSub": "Status: Healthy (100%)",
+        "healthStatus": "Network & Connection Health",
+        "credits": "Current Energy: {count}",
+        "billing": "Energy & Billing"
+      },
+      "impersonating": "Impersonation Mode: Viewing user {email}'s account",
+      "backToAdmin": "Back to Admin"
+    },
+    "audit": {
+      "issues": {
+        "MISSING_SITEMAP": {
+          "title": "Missing Sitemap",
+          "explanation": "No valid sitemap.xml was found in the root directory. Sitemaps help search engines discover and crawl your pages more efficiently.",
+          "howToFix": "Generate a sitemap.xml and place it in the root directory, then submit it in Google Search Console."
+        },
+        "DEAD_LINK": {
+          "title": "Dead Link",
+          "explanation": "The page returned a 4xx or 5xx error. Dead links harm user experience and block search engine crawling.",
+          "howToFix": "Fix these links to ensure they return 200 OK, or set up 301 redirects."
+        },
+        "MISSING_H1": {
+          "title": "Missing H1 Tag",
+          "explanation": "The H1 tag is the most important heading, telling search engines and users the core topic of the page.",
+          "howToFix": "Add a descriptive H1 tag to every page."
+        },
+        "TITLE_TOO_LONG": {
+          "title": "Title Too Long",
+          "explanation": "Page title exceeds 60 characters and may be truncated in search results.",
+          "howToFix": "Shorten the title, ensure core keywords are at the beginning, and keep it under 60 characters."
+        },
+        "TITLE_TOO_SHORT": {
+          "title": "Title Too Short",
+          "explanation": "The title is too short to provide enough semantic context for ranking.",
+          "howToFix": "Expand the title with more relevant descriptive words."
+        },
+        "MISSING_TITLE": {
+          "title": "Missing Title",
+          "explanation": "The page has no <title> tag defined.",
+          "howToFix": "Add an engaging, keyword-rich title to the page."
+        },
+        "MISSING_META_DESC": {
+          "title": "Missing Meta Description",
+          "explanation": "Meta descriptions don't directly affect ranking but significantly impact Click-Through Rate (CTR).",
+          "howToFix": "Write an engaging description of 120-160 characters for each page."
+        },
+        "META_DESC_TOO_LONG": {
+          "title": "Meta Description Too Long",
+          "explanation": "Descriptions over 160 characters will be truncated by search engines.",
+          "howToFix": "Concatenate the description, ensuring the most important info is at the front."
+        },
+        "DUPLICATE_H1": {
+          "title": "Multiple H1 Tags",
+          "explanation": "A page should only have one H1 tag. Multiple H1s may confuse search engines about the page's topic.",
+          "howToFix": "Ensure only one H1 tag per page; change others to H2 or H3."
+        },
+        "DUPLICATE_TITLE": {
+          "title": "Duplicate Title",
+          "explanation": "Multiple pages using the exact same title makes it hard for search engines to distinguish which is most relevant.",
+          "howToFix": "Provide unique, targeted titles for every page."
+        },
+        "DUPLICATE_META_DESC": {
+          "title": "Duplicate Meta Description",
+          "explanation": "Duplicate meta descriptions reduce the uniqueness of each page.",
+          "howToFix": "Write unique meta descriptions for each page."
+        },
+        "MISSING_OG_IMAGE": {
+          "title": "Missing OG Image",
+          "explanation": "Missing Open Graph images reduces the visual appeal and CTR when shared on social media (Twitter, LinkedIn).",
+          "howToFix": "Add an og:image tag in the <head>."
+        },
+        "THIN_CONTENT": {
+          "title": "Thin Content",
+          "explanation": "The page has fewer than 300 words and may be viewed as low quality by search engines.",
+          "howToFix": "Add more high-quality, in-depth original content."
+        },
+        "SLOW_PAGE": {
+          "title": "Slow Loading",
+          "explanation": "Page load time exceeds 3s, which can increase bounce rates.",
+          "howToFix": "Optimize image sizes, reduce redirects, or use a CDN."
+        },
+        "VERY_SLOW_PAGE": {
+          "title": "Very Slow Loading",
+          "explanation": "Page load time exceeds 5s, severely impacting experience and ranking.",
+          "howToFix": "Focus on optimization, checking server response times or heavy scripts."
+        },
+        "MISSING_CANONICAL": {
+          "title": "Missing Canonical Tag",
+          "explanation": "Missing canonical tags can lead to ambiguity when search engines handle URL parameters or duplicate content.",
+          "howToFix": "Add a rel=\"canonical\" link to every page."
+        },
+        "ORPHAN_PAGE": {
+          "title": "Orphan Page",
+          "explanation": "These pages have no internal links pointing to them. It's hard for search engines and users to discover them.",
+          "howToFix": "Add internal links to these pages from other relevant parts of your site."
+        },
+        "MISSING_H2": {
+          "title": "Missing H2 Tag",
+          "explanation": "The page has long content but lacks H2 headings for structure, making it harder to read and understand.",
+          "howToFix": "Use H2 tags to add subheadings and improve readability."
+        },
+        "HEADING_HIERARCHY_BROKEN": {
+          "title": "Heading Hierarchy Jump",
+          "explanation": "The heading hierarchy is not sequential (e.g., H1 followed by H3). Good structure should be progressive.",
+          "howToFix": "Adjust heading levels to ensure H2 is used before H3."
+        },
+        "MISSING_VIEWPORT": {
+          "title": "Missing Viewport Setting",
+          "explanation": "Missing viewport meta tag means the page won't scale correctly on mobile devices.",
+          "howToFix": "Add <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"> to the <head>."
+        },
+        "MISSING_STRUCTURED_DATA": {
+          "title": "Missing Structured Data",
+          "explanation": "No JSON-LD structured data was found. Structured data helps show rich snippets in search results.",
+          "howToFix": "Add appropriate Schema.org JSON-LD markup based on content type (Article, Product, etc.)."
+        }
+      }
+    },
+    "onboarding": {
+      "badge": "AI-Driven SEO Growth",
+      "headline": "Start Your",
+      "headlineAccent": "Stellar",
+      "headlineSuffix": "Growth Journey",
+      "subtitle": "Just enter your website domain, and our AI engine will immediately scan and generate a complete SEO star map.",
+      "placeholder": "example.com",
+      "submitIdle": "Analyze Website Now",
+      "submitAnalyzing": "Analyzing...",
+      "costHint": "Costs 5 Credits · Estimated time 15-30 seconds",
+      "errorTitle": "Analysis Failed",
+      "analyzingTitle": "Analyzing Website Intelligence...",
+      "doneTitle": "Analysis Complete!",
+      "scanProgress": "Scan Progress",
+      "buildingMap": "Technical Health Map",
+      "buildingMapLabel": "Building",
+      "findingGaps": "Growth Opportunities",
+      "findingGapsLabel": "Discovering",
+      "validationEmpty": "Please enter a website domain",
+      "validationInvalid": "Please enter a valid domain (e.g., example.com)",
+      "status": {
+        "INITIALIZING_PROBE": "Initializing probes...",
+        "SITE_STRUCTURE_DISCOVERED": "Site structure identified",
+        "SCANNING_GALAXY": "Scanning pages deeply...",
+        "GALAXY_CONSTRUCTED": "Audit analysis complete",
+        "SAVING_RESULTS": "Preparing your workbench...",
+        "preparing": "Preparing..."
+      },
+      "errStart": "Failed to start analysis",
+      "errStream": "Unable to read response stream",
+      "errSave": "Save failed",
+      "errAnalysis": "An error occurred during analysis",
+      "errGeneric": "System busy, please try again later"
+    },
+    "instantAudit": {
+      "title": "Instant Audit",
+      "back": "Back",
+      "startScan": "Start Scan",
+      "scanning": "Scanning...",
+      "betaTag": "BETA",
+      "justSaved": "Audit results persisted to site history",
+      "unsavedWarning": "Scan results not saved. Leaving will lose data. Please bind site or sync manually.",
+      "confirmLeave": "Scan results not saved, are you sure you want to leave?",
+      "noSiteTitle": "Select a Site First",
+      "noSiteDesc": "Go to Site Manager, select a site, and click 'View Latest Map' or 'Re-scan' to enter Instant Audit.",
+      "noSiteButton": "Back to Site Manager",
+      "readyTitle": "Ready: {domain}",
+      "readyDesc": "System is bound to the site. Click 'Start Scan' to generate the latest theme map and technical report.",
+      "readyButton": "Start Audit Now",
+      "techScoreLabel": "Technical Health Score",
+      "systemStatus": "System Status",
+      "scannedPages": "Scanning",
+      "scaleLabel": "Detected Page Scale",
+      "nodesUnit": "Nodes",
+      "conclusionsTitle": "Core Findings",
+      "severity": {
+        "critical": "Critical",
+        "warning": "Warning",
+        "info": "Info"
+      },
+      "viewDetails": "View Details",
+      "collapseDetails": "Collapse",
+      "historyTitle": "Site Audit Evolution",
+      "pageNodes": "{count} Page Nodes",
+      "loadMore": "Load",
+      "nodeIntelligence": "Node Intelligence",
+      "pageTitle": "Page Title",
+      "weight": "Weight",
+      "loadTime": "Load Time",
+      "hitIssues": "Hit SEO Issues",
+      "noIssuesDetected": "No issues detected on this page",
+      "syncing": "Syncing...",
+      "syncButton": "💾 Persist Sync",
+      "exportButton": "Export Star Map (LLM)",
+      "copied": "Copied to clipboard",
+      "status": {
+        "READY_FOR_SCAN": "Ready",
+        "INITIALIZING_PROBE": "Initializing probes...",
+        "SITE_STRUCTURE_DISCOVERED": "Site structure identified",
+        "SCANNING_GALAXY": "Scanning pages deeply...",
+        "GALAXY_CONSTRUCTED": "Audit complete",
+        "PROBE_FAILED": "Scan failed",
+        "SYSTEM_ERROR": "System error",
+        "LOADING_LATEST_AUDIT": "Loading latest audit...",
+        "LOADING_HISTORY": "Loading history...",
+        "HISTORY_LOAD_FAILED": "Failed to load history",
+        "SAVING_RESULTS": "Auto-saving results...",
+        "justNow": "Just now",
+        "minsAgo": "{mins}m ago",
+        "hrsAgo": "{hrs}h ago",
+        "daysAgo": "{days}d ago"
+      }
+    },
+    "healthReport": {
+      "noData": "No data",
+      "noDataDesc": "No data for this audit, please re-scan to generate a new report.",
+      "techLabel": "Technical Health",
+      "contentLabel": "Content Quality",
+      "seoLabel": "SEO Compliance",
+      "delta": {
+        "title": "VS Previous Audit",
+        "noChange": "No changes vs previous audit",
+        "newIssues": "Added {count} issues",
+        "fixedIssues": "Fixed {count} issues",
+        "pages": "{count} pages",
+        "allFixed": "All Fixed ✓"
+      },
+      "issues": {
+        "title": "Detected Issues ({count})",
+        "critical": "Critical",
+        "warning": "Warning",
+        "info": "Info",
+        "notFound": "No issues found",
+        "notFoundDesc": "Your website performed perfectly in this audit, with no detected SEO risks."
+      }
+    },
+    "issueCard": {
+      "severity": {
+        "critical": "Critical",
+        "warning": "Warning",
+        "info": "Info"
+      },
+      "affectedPages": "Affects {count} pages",
+      "explanation": "Explanation",
+      "howToFix": "How to Fix",
+      "affectedPagesTitle": "Affected Pages ({count})"
+    },
+    "siteIntelligence": {
+      "title": "Site Intelligence",
+      "betaTag": "BETA",
+      "subtitle": "Monitor your sites · Track SEO progress · Map content authority",
+      "newScan": "+ New Scan",
+      "card": {
+        "addedAt": "Added {time}",
+        "pages": "Pages",
+        "techScore": "Tech Score",
+        "latestScan": "Latest Scan",
+        "noAudit": "No audit data",
+        "workbench": "Workbench",
+        "rescan": "Re-scan"
+      }
+    },
+    "siteDetail": {
+      "tabs": {
+        "overview": "Overview",
+        "strategy": "Content Strategy",
+        "competitors": "Competitors",
+        "performance": "Performance",
+        "traffic": "Traffic",
+        "audit": "Health Report",
+        "audits": "Audit History",
+        "settings": "Settings"
+      },
+      "ariaLabel": "Site analysis features",
+      "loadingReport": "Generating report...",
+      "fetchErrorTitle": "Report Load Failed",
+      "fetchErrorDesc": "Could not fetch the audit report, please try again.",
+      "retry": "Retry"
+    },
+    "overviewPanel": {
+      "healthScore": "Health Score",
+      "healthScoreDesc": "Calculated based on technical SEO metrics from site scan.",
+      "pageScale": "Page Scale",
+      "pageScaleDesc": "Valid URL nodes identified in the star map.",
+      "competitors": "Tracked Competitors",
+      "manageList": "Manage List",
+      "keywords": "Keywords",
+      "viewAll": "View All",
+      "traffic": "Traffic Trend",
+      "viewDetail": "View Detail",
+      "contentPlan": "Content Progress",
+      "enterWorkbench": "Workbench",
+      "coreDna": "Core Business DNA",
+      "extractDna": "Plan enabled; extract DNA to optimize strategy.",
+      "extractNow": "Extract Now",
+      "semanticDebts": "Priority Debts",
+      "coverage": "Coverage",
+      "topicName": "Topic",
+      "viewInStrategy": "View in Strategy",
+      "noGaps": "No obvious semantic gaps found yet.",
+      "syncSuccess": "Sync success! Sync again to see ranking trends.",
+      "syncInfo": "Already synced today; trends will update tomorrow.",
+      "syncError": "GSC sync failed, please try again.",
+      "networkError": "Network error, please check connection.",
+      "extractDnaError": "Failed to extract DNA",
+      "generalError": "An error occurred"
+    },
+    "competitorsPanel": {
+      "confirmDelete": "Are you sure you want to delete this competitor?",
+      "deleteFailed": "Delete failed",
+      "scanFailed": "Scan failed",
+      "scanError": "An error occurred during scan",
+      "suggestFailed": "Failed to get suggestions",
+      "suggestError": "An error occurred while requesting suggestions",
+      "addFailed": "Add failed",
+      "addTitle": "Add Competitor",
+      "addDesc": "Enter the competitor's domain to extract its core content themes and perform gap analysis. (Max 5)",
+      "placeholder": "e.g. copy.ai",
+      "processing": "Processing...",
+      "addAndAnalyze": "Add & Analyze",
+      "quotaLabel": "Tracking Quota",
+      "aiSuggestions": "AI Identified Competitors",
+      "clearSuggestions": "Clear",
+      "recommended": "Recommended",
+      "quickAdd": "Quick Add",
+      "autoFind": "Auto Find Competitors",
+      "radarTitle": "Intelligence Radar",
+      "syncing": "Syncing",
+      "emptyTitle": "Radar Ready",
+      "emptyDesc": "No competitors tracked yet. Add a domain to start automatic content discovery.",
+      "infoAcquired": "Intel Acquired",
+      "noInfo": "Content DNA not scanned yet",
+      "rescan": "Re-scan",
+      "getInfo": "Get Intel",
+      "scanning": "Scanning..."
+    },
+    "performanceDashboard": {
+      "errorSuffix": "(Please confirm GSC resource is bound in Overview)",
+      "emptyTitle": "No Data",
+      "emptyDesc": "No search data found for this resource in the last 30 days, or it's not ready yet. Please try again later.",
+      "totalImpressions": "Total Impressions",
+      "totalClicks": "Total Clicks",
+      "avgCtr": "Average CTR",
+      "daysCount": "Last 30 Days",
+      "trendTitle": "Performance Trend (30 Days)",
+      "impressions": "Impressions",
+      "clicks": "Clicks",
+      "topQueries": "Top Queries",
+      "queryCol": "Query",
+      "clicksCol": "Clicks",
+      "impressionsCol": "Impressions",
+      "ctrCol": "CTR",
+      "notProvided": "(not provided)"
+    },
+    "auditHistory": {
+      "emptyTitle": "No Audit History",
+      "emptyDesc": "You haven't performed a deep audit for this site yet. Start a scan to begin building your intelligence profile.",
+      "startScan": "Start Full Scan",
+      "scoreTrend": "Score Trend",
+      "timeline": "Audit Timeline",
+      "totalRecords": "{count} records total",
+      "reportTitle": "Deep Scan Report",
+      "latest": "Latest",
+      "pageNodes": "{count} Page Nodes",
+      "healthScore": "Health Score: {score}",
+      "viewSnapshot": "View Star Map Snapshot"
+    },
+    "integrationsPanel": {
+      "title": "Integrations & Data Sources",
+      "desc": "Connect external tools and API data sources to unlock deeper insights and more precise audits.",
+      "statusConnected": "Connected",
+      "statusDisconnected": "Not Mapped",
+      "buttonGscAuth": "Connect GSC via Google",
+      "connectingGsc": "Requesting authorization...",
+      "authSuccessGsc": "Authorization successful! Please assign the specific Property URL below.",
+      "mapped": "Data stream mapped:",
+      "reauth": "Re-authorize or Change Binding",
+      "buttonGa4Auth": "Connect GA4 via Google",
+      "connectingGa4": "Requesting authorization...",
+      "authSuccessGa4": "Authorization successful! Please assign the specific GA4 Property ID below.",
+      "ga4Desc": "Unlock high-precision Active User (AU) counts, Session Duration behaviors, and churn analysis.",
+      "gscDesc": "Unlock keyword rankings, impressions, and click funnel tracking.",
+      "loadError": "Failed to load site configuration",
+      "initError": "Failed to initialize connection",
+      "generalError": "Error connecting to service"
+    },
+    "siteSwitcher": {
+      "switchSite": "Switch Site",
+      "mySites": "My Sites (Owned)",
+      "noSites": "No sites yet",
+      "addSite": "Add New Site",
+      "addTitle": "Add My Site",
+      "addDesc": "Enter the domain of the website to track and audit",
+      "addButton": "Add & Enter",
+      "addCancel": "Cancel",
+      "adding": "Adding...",
+      "placeholder": "e.g. example.com",
+      "deleteTitle": "Confirm deletion?",
+      "deleteDesc": "This will permanently delete the site and all historical audit records, semantic debts, and competitor data. This cannot be undone.",
+      "deleteConfirmPrefix": "Enter domain",
+      "deleteConfirmSuffix": "to confirm deletion:",
+      "deleteButton": "Confirm Delete",
+      "deleting": "Deleting...",
+      "deleteCancel": "Cancel",
+      "deletePlaceholder": "Enter domain to confirm",
+      "domainLabel": "Domain"
+    },
+    "strategyBoard": {
+      "status": {
+        "COMPLETED": "Done",
+        "IN_PROGRESS": "In Progress",
+        "PLANNED": "To Do",
+        "REFACTORING_NEEDED": "Refactor",
+        "IDEATION": "Ideation"
+      },
+      "article": {
+        "viewArticle": "View Article",
+        "optimizeNow": "Optimize Now",
+        "aiWrite": "AI Writer"
+      },
+      "column": {
+        "pillar": "PILLAR",
+        "corePillar": "Core Pillar"
+      },
+      "empty": {
+        "title": "No Strategy Outline Found",
+        "desc": "Our engine can analyze your 'Priority Debts' and automatically orchestrate a theme-based strategy to capture traffic.",
+        "generating": "Re-writing strategic map based on debts...",
+        "generate": "Generate Content Strategy"
+      },
+      "header": {
+        "title": "Strategy Kanban",
+        "subtitle": "Drag cards to prioritize. Each column represents a theme pillar designed to dominate specific semantic traffic.",
+        "refresh": "Refresh"
+      },
+      "toasts": {
+        "fetchError": "Failed to fetch strategy pipeline",
+        "networkError": "Network error",
+        "generateSuccess": "Strategic plan generated!",
+        "generateConflict": "Active plan exists. Archive and re-generate?",
+        "generateError": "Generation failed",
+        "generateNetworkError": "Network error during generation",
+        "reorderError": "Failed to save order, rolled back"
+      }
+    },
+    "integrationGuidance": {
+      "gsc": {
+        "title": "Connect Search Console",
+        "desc": "Get real keyword rankings, impressions, and CTR.",
+        "cta": "Connect Now"
+      },
+      "ga4": {
+        "title": "Connect Google Analytics",
+        "desc": "Insight into traffic sources, bounce rates, and user paths.",
+        "cta": "Connect Now"
+      },
+      "content-plan": {
+        "title": "Create Content Strategy",
+        "desc": "Generate your first AI content plan based on semantic gap analysis.",
+        "cta": "Start Planning"
+      }
+    },
+    "marketGap": {
+      "title": "Market Gap Analysis",
+      "competitorsScanned": "{count} competitors analyzed",
+      "competitorsHave": "Competitors have, we don't ({count})",
+      "ourStrengths": "Our Strengths ({count})",
+      "intents": {
+        "Informational": "ℹ️ Info",
+        "Commercial": "💰 Comm",
+        "Transactional": "🛒 Trans",
+        "Navigational": "🧭 Nav"
+      },
+      "tooltip": {
+        "coreCompetitors": "Core Competitors",
+        "viewAnalysis": "Click for deep profiling"
+      },
+      "deepProfile": {
+        "title": "Deep Profile: {topic}",
+        "loading": "Fetching competitor structure...",
+        "contentThickness": "Content Thickness",
+        "words": "words",
+        "headingStructure": "Heading Structure",
+        "levels": "levels",
+        "structureBreakdown": "Structure (H1 ➡️ H3)",
+        "originalSource": "Original Source",
+        "noStructure": "Clear heading structure not found",
+        "aiWriteCta": "Generate article based on this (Coming Soon)",
+        "fetchError": "Could not extract data from this competitor page."
+      },
+      "noStrengths": "Your unique content hasn't been established yet, or has been surpassed."
+    },
+    "settings": {
+      "title": "Account Settings",
+      "subtitle": "Manage your profile and account security.",
+      "back": "Back to Dashboard",
+      "general": {
+        "title": "General Settings",
+        "desc": "Configure your personal preferences and display language.",
+        "language": "Interface Language",
+        "zh": "Chinese (Simplified)",
+        "en": "English",
+        "success": "Language preference updated"
+      },
+      "security": {
+        "title": "Access Security",
+        "desc": "We recommend changing your password regularly to keep your account safe.",
+        "currentPassword": "Current Password",
+        "newPassword": "New Password",
+        "confirmPassword": "Confirm New Password",
+        "save": "Save New Password",
+        "noPassword": "I don't have an initial password, set it via email",
+        "success": "Password successfully updated",
+        "errorMismatch": "Passwords do not match",
+        "errorLength": "New password must be at least 8 characters",
+        "otpTitle": "Email Verification Code",
+        "otpPlaceholder": "000000",
+        "otpSent": "Verification code sent to your email",
+        "setInitialPassword": "Set New Password",
+        "confirmInitialPassword": "Confirm New Password",
+        "setInitialPasswordPh": "At least 8 characters",
+        "confirmInitialPasswordPh": "Repeat new password",
+        "btnSetInitialPassword": "Verify & Set Password",
+        "btnResend": "Resend",
+        "noPasswordSet": "No password set yet",
+        "noPasswordSetDesc": "For your account security, we recommend setting a dedicated password.",
+        "btnSendOtpTo": "Send code to {email}",
+        "btnCancelBack": "Cancel, back to change password",
+        "tipsTitle": "Security Tips",
+        "tips": [
+          "Use a complex password with letters, numbers, and symbols.",
+          "Users signing in via email OTP for the first time can set an initial password.",
+          "Changing your password will sign you out of all other sessions."
+        ],
+        "helpTitle": "Need help?",
+        "helpDesc": "If you cannot change your password or encounter account issues, please contact support."
+      }
+    },
+    "galaxyMap": {
+      "mapping": "Mapping galaxy data...",
+      "enterDomain": "Enter a domain to start scanning",
+      "mode2d": "2D Mode",
+      "mode3d": "3D Mode",
+      "legendRoot": "Root node",
+      "legendPillar": "Pillar page",
+      "legendContent": "Content page",
+      "legendGap": "Content gap"
+    }
   },
   "legal": {},
   "notFound": {}

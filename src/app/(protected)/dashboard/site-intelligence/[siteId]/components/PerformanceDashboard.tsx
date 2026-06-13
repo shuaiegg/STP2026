@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import dynamic from 'next/dynamic';
 import { Badge } from '@/components/ui/Badge';
+import { useTranslations } from 'next-intl';
 
 // Dynamically import Recharts with ssr: false
 const ResponsiveContainer = dynamic(() => import('recharts').then(mod => mod.ResponsiveContainer), { ssr: false });
@@ -18,6 +19,7 @@ interface PerformanceDashboardProps {
 }
 
 export function PerformanceDashboard({ siteId }: PerformanceDashboardProps) {
+    const t = useTranslations('dashboard.performanceDashboard');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [data, setData] = useState<any>(null);
@@ -29,15 +31,15 @@ export function PerformanceDashboard({ siteId }: PerformanceDashboardProps) {
                 if (resData.success) {
                     setData(resData);
                 } else {
-                    setError(resData.error || 'Failed to load performance data');
+                    setError(resData.error || t('emptyTitle'));
                 }
             })
             .catch(err => {
                 console.error(err);
-                setError('Failed to fetch GSC performance.');
+                setError(t('emptyTitle'));
             })
             .finally(() => setLoading(false));
-    }, [siteId]);
+    }, [siteId, t]);
 
     const formatNumber = (num: number) => {
         if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
@@ -92,7 +94,7 @@ export function PerformanceDashboard({ siteId }: PerformanceDashboardProps) {
     if (error) {
         return (
             <div className="p-12 text-center text-rose-500 min-h-[400px] flex items-center justify-center">
-                {error} (请确认已在“概览”页绑定 GSC 资源)
+                {error} {t('errorSuffix')}
             </div>
         );
     }
@@ -101,8 +103,8 @@ export function PerformanceDashboard({ siteId }: PerformanceDashboardProps) {
         return (
             <Card className="p-12 text-center flex flex-col items-center justify-center min-h-[400px] border-dashed border-slate-200">
                 <span className="text-4xl opacity-50 mb-4">📊</span>
-                <h3 className="text-lg font-semibold text-slate-700">暂无数据</h3>
-                <p className="text-sm text-slate-500 mt-2">该资源过去 30 天没有搜索展示数据或尚未准备好，请稍后再试。</p>
+                <h3 className="text-lg font-semibold text-slate-700">{t('emptyTitle')}</h3>
+                <p className="text-sm text-slate-500 mt-2">{t('emptyDesc')}</p>
             </Card>
         );
     }
@@ -112,25 +114,25 @@ export function PerformanceDashboard({ siteId }: PerformanceDashboardProps) {
             {/* Summary Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <Card className="p-5 flex flex-col justify-between border-slate-200">
-                    <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">总曝光 (Impressions)</h4>
+                    <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">{t('totalImpressions')}</h4>
                     <div className="mt-2 text-3xl font-extrabold text-blue-600 tabular-nums">
                         {formatNumber(data.summary.impressions)}
                     </div>
                 </Card>
                 <Card className="p-5 flex flex-col justify-between border-slate-200">
-                    <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">总点击 (Clicks)</h4>
+                    <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">{t('totalClicks')}</h4>
                     <div className="mt-2 text-3xl font-extrabold text-indigo-600 tabular-nums">
                         {formatNumber(data.summary.clicks)}
                     </div>
                 </Card>
                 <Card className="p-5 flex flex-col justify-between border-slate-200">
-                    <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">平均点击率 (CTR)</h4>
+                    <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">{t('avgCtr')}</h4>
                     <div className="mt-2 text-3xl font-extrabold text-emerald-600 tabular-nums">
                         {(data.summary.ctr * 100).toFixed(2)}%
                     </div>
                 </Card>
                 <Card className="p-5 flex flex-col justify-between border-slate-200">
-                    <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">近30天天数</h4>
+                    <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">{t('daysCount')}</h4>
                     <div className="mt-2 text-3xl font-extrabold text-slate-700 tabular-nums">
                         {data.daily.length}
                     </div>
@@ -139,7 +141,7 @@ export function PerformanceDashboard({ siteId }: PerformanceDashboardProps) {
 
             {/* Main Chart */}
             <Card className="p-6 border-slate-200">
-                <h3 className="text-sm font-bold text-slate-800 mb-6">搜索表现趋势 (30天)</h3>
+                <h3 className="text-sm font-bold text-slate-800 mb-6">{t('trendTitle')}</h3>
                 <div className="h-[300px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
                         <ComposedChart data={data.daily} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -175,8 +177,8 @@ export function PerformanceDashboard({ siteId }: PerformanceDashboardProps) {
                                 contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                                 labelStyle={{ fontWeight: 'bold', color: '#0f172a', marginBottom: '4px' }}
                             />
-                            <Area yAxisId="left" type="monotone" dataKey="impressions" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorImpressions)" name="曝光 (Impressions)" />
-                            <Line yAxisId="right" type="monotone" dataKey="clicks" stroke="#4f46e5" strokeWidth={3} dot={false} name="点击 (Clicks)" />
+                            <Area yAxisId="left" type="monotone" dataKey="impressions" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorImpressions)" name={t('impressions')} />
+                            <Line yAxisId="right" type="monotone" dataKey="clicks" stroke="#4f46e5" strokeWidth={3} dot={false} name={t('clicks')} />
                         </ComposedChart>
                     </ResponsiveContainer>
                 </div>
@@ -184,21 +186,21 @@ export function PerformanceDashboard({ siteId }: PerformanceDashboardProps) {
 
             {/* Top Queries Table */}
             <Card className="p-6 border-slate-200">
-                <h3 className="text-sm font-bold text-slate-800 mb-4">热门搜索词 (Top Queries)</h3>
+                <h3 className="text-sm font-bold text-slate-800 mb-4">{t('topQueries')}</h3>
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
                         <thead className="text-xs text-slate-500 uppercase bg-slate-50/50">
                             <tr>
-                                <th className="px-4 py-3 font-medium rounded-tl-lg">搜索词</th>
-                                <th className="px-4 py-3 font-medium text-right">点击</th>
-                                <th className="px-4 py-3 font-medium text-right">曝光</th>
-                                <th className="px-4 py-3 font-medium text-right rounded-tr-lg">点击率</th>
+                                <th className="px-4 py-3 font-medium rounded-tl-lg">{t('tableQueryCol')}</th>
+                                <th className="px-4 py-3 font-medium text-right">{t('tableClicksCol')}</th>
+                                <th className="px-4 py-3 font-medium text-right">{t('tableImpressionsCol')}</th>
+                                <th className="px-4 py-3 font-medium text-right rounded-tr-lg">{t('tableCtrCol')}</th>
                             </tr>
                         </thead>
                         <tbody>
                             {data.topQueries.map((q: any, i: number) => (
                                 <tr key={i} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/50">
-                                    <td className="px-4 py-3 font-medium text-slate-800">{q.query || '(未提供)'}</td>
+                                    <td className="px-4 py-3 font-medium text-slate-800">{q.query || t('notProvided')}</td>
                                     <td className="px-4 py-3 text-right text-indigo-600 font-bold">{q.clicks.toLocaleString()}</td>
                                     <td className="px-4 py-3 text-right text-slate-600 tabular-nums">{q.impressions.toLocaleString()}</td>
                                     <td className="px-4 py-3 text-right text-emerald-600 tabular-nums">{(q.ctr * 100).toFixed(1)}%</td>

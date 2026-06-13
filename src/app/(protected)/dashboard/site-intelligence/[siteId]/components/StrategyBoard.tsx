@@ -26,6 +26,9 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { GripVertical, Zap, CheckCircle2, Clock, PlayCircle, Loader2, RefreshCw, Layers, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import Link from 'next/link';
+import posthog from 'posthog-js';
+import { useTranslations } from 'next-intl';
 
 interface PlannedArticle {
     id: string;
@@ -48,11 +51,9 @@ interface ContentPlan {
     articles: PlannedArticle[];
 }
 
-import Link from 'next/link';
-import posthog from 'posthog-js';
-
 // --- Sortable Article Component ---
 function SortableArticle({ article, index, isDragging: isOverlay }: { article: PlannedArticle, index: number, isDragging?: boolean }) {
+    const t = useTranslations('dashboard.strategyBoard');
     const {
         attributes,
         listeners,
@@ -124,14 +125,14 @@ function SortableArticle({ article, index, isDragging: isOverlay }: { article: P
             <div className="flex items-center justify-between pt-3 border-t border-slate-50">
                 <div className={`flex items-center gap-1.5 text-xs font-bold ${article.status === 'REFACTORING_NEEDED' ? 'text-rose-600' : 'text-slate-500'}`}>
                     {getStatusIcon(article.status)}
-                    <span>{article.status === 'REFACTORING_NEEDED' ? '需要重构' : article.status.replace('_', ' ')}</span>
+                    <span>{t(`status.${article.status}` as any)}</span>
                 </div>
                 
                 <div className="flex items-center gap-2 ml-auto">
                     {article.articleId ? (
                         <Link href={`/dashboard/admin/content/${article.articleId}`} target="_blank">
                             <Button size="sm" variant="ghost" className="h-7 text-[10px] font-black tracking-widest px-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100">
-                                查看文章
+                                {t('article.viewArticle')}
                             </Button>
                         </Link>
                     ) : null}
@@ -139,7 +140,7 @@ function SortableArticle({ article, index, isDragging: isOverlay }: { article: P
                     {article.status !== 'COMPLETED' && (
                         <Link href={`/tools/geo-writer?keyword=${encodeURIComponent(article.keyword)}&title=${encodeURIComponent(article.title)}&language=${encodeURIComponent(article.language)}&plannedArticleId=${article.id}`}>
                             <Button onClick={handleStartWriting} size="sm" variant="ghost" className={`h-7 text-[10px] font-black tracking-widest px-2 ${article.status === 'REFACTORING_NEEDED' ? 'text-rose-600 hover:bg-rose-50' : 'text-brand-primary hover:bg-brand-primary/10'}`}>
-                                {article.status === 'REFACTORING_NEEDED' ? '立即优化' : '交给 AI 撰写'} <Zap size={10} className="ml-1" />
+                                {article.status === 'REFACTORING_NEEDED' ? t('article.optimizeNow') : t('article.aiWrite')} <Zap size={10} className="ml-1" />
                             </Button>
                         </Link>
                     )}
@@ -152,6 +153,7 @@ function SortableArticle({ article, index, isDragging: isOverlay }: { article: P
 
 // --- Kanban Column Component ---
 function KanbanColumn({ plan, articles }: { plan: ContentPlan, articles: PlannedArticle[] }) {
+    const t = useTranslations('dashboard.strategyBoard');
     const { setNodeRef } = useSortable({
         id: plan.id,
         data: {
@@ -167,10 +169,10 @@ function KanbanColumn({ plan, articles }: { plan: ContentPlan, articles: Planned
                 <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-brand-primary/10 to-transparent rounded-bl-3xl -mr-8 -mt-8 opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className="flex justify-between items-start">
                     <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-black tracking-widest transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-brand-primary/20 bg-brand-primary/5 text-brand-primary">
-                        PILLAR {plan.priority + 1}
+                        {t('column.pillar')} {plan.priority + 1}
                     </span>
                     <Badge className="bg-white border text-xs text-slate-500 truncate max-w-[120px]">
-                        {plan.theme || '核心支柱'}
+                        {plan.theme || t('column.corePillar')}
                     </Badge>
                 </div>
                 <h3 className="font-bold text-slate-800 leading-snug">
@@ -194,6 +196,7 @@ function KanbanColumn({ plan, articles }: { plan: ContentPlan, articles: Planned
 
 // --- Main Board Component ---
 export function StrategyBoard({ siteId }: { siteId: string }) {
+    const t = useTranslations('dashboard.strategyBoard');
     const [plans, setPlans] = useState<ContentPlan[]>([]);
     const [loading, setLoading] = useState(true);
     const [generating, setGenerating] = useState(false);
@@ -216,14 +219,14 @@ export function StrategyBoard({ siteId }: { siteId: string }) {
             if (data.success) {
                 setPlans(data.data);
             } else {
-                toast.error(data.error || '获取战略管线失败');
+                toast.error(data.error || t('toasts.fetchError'));
             }
         } catch (e) {
-            toast.error('网络错误');
+            toast.error(t('toasts.networkError'));
         } finally {
             setLoading(false);
         }
-    }, [siteId]);
+    }, [siteId, t]);
 
     const handleGenerate = async (override: any = false) => {
         const isOverride = typeof override === 'boolean' ? override : false;
@@ -237,20 +240,20 @@ export function StrategyBoard({ siteId }: { siteId: string }) {
             const data = await res.json();
             
             if (data.success) {
-                toast.success('基于高优语义债的战略计划生成完毕！');
+                toast.success(t('toasts.generateSuccess'));
                 await fetchStrategies();
             } else if (data.conflict) {
-                if (window.confirm(data.message || '已存在进行中的计划，是否归档并重新生成？')) {
+                if (window.confirm(data.message || t('toasts.generateConflict'))) {
                     handleGenerate(true);
                 } else {
                     setGenerating(false);
                 }
             } else {
-                toast.error(data.error || '生成失败');
+                toast.error(data.error || t('toasts.generateError'));
                 setGenerating(false);
             }
         } catch (e) {
-            toast.error('生成过程中发生网络错误');
+            toast.error(t('toasts.generateNetworkError'));
             setGenerating(false);
         }
     };
@@ -341,16 +344,7 @@ export function StrategyBoard({ siteId }: { siteId: string }) {
 
         // --- API Call ---
         try {
-            const currentPlans = plans; // This is actually the state BEFORE handleDragEnd update if not careful, 
-            // but since we updated it in handleDragOver and handleDragEnd, we should use the updated state.
-            // For safety, I'll compute the updates from the new state.
-            
             const updates: any[] = [];
-            // Re-fetch the plans from the state we just updated
-            // Wait, setPlans is async. I should use the result of the move.
-            
-            // Simplified: collect all articles from all plans and their current positions
-            // In a real kanban we might only want to send affected columns.
             plans.forEach(plan => {
                 plan.articles.forEach((art, index) => {
                     updates.push({
@@ -369,7 +363,7 @@ export function StrategyBoard({ siteId }: { siteId: string }) {
 
             if (!res.ok) throw new Error('Failed to save reorder');
         } catch (e) {
-            toast.error('保存拖拽排序失败，已自动回滚');
+            toast.error(t('toasts.reorderError'));
             fetchStrategies();
         }
     };
@@ -395,9 +389,9 @@ export function StrategyBoard({ siteId }: { siteId: string }) {
                 <div className="mx-auto w-20 h-20 bg-white shadow-sm rounded-2xl flex items-center justify-center text-brand-primary mb-6 rotate-3">
                     <Layers size={32} />
                 </div>
-                <h3 className="text-2xl font-black font-display tracking-tight text-slate-800 mb-2">未发现主题战略大纲</h3>
+                <h3 className="text-2xl font-black font-display tracking-tight text-slate-800 mb-2">{t('empty.title')}</h3>
                 <p className="text-slate-500 max-w-md mx-auto mb-8 font-medium">
-                    引擎可以通过分析您的“高优语义债”，为您自动编排以抢占流量为目标的主题支柱 (Pillar) 以及下辖的集群文章 (Cluster)。
+                    {t('empty.desc')}
                 </p>
                 <Button
                     onClick={() => handleGenerate()}
@@ -406,9 +400,9 @@ export function StrategyBoard({ siteId }: { siteId: string }) {
                     className="bg-brand-primary text-white hover:bg-brand-primary-light shadow-xl shadow-brand-primary/20 font-black rounded-xl px-8"
                 >
                     {generating ? (
-                        <><RefreshCw className="mr-2 h-4 w-4 animate-spin" /> 正在根据语义债重写战略图谱...</>
+                        <><RefreshCw className="mr-2 h-4 w-4 animate-spin" /> {t('empty.generating')}</>
                     ) : (
-                        <><Zap className="mr-2 h-4 w-4" /> 一键生成内容战略计划</>
+                        <><Zap className="mr-2 h-4 w-4" /> {t('empty.generate')}</>
                     )}
                 </Button>
             </div>
@@ -421,14 +415,14 @@ export function StrategyBoard({ siteId }: { siteId: string }) {
                 <div>
                     <h2 className="text-xl font-black font-display text-slate-800 flex items-center gap-2">
                         <Layers className="text-brand-primary" />
-                        内容战略实施看板 (Omnichannel Kanban)
+                        {t('header.title')}
                     </h2>
                     <p className="text-sm text-slate-500 font-medium mt-1">
-                        拖拽文章卡片调整执行优先级。每一个垂直泳道代表一个旨在吃透特定语义流量的主题支柱。
+                        {t('header.subtitle')}
                     </p>
                 </div>
                 <Button variant="outline" size="sm" onClick={fetchStrategies} className="border-slate-200 text-slate-600 font-bold rounded-lg shadow-sm">
-                    <RefreshCw size={14} className="mr-2" /> 强制刷新
+                    <RefreshCw size={14} className="mr-2" /> {t('header.refresh')}
                 </Button>
             </div>
 

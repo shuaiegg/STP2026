@@ -8,6 +8,7 @@ import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import { EmptyState } from './EmptyState';
+import { getTranslations } from 'next-intl/server';
 
 interface LatestAudit {
     id: string;
@@ -33,13 +34,13 @@ function TechScoreBadge({ score }: { score: number | null }) {
     return <span className={`text-[10px] font-bold font-mono px-2 py-0.5 rounded-full inline-block ${color}`}>{score}</span>;
 }
 
-function timeAgo(iso: string) {
+function timeAgo(iso: string, t: any) {
     const diff = Date.now() - new Date(iso).getTime();
     const mins = Math.floor(diff / 60000);
-    if (mins < 60) return `${mins} 分钟前`;
+    if (mins < 60) return t('status.minsAgo', { mins });
     const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs} 小时前`;
-    return `${Math.floor(hrs / 24)} 天前`;
+    if (hrs < 24) return t('status.hrsAgo', { hrs });
+    return t('status.daysAgo', { days: Math.floor(hrs / 24) });
 }
 
 export default async function SiteIntelligencePage() {
@@ -47,6 +48,9 @@ export default async function SiteIntelligencePage() {
     if (!session?.user?.id) {
         redirect('/login');
     }
+
+    const t = await getTranslations('dashboard.siteIntelligence');
+    const tAudit = await getTranslations('dashboard.instantAudit');
 
     const sitesData = await prisma.site.findMany({
         where: { userId: session.user.id },
@@ -97,16 +101,16 @@ export default async function SiteIntelligencePage() {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                        <h1 className="text-2xl font-bold tracking-tight text-slate-900">站点智能管家</h1>
-                        <Badge variant="default" className="bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20 border-0">公测版</Badge>
+                        <h1 className="text-2xl font-bold tracking-tight text-slate-900">{t('title')}</h1>
+                        <Badge variant="default" className="bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20 border-0">{t('betaTag')}</Badge>
                     </div>
                     <p className="text-sm text-slate-500">
-                        监控您的网站 · 追踪 SEO 进展 · 测绘内容权威度星图
+                        {t('subtitle')}
                     </p>
                 </div>
                 <Link href="/dashboard/site-intelligence/instant-audit">
                     <Button className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm px-6 font-bold">
-                        + 新建扫描
+                        {t('newScan')}
                     </Button>
                 </Link>
             </div>
@@ -119,7 +123,7 @@ export default async function SiteIntelligencePage() {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                     {sites.map((site) => (
-                        <SiteCard key={site.id} site={site} />
+                        <SiteCard key={site.id} site={site} t={t} tAudit={tAudit} />
                     ))}
                 </div>
             )}
@@ -128,7 +132,7 @@ export default async function SiteIntelligencePage() {
 }
 
 
-function SiteCard({ site }: { site: SiteRecord }) {
+function SiteCard({ site, t, tAudit }: { site: SiteRecord, t: any, tAudit: any }) {
     const audit = site.latestAudit;
     return (
         <Card className="bg-white border-slate-200 shadow-sm p-6 flex flex-col gap-5 hover:border-brand-primary/20 hover:shadow-md transition-all rounded-2xl group relative overflow-hidden">
@@ -140,7 +144,7 @@ function SiteCard({ site }: { site: SiteRecord }) {
                 <div className="min-w-0 flex-1">
                     <p className="text-base font-bold text-slate-900 truncate tracking-tight">{site.domain}</p>
                     <p className="text-[10px] text-slate-400 font-mono uppercase tracking-widest mt-1">
-                        添加于 {timeAgo(site.createdAt)}
+                        {t('card.addedAt', { time: timeAgo(site.createdAt, tAudit) })}
                     </p>
                 </div>
                 <div className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-slate-50 border border-slate-100 mt-1">
@@ -155,21 +159,21 @@ function SiteCard({ site }: { site: SiteRecord }) {
             {audit ? (
                 <div className="grid grid-cols-3 gap-3 text-center bg-slate-50 rounded-xl p-3 border border-slate-100">
                     <div className="flex flex-col items-center justify-center">
-                        <p className="text-[9px] text-slate-400 uppercase tracking-widest mb-1 font-bold">页面数</p>
+                        <p className="text-[9px] text-slate-400 uppercase tracking-widest mb-1 font-bold">{t('card.pages')}</p>
                         <p className="text-sm font-bold text-slate-700 font-mono">{audit.pageCount}</p>
                     </div>
                     <div className="flex flex-col items-center justify-center border-l border-slate-200">
-                        <p className="text-[9px] text-slate-400 uppercase tracking-widest mb-1 font-bold">技术得分</p>
+                        <p className="text-[9px] text-slate-400 uppercase tracking-widest mb-1 font-bold">{t('card.techScore')}</p>
                         <TechScoreBadge score={audit.techScore} />
                     </div>
                     <div className="flex flex-col items-center justify-center border-l border-slate-200">
-                        <p className="text-[9px] text-slate-400 uppercase tracking-widest mb-1 font-bold">最新扫描</p>
-                        <p className="text-[10px] text-slate-500 font-mono font-medium">{timeAgo(audit.createdAt).replace('前', '')}</p>
+                        <p className="text-[9px] text-slate-400 uppercase tracking-widest mb-1 font-bold">{t('card.latestScan')}</p>
+                        <p className="text-[10px] text-slate-500 font-mono font-medium">{timeAgo(audit.createdAt, tAudit).replace(/ago|前/, '').trim()}</p>
                     </div>
                 </div>
             ) : (
                 <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 border-dashed flex items-center justify-center h-[76px]">
-                    <p className="text-[11px] text-slate-400 font-medium">暂无审计数据</p>
+                    <p className="text-[11px] text-slate-400 font-medium">{t('card.noAudit')}</p>
                 </div>
             )}
 
@@ -183,7 +187,7 @@ function SiteCard({ site }: { site: SiteRecord }) {
                         variant="outline"
                         className="w-full text-xs font-semibold rounded-xl border-slate-200 hover:bg-slate-50 hover:text-brand-primary"
                     >
-                        控制台
+                        {t('card.workbench')}
                     </Button>
                 </Link>
                 <Link
@@ -193,7 +197,7 @@ function SiteCard({ site }: { site: SiteRecord }) {
                     <Button
                         className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl shadow-none"
                     >
-                        重新扫描
+                        {t('card.rescan')}
                     </Button>
                 </Link>
             </div>

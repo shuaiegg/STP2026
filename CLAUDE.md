@@ -29,7 +29,7 @@ The project follows strict engineering standards for immutability, component com
 - **Rules Directory**: Detailed guidelines are stored in `rules/*.md`.
 - **Primary Rules**: `rules/STP_RULES.md` is the source of truth for project standards.
 - **Frontend Patterns**: `frontend-patterns.skill` contains React/Next.js best practices.
-- **Design & Copy Rules**: `rules/design.md` defines visual design, UI patterns, and copy guidelines.
+- **Design & Copy Rules**: `rules/design.md` defines visual design and UI patterns; `rules/voice-en.md` defines English brand voice.
 - **Content Scorecard**: `rules/content-scorecard.md` defines the 5-dimension quality evaluation protocol for AI-generated content.
 
 ## Frontend Design Checklist — Run Before Marking Any UI Task Complete

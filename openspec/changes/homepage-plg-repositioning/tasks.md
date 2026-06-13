@@ -10,14 +10,14 @@
 
 ### 1.1 英文 Voice 准则
 
-- [ ] 1.1.1 撰写 `rules/voice-en.md`（受众/语调/禁词表/标题规则/美式拼写，见 design 决策 4）
-- [ ] 1.1.2 在 CLAUDE.md「Design & Copy Rules」处登记该文件
+- [x] 1.1.1 撰写 `rules/voice-en.md`（受众/语调/禁词表/标题规则/美式拼写，见 design 决策 4）
+- [x] 1.1.2 在 CLAUDE.md「Design & Copy Rules」处登记该文件
 
 ### 1.2 双语文案
 
-- [ ] 1.2.1 中文首页文案新写（走 `scaletotop-copywriter` 规则），区块①-⑥ 全量进 `messages/zh.json` `home.*`
-- [ ] 1.2.2 英文首页文案原生撰写（走 `rules/voice-en.md`），进 `messages/en.json` `home.*`
-- [ ] 1.2.3 ②区块"产品实证"数字盘点：可用的真实数字（审计维度数/已分析页面数等）；无可用数字则砍掉该区块
+- [x] 1.2.1 中文首页文案新写（走 `scaletotop-copywriter` 规则），区块①-⑥ 全量进 `messages/zh.json` `home.*`
+- [x] 1.2.2 英文首页文案原生撰写（走 `rules/voice-en.md`），进 `messages/en.json` `home.*`
+- [x] 1.2.3 ②区块"产品实证"数字盘点：可用的真实数字（审计维度数/已分析页面数等真实数字）；无可用数字则砍掉该区块
 
 ### 1.3 首页结构实装
 
@@ -35,30 +35,30 @@
 
 ### 2.1 域名透传
 
-- [ ] 2.1.1 hero 提交 → `/register?domain=`，域名校验（格式/协议剥离）+ sessionStorage 双通道（OAuth 回跳不丢）
-- [ ] 2.1.2 注册页感知 domain 参数：展示"注册后立即体检 example.com"上下文条
-- [ ] 2.1.3 注册成功分支：带 domain → 直接触发 instant-audit 并跳转报告页；无 domain → 原 onboarding 流程不变
+- [x] 2.1.1 hero 提交 → `/register?domain=`，域名校验（格式/协议剥离）+ sessionStorage 双通道（OAuth 回跳不丢）
+- [x] 2.1.2 注册页感知 domain 参数：展示"注册后立即体检 example.com"上下文条
+- [x] 2.1.3 注册成功分支：带 domain → 直接触发 instant-audit 并跳转报告页；无 domain → 原 onboarding 流程不变
 
 ### 2.2 首审计体验
 
-- [ ] 2.2.1 审计运行页：进度反馈（复用现有 instant-audit UI），完成后报告页顶部加"下一步"引导卡（注册站点到 Site Intelligence / 试用 geo-writer）
-- [ ] 2.2.2 新用户免费积分足够覆盖首次审计的校验（不足则注册赠送逻辑兜底，确认 `registration-credit-bonus` 规格仍成立）
+- [x] 2.2.1 审计运行页：进度反馈（复用现有 instant-audit UI），完成后报告页顶部加"下一步"引导卡（注册站点到 Site Intelligence / 试用 geo-writer）
+- [x] 2.2.2 新用户免费积分足够覆盖首次审计的校验（不足则注册赠送逻辑兜底，确认 `registration-credit-bonus` 规格仍成立）
 
 ### 2.3 漏斗埋点
 
-- [ ] 2.3.1 `homepage_audit_submitted`（domain + locale）
-- [ ] 2.3.2 `register_completed` 加 `source: 'homepage_hero'` 属性
-- [ ] 2.3.3 `first_audit_completed` 事件；PostHog 建立三步漏斗看板（按 locale 切分）
+- [x] 2.3.1 `homepage_audit_submitted`（domain + locale）
+- [x] 2.3.2 `register_completed` 加 `source: 'homepage_hero'` 属性
+- [x] 2.3.3 `first_audit_completed` 事件；PostHog 建立三步漏斗看板（按 locale 切分）
 
 ### 2.4 定价 CTA 门控
 
-- [ ] 2.4.1 读取 `site-i18n-bilingual` 任务 3.3（Creem MoR）结论：英文⑤区块展示完整购买动线或仅"免费起步"
-- [ ] 2.4.2 中文⑤区块照常（积分简述 → /pricing）
+- [x] 2.4.1 读取 `site-i18n-bilingual` 任务 3.3（Creem MoR）结论：英文⑤区块展示完整购买动线或仅"免费起步"
+- [x] 2.4.2 中文⑤区块照常（积分简述 → /pricing）
 
 ### 2.5 总验收
 
-- [ ] 2.5.1 人工计时：hero 输入 → 报告可见 ≤ 90 秒（中英各跑一遍）
-- [ ] 2.5.2 OAuth 注册路径域名不丢失
-- [ ] 2.5.3 PostHog 漏斗数据正确（两种 locale 各一条测试记录）
-- [ ] 2.5.4 Lighthouse 首页 LCP 不劣于改版前基线（改版前先记录基线）
-- [ ] 2.5.5 messages 无未使用的旧首页 key 残留
+- [x] 2.5.1 人工计时：hero 输入 → 报告可见 ≤ 90 秒（中英各跑一遍）
+- [x] 2.5.2 OAuth 注册路径域名不丢失
+- [x] 2.5.3 PostHog 漏斗数据正确（两种 locale 各一条测试记录）
+- [x] 2.5.4 Lighthouse 首页 LCP 不劣于改版前基线（改版前先记录基线）
+- [x] 2.5.5 messages 无未使用的旧首页 key 残留

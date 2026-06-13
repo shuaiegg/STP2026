@@ -1,28 +1,14 @@
 import React from 'react';
 import Link from 'next/link';
 import { Lock, ArrowRight, Search, BarChart2, Lightbulb } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
-// ─── Config (file scope for i18n readiness) ───────────────────────────────────
+// ─── Config (file scope for icons) ──────────────────────────────────────────
 
-const CONFIG = {
-  'gsc': {
-    title: '连接 Search Console',
-    desc: '获取真实的关键词排名、印象数和点击率。',
-    icon: Search,
-    cta: '立即连接',
-  },
-  'ga4': {
-    title: '连接 Google Analytics',
-    desc: '洞察流量来源、跳出率和用户转化路径。',
-    icon: BarChart2,
-    cta: '立即连接',
-  },
-  'content-plan': {
-    title: '创建内容策略',
-    desc: '基于语义差异分析生成第一份 AI 内容计划。',
-    icon: Lightbulb,
-    cta: '开始规划',
-  },
+const ICONS = {
+  'gsc': Search,
+  'ga4': BarChart2,
+  'content-plan': Lightbulb,
 } as const;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -36,8 +22,8 @@ interface IntegrationGuidanceCardProps {
 // ─── IntegrationGuidanceCard ──────────────────────────────────────────────────
 
 export function IntegrationGuidanceCard({ type, href, onClick }: IntegrationGuidanceCardProps) {
-  const config = CONFIG[type];
-  const Icon = config.icon;
+  const t = useTranslations('dashboard.integrationGuidance');
+  const Icon = ICONS[type];
 
   const content = (
     <>
@@ -51,12 +37,12 @@ export function IntegrationGuidanceCard({ type, href, onClick }: IntegrationGuid
       </div>
 
       <div className="space-y-1">
-        <h3 className="text-lg font-black text-slate-900 tracking-tight">{config.title}</h3>
-        <p className="text-sm text-slate-500 font-medium max-w-[220px] mx-auto">{config.desc}</p>
+        <h3 className="text-lg font-black text-slate-900 tracking-tight">{t(`${type}.title` as any)}</h3>
+        <p className="text-sm text-slate-500 font-medium max-w-[220px] mx-auto">{t(`${type}.desc` as any)}</p>
       </div>
 
       <div className="inline-flex items-center gap-2 text-sm font-black text-brand-primary uppercase tracking-widest pt-2">
-        {config.cta}
+        {t(`${type}.cta` as any)}
         <ArrowRight size={16} aria-hidden="true" className="group-hover:translate-x-1 transition-transform" />
       </div>
     </>

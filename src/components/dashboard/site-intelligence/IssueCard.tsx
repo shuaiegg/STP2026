@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { ChevronDown, ChevronUp, AlertCircle, AlertTriangle, Info } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export type Severity = 'critical' | 'warning' | 'info';
 
@@ -22,6 +23,7 @@ export interface IssueCardProps {
 }
 
 export default function IssueCard({
+  code,
   severity,
   title,
   explanation,
@@ -29,6 +31,8 @@ export default function IssueCard({
   affectedPages
 }: IssueCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const t = useTranslations('dashboard.issueCard');
+  const tAudit = useTranslations('dashboard.audit.issues');
 
   const getSeverityStyles = (sev: Severity) => {
     switch (sev) {
@@ -36,25 +40,30 @@ export default function IssueCard({
         return {
           badge: 'bg-red-500/10 text-red-600 border-red-200',
           icon: <AlertCircle className="w-5 h-5 text-red-500" />,
-          label: '严重'
+          label: t('severity.critical')
         };
       case 'warning':
         return {
           badge: 'bg-amber-500/10 text-amber-600 border-amber-200',
           icon: <AlertTriangle className="w-5 h-5 text-amber-500" />,
-          label: '警告'
+          label: t('severity.warning')
         };
       case 'info':
       default:
         return {
           badge: 'bg-blue-500/10 text-blue-600 border-blue-200',
           icon: <Info className="w-5 h-5 text-blue-500" />,
-          label: '提示'
+          label: t('severity.info')
         };
     }
   };
 
   const styles = getSeverityStyles(severity);
+
+  // Use translated content if available for the code, fallback to props
+  const displayTitle = tAudit.has(`${code}.title`) ? tAudit(`${code}.title`) : title;
+  const displayExplanation = tAudit.has(`${code}.explanation`) ? tAudit(`${code}.explanation`) : explanation;
+  const displayHowToFix = tAudit.has(`${code}.howToFix`) ? tAudit(`${code}.howToFix`) : howToFix;
 
   return (
     <Card className="bg-white border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
@@ -69,10 +78,10 @@ export default function IssueCard({
               <Badge className={`${styles.badge} text-[10px] py-0 px-1.5 font-bold border`}>
                 {styles.label}
               </Badge>
-              <h4 className="text-sm font-bold text-slate-900">{title}</h4>
+              <h4 className="text-sm font-bold text-slate-900">{displayTitle}</h4>
             </div>
             <p className="text-xs text-slate-500 line-clamp-1">
-              影响 {affectedPages.length} 个页面
+              {t('affectedPages', { count: affectedPages.length })}
             </p>
           </div>
         </div>
@@ -84,20 +93,20 @@ export default function IssueCard({
       {isExpanded && (
         <div className="px-4 pb-4 pt-2 border-t border-slate-50 space-y-4 animate-in fade-in slide-in-from-top-1 duration-200">
           <div className="space-y-2">
-            <h5 className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">问题说明</h5>
-            <p className="text-xs text-slate-600 leading-relaxed">{explanation}</p>
+            <h5 className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">{t('explanation')}</h5>
+            <p className="text-xs text-slate-600 leading-relaxed">{displayExplanation}</p>
           </div>
 
           <div className="space-y-2">
-            <h5 className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">修复建议</h5>
+            <h5 className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">{t('howToFix')}</h5>
             <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-              <p className="text-xs text-slate-700 font-medium leading-relaxed">{howToFix}</p>
+              <p className="text-xs text-slate-700 font-medium leading-relaxed">{displayHowToFix}</p>
             </div>
           </div>
 
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <h5 className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">受影响页面 ({affectedPages.length})</h5>
+              <h5 className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">{t('affectedPagesTitle', { count: affectedPages.length })}</h5>
             </div>
             <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar">
               {affectedPages.map((page, idx) => (

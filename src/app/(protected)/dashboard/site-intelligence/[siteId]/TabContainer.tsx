@@ -11,6 +11,8 @@ import {
   AuditHistoryPanelSkeleton,
   IntegrationsPanelSkeleton,
 } from '@/components/ui/panel-skeleton';
+import HealthReport from '@/components/dashboard/site-intelligence/HealthReport';
+import { useTranslations } from 'next-intl';
 
 // ─── Dynamic Imports ──────────────────────────────────────────────────────────
 
@@ -42,10 +44,6 @@ const IntegrationsPanel = dynamic(
   () => import('./components/IntegrationsPanel').then((mod) => mod.IntegrationsPanel),
   { loading: () => <IntegrationsPanelSkeleton />, ssr: false },
 );
-const HealthReport = dynamic(
-  () => import('@/components/dashboard/site-intelligence/HealthReport'),
-  { loading: () => <AuditHistoryPanelSkeleton />, ssr: false },
-);
 
 // ─── Types & constants ────────────────────────────────────────────────────────
 
@@ -64,14 +62,6 @@ const VALID_TABS: TabType[] = [
   'competitors', 'performance', 'traffic', 'integrations',
 ];
 
-const COPY = {
-  tabListAriaLabel: '站点分析功能',
-  loadingReport: '生成健康报告中…',
-  fetchErrorTitle: '报告加载失败',
-  fetchErrorDesc: '无法获取审计报告，请重试。',
-  retry: '重试',
-} as const;
-
 // ─── TabContainer ─────────────────────────────────────────────────────────────
 
 export function TabContainer({ 
@@ -89,6 +79,8 @@ export function TabContainer({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const t = useTranslations('dashboard.siteDetail');
+  
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [visitedTabs, setVisitedTabs] = useState<Set<TabType>>(new Set(['overview']));
   const [issueReportLoaded, setIssueReportLoaded] = useState(false);
@@ -150,50 +142,50 @@ export function TabContainer({
       {/* Tab Bar */}
       <div
         role="tablist"
-        aria-label={COPY.tabListAriaLabel}
+        aria-label={t('ariaLabel')}
         className="flex border-b border-slate-200 overflow-x-auto scrollbar-hide sticky top-14 bg-white/80 backdrop-blur-md z-30 -mx-6 md:-mx-10 px-6 md:px-10"
       >
         <button role="tab" id="tab-overview" aria-selected={activeTab === 'overview'} aria-controls="tabpanel-overview"
           onClick={() => handleTabChange('overview')} className={tabCls('overview')}>
-          概览
+          {t('tabs.overview')}
         </button>
 
         <button role="tab" id="tab-strategy" aria-selected={activeTab === 'strategy'} aria-controls="tabpanel-strategy"
           onClick={() => handleTabChange('strategy')}
           className={`${tabCls('strategy')} flex items-center gap-1.5`}>
-          内容策略
+          {t('tabs.strategy')}
         </button>
 
         <button role="tab" id="tab-competitors" aria-selected={activeTab === 'competitors'} aria-controls="tabpanel-competitors"
           onClick={() => handleTabChange('competitors')} className={tabCls('competitors')}>
-          竞争分析
+          {t('tabs.competitors')}
         </button>
 
         <button role="tab" id="tab-performance" aria-selected={activeTab === 'performance'} aria-controls="tabpanel-performance"
           onClick={() => handleTabChange('performance')} className={tabCls('performance')}>
-          搜索表现
+          {t('tabs.performance')}
         </button>
 
         <button role="tab" id="tab-traffic" aria-selected={activeTab === 'traffic'} aria-controls="tabpanel-traffic"
           onClick={() => handleTabChange('traffic')} className={tabCls('traffic')}>
-          流量表现
+          {t('tabs.traffic')}
         </button>
 
         <button role="tab" id="tab-audit" aria-selected={activeTab === 'audit'} aria-controls="tabpanel-audit"
           onClick={() => handleTabChange('audit')} className={tabCls('audit')}>
-          体检报告
+          {t('tabs.audit')}
         </button>
 
         <button role="tab" id="tab-audits" aria-selected={activeTab === 'audits'} aria-controls="tabpanel-audits"
           onClick={() => handleTabChange('audits')} className={tabCls('audits')}>
-          审计历史
+          {t('tabs.audits')}
         </button>
 
         <div className="flex-1" aria-hidden="true" />
 
         <button role="tab" id="tab-integrations" aria-selected={activeTab === 'integrations'} aria-controls="tabpanel-integrations"
           onClick={() => handleTabChange('integrations')} className={tabCls('integrations')}>
-          设置
+          {t('tabs.settings')}
         </button>
       </div>
 
@@ -227,17 +219,17 @@ export function TabContainer({
                 {loadingReport ? (
                   <div className="flex flex-col items-center justify-center p-12 text-slate-500">
                     <div className="w-8 h-8 rounded-full border-2 border-brand-primary border-t-transparent motion-safe:animate-spin mb-4" aria-hidden="true" />
-                    <p className="text-sm font-medium">{COPY.loadingReport}</p>
+                    <p className="text-sm font-medium">{t('loadingReport')}</p>
                   </div>
                 ) : fetchError ? (
                   <div role="alert" className="flex flex-col items-center justify-center p-12 text-center space-y-4">
-                    <p className="text-sm font-bold text-slate-900">{COPY.fetchErrorTitle}</p>
-                    <p className="text-sm text-slate-500">{COPY.fetchErrorDesc}</p>
+                    <p className="text-sm font-bold text-slate-900">{t('fetchErrorTitle')}</p>
+                    <p className="text-sm text-slate-500">{t('fetchErrorDesc')}</p>
                     <button
                       onClick={() => { setIssueReportLoaded(false); fetchReport(); }}
                       className="px-4 py-2 text-sm font-bold bg-slate-900 text-white rounded-lg hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/50"
                     >
-                      {COPY.retry}
+                      {t('retry')}
                     </button>
                   </div>
                 ) : (

@@ -16,7 +16,7 @@ Content of section 2.
             const sections = parseMarkdownToSections(markdown);
 
             expect(sections).toHaveLength(3);
-            expect(sections[0].heading).toBe('Intro');
+            expect(sections[0].heading).toBe('__intro__');
             expect(sections[0].body).toBe('Intro text.');
             expect(sections[1].heading).toBe('Section 1');
             expect(sections[1].body).toBe('Content of section 1.');

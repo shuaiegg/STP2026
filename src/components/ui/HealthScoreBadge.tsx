@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslations } from 'next-intl';
 
 interface HealthScoreBadgeProps {
   score: number | null;
@@ -6,10 +7,11 @@ interface HealthScoreBadgeProps {
 }
 
 export function HealthScoreBadge({ score, className = "" }: HealthScoreBadgeProps) {
+  const t = useTranslations('common');
   if (score === null) {
     return (
       <span className={`inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-500 ${className}`}>
-        未评分
+        {t('unrated')}
       </span>
     );
   }

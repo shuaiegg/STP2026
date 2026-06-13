@@ -18,6 +18,8 @@ export interface SkillInput {
     brandName?: string;
     /** Content type for SEO strategy */
     contentType?: 'TOFU' | 'MOFU' | 'BOFU';
+    /** Target output language (zh, en) */
+    outputLocale?: 'zh' | 'en';
     /** Additional custom parameters */
     [key: string]: any;
 }

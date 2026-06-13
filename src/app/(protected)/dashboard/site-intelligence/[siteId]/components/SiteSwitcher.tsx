@@ -3,27 +3,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Trash2, X, Plus } from 'lucide-react';
-
-const COPY = {
-    SWITCH_SITE: "切换站点",
-    MY_SITES: "我的站点 (Owned Sites)",
-    NO_SITES: "暂无站点",
-    ADD_SITE: "添加新站点",
-    ADD_TITLE: "添加我的站点",
-    ADD_DESC: "输入需要追踪和审计的网站域名",
-    ADD_BUTTON: "添加并进入",
-    ADD_CANCEL: "取消",
-    ADD_ADDING: "添加中...",
-    ADD_PLACEHOLDER: "例如: example.com",
-    DELETE_TITLE: "确认删除站点？",
-    DELETE_DESC: "此操作将永久删除该站点及其所有历史审计记录、语义债务和竞争对手数据，无法恢复。",
-    DELETE_CONFIRM_PREFIX: "请输入域名",
-    DELETE_CONFIRM_SUFFIX: "以确认删除：",
-    DELETE_BUTTON: "确认删除",
-    DELETE_DELETING: "删除中...",
-    DELETE_CANCEL: "取消",
-    DELETE_PLACEHOLDER: "输入域名以确认",
-};
+import { useTranslations } from 'next-intl';
 
 interface Site {
     id: string;
@@ -37,6 +17,7 @@ interface Site {
 }
 
 export function SiteSwitcher({ currentSiteId, currentDomain }: { currentSiteId: string, currentDomain: string }) {
+    const t = useTranslations('dashboard.siteSwitcher');
     const router = useRouter();
     const [sites, setSites] = useState<Site[]>([]);
     const [isOpen, setIsOpen] = useState(false);
@@ -127,11 +108,11 @@ export function SiteSwitcher({ currentSiteId, currentDomain }: { currentSiteId: 
                 setNewSiteDomain('');
                 router.push(`/dashboard/site-intelligence/${newSite.id}`);
             } else {
-                alert(data.error || "添加站点失败");
+                alert(data.error || "Error");
             }
         } catch (e) {
             console.error(e);
-            alert("系统错误");
+            alert("Error");
         } finally {
             setIsAddingSite(false);
         }
@@ -171,7 +152,6 @@ export function SiteSwitcher({ currentSiteId, currentDomain }: { currentSiteId: 
                         setIsOpen(false);
                     }}
                     className="p-1.5 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
-                    title="删除此站点"
                 >
                     <Trash2 size={13} />
                 </button>
@@ -209,20 +189,20 @@ export function SiteSwitcher({ currentSiteId, currentDomain }: { currentSiteId: 
                 {isOpen && (
                     <div className="absolute top-full left-0 mt-2 w-72 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100 origin-top-left">
                         <div className="p-2 border-b border-slate-100 bg-slate-50/50">
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">{COPY.SWITCH_SITE}</p>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">{t('switchSite')}</p>
                         </div>
 
                         <div className="max-h-[400px] overflow-y-auto p-2 space-y-4">
                             {mySites.length > 0 && (
                                 <div>
-                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 mb-2">{COPY.MY_SITES}</h3>
+                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 mb-2">{t('mySites')}</h3>
                                     {mySites.map(renderSiteItem)}
                                 </div>
                             )}
 
                             {sites.length === 0 && (
                                 <div className="py-8 text-center text-slate-400 text-xs italic">
-                                    {COPY.NO_SITES}
+                                    {t('noSites')}
                                 </div>
                             )}
                         </div>
@@ -233,7 +213,7 @@ export function SiteSwitcher({ currentSiteId, currentDomain }: { currentSiteId: 
                                 className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-slate-700 bg-white hover:text-brand-primary shadow-sm border border-slate-100 hover:border-brand-primary/30 transition-all text-xs font-black uppercase tracking-tight"
                             >
                                 <Plus size={14} className="text-brand-primary" />
-                                {COPY.ADD_SITE}
+                                {t('addSite')}
                             </button>
                         </div>
                     </div>
@@ -257,21 +237,21 @@ export function SiteSwitcher({ currentSiteId, currentDomain }: { currentSiteId: 
                         </div>
 
                         <div className="text-center space-y-2">
-                            <h3 className="text-xl font-black tracking-tight text-slate-900">{COPY.DELETE_TITLE}</h3>
-                            <p className="text-sm text-slate-500 leading-relaxed px-2">{COPY.DELETE_DESC}</p>
+                            <h3 className="text-xl font-black tracking-tight text-slate-900">{t('deleteTitle')}</h3>
+                            <p className="text-sm text-slate-500 leading-relaxed px-2">{t('deleteDesc')}</p>
                         </div>
 
                         <div className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                                {COPY.DELETE_CONFIRM_PREFIX}{' '}
+                                {t('deleteConfirmPrefix')}{' '}
                                 <strong className="text-slate-700 font-mono normal-case">{deleteTarget.domain}</strong>
-                                {' '}{COPY.DELETE_CONFIRM_SUFFIX}
+                                {' '}{t('deleteConfirmSuffix')}
                             </label>
                             <input
                                 type="text"
                                 value={deleteConfirmInput}
                                 onChange={(e) => setDeleteConfirmInput(e.target.value)}
-                                placeholder={COPY.DELETE_PLACEHOLDER}
+                                placeholder={t('deletePlaceholder')}
                                 className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 outline-none transition-all font-mono"
                                 autoFocus
                             />
@@ -283,14 +263,14 @@ export function SiteSwitcher({ currentSiteId, currentDomain }: { currentSiteId: 
                                 onClick={() => { setDeleteTarget(null); setDeleteConfirmInput(''); }}
                                 disabled={isDeleting}
                             >
-                                {COPY.DELETE_CANCEL}
+                                {t('deleteCancel')}
                             </button>
                             <button
                                 className="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl px-4 py-2.5 text-sm shadow-lg shadow-rose-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 onClick={handleDeleteSite}
                                 disabled={isDeleting || deleteConfirmInput.trim() !== deleteTarget.domain}
                             >
-                                {isDeleting ? COPY.DELETE_DELETING : COPY.DELETE_BUTTON}
+                                {isDeleting ? t('deleting') : t('deleteButton')}
                             </button>
                         </div>
                     </div>
@@ -309,16 +289,16 @@ export function SiteSwitcher({ currentSiteId, currentDomain }: { currentSiteId: 
                         </button>
 
                         <div className="space-y-1">
-                            <h3 className="text-xl font-black italic tracking-tight text-slate-900">{COPY.ADD_TITLE}</h3>
-                            <p className="text-sm text-slate-500">{COPY.ADD_DESC}</p>
+                            <h3 className="text-xl font-black italic tracking-tight text-slate-900">{t('addTitle')}</h3>
+                            <p className="text-sm text-slate-500">{t('addDesc')}</p>
                         </div>
 
                         <div className="space-y-4">
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">域名 (Domain)</label>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t('domainLabel')}</label>
                                 <input
                                     type="text"
-                                    placeholder={COPY.ADD_PLACEHOLDER}
+                                    placeholder={t('placeholder')}
                                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all"
                                     value={newSiteDomain}
                                     onChange={(e) => setNewSiteDomain(e.target.value)}
@@ -332,14 +312,14 @@ export function SiteSwitcher({ currentSiteId, currentDomain }: { currentSiteId: 
                                     onClick={() => { setShowAddModal(false); setNewSiteDomain(''); }}
                                     disabled={isAddingSite}
                                 >
-                                    {COPY.ADD_CANCEL}
+                                    {t('addCancel')}
                                 </button>
                                 <button
                                     className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl px-4 py-2.5 text-sm shadow-lg shadow-slate-200 transition-colors disabled:opacity-50"
                                     onClick={handleAddSite}
                                     disabled={isAddingSite || !newSiteDomain.trim()}
                                 >
-                                    {isAddingSite ? COPY.ADD_ADDING : COPY.ADD_BUTTON}
+                                    {isAddingSite ? t('adding') : t('addButton')}
                                 </button>
                             </div>
                         </div>

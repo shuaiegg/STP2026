@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { HealthScoreBadge } from '@/components/ui/HealthScoreBadge';
 import { authClient } from '@/lib/auth-client';
+import { useTranslations } from 'next-intl';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -49,51 +50,33 @@ interface TopNavProps {
   user: User;
 }
 
-// ─── Static config (file scope for i18n readiness) ────────────────────────────
-
-const COPY = {
-  logoName: 'STP 2026',
-  logoAlt: 'STP Logo',
-  noSite: '我的站点',
-  noSites: '暂无站点',
-  addSite: '添加新站点',
-  adminSection: '平台管理',
-  settings: '账号设置',
-  signOut: '退出登录',
-  credits: '积分',
-  openSiteSwitcher: '打开站点切换器',
-  openUserMenu: '打开用户菜单',
-  siteSwitcherLabel: '站点切换列表',
-  userMenuLabel: '用户菜单',
-  openMobileMenu: '打开移动端菜单',
-  closeMobileMenu: '关闭移动端菜单',
-} as const;
-
-const NAV_LINKS = [
-  { name: '内容库', href: '/dashboard/library', icon: Library },
-  { name: '工具箱', href: '/dashboard/tools', icon: Zap },
-  { name: '积分', href: '/dashboard/billing', icon: BarChart3 },
-] as const;
-
-const ADMIN_LINK_CONFIG = [
-  { href: '/admin/content', icon: FileText, label: '内容管理' },
-  { href: '/admin/users', icon: Users, label: '用户管理' },
-  { href: '/admin/orders', icon: ShoppingBag, label: '订单管理' },
-  { href: '/admin/skills', icon: Zap, label: '技能管理' },
-  { href: '/admin/credit-refund', icon: CreditCard, label: '积分管理' },
-  { href: '/admin/integrations', icon: Plug, label: '集成管理' },
-  { href: '/admin/models', icon: Cpu, label: '模型管理' },
-  { href: '/admin/consultations', icon: MessageSquare, label: '咨询管理' },
-] as const;
-
 // ─── TopNav ───────────────────────────────────────────────────────────────────
 
 export function TopNav({ sites, currentSiteId, user }: TopNavProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const t = useTranslations('dashboard.topNav');
+
   const [isSiteOpen, setIsSiteOpen] = useState(false);
   const [isUserOpen, setIsUserOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const NAV_LINKS = [
+    { name: t('library'), href: '/dashboard/library', icon: Library },
+    { name: t('tools'), href: '/dashboard/tools', icon: Zap },
+    { name: t('billing'), href: '/dashboard/billing', icon: BarChart3 },
+  ] as const;
+
+  const ADMIN_LINK_CONFIG = [
+    { href: '/admin/content', icon: FileText, label: t('admin.content') },
+    { href: '/admin/users', icon: Users, label: t('admin.users') },
+    { href: '/admin/orders', icon: ShoppingBag, label: t('admin.orders') },
+    { href: '/admin/skills', icon: Zap, label: t('admin.skills') },
+    { href: '/admin/credit-refund', icon: CreditCard, label: t('admin.creditRefund') },
+    { href: '/admin/integrations', icon: Plug, label: t('admin.integrations') },
+    { href: '/admin/models', icon: Cpu, label: t('admin.models') },
+    { href: '/admin/consultations', icon: MessageSquare, label: t('admin.consultations') },
+  ] as const;
   
   const siteRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
@@ -163,17 +146,17 @@ export function TopNav({ sites, currentSiteId, user }: TopNavProps) {
           ref={mobileTriggerRef}
           onClick={() => setIsMobileMenuOpen(true)}
           className="md:hidden p-2 -ml-2 text-brand-text-secondary hover:text-brand-text-primary transition-colors"
-          aria-label={COPY.openMobileMenu}
+          aria-label={t('openMobileMenu')}
         >
           <Menu size={24} />
         </button>
 
-        <Link href="/dashboard" className="flex items-center gap-2 group" aria-label={COPY.logoName}>
+        <Link href="/dashboard" className="flex items-center gap-2 group" aria-label="ScaletoTop">
           <div className="w-8 h-8 relative transition-transform group-hover:rotate-12">
-            <Image src="/assets/images/logo.svg" alt={COPY.logoAlt} fill className="object-contain" />
+            <Image src="/assets/images/logo.svg" alt="STP Logo" fill className="object-contain" />
           </div>
           <span className="text-lg font-black italic tracking-tighter text-brand-text-primary font-display hidden sm:block">
-            {COPY.logoName}
+            STP 2026
           </span>
         </Link>
 
@@ -194,7 +177,7 @@ export function TopNav({ sites, currentSiteId, user }: TopNavProps) {
               <button
                 ref={siteTriggerRef}
                 onClick={() => setIsSiteOpen(prev => !prev)}
-                aria-label={COPY.openSiteSwitcher}
+                aria-label={t('openSiteSwitcher')}
                 aria-expanded={isSiteOpen}
                 aria-haspopup="listbox"
                 className="ml-1 p-1 rounded-lg hover:bg-brand-surface-alt text-brand-text-muted hover:text-brand-text-secondary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50"
@@ -212,14 +195,14 @@ export function TopNav({ sites, currentSiteId, user }: TopNavProps) {
               href="/dashboard"
               className="text-sm font-medium text-brand-text-secondary hover:text-brand-text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50 rounded-lg"
             >
-              {COPY.noSite}
+              {t('mySite')}
             </Link>
           )}
 
           {isSiteOpen && (
             <div
               role="listbox"
-              aria-label={COPY.siteSwitcherLabel}
+              aria-label={t('siteSwitcherLabel')}
               className="absolute top-full left-0 mt-2 w-64 bg-brand-surface border border-brand-border rounded-lg shadow-lg py-2 z-50 animate-in fade-in slide-in-from-top-1 duration-200"
             >
               <div className="max-h-60 overflow-auto">
@@ -247,7 +230,7 @@ export function TopNav({ sites, currentSiteId, user }: TopNavProps) {
                     </button>
                   ))
                 ) : (
-                  <div className="px-4 py-2 text-sm text-brand-text-muted italic">{COPY.noSites}</div>
+                  <div className="px-4 py-2 text-sm text-brand-text-muted italic">{t('noSites')}</div>
                 )}
               </div>
               <div className="border-t border-brand-border mt-2 pt-2">
@@ -257,7 +240,7 @@ export function TopNav({ sites, currentSiteId, user }: TopNavProps) {
                   onClick={() => setIsSiteOpen(false)}
                 >
                   <Plus size={14} aria-hidden="true" />
-                  <span>{COPY.addSite}</span>
+                  <span>{t('addSite')}</span>
                 </Link>
               </div>
             </div>
@@ -288,7 +271,7 @@ export function TopNav({ sites, currentSiteId, user }: TopNavProps) {
       <div className="flex items-center gap-4">
         <Link
           href="/dashboard/billing"
-          aria-label={`${user.credits ?? 0} ${COPY.credits}`}
+          aria-label={`${user.credits ?? 0} ${t('credits')}`}
           className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-lg bg-brand-primary/5 text-brand-primary border border-brand-primary/10 hover:bg-brand-primary/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50"
         >
           <Zap size={14} aria-hidden="true" className="fill-brand-primary" />
@@ -299,7 +282,7 @@ export function TopNav({ sites, currentSiteId, user }: TopNavProps) {
           <button
             ref={userTriggerRef}
             onClick={() => setIsUserOpen(prev => !prev)}
-            aria-label={COPY.openUserMenu}
+            aria-label={t('openUserMenu')}
             aria-expanded={isUserOpen}
             aria-haspopup="menu"
             className="w-8 h-8 rounded-lg bg-brand-surface-alt border border-brand-border overflow-hidden flex items-center justify-center hover:ring-2 hover:ring-brand-primary/20 transition-all relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50"
@@ -316,12 +299,12 @@ export function TopNav({ sites, currentSiteId, user }: TopNavProps) {
           {isUserOpen && (
             <div
               role="menu"
-              aria-label={COPY.userMenuLabel}
+              aria-label={t('userMenuLabel')}
               className="absolute top-full right-0 mt-2 w-56 bg-brand-surface border border-brand-border rounded-lg shadow-lg py-2 z-50 animate-in fade-in slide-in-from-top-1 duration-200"
             >
               <div className="px-4 py-2 border-b border-brand-border mb-1">
                 <div className="flex items-center justify-between mb-0.5">
-                  <p className="text-xs font-semibold text-brand-text-primary truncate">{user.name || '用户'}</p>
+                  <p className="text-xs font-semibold text-brand-text-primary truncate">{user.name || 'User'}</p>
                   {user.role && (
                     <span className="text-[10px] font-bold text-brand-primary bg-brand-primary/5 px-1.5 py-0.5 rounded">
                       {user.role}
@@ -334,7 +317,7 @@ export function TopNav({ sites, currentSiteId, user }: TopNavProps) {
               {adminLinks.length > 0 && (
                 <>
                   <div className="px-4 py-1.5 text-[10px] font-bold text-brand-text-muted uppercase tracking-widest">
-                    {COPY.adminSection}
+                    {t('adminSection')}
                   </div>
                   {adminLinks.map(link => (
                     <Link
@@ -359,7 +342,7 @@ export function TopNav({ sites, currentSiteId, user }: TopNavProps) {
                 onClick={() => setIsUserOpen(false)}
               >
                 <Settings size={14} aria-hidden="true" className="text-brand-text-muted" />
-                <span>{COPY.settings}</span>
+                <span>{t('settings')}</span>
               </Link>
               <button
                 role="menuitem"
@@ -367,7 +350,7 @@ export function TopNav({ sites, currentSiteId, user }: TopNavProps) {
                 className="w-full flex items-center gap-2 px-4 py-2 text-sm text-brand-error hover:bg-brand-error/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-primary/50"
               >
                 <LogOut size={14} aria-hidden="true" />
-                <span>{COPY.signOut}</span>
+                <span>{t('signOut')}</span>
               </button>
             </div>
           )}
@@ -386,22 +369,22 @@ export function TopNav({ sites, currentSiteId, user }: TopNavProps) {
           <div
             role="dialog"
             aria-modal="true"
-            aria-label="导航菜单"
+            aria-label={t('mobileMenuLabel')}
             className="fixed inset-y-0 left-0 w-72 bg-brand-surface z-50 shadow-2xl animate-in slide-in-from-left duration-300 flex flex-col"
           >
             <div className="h-14 border-b border-brand-border px-4 flex items-center justify-between">
-              <span className="font-bold text-brand-text-primary">{COPY.logoName}</span>
+              <span className="font-bold text-brand-text-primary">STP 2026</span>
               <button 
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="p-2 -mr-2 text-brand-text-secondary hover:text-brand-text-primary"
-                aria-label={COPY.closeMobileMenu}
+                aria-label={t('closeMobileMenu')}
               >
                 <X size={20} />
               </button>
             </div>
             <div className="flex-1 overflow-auto py-4">
               <div className="px-4 mb-6">
-                <div className="text-[10px] font-bold text-brand-text-muted uppercase tracking-widest mb-4">导航</div>
+                <div className="text-[10px] font-bold text-brand-text-muted uppercase tracking-widest mb-4">{t('navSection')}</div>
                 <div className="space-y-1">
                   {NAV_LINKS.map(link => {
                     const isActive = pathname.startsWith(link.href);
@@ -425,7 +408,7 @@ export function TopNav({ sites, currentSiteId, user }: TopNavProps) {
               
               {adminLinks.length > 0 && (
                 <div className="px-4">
-                  <div className="text-[10px] font-bold text-brand-text-muted uppercase tracking-widest mb-4">管理</div>
+                  <div className="text-[10px] font-bold text-brand-text-muted uppercase tracking-widest mb-4">{t('adminSection')}</div>
                   <div className="space-y-1">
                     {adminLinks.map(link => {
                       const isActive = pathname.startsWith(link.href);

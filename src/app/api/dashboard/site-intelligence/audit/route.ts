@@ -85,11 +85,13 @@ export async function POST(request: Request) {
 
                 const graphData = GraphGeneratorService.generateGraphData(auditResult, auditResult.allUrls, marketGapsData);
 
+                const userLocale = (session.user as any).locale as 'zh' | 'en' || 'zh';
+
                 // 5. 生成 SEO 体检报告与评分
                 const issueReport = analyzeAudit(auditResult.pages, {
                     sitemapFound: auditResult.sitemapFound,
                     sitemapUrls: auditResult.allUrls // 使用 allUrls 作为 sitemap 的参考（sitemap 发现模式下 allUrls 即为 sitemap URLs）
-                });
+                }, { locale: userLocale });
                 const techScore = issueReport.techScore;
 
                 send({

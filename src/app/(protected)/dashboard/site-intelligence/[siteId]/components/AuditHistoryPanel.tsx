@@ -3,8 +3,10 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import Link from 'next/link';
 import { AuditScoreSparkline } from '@/components/dashboard/site-intelligence/AuditScoreSparkline';
+import { useTranslations } from 'next-intl';
 
 export function AuditHistoryPanel({ siteId, domain }: { siteId: string, domain: string }) {
+    const t = useTranslations('dashboard.auditHistory');
     const [audits, setAudits] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -63,13 +65,13 @@ export function AuditHistoryPanel({ siteId, domain }: { siteId: string, domain: 
                 <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
                     <span className="text-2xl opacity-80">📭</span>
                 </div>
-                <h3 className="text-slate-900 font-semibold mb-2 text-lg">暂无审计历史</h3>
+                <h3 className="text-slate-900 font-semibold mb-2 text-lg">{t('emptyTitle')}</h3>
                 <p className="text-sm text-slate-500 max-w-sm mb-6">
-                    您还没有对该站点进行过深度审计。发起一次扫描以开始建立您的情报档案。
+                    {t('emptyDesc')}
                 </p>
                 <Link href={`/dashboard/site-intelligence/instant-audit?siteId=${siteId}`}>
                     <button className="bg-brand-primary hover:bg-brand-primary/90 text-white rounded-xl shadow-sm px-6 py-2.5 font-bold transition-all flex items-center gap-2">
-                        开始全面扫描
+                        {t('startScan')}
                     </button>
                 </Link>
             </Card>
@@ -82,7 +84,7 @@ export function AuditHistoryPanel({ siteId, domain }: { siteId: string, domain: 
             {audits.length >= 3 && (
                 <Card className="p-4 border-slate-200 shadow-sm">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">评分趋势</span>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('scoreTrend')}</span>
                     </div>
                     <AuditScoreSparkline audits={audits} />
                 </Card>
@@ -92,10 +94,10 @@ export function AuditHistoryPanel({ siteId, domain }: { siteId: string, domain: 
                 <div className="bg-slate-50/80 px-4 py-3 border-b border-slate-100 flex items-center justify-between">
                     <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-brand-primary"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>
-                        审计时间线
+                        {t('timeline')}
                     </h3>
                     <Badge variant="muted" className="bg-white border-slate-200 text-slate-600 text-[10px]">
-                        共 {audits.length} 次记录
+                        {t('totalRecords', { count: audits.length })}
                     </Badge>
                 </div>
 
@@ -126,21 +128,21 @@ export function AuditHistoryPanel({ siteId, domain }: { siteId: string, domain: 
                                         {/* Details */}
                                         <div className="flex flex-col justify-center py-1">
                                             <div className="flex items-center gap-2 mb-1">
-                                                <h4 className="font-bold text-slate-900 text-base">深度扫描报告</h4>
+                                                <h4 className="font-bold text-slate-900 text-base">{t('reportTitle')}</h4>
                                                 {isLatest && (
                                                     <Badge variant="default" className="text-[9px] py-0 px-1.5 bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20 border-0">
-                                                        最新
+                                                        {t('latest')}
                                                     </Badge>
                                                 )}
                                             </div>
                                             <div className="flex items-center gap-4 text-xs text-slate-500 mt-1">
                                                 <span className="flex items-center gap-1.5">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" /><path d="M7 7h.01" /><path d="M17 7h.01" /><path d="M7 17h.01" /><path d="M17 17h.01" /></svg>
-                                                    {audit.pageCount} 个页面节点
+                                                    {t('pageNodes', { count: audit.pageCount })}
                                                 </span>
                                                 <span className="flex items-center gap-1.5">
                                                     <span className={`w-1.5 h-1.5 rounded-full ${isScoreGood ? 'bg-emerald-500' : isScoreWarn ? 'bg-amber-500' : 'bg-rose-500'}`}></span>
-                                                    健康分: {score}
+                                                    {t('healthScore', { score })}
                                                 </span>
                                                 {scoreDelta !== null && scoreDelta !== 0 && (
                                                     <span className={`flex items-center gap-0.5 font-bold ${scoreDelta > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
@@ -156,7 +158,7 @@ export function AuditHistoryPanel({ siteId, domain }: { siteId: string, domain: 
                                         <Link href={`/dashboard/site-intelligence/instant-audit?siteId=${siteId}&auditId=${audit.id}`}>
                                             <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 hover:border-brand-primary hover:text-brand-primary text-slate-600 rounded-xl text-xs font-bold shadow-sm transition-all">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg>
-                                                查看星图快照
+                                                {t('viewSnapshot')}
                                             </button>
                                         </Link>
                                     </div>
