@@ -32,6 +32,8 @@ interface PlannedArticle {
     contentPlanId: string;
     title: string;
     keyword: string;
+    language: string;
+    articleId: string | null;
     kanbanOrder: number;
     status: 'IDEATION' | 'PLANNED' | 'IN_PROGRESS' | 'COMPLETED' | 'ARCHIVED' | 'REFACTORING_NEEDED';
     targetChannel: 'SEO' | 'GOOGLE_ADS' | 'META_ADS';
@@ -45,6 +47,9 @@ interface ContentPlan {
     priority: number;
     articles: PlannedArticle[];
 }
+
+import Link from 'next/link';
+import posthog from 'posthog-js';
 
 // --- Sortable Article Component ---
 function SortableArticle({ article, index, isDragging: isOverlay }: { article: PlannedArticle, index: number, isDragging?: boolean }) {
@@ -77,6 +82,13 @@ function SortableArticle({ article, index, isDragging: isOverlay }: { article: P
             case 'REFACTORING_NEEDED': return <AlertCircle size={12} className="text-rose-500" />;
             default: return <Clock size={12} className="text-slate-400" />;
         }
+    };
+
+    const handleStartWriting = () => {
+        posthog.capture('board_start_writing', {
+            keyword: article.keyword,
+            language: article.language,
+        });
     };
 
     return (
@@ -114,15 +126,29 @@ function SortableArticle({ article, index, isDragging: isOverlay }: { article: P
                     {getStatusIcon(article.status)}
                     <span>{article.status === 'REFACTORING_NEEDED' ? '需要重构' : article.status.replace('_', ' ')}</span>
                 </div>
-                {article.status !== 'COMPLETED' && (
-                    <Button size="sm" variant="ghost" className={`h-7 text-[10px] font-black tracking-widest ml-auto px-2 ${article.status === 'REFACTORING_NEEDED' ? 'text-rose-600 hover:bg-rose-50' : 'text-brand-primary hover:bg-brand-primary/10'}`}>
-                        {article.status === 'REFACTORING_NEEDED' ? '立即优化' : '交给 AI 撰写'} <Zap size={10} className="ml-1" />
-                    </Button>
-                )}
+                
+                <div className="flex items-center gap-2 ml-auto">
+                    {article.articleId ? (
+                        <Link href={`/dashboard/admin/content/${article.articleId}`} target="_blank">
+                            <Button size="sm" variant="ghost" className="h-7 text-[10px] font-black tracking-widest px-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100">
+                                查看文章
+                            </Button>
+                        </Link>
+                    ) : null}
+
+                    {article.status !== 'COMPLETED' && (
+                        <Link href={`/tools/geo-writer?keyword=${encodeURIComponent(article.keyword)}&title=${encodeURIComponent(article.title)}&language=${encodeURIComponent(article.language)}&plannedArticleId=${article.id}`}>
+                            <Button onClick={handleStartWriting} size="sm" variant="ghost" className={`h-7 text-[10px] font-black tracking-widest px-2 ${article.status === 'REFACTORING_NEEDED' ? 'text-rose-600 hover:bg-rose-50' : 'text-brand-primary hover:bg-brand-primary/10'}`}>
+                                {article.status === 'REFACTORING_NEEDED' ? '立即优化' : '交给 AI 撰写'} <Zap size={10} className="ml-1" />
+                            </Button>
+                        </Link>
+                    )}
+                </div>
             </div>
         </div>
     );
 }
+
 
 // --- Kanban Column Component ---
 function KanbanColumn({ plan, articles }: { plan: ContentPlan, articles: PlannedArticle[] }) {

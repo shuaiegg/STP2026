@@ -14,17 +14,17 @@
 
 ### 1.2 看板 → geo-writer 直通
 
-- [ ] 1.2.1 geo-writer 支持 URL 参数：`keyword` / `title` / `language` / `plannedArticleId`（读取后预填，Step 1 可跳过或确认）
-- [ ] 1.2.2 `StrategyBoard.tsx` 卡片增加「开始写作」动作 → 拼参跳转 geo-writer
-- [ ] 1.2.3 `blog-draft.ts` + `saveTrackedArticle`（保存到内容库路径）：携带 `plannedArticleId` 时回写 `PlannedArticle.articleId` + 状态 → `IN_PROGRESS`
-- [ ] 1.2.4 看板卡片 `articleId` 有值时展示「查看文章」链接
-- [ ] 1.2.5 PostHog：`board_start_writing` 事件（keyword/language）
+- [x] 1.2.1 geo-writer 支持 URL 参数：`keyword` / `title` / `language` / `plannedArticleId`（读取后预填，Step 1 可跳过或确认）
+- [x] 1.2.2 `StrategyBoard.tsx` 卡片增加「开始写作」动作 → 拼参跳转 geo-writer
+- [x] 1.2.3 `blog-draft.ts` + `saveTrackedArticle`（保存到内容库路径）：携带 `plannedArticleId` 时回写 `PlannedArticle.articleId` + 状态 → `IN_PROGRESS`
+- [x] 1.2.4 看板卡片 `articleId` 有值时展示「查看文章」链接
+- [x] 1.2.5 PostHog：`board_start_writing` 事件（keyword/language）
 
 ### 1.3 发布 → TrackedArticle 自动注册
 
-- [ ] 1.3.1 实现 `upsertTrackedArticleFromContent(content)`：url 自然键查重、keywords 取 SeoMeta（兜底标题）、幂等
-- [ ] 1.3.2 在博客发布动作（Content.status → PUBLISHED 且 type=BLOG）挂钩调用
-- [ ] 1.3.3 关联 `PlannedArticle`（经 articleId 反查）状态 → `COMPLETED`
+- [x] 1.3.1 实现 `upsertTrackedArticleFromContent(content)`：url 自然键查重、keywords 取 SeoMeta（兜底标题）、幂等
+- [x] 1.3.2 在博客发布动作（Content.status → PUBLISHED 且 type=BLOG）挂钩调用
+- [x] 1.3.3 关联 `PlannedArticle`（经 articleId 反查）状态 → `COMPLETED`
 - [ ] 1.3.4 验收：admin 发布一篇文章 → TrackedArticle 列表出现该 url 且状态 PENDING 待检测；重复发布不产生重复记录
 
 ---
@@ -35,9 +35,9 @@
 
 ### 2.1 协议文档
 
-- [ ] 2.1.1 撰写 `rules/content-scorecard.md`：5 维度评分细则（各维度检查点 + 分值）、70 分及格线、Stellar pipeline 归因表（见 design 决策 4）
-- [ ] 2.1.2 文档内建立运行记录表（日期/标题/语言/5 维分/总分/归因/处置）
-- [ ] 2.1.3 在 CLAUDE.md「Design & Copy Rules」处登记该文件
+- [x] 2.1.1 撰写 `rules/content-scorecard.md`：5 维度评分细则（各维度检查点 + 分值）、70 分及格线、Stellar pipeline 归因表（见 design 决策 4）
+- [x] 2.1.2 文档内建立运行记录表（日期/标题/语言/5 维分/总分/归因/处置）
+- [x] 2.1.3 在 CLAUDE.md「Design & Copy Rules」处登记该文件
 
 ### 2.2 首批英文文章基线
 

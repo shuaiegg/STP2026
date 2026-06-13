@@ -32,6 +32,68 @@ async function revalidateContentPaths(content: { slug: string, locale: string, c
     revalidatePath('/sitemap.xml');
 }
 
+import { ContentStatus } from '@prisma/client';
+
+const BASE_URL = (process.env.NEXT_PUBLIC_APP_URL || 'https://www.scaletotop.com').replace(/\/$/, '');
+
+/**
+ * 内容飞轮 ④→⑤：博客发布时自动注册/更新 TrackedArticle，进入引用检测队列。
+ * - url 用全站同源 BASE_URL（含 www），否则与 SERP 实际收录 URL 不匹配
+ * - status 用 'PENDING'：cron/verify 只拾取 PENDING/CHECKING，写 PUBLISHED 会被漏掉
+ * - url 自然键查重，幂等
+ */
+async function upsertTrackedArticleFromContent(content: {
+    id: string;
+    title: string;
+    summary: string | null;
+    slug: string;
+    locale: string;
+    contentMd: string;
+    seo?: { keywords: string[] } | null;
+}) {
+    const keywords = content.seo?.keywords?.length ? content.seo.keywords : [content.title];
+    const url = content.locale === 'en'
+        ? `${BASE_URL}/blog/${content.slug}`
+        : `${BASE_URL}/zh/blog/${content.slug}`;
+
+    const adminUser = await prisma.user.findFirst({ where: { role: 'ADMIN' }, select: { id: true } });
+    if (!adminUser) return;
+
+    const existing = await prisma.trackedArticle.findFirst({ where: { url } });
+    if (existing) {
+        // 内容已更新 → 重置为 PENDING 并清零计数，让 cron 重新核验
+        await prisma.trackedArticle.update({
+            where: { id: existing.id },
+            data: {
+                title: content.title,
+                summary: content.summary || undefined,
+                keywords,
+                optimizedContent: content.contentMd || '',
+                status: 'PENDING',
+                checkCount: 0,
+            },
+        });
+    } else {
+        await prisma.trackedArticle.create({
+            data: {
+                userId: adminUser.id,
+                title: content.title,
+                summary: content.summary || undefined,
+                keywords,
+                optimizedContent: content.contentMd || '',
+                url,
+                status: 'PENDING',
+            },
+        });
+    }
+
+    // 关联的 PlannedArticle → COMPLETED
+    const planned = await prisma.plannedArticle.findFirst({ where: { articleId: content.id } });
+    if (planned) {
+        await prisma.plannedArticle.update({ where: { id: planned.id }, data: { status: 'COMPLETED' } });
+    }
+}
+
 export async function updateContentMetadata(id: string, data: {
     title?: string;
     slug?: string;
@@ -42,12 +104,13 @@ export async function updateContentMetadata(id: string, data: {
     categoryId?: string | null;
     authorId?: string | null;
     coverImageId?: string | null;
+    status?: ContentStatus;
 }) {
     try {
         // Fetch current state for redirect logic and revalidation
         const current = await prisma.content.findUnique({
             where: { id },
-            include: { category: true }
+            include: { category: true, seo: true }
         });
 
         if (!current) throw new Error('Content not found');
@@ -81,10 +144,16 @@ export async function updateContentMetadata(id: string, data: {
                 categoryId: data.categoryId,
                 authorId: data.authorId,
                 coverImageId: data.coverImageId,
+                status: data.status,
                 updatedAt: new Date()
             },
-            include: { category: true }
+            include: { category: true, seo: true }
         });
+
+        // 2.5. Content Flywheel ④→⑤：博客首次发布时自动注册引用追踪
+        if (current.status !== 'PUBLISHED' && data.status === 'PUBLISHED' && updated.type === 'BLOG') {
+            await upsertTrackedArticleFromContent(updated);
+        }
 
         // 3. Revalidate affected paths
         await revalidateContentPaths(updated);

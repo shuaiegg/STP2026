@@ -11,6 +11,7 @@ const saveArticleSchema = z.object({
   keywords: z.array(z.string()).default([]),
   optimizedContent: z.string().min(1, "Content is required"),
   contentHtml: z.string().optional(),
+  plannedArticleId: z.string().optional(),
 });
 
 export type SaveArticleInput = z.infer<typeof saveArticleSchema>;
@@ -33,16 +34,30 @@ export async function saveTrackedArticle(input: SaveArticleInput) {
     const validated = saveArticleSchema.parse(input);
 
     // 3. 存储到数据库
-    const article = await prisma.trackedArticle.create({
-      data: {
-        userId: session.user.id,
-        title: validated.title,
-        summary: validated.summary,
-        keywords: validated.keywords,
-        optimizedContent: validated.optimizedContent,
-        contentHtml: validated.contentHtml,
-        status: "PENDING",
-      },
+    const article = await prisma.$transaction(async (tx) => {
+      const trackedArticle = await tx.trackedArticle.create({
+        data: {
+          userId: session.user.id,
+          title: validated.title,
+          summary: validated.summary,
+          keywords: validated.keywords,
+          optimizedContent: validated.optimizedContent,
+          contentHtml: validated.contentHtml,
+          status: "PENDING",
+        },
+      });
+
+      if (validated.plannedArticleId) {
+        await tx.plannedArticle.update({
+          where: { id: validated.plannedArticleId },
+          data: {
+            articleId: trackedArticle.id,
+            status: 'IN_PROGRESS'
+          }
+        });
+      }
+
+      return trackedArticle;
     });
 
     console.log(`[SaveArticle] Saved article ${article.id} for user ${session.user.id}`);

@@ -34,6 +34,7 @@ export async function saveToBlogDraft(params: {
     summary?: string;
     locale?: string;
     authorId?: string;
+    plannedArticleId?: string;
     seoMeta?: {
         metaTitle?: string;
         metaDescription?: string;
@@ -51,7 +52,7 @@ export async function saveToBlogDraft(params: {
             return { success: false, message: 'Unauthorized' };
         }
 
-        const { title, content, summary, locale = 'en', authorId, seoMeta } = params;
+        const { title, content, summary, locale = 'en', authorId, seoMeta, plannedArticleId } = params;
 
         // 7.3 Implement Content creation logic
         // Generate slug with random suffix to ensure uniqueness
@@ -61,29 +62,43 @@ export async function saveToBlogDraft(params: {
 
         const readingTime = calculateReadingTime(content);
 
-        const newContent = await prisma.content.create({
-            data: {
-                title,
-                contentMd: content,
-                summary,
-                slug,
-                status: 'DRAFT',
-                source: 'MANUAL',
-                visibility: 'PRIVATE',
-                type: 'BLOG',
-                locale,
-                authorId,
-                readingTime,
-                seo: seoMeta ? {
-                    create: {
-                        metaTitle: seoMeta.metaTitle,
-                        metaDescription: seoMeta.metaDescription,
-                        keywords: seoMeta.keywords || [],
-                        geoScore: seoMeta.geoScore,
-                        geoAuditedAt: seoMeta.geoScore ? new Date() : undefined,
+        const newContent = await prisma.$transaction(async (tx) => {
+            const created = await tx.content.create({
+                data: {
+                    title,
+                    contentMd: content,
+                    summary,
+                    slug,
+                    status: 'DRAFT',
+                    source: 'MANUAL',
+                    visibility: 'PRIVATE',
+                    type: 'BLOG',
+                    locale,
+                    authorId,
+                    readingTime,
+                    seo: seoMeta ? {
+                        create: {
+                            metaTitle: seoMeta.metaTitle,
+                            metaDescription: seoMeta.metaDescription,
+                            keywords: seoMeta.keywords || [],
+                            geoScore: seoMeta.geoScore,
+                            geoAuditedAt: seoMeta.geoScore ? new Date() : undefined,
+                        }
+                    } : undefined
+                }
+            });
+
+            if (plannedArticleId) {
+                await tx.plannedArticle.update({
+                    where: { id: plannedArticleId },
+                    data: {
+                        articleId: created.id,
+                        status: 'IN_PROGRESS'
                     }
-                } : undefined
+                });
             }
+
+            return created;
         });
 
         // Revalidate admin content list

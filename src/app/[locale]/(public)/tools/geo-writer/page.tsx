@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useCompletion } from '@ai-sdk/react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -59,13 +59,15 @@ import { saveSnapshot, getVersionHistory, VersionSnapshot } from '@/lib/utils/ve
 import { saveTrackedArticle } from '@/app/actions/tracked-articles';
 import { saveToBlogDraft } from '@/app/actions/blog-draft';
 import posthog from 'posthog-js';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { authClient } from '@/lib/auth-client';
 
 export default function GEOWriterPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { data: session } = authClient.useSession();
     const [step, setStep] = useState(1); // 1: Research, 2: Strategy, 3: Creation
+    const researchPanelRef = useRef<HTMLDivElement>(null);
     const [loading, setLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isSavingDraft, setIsSavingDraft] = useState(false);
@@ -80,10 +82,7 @@ export default function GEOWriterPage() {
     const [history, setHistory] = useState<VersionSnapshot[]>([]);
     const [showHistory, setShowHistory] = useState(false);
     const [isLoadingMetadata, setIsLoadingMetadata] = useState(false);
-
-    // Refs for UX enhancements
-    const researchPanelRef = React.useRef<HTMLDivElement>(null);
-    const resultPanelRef = React.useRef<HTMLDivElement>(null);
+    const [plannedArticleId, setPlannedArticleId] = useState<string | null>(null);
 
     // NEW Phase 2 states
     const [viewMode, setViewMode] = useState<'preview' | 'markdown' | 'schema' | 'article' | 'distribution'>('preview');
@@ -106,6 +105,24 @@ export default function GEOWriterPage() {
         autoVisuals: false, // Default to false: Auto-insert visuals into content
         locale: 'en'
     });
+
+    // Initialize from URL parameters
+    useEffect(() => {
+        const keywordParam = searchParams.get('keyword');
+        const titleParam = searchParams.get('title');
+        const languageParam = searchParams.get('language');
+        const plannedIdParam = searchParams.get('plannedArticleId');
+
+        if (keywordParam || languageParam || plannedIdParam) {
+            setForm(prev => ({
+                ...prev,
+                keywords: keywordParam || prev.keywords,
+                locale: languageParam || prev.locale,
+            }));
+            if (keywordParam) setSelectedKeyword(keywordParam);
+            if (plannedIdParam) setPlannedArticleId(plannedIdParam);
+        }
+    }, [searchParams]);
 
     const fetchRealMetadata = async (generatedContent: string, forcedTitle?: string) => {
         setIsLoadingMetadata(true);
@@ -200,7 +217,8 @@ export default function GEOWriterPage() {
                 optimizedContent: fullContent,
                 // We don't have a markdown-to-html converter easily available here, 
                 // but we can pass undefined or the raw markdown if needed
-                contentHtml: undefined
+                contentHtml: undefined,
+                plannedArticleId: plannedArticleId || undefined
             });
 
             if (result.success) {
@@ -232,6 +250,7 @@ export default function GEOWriterPage() {
                 content: fullContent,
                 summary: finalResult?.seoMetadata?.description || '',
                 locale: form.locale,
+                plannedArticleId: plannedArticleId || undefined,
                 seoMeta: {
                     metaTitle: finalResult?.seoMetadata?.title,
                     metaDescription: finalResult?.seoMetadata?.description,
