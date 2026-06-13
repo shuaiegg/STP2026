@@ -29,8 +29,8 @@
 
 ### 1.4 301 重定向
 
-- [x] 1.4.1 `next.config.js` redirects：存量中文路径 → `/zh/` 对应路径（`/blog/:slug*`、`/pricing`、`/consultation` 等全部 `(public)` 路由）
-- [x] 1.4.2 验证旧 URL 全部 301 落到 `/zh/`，无重定向链
+- [x] 1.4.1 ~~next.config redirects~~ **设计修订**：静态页根路径 URL 被 en 版复用，无法 301（详见 design.md「URL 平移策略（修订）」）；改为 ① 静态页靠语言建议横幅接住中文访客 ② 博客详情按内容 locale 智能 308 跳转（见 1.4.2）
+- [x] 1.4.2 博客详情智能跳转：zh 文章落在 en URL（旧收录链接）→ 308 到 `/zh/blog/[slug]`，保留外链权重（`blog/[slug]/page.tsx`）
 
 ---
 
@@ -40,26 +40,26 @@
 
 ### 2.1 Prisma Schema
 
-- [ ] 2.1.1 `Content` 增加 `locale String @default("zh")` + `translationGroupId String?` + `@@index([locale, status, visibility, publishedAt(sort: Desc)])`
-- [ ] 2.1.2 `User` 增加 `locale String @default("zh")`
-- [ ] 2.1.3 `ConsultationRequest` 增加 `locale String @default("zh")`
-- [ ] 2.1.4 `npx prisma db push`（**确认 dev 环境**）+ `npx prisma generate`；存量数据靠 default 全标 zh，无需回填脚本
+- [x] 2.1.1 `Content` 增加 `locale String @default("zh")` + `translationGroupId String?` + `@@index([locale, status, visibility, publishedAt(sort: Desc)])`
+- [x] 2.1.2 `User` 增加 `locale String @default("zh")`
+- [x] 2.1.3 `ConsultationRequest` 增加 `locale String @default("zh")`
+- [x] 2.1.4 `npx prisma db push` + `npx prisma generate` 已对**生产库**执行（2026-06-13 经 information_schema 核实 locale/translationGroupId 列存在）；存量数据靠 default 全标 zh
 
 ### 2.2 内容查询与生产入口
 
-- [ ] 2.2.1 博客列表/分类/详情/相关文章查询全部加 locale 过滤（`[locale]/(public)/blog/`）
-- [ ] 2.2.2 `src/lib/notion/sync.ts` upsert 时写 `locale: 'zh'`
-- [ ] 2.2.3 `src/app/actions/blog-draft.ts`：geo-writer 另存草稿接收并写入 locale（geo-writer UI 增加输出语言选择，默认 en）
-- [ ] 2.2.4 admin 内容列表：语言筛选 tab（全部/EN/ZH）+ locale 徽标 + 翻译配对状态列
-- [ ] 2.2.5 admin 内容编辑页：手动关联/解除翻译对（设置/清除 `translationGroupId`）
+- [x] 2.2.1 博客列表/分类/详情/相关文章查询全部加 locale 过滤（`[locale]/(public)/blog/`）
+- [x] 2.2.2 `src/lib/notion/sync.ts` upsert 时写 `locale: 'zh'`
+- [x] 2.2.3 `src/app/actions/blog-draft.ts`：geo-writer 另存草稿接收并写入 locale（geo-writer UI 增加输出语言选择，默认 en）
+- [x] 2.2.4 admin 内容列表：语言筛选 tab（全部/EN/ZH）+ locale 徽标 + 翻译配对状态列
+- [x] 2.2.5 admin 内容编辑页：手动关联/解除翻译对（设置/清除 `translationGroupId`）
 
 ### 2.3 SEO 基建
 
-- [ ] 2.3.1 `src/app/sitemap.ts`：按语言生成 URL + `alternates.languages`；中文独有页/文章不出现在英文侧
-- [ ] 2.3.2 页面 `generateMetadata`：hreflang（`alternates.languages` + x-default 指向 en）只在对应版本存在时输出；canonical 按 locale
-- [ ] 2.3.3 博客详情 hreflang 按 `translationGroupId` 配对输出
-- [ ] 2.3.4 JSON-LD：`WebSite`/`BlogPosting` 增加 `inLanguage`；OG metadata 按 locale（`og:locale`）
-- [ ] 2.3.5 `/api/og` 支持 locale 参数（字体/文案）
+- [x] 2.3.1 `src/app/sitemap.ts`：按语言生成 URL + `alternates.languages`；中文独有页/文章不出现在英文侧
+- [x] 2.3.2 页面 `generateMetadata`：hreflang（`alternates.languages` + x-default 指向 en）只在对应版本存在时输出；canonical 按 locale
+- [x] 2.3.3 博客详情 hreflang 按 `translationGroupId` 配对输出
+- [x] 2.3.4 JSON-LD：`WebSite`/`BlogPosting` 增加 `inLanguage`；OG metadata 按 locale（`og:locale`）
+- [x] 2.3.5 `/api/og` 支持 locale 参数（字体/文案）
 
 ### 2.4 验收
 
@@ -75,17 +75,17 @@
 
 ### 3.1 User.locale 下游
 
-- [ ] 3.1.1 注册/Google OAuth 回调记录当时界面 locale 到 `User.locale`；dashboard 设置页可修改
-- [ ] 3.1.2 邮件模板 en 版本 ×5（welcome / credits-warning / purchase-success / audit-complete / consultation-confirmation）；`consultation-notification`（admin 侧）保持中文
-- [ ] 3.1.3 `src/lib/email.ts` 发送入口按 `user.locale` 选模板（找不到 en 版回落 zh）
-- [ ] 3.1.4 systeme.io：`addContact` 按 locale 打 `{tag}_en` 后缀标签，查无该标签回落基础标签；在 systeme.io 后台手工预建全部 `_en` 标签（API 不自动建，已知坑）
-- [ ] 3.1.5 PostHog：`locale` 写入 person property + 全事件公共属性（中英漏斗切分的决策数据源）
-- [ ] 3.1.6 consultation 表单提交记录页面 locale；admin 咨询管理展示线索语言
+- [x] 3.1.1 注册/Google OAuth 回调记录当时界面 locale 到 `User.locale`；dashboard 设置页可修改
+- [x] 3.1.2 邮件模板 en 版本 ×5（welcome / credits-warning / purchase-success / audit-complete / consultation-confirmation）；`consultation-notification`（admin 侧）保持中文
+- [x] 3.1.3 `src/lib/email.ts` 发送入口按 `user.locale` 选模板（找不到 en 版回落 zh）
+- [x] 3.1.4 systeme.io：`addContact` 按 locale 打 `{tag}_en` 后缀标签，查无该标签回落基础标签（代码完成；⚠️ systeme.io 后台手工预建 `_en` 标签仍待执行——API 不自动建，已知坑）
+- [x] 3.1.5 PostHog：`locale` 写入 person property + 全事件公共属性（中英漏斗切分的决策数据源）
+- [x] 3.1.6 consultation 表单提交记录页面 locale；admin 咨询管理展示线索语言
 
 ### 3.2 GDPR Cookie 同意
 
-- [ ] 3.2.1 `CookieConsentBanner` 组件（双语、所有 locale 统一展示）：接受 / 拒绝，状态存 cookie
-- [ ] 3.2.2 PostHog init 改 `opt_out_capturing_by_default: true`，接受后 `opt_in_capturing()`；GTM 纳入同一门控
+- [x] 3.2.1 `CookieConsentBanner` 组件（双语、所有 locale 统一展示）：接受 / 拒绝，状态存 cookie
+- [x] 3.2.2 PostHog init 改 `opt_out_capturing_by_default: true`，接受后 `opt_in_capturing()`；GTM 纳入同一门控
 - [ ] 3.2.3 隐私政策页更新 cookie/分析说明（中英双语）
 - [ ] 3.2.4 验证：未同意前 Network 无 PostHog/GTM 请求；同意后事件正常
 

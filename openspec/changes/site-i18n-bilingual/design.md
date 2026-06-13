@@ -148,9 +148,26 @@ model User {
 
 ---
 
-## 301 重定向清单（中文 URL 平移）
+## URL 平移策略（修订，2026-06-13）
 
-`next.config.js` redirects：`/blog/:slug` 等现有路径 → `/zh/...`（仅对存量已收录路径；新英文路径接管根路径后，旧中文页面 URL 全部 301）。上线后 GSC 提交新 sitemap，监控收录交接。
+~~原方案：next.config redirects 把存量中文路径 301 到 `/zh/`。~~
+
+**实现时发现原方案不可行**：英文版复用了根路径 URL（`/pricing` 现在是英文页），同一 URL 不能既 301 又渲染。修订为：
+
+1. **静态页不重定向**——旧链接落到英文版，由语言建议横幅（Accept-Language）接住中文访客
+2. **博客详情智能跳转**——`/blog/[slug]` 查无当前 locale 的文章时，按 slug 反查其他语言；命中则 308 到正确前缀（如 `/zh/blog/[slug]`），保留旧收录外链权重
+3. 上线后 GSC 提交新 sitemap，监控收录交接
+
+## 实施发现附录（审计修正记录，2026-06-13）
+
+实现与审计过程中沉淀的关键约束，后续开发必须遵守：
+
+1. **`routing.ts` 必须 `localeCookie: false`**：next-intl middleware 默认自动写 `NEXT_LOCALE` 响应 cookie，且 middleware 写的 cookie 会合并进同请求的 `cookies()`——会让建议横幅误判"用户已手动选择过语言"而永不展示。`NEXT_LOCALE` 仅由 LocaleSwitcher/横幅在用户手动选择时写入。
+2. **`NextIntlClientProvider` 边界**：只包裹 `[locale]` 子树。root layout 层的客户端组件（如 `CookieConsentBanner`）**不能调用 `useLocale()`**——SSR 直接抛错导致全站 500（且 `ignoreBuildErrors: true` + 构建期不触发，只在生产运行时爆炸）。locale 一律经 props 从 server 端传入。
+3. **公开页查询必须显式传 locale**：`getPublishedContent` 不再静默默认 zh（曾导致英文首页展示中文文章）。
+4. **注册 locale 检测链**：`NEXT_LOCALE` cookie（用户手动选过，最强信号）→ referer 路径前缀 → `Accept-Language` → `'en'`（站点默认语言）。
+5. **代词规范修订**：中文文案统一用"您"（B2B 受众 + 专业可信定位），原"你"规则作废——同步更新于 CLAUDE.md 与 rules/design.md。
+6. **本地验证注意**：重启验证前先 `pkill -f "next start"`——残留旧进程占住端口会让你验证到旧构建。
 
 ## 验收基准
 
