@@ -104,7 +104,8 @@ Before executing any of the following, **stop and explicitly ask the user for co
 
 The app uses Next.js App Router with route groups:
 
-- **`(public)/`** - Public-facing routes (no auth required)
+- **`[locale]/(public)/`** - Public-facing routes (no auth required), locale-prefixed (see i18n section)
+  - **English at root** (`/`, `/pricing`), **Chinese at `/zh` prefix** (`/zh`, `/zh/pricing`)
   - `/` - Homepage; `/blog`, `/blog/[slug]`, `/blog/category/[slug]` - Blog
   - `/login`, `/register`, `/forgot-password`, `/reset-password` - User auth
   - `/pricing`, `/tools`, `/tools/geo-writer` - Marketing pages
@@ -132,6 +133,23 @@ The app uses Next.js App Router with route groups:
   - `api/skills/execute`, `api/skills/list` - Skills execution API
   - `api/webhooks/creem` - Creem.io payment webhook
   - `api/cron/verify` - Cron job verification
+
+### Internationalization (i18n)
+
+Bilingual via **next-intl**. English is the root-path locale; Chinese uses the `/zh` prefix. Only `[locale]/(public)/` is locale-routed — `(protected)/dashboard/` and `admin/` are NOT translated (single-locale, Chinese UI).
+
+- **Config**: `src/i18n/routing.ts` (locales `['en','zh']`, defaultLocale `en`, `localePrefix: 'as-needed'`), `request.ts`, `navigation.ts` (locale-aware `Link`/`redirect`/`usePathname`)
+- **Copy**: `messages/en.json` + `messages/zh.json` (Git-managed, namespaced per page). Server: `getTranslations()`; Client: `useTranslations()`. No DB-backed copy store.
+- **Content locale**: `Content.locale` + `translationGroupId` (optional translation pairing for hreflang). `User.locale` drives email/systeme.io/PostHog. `ConsultationRequest.locale` tags lead language.
+- **Page visibility**: `src/lib/i18n/page-availability.ts` — `PAGE_LOCALES` whitelists locale-restricted pages; nav/footer filter by it, unavailable locale → `notFound()`.
+
+**Hard constraints (violating any caused production 500s or silent bugs — do not regress):**
+1. `routing.ts` MUST keep `localeCookie: false` — otherwise next-intl's auto-written `NEXT_LOCALE` cookie suppresses the language-suggestion banner. `NEXT_LOCALE` is written only on manual locale switch.
+2. Client components mounted in the **root** layout (outside `NextIntlClientProvider`, e.g. `CookieConsentBanner`) MUST NOT call `useLocale()` — it throws on SSR and 500s the whole site. Pass locale via props from the server.
+3. Public content queries MUST pass `locale` explicitly — `getPublishedContent` does NOT default to `zh` (a silent default once leaked Chinese articles onto the English homepage).
+4. Use the i18n `Link` from `@/i18n/navigation` for internal public links (preserves locale prefix); `next/link` only for `/dashboard/*` (non-localed).
+5. Registration locale detection chain: `NEXT_LOCALE` cookie → referer prefix → `Accept-Language` → `en` fallback.
+6. **Never** auto-redirect by IP/Accept-Language — URL decides language; the Accept-Language signal only powers a dismissible suggestion banner.
 
 ### Authentication Flow
 
