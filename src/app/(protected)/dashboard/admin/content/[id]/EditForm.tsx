@@ -1,16 +1,17 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Save, RefreshCw, ChevronDown, ChevronUp, Sparkles, CheckCircle, AlertCircle, Lightbulb, Edit, Layout, List, Code as CodeIcon } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { updateContentMetadata, updateSeoMetadata, analyzeContentSeo, associateTranslation, dissociateTranslation } from '@/app/actions/content';
+import { updateContentMetadata, updateSeoMetadata, analyzeContentSeo, associateTranslation, dissociateTranslation, createCategory, createAuthor } from '@/app/actions/content';
 import { parseMarkdownToSections, joinSectionsToMarkdown, ContentSection } from '@/lib/utils/markdown-sections';
 import { EditableSection } from '@/components/editor/EditableSection';
 import { OutlineEditor, OutlineNode } from '@/components/editor/OutlineEditor';
 import { uploadMediaAction } from '@/app/actions/media';
+import { toast } from 'sonner';
 
 interface SeoMeta {
     metaTitle?: string | null;
@@ -53,6 +54,7 @@ interface Author {
 interface Category {
     id: string;
     name: string;
+    locale?: string;
 }
 
 interface OtherArticle {
@@ -163,7 +165,10 @@ export function EditForm({
     const [isSeoSaving, setIsSeoSaving] = React.useState(false);
     const [isAnalyzing, setIsAnalyzing] = React.useState(false);
     const [isOptimizing, setIsOptimizing] = React.useState(false);
-    const [editorMode, setEditorMode] = React.useState<'sections' | 'outline' | 'raw'>('sections');
+    // 新文章（正文为空）默认进「源码」模式，给一个能立刻打字的入口；有内容则进分段
+    const [editorMode, setEditorMode] = React.useState<'sections' | 'outline' | 'raw'>(
+        article.contentMd && article.contentMd.trim() ? 'sections' : 'raw'
+    );
     const [seoExpanded, setSeoExpanded] = React.useState(true);
     const [auditResult, setAuditResult] = React.useState<AuditResult | null>(null);
     const [optimizationResult, setOptimizationResult] = React.useState<any>(null);
@@ -183,45 +188,81 @@ export function EditForm({
         coverImageId: article.coverImageId || '',
     });
 
-    const [contentSections, setContentSections] = React.useState<ContentSection[]>(() => 
+    const [contentSections, setContentSections] = React.useState<ContentSection[]>(() =>
         parseMarkdownToSections(article.contentMd || '')
     );
 
-    // Sync contentMd when sections change
-    useEffect(() => {
-        if (editorMode !== 'raw') {
-            setFormData(prev => ({
-                ...prev,
-                contentMd: joinSectionsToMarkdown(contentSections)
-            }));
+    // 分类/作者：本地镜像 props，内联创建后即时追加（无需刷新页面）
+    const [categoryList, setCategoryList] = React.useState<Category[]>(categories);
+    const [authorList, setAuthorList] = React.useState<Author[]>(authors);
+    const [newCategoryName, setNewCategoryName] = React.useState('');
+    const [newAuthorName, setNewAuthorName] = React.useState('');
+    const [showNewCategory, setShowNewCategory] = React.useState(false);
+    const [showNewAuthor, setShowNewAuthor] = React.useState(false);
+
+    const handleCreateCategory = async () => {
+        const res = await createCategory(newCategoryName, formData.locale);
+        if (res.success && res.category) {
+            setCategoryList(prev => [...prev, res.category!]);
+            setFormData(prev => ({ ...prev, categoryId: res.category!.id }));
+            setNewCategoryName('');
+            setShowNewCategory(false);
+            toast.success(`分类「${res.category.name}」已创建（${formData.locale === 'en' ? 'EN' : 'ZH'}）`);
+        } else {
+            toast.error(res.error || '创建分类失败');
         }
-    }, [contentSections, editorMode]);
+    };
+
+    const handleCreateAuthor = async () => {
+        const res = await createAuthor(newAuthorName);
+        if (res.success && res.author) {
+            setAuthorList(prev => [...prev, res.author!]);
+            setFormData(prev => ({ ...prev, authorId: res.author!.id }));
+            setNewAuthorName('');
+            setShowNewAuthor(false);
+            toast.success(`作者「${res.author.name}」已创建`);
+        } else {
+            toast.error(res.error || '创建作者失败');
+        }
+    };
+
+    // contentMd 是唯一真相源；sections 是它的派生视图。
+    // 切换模式时双向转换，避免"源码输入后切回分段被空 sections 覆盖"的数据丢失。
+    const switchEditorMode = (mode: 'sections' | 'outline' | 'raw') => {
+        if (mode === editorMode) return;
+        if (mode === 'raw') {
+            // 离开分段/结构 → 把 sections 合成回 contentMd
+            setFormData(prev => ({ ...prev, contentMd: joinSectionsToMarkdown(contentSections) }));
+        } else {
+            // 进入分段/结构 → 从当前 contentMd 重新解析（含刚在源码里写的内容）
+            setContentSections(parseMarkdownToSections(formData.contentMd || ''));
+        }
+        setEditorMode(mode);
+    };
+
+    // sections 变更后立即同步回 contentMd，保证保存时拿到最新内容
+    const applySections = (next: ContentSection[]) => {
+        setContentSections(next);
+        setFormData(prev => ({ ...prev, contentMd: joinSectionsToMarkdown(next) }));
+    };
 
     const handleSectionSave = (id: string, newBody: string) => {
-        setContentSections(prev => 
-            prev.map(s => s.id === id ? { ...s, body: newBody } : s)
-        );
+        applySections(contentSections.map(s => s.id === id ? { ...s, body: newBody } : s));
     };
 
     const handleOutlineChange = (nodes: OutlineNode[]) => {
         // Map outline nodes to existing or new sections
-        setContentSections(prev => {
-            return nodes.map((node) => {
-                // Try to find existing section with same heading
-                const existing = prev.find(s => s.heading === node.text);
-                if (existing) return existing;
-
-                // Special case for intro
-                if (node.text === 'Intro' && prev[0]?.heading === '__intro__') return prev[0];
-
-                return {
-                    id: crypto.randomUUID(),
-                    heading: node.text,
-                    body: "",
-                    fullText: `## ${node.text}\n\n`
-                };
-            });
-        });
+        applySections(nodes.map((node) => {
+            const existing = contentSections.find(s => s.heading === node.text);
+            if (existing) return existing;
+            if (node.text === 'Intro' && contentSections[0]?.heading === '__intro__') return contentSections[0];
+            return {
+                id: crypto.randomUUID(),
+                heading: node.text,
+                body: "",
+                fullText: `## ${node.text}\n\n`
+            };
+        }));
     };
 
     const handleImageUpload = async (file: File) => {
@@ -230,11 +271,14 @@ export function EditForm({
         
         const result = await uploadMediaAction(formData);
         if (result.success && result.data) {
-            return { storageUrl: result.data.storageUrl };
+            return { mediaId: result.data.mediaId, storageUrl: result.data.storageUrl };
         } else {
             throw new Error(result.error || 'Upload failed');
         }
     };
+
+    // 新上传封面的即时预览（已存封面用 article.coverImage.storageUrl）
+    const [coverPreview, setCoverPreview] = React.useState<string>('');
 
     const [seoData, setSeoData] = React.useState({
         metaTitle: article.seo?.metaTitle || '',
@@ -263,13 +307,13 @@ export function EditForm({
         try {
             const res = await associateTranslation(article.id, targetId);
             if (res.success) {
-                alert('✅ 翻译关联成功！');
+                toast.success('翻译关联成功');
                 router.refresh();
             } else {
-                alert('❌ 关联失败: ' + res.error);
+                toast.error('关联失败：' + res.error);
             }
         } catch (err) {
-            alert('发生错误');
+            toast.error('发生错误');
         } finally {
             setIsPending(false);
         }
@@ -281,13 +325,13 @@ export function EditForm({
         try {
             const res = await dissociateTranslation(article.id);
             if (res.success) {
-                alert('✅ 已成功解除关联！');
+                toast.success('已解除关联');
                 router.refresh();
             } else {
-                alert('❌ 解除关联失败: ' + res.error);
+                toast.error('解除关联失败：' + res.error);
             }
         } catch (err) {
-            alert('发生错误');
+            toast.error('发生错误');
         } finally {
             setIsPending(false);
         }
@@ -342,11 +386,11 @@ export function EditForm({
 
             // 成功提示
             router.refresh();
-            alert(`✅ 保存成功！\n\n文章内容、SEO 设置及元数据已全部更新。`);
+            toast.success('保存成功：文章内容、SEO 与元数据已更新');
 
         } catch (error) {
             console.error('Save error:', error);
-            alert('❌ 保存失败: ' + (error instanceof Error ? error.message : String(error)));
+            toast.error('保存失败：' + (error instanceof Error ? error.message : String(error)));
         } finally {
             setIsPending(false);
             setIsSeoSaving(false);
@@ -369,10 +413,10 @@ export function EditForm({
             if (result.success && result.data) {
                 setAuditResult(result.data);
             } else {
-                alert('分析失败: ' + result.error);
+                toast.error('分析失败：' + result.error);
             }
         } catch (error) {
-            alert('发生意外错误');
+            toast.error('发生意外错误');
         } finally {
             setIsAnalyzing(false);
         }
@@ -380,7 +424,7 @@ export function EditForm({
 
     const handleAIOptimize = async () => {
         if (!formData.contentMd) {
-            alert('请先填写文章内容');
+            toast.error('请先填写文章内容');
             return;
         }
 
@@ -477,13 +521,13 @@ export function EditForm({
                     }
                 });
 
-                alert(`AI 优化完成！\n\nSEO 评分: ${data.scores?.seo}/100\nGEO 评分: ${data.scores?.geo}/100`);
+                toast.success(`AI 优化完成 · SEO ${data.scores?.seo}/100 · GEO ${data.scores?.geo}/100`);
             } else {
-                alert('优化失败: ' + (result.error || result.output.error));
+                toast.error('优化失败：' + (result.error || result.output.error));
             }
         } catch (error) {
             console.error('AI 优化错误:', error);
-            alert('优化过程中发生错误');
+            toast.error('优化过程中发生错误');
         } finally {
             setIsOptimizing(false);
         }
@@ -568,31 +612,65 @@ export function EditForm({
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">所属分类</label>
-                            <select
-                                value={formData.categoryId}
-                                onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                                className="w-full bg-white border-slate-200 rounded-xl py-2.5 px-3 text-slate-900 font-semibold focus:ring-2 focus:ring-brand-primary/20 transition-all text-sm shadow-sm"
-                            >
-                                <option value="">未分类</option>
-                                {categories.map(cat => (
-                                    <option key={cat.id} value={cat.id}>{cat.name}</option>
-                                ))}
-                            </select>
+                            <div className="flex items-center justify-between ml-1">
+                                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">所属分类（{formData.locale === 'en' ? 'EN' : 'ZH'}）</label>
+                                <button type="button" onClick={() => setShowNewCategory(v => !v)} className="text-[10px] font-bold text-brand-primary hover:underline">+ 新建</button>
+                            </div>
+                            {showNewCategory ? (
+                                <div className="flex gap-2">
+                                    <input
+                                        value={newCategoryName}
+                                        onChange={(e) => setNewCategoryName(e.target.value)}
+                                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleCreateCategory(); } }}
+                                        placeholder={`新分类名（${formData.locale === 'en' ? 'EN' : 'ZH'}）`}
+                                        autoFocus
+                                        className="flex-1 bg-white border-slate-200 rounded-xl py-2.5 px-3 text-slate-900 font-semibold focus:ring-2 focus:ring-brand-primary/20 text-sm shadow-sm"
+                                    />
+                                    <button type="button" onClick={handleCreateCategory} className="px-3 rounded-xl bg-brand-primary text-white text-xs font-bold">创建</button>
+                                </div>
+                            ) : (
+                                <select
+                                    value={formData.categoryId}
+                                    onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
+                                    className="w-full bg-white border-slate-200 rounded-xl py-2.5 px-3 text-slate-900 font-semibold focus:ring-2 focus:ring-brand-primary/20 transition-all text-sm shadow-sm"
+                                >
+                                    <option value="">未分类</option>
+                                    {categoryList.filter(c => !c.locale || c.locale === formData.locale).map(cat => (
+                                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                    ))}
+                                </select>
+                            )}
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">发布作者</label>
-                            <select
-                                value={formData.authorId}
-                                onChange={(e) => setFormData({ ...formData, authorId: e.target.value })}
-                                className="w-full bg-white border-slate-200 rounded-xl py-2.5 px-3 text-slate-900 font-semibold focus:ring-2 focus:ring-brand-primary/20 transition-all text-sm shadow-sm"
-                            >
-                                <option value="">默认作者 (Team)</option>
-                                {authors.map(author => (
-                                    <option key={author.id} value={author.id}>{author.name}</option>
-                                ))}
-                            </select>
+                            <div className="flex items-center justify-between ml-1">
+                                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">发布作者</label>
+                                <button type="button" onClick={() => setShowNewAuthor(v => !v)} className="text-[10px] font-bold text-brand-primary hover:underline">+ 新建</button>
+                            </div>
+                            {showNewAuthor ? (
+                                <div className="flex gap-2">
+                                    <input
+                                        value={newAuthorName}
+                                        onChange={(e) => setNewAuthorName(e.target.value)}
+                                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleCreateAuthor(); } }}
+                                        placeholder="作者名"
+                                        autoFocus
+                                        className="flex-1 bg-white border-slate-200 rounded-xl py-2.5 px-3 text-slate-900 font-semibold focus:ring-2 focus:ring-brand-primary/20 text-sm shadow-sm"
+                                    />
+                                    <button type="button" onClick={handleCreateAuthor} className="px-3 rounded-xl bg-brand-primary text-white text-xs font-bold">创建</button>
+                                </div>
+                            ) : (
+                                <select
+                                    value={formData.authorId}
+                                    onChange={(e) => setFormData({ ...formData, authorId: e.target.value })}
+                                    className="w-full bg-white border-slate-200 rounded-xl py-2.5 px-3 text-slate-900 font-semibold focus:ring-2 focus:ring-brand-primary/20 transition-all text-sm shadow-sm"
+                                >
+                                    <option value="">默认作者 (Team)</option>
+                                    {authorList.map(author => (
+                                        <option key={author.id} value={author.id}>{author.name}</option>
+                                    ))}
+                                </select>
+                            )}
                         </div>
                     </div>
 
@@ -649,9 +727,9 @@ export function EditForm({
                         <div className="flex items-start gap-4 p-5 bg-slate-50 rounded-xl border border-slate-100">
                             <div className="w-32 aspect-video bg-white rounded-lg border border-slate-200 overflow-hidden flex-shrink-0 relative group">
                                 {formData.coverImageId ? (
-                                    <img 
-                                        src={article.coverImageId === formData.coverImageId ? article.coverImage?.storageUrl || '' : ''} 
-                                        alt="Cover" 
+                                    <img
+                                        src={coverPreview || (article.coverImageId === formData.coverImageId ? article.coverImage?.storageUrl || '' : '')}
+                                        alt="Cover"
                                         className="w-full h-full object-cover"
                                     />
                                 ) : (
@@ -681,9 +759,14 @@ export function EditForm({
                                             input.onchange = async (e) => {
                                                 const file = (e.target as HTMLInputElement).files?.[0];
                                                 if (file) {
-                                                    const res = await handleImageUpload(file);
-                                                    setFormData(prev => ({ ...prev, coverImageId: (res as any).mediaId || '' }));
-                                                    alert('封面上传成功！请点击下方保存以生效。');
+                                                    try {
+                                                        const res = await handleImageUpload(file);
+                                                        setFormData(prev => ({ ...prev, coverImageId: res.mediaId }));
+                                                        setCoverPreview(res.storageUrl);
+                                                        toast.success('封面已上传，点击下方保存生效');
+                                                    } catch (err) {
+                                                        toast.error('封面上传失败：' + (err instanceof Error ? err.message : String(err)));
+                                                    }
                                                 }
                                             };
                                             input.click();
@@ -722,21 +805,21 @@ export function EditForm({
                             <div className="flex bg-slate-100 p-1 rounded-lg">
                                 <button
                                     type="button"
-                                    onClick={() => setEditorMode('sections')}
+                                    onClick={() => switchEditorMode('sections')}
                                     className={`flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold uppercase rounded-md transition-all ${editorMode === 'sections' ? 'bg-white text-brand-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                                 >
                                     <Layout size={12} /> 分段编辑
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => setEditorMode('outline')}
+                                    onClick={() => switchEditorMode('outline')}
                                     className={`flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold uppercase rounded-md transition-all ${editorMode === 'outline' ? 'bg-white text-brand-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                                 >
                                     <List size={12} /> 结构
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => setEditorMode('raw')}
+                                    onClick={() => switchEditorMode('raw')}
                                     className={`flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold uppercase rounded-md transition-all ${editorMode === 'raw' ? 'bg-white text-brand-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                                 >
                                     <CodeIcon size={12} /> 源码

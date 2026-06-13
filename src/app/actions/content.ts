@@ -520,3 +520,56 @@ export async function dissociateTranslation(articleId: string) {
         return { success: false, error: String(error) };
     }
 }
+
+/**
+ * Create a Category (admin content editor inline-create).
+ * slug 自动 ASCII slugify，按 (locale, slug) 唯一。
+ */
+export async function createCategory(name: string, locale: string) {
+    try {
+        const trimmed = name.trim();
+        if (!trimmed) return { success: false, error: '分类名不能为空' };
+
+        const baseSlug = trimmed
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '')
+            .slice(0, 60) || `cat-${Date.now().toString(36)}`;
+
+        // 同 locale 下 slug 冲突则加后缀
+        let slug = baseSlug;
+        if (await prisma.category.findUnique({ where: { locale_slug: { locale, slug } } })) {
+            slug = `${baseSlug}-${Math.random().toString(36).slice(2, 6)}`;
+        }
+
+        const category = await prisma.category.create({
+            data: { name: trimmed, slug, locale },
+            select: { id: true, name: true },
+        });
+        revalidatePath('/dashboard/admin/content');
+        return { success: true, category };
+    } catch (error) {
+        console.error('Failed to create category:', error);
+        return { success: false, error: String(error) };
+    }
+}
+
+/**
+ * Create an Author (admin content editor inline-create).
+ */
+export async function createAuthor(name: string) {
+    try {
+        const trimmed = name.trim();
+        if (!trimmed) return { success: false, error: '作者名不能为空' };
+
+        const author = await prisma.author.create({
+            data: { name: trimmed },
+            select: { id: true, name: true },
+        });
+        revalidatePath('/dashboard/admin/content');
+        return { success: true, author };
+    } catch (error) {
+        console.error('Failed to create author:', error);
+        return { success: false, error: String(error) };
+    }
+}
