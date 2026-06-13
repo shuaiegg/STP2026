@@ -2,15 +2,26 @@ import { getIntegrationValue } from '@/lib/integrations/config';
 
 const BASE_URL = 'https://api.systeme.io/api';
 
-// DB takes priority over env var
-async function getApiKey(): Promise<string | undefined> {
+// 双账户：locale 决定联系人进哪个 systeme.io 账户
+// - 'en' → SYSTEME_IO_API_KEY_EN（英文账户，独立营销序列）
+// - 其他/未指定 → SYSTEME_IO_API_KEY（中文/默认账户）
+// 标签按账户隔离，账户内用相同的基础标签名（无 _en 后缀）。
+// 注意：locale='en' 但未配置英文账户 Key 时，跳过同步（不污染中文账户），
+// 上线英文站前需在 /dashboard/admin/integrations 配置英文账户 Key。
+export function systemeConfigKey(locale?: string): string {
+  return locale === 'en' ? 'SYSTEME_IO_API_KEY_EN' : 'SYSTEME_IO_API_KEY';
+}
+
+async function getApiKey(locale?: string): Promise<string | undefined> {
+  const configKey = systemeConfigKey(locale);
+  const envKey = configKey as 'SYSTEME_IO_API_KEY' | 'SYSTEME_IO_API_KEY_EN';
   try {
-    const dbKey = await getIntegrationValue('SYSTEME_IO_API_KEY');
+    const dbKey = await getIntegrationValue(configKey);
     if (dbKey) return dbKey;
   } catch {
-    // fall through
+    // fall through to env
   }
-  return process.env.SYSTEME_IO_API_KEY;
+  return process.env[envKey];
 }
 
 function authHeaders(apiKey: string): Record<string, string> {
@@ -45,9 +56,9 @@ export type ContactResult =
 // ─── Contacts ─────────────────────────────────────────────────────────────────
 
 export async function addContact(email: string, name: string, tags: string[] = [], locale?: string): Promise<void> {
-  const apiKey = await getApiKey();
+  const apiKey = await getApiKey(locale);
   if (!apiKey) {
-    console.warn('[systeme.io] API key not configured — skipping contact sync');
+    console.warn(`[systeme.io] API key for ${systemeConfigKey(locale)} not configured — skipping contact sync (locale=${locale ?? 'default'})`);
     return;
   }
 
@@ -79,8 +90,8 @@ export async function addContact(email: string, name: string, tags: string[] = [
   }
 }
 
-export async function getContactByEmail(email: string): Promise<ContactResult> {
-  const apiKey = await getApiKey();
+export async function getContactByEmail(email: string, locale?: string): Promise<ContactResult> {
+  const apiKey = await getApiKey(locale);
   if (!apiKey) return { ok: false, notFound: false, status: 0, body: 'API Key 未配置' };
 
   try {
@@ -111,8 +122,8 @@ export async function getContactByEmail(email: string): Promise<ContactResult> {
   }
 }
 
-export async function addTagToContact(contactId: number, tagId: number): Promise<{ ok: boolean; error?: string }> {
-  const apiKey = await getApiKey();
+export async function addTagToContact(contactId: number, tagId: number, locale?: string): Promise<{ ok: boolean; error?: string }> {
+  const apiKey = await getApiKey(locale);
   if (!apiKey) return { ok: false, error: 'API Key 未配置' };
 
   try {
@@ -132,26 +143,19 @@ export async function addTagToContact(contactId: number, tagId: number): Promise
   }
 }
 
-// Resolve tag name → ID then add — used by automated trigger points
+// Resolve tag name → ID then add — used by automated trigger points.
+// locale 决定账户；标签按账户隔离，两个账户内用相同的基础标签名（无 _en 后缀）。
 export async function addTagToContactByName(contactId: number, tagName: string, locale?: string): Promise<{ ok: boolean; error?: string }> {
-  const tagsResult = await getTags();
+  const tagsResult = await getTags(locale);
   if (!tagsResult.ok) return { ok: false, error: '获取标签列表失败' };
 
-  let targetTagName = tagName;
-  if (locale === 'en') {
-    const enTagName = `${tagName}_en`;
-    if (tagsResult.tags.some((t) => t.name === enTagName)) {
-      targetTagName = enTagName;
-    }
-  }
-
-  const tag = tagsResult.tags.find((t) => t.name === targetTagName);
-  if (!tag) return { ok: false, error: `标签「${targetTagName}」不存在` };
-  return addTagToContact(contactId, tag.id);
+  const tag = tagsResult.tags.find((t) => t.name === tagName);
+  if (!tag) return { ok: false, error: `标签「${tagName}」不存在` };
+  return addTagToContact(contactId, tag.id, locale);
 }
 
-export async function removeTagFromContact(contactId: number, tagId: number): Promise<{ ok: boolean; error?: string }> {
-  const apiKey = await getApiKey();
+export async function removeTagFromContact(contactId: number, tagId: number, locale?: string): Promise<{ ok: boolean; error?: string }> {
+  const apiKey = await getApiKey(locale);
   if (!apiKey) return { ok: false, error: 'API Key 未配置' };
 
   try {
@@ -196,8 +200,8 @@ export interface SystemeContactField {
   type: string;
 }
 
-export async function getContactFields(): Promise<SystemeContactField[]> {
-  const apiKey = await getApiKey();
+export async function getContactFields(locale?: string): Promise<SystemeContactField[]> {
+  const apiKey = await getApiKey(locale);
   if (!apiKey) return [];
   try {
     const res = await fetch(`${BASE_URL}/contact-fields?itemsPerPage=100`, {
@@ -219,8 +223,8 @@ export async function getContactFields(): Promise<SystemeContactField[]> {
 
 // ─── Tags ─────────────────────────────────────────────────────────────────────
 
-export async function getTags(): Promise<TagsResult> {
-  const apiKey = await getApiKey();
+export async function getTags(locale?: string): Promise<TagsResult> {
+  const apiKey = await getApiKey(locale);
   if (!apiKey) return { ok: false, status: 0, body: 'API Key 未配置' };
 
   try {
@@ -244,8 +248,8 @@ export async function getTags(): Promise<TagsResult> {
 
 // ─── Connectivity ─────────────────────────────────────────────────────────────
 
-export async function pingSystemeIo(): Promise<boolean> {
-  const apiKey = await getApiKey();
+export async function pingSystemeIo(locale?: string): Promise<boolean> {
+  const apiKey = await getApiKey(locale);
   if (!apiKey) return false;
   try {
     const res = await fetch(`${BASE_URL}/tags?itemsPerPage=1`, {

@@ -9,13 +9,14 @@ interface Props {
   userId: string;
   email: string;
   name: string;
+  locale?: string;  // 决定联系人进哪个 systeme.io 账户（en → 英文账户）
   onClose: () => void;
 }
 
 type LoadState = 'loading' | 'loaded' | 'error' | 'not-found';
 type TagLoadState = 'idle' | 'loading' | 'loaded' | 'error';
 
-export function UserSystemePanel({ email, name, onClose }: Props) {
+export function UserSystemePanel({ email, name, locale, onClose }: Props) {
   const [contact, setContact] = useState<SystemeContact | null>(null);
   const [loadState, setLoadState] = useState<LoadState>('loading');
   const [loadError, setLoadError] = useState('');
@@ -35,7 +36,7 @@ export function UserSystemePanel({ email, name, onClose }: Props) {
     setLoadState('loading');
     setLoadError('');
     setActionMsg(null);
-    const result = await fetchUserContact(email, name);
+    const result = await fetchUserContact(email, name, locale);
     if (result.ok) {
       setContact(result.contact);
       setLoadState('loaded');
@@ -51,7 +52,7 @@ export function UserSystemePanel({ email, name, onClose }: Props) {
   async function loadAvailableTags() {
     setTagLoadState('loading');
     setTagLoadError('');
-    const result = await fetchAvailableTags();
+    const result = await fetchAvailableTags(locale);
     if (result.ok) {
       setAvailableTags(result.tags);
       setTagLoadState('loaded');
@@ -80,7 +81,7 @@ export function UserSystemePanel({ email, name, onClose }: Props) {
     if (!selectedNewTag) return;
     setIsSavingTag(true);
     setActionMsg(null);
-    const res = await addUserTag(email, name, selectedNewTag.id, selectedNewTag.name);
+    const res = await addUserTag(email, name, selectedNewTag.id, selectedNewTag.name, locale);
     setActionMsg({ ok: res.success, text: res.message });
     if (res.success) {
       setAddingTag(false);
@@ -93,7 +94,7 @@ export function UserSystemePanel({ email, name, onClose }: Props) {
   async function handleRemoveTag(contactId: number, tagId: number, tagName: string) {
     setRemovingTagId(tagId);
     setActionMsg(null);
-    const res = await removeUserTag(contactId, tagId, tagName);
+    const res = await removeUserTag(contactId, tagId, tagName, locale);
     setActionMsg({ ok: res.success, text: res.message });
     if (res.success) await loadContact();
     setRemovingTagId(null);
@@ -101,7 +102,7 @@ export function UserSystemePanel({ email, name, onClose }: Props) {
 
   async function handleCreateContact() {
     setLoadState('loading');
-    await createUserContact(email, name);
+    await createUserContact(email, name, locale);
     await loadContact();
   }
 

@@ -140,6 +140,7 @@ Bilingual via **next-intl**. English is the root-path locale; Chinese uses the `
 - **Config**: `src/i18n/routing.ts` (locales `['en','zh']`, defaultLocale `en`, `localePrefix: 'as-needed'`), `request.ts`, `navigation.ts` (locale-aware `Link`/`redirect`/`usePathname`)
 - **Copy**: `messages/en.json` + `messages/zh.json` (Git-managed, namespaced per page). Server: `getTranslations()`; Client: `useTranslations()`. No DB-backed copy store.
 - **Content locale**: `Content.locale` + `translationGroupId` (optional translation pairing for hreflang). `User.locale` drives email/systeme.io/PostHog. `ConsultationRequest.locale` tags lead language.
+- **systeme.io dual-account**: routed by locale — `en` → `SYSTEME_IO_API_KEY_EN` (English account), else `SYSTEME_IO_API_KEY` (Chinese/default). `getApiKey(locale)` in `src/lib/email/systeme.ts` resolves the account; every API fn takes an optional `locale`. Tags are account-scoped with **identical base names in both accounts** (no `_en` suffix). Trigger→tag-name mapping (`SYSTEME_TAG_ON_*`) is shared; only the account differs. `en` + EN key unconfigured → contact sync skipped (does NOT pollute the Chinese account). Trigger callers (auth/consultation/creem webhook/site save/admin user tools) must pass the user's `User.locale`.
 - **Page visibility**: `src/lib/i18n/page-availability.ts` — `PAGE_LOCALES` whitelists locale-restricted pages; nav/footer filter by it, unavailable locale → `notFound()`.
 
 **Hard constraints (violating any caused production 500s or silent bugs — do not regress):**

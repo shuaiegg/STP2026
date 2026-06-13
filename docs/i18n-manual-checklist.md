@@ -9,18 +9,20 @@
 
 ## A. 上线前（部署前必须完成）
 
-### A1. ⬜ systeme.io 后台预建 `_en` 标签
+### A1. ⬜ 配置英文 systeme.io 账户 + 两账户内建相同标签
 
-**为什么**：英文用户注册/咨询时，代码会尝试打 `{基础标签}_en` 后缀标签（如 `registered_en`）。systeme.io API **不会自动创建标签**（已知坑），标签必须先在后台手工建好，否则打标签静默失败。
+**架构（已改为双账户）**：联系人按 `User.locale` 路由到两个独立 systeme.io 账户——`en` → 英文账户（`SYSTEME_IO_API_KEY_EN`），其他 → 中文/默认账户（`SYSTEME_IO_API_KEY`）。标签按账户隔离，**两个账户内用相同的基础标签名**（不再用 `_en` 后缀）。英文账户未配置时，英文联系人会被跳过同步（不污染中文账户）。
 
 **操作**：
-1. 登录 systeme.io → Contacts → Tags
-2. 找出当前所有触发标签的中文/基础名（在本项目 `/dashboard/admin/integrations` 页可看到已配置的标签名：`SYSTEME_TAG_ON_REGISTER` / `_ONBOARDING` / `_PURCHASE` / `_CREDITS_LOW` / `_CONSULTATION` 对应的标签）
-3. 为每个标签创建一个 `_en` 后缀的对应英文标签。例如基础标签叫 `stp-register`，就新建 `stp-register_en`
+1. 注册/准备一个独立的 systeme.io 英文账户（用于英文邮件序列），获取其 API Key
+2. 进 `/dashboard/admin/integrations` → 「systeme.io（English 账户）」卡片 → 填入英文账户 API Key → 保存 → 点「测试连接」确认通
+3. 在**两个账户**里都建好同一套基础标签（中文账户原有的标签 + 英文账户新建同名标签）。标签名对应 `/dashboard/admin/integrations` 上方「标签规则」里配置的触发→标签名映射（`SYSTEME_TAG_ON_REGISTER` / `_ONBOARDING` / `_PURCHASE` / `_CREDITS_LOW` / `_CONSULTATION`）
+4. 在英文账户里配置对应的英文营销邮件序列
 
 **检查点**：
-- [ ] 5 个触发场景对应的 `_en` 标签都已在 systeme.io 后台存在
-- [ ] 标签名与代码拼接规则一致（基础名 + `_en`，无空格/大小写差异）
+- [ ] `/dashboard/admin/integrations` 两张 systeme.io 卡片都显示「已连接」，各自测试连接通过
+- [ ] 中文账户、英文账户内都存在相同的基础标签名（无 `_en` 后缀，无空格/大小写差异）
+- [ ] 英文新用户注册后，联系人出现在**英文账户**（不是中文账户）—— 见 C4
 
 ---
 
@@ -110,7 +112,7 @@
 **检查点**：
 - [ ] 注册成功后，`User.locale` = `en`（可在 `/dashboard/admin/users` 查看）
 - [ ] 收到的 welcome 邮件是**英文版**
-- [ ] systeme.io 后台该联系人打上了 `_en` 后缀标签（依赖 A1 已建好标签）
+- [ ] 该联系人出现在**英文 systeme.io 账户**（不是中文账户），并打上了基础标签（依赖 A1 已配置英文账户 + 建好标签）
 - [ ] PostHog 该用户的 person property 含 `locale: en`，事件带 locale 属性
 
 ---

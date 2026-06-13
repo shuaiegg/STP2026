@@ -318,6 +318,7 @@ export default function UserManagementPage() {
                                                         userId={user.id}
                                                         email={user.email}
                                                         name={user.name || ''}
+                                                        locale={(user as { locale?: string }).locale}
                                                         onClose={() => setSystemeUserId(null)}
                                                     />
                                                 </td>

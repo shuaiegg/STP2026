@@ -1,7 +1,7 @@
 "use server";
 
 import { sendEmail } from "@/lib/email";
-import { pingSystemeIo, getTags, type TagsResult } from "@/lib/email/systeme";
+import { pingSystemeIo, getTags, systemeConfigKey, type TagsResult } from "@/lib/email/systeme";
 import { getIntegrationValue, setIntegrationValue, deleteIntegrationValue, isIntegrationConfigured } from "@/lib/integrations/config";
 import { SYSTEME_TRIGGERS, type SystemeTriggerKey } from "@/lib/integrations/systeme-triggers";
 import { auth } from "@/lib/auth";
@@ -41,12 +41,16 @@ export async function sendTestEmail(): Promise<ActionResult> {
   }
 }
 
-// ─── systeme.io ───────────────────────────────────────────────────────────────
+// ─── systeme.io（双账户：account 'zh'=默认账户 / 'en'=英文账户）────────────────
 
-export async function testSystemeIoConnection(): Promise<ActionResult> {
+type SystemeAccount = 'zh' | 'en';
+// account → systeme.ts 的 locale 入参（'zh'/undefined 走默认账户，'en' 走英文账户）
+const accountLocale = (account: SystemeAccount): string | undefined => (account === 'en' ? 'en' : undefined);
+
+async function testSystemeConnection(account: SystemeAccount): Promise<ActionResult> {
   try {
     await requireAdmin();
-    const ok = await pingSystemeIo();
+    const ok = await pingSystemeIo(accountLocale(account));
     if (ok) return { success: true, message: 'systeme.io API 连接正常' };
     return { success: false, message: '连接失败，请检查 API Key 是否正确' };
   } catch (e: any) {
@@ -54,14 +58,14 @@ export async function testSystemeIoConnection(): Promise<ActionResult> {
   }
 }
 
-export async function saveSystemeApiKey(apiKey: string): Promise<ActionResult> {
+async function saveSystemeKey(account: SystemeAccount, apiKey: string): Promise<ActionResult> {
   try {
     const session = await requireAdmin();
     const trimmed = apiKey.trim();
     if (!trimmed) return { success: false, message: 'API Key 不能为空' };
     if (trimmed.length < 20) return { success: false, message: 'API Key 格式不正确' };
 
-    await setIntegrationValue('SYSTEME_IO_API_KEY', trimmed, session.user.id);
+    await setIntegrationValue(systemeConfigKey(accountLocale(account)), trimmed, session.user.id);
     revalidatePath('/dashboard/admin/integrations');
     return { success: true, message: 'API Key 已保存并加密存储' };
   } catch (e: any) {
@@ -69,10 +73,10 @@ export async function saveSystemeApiKey(apiKey: string): Promise<ActionResult> {
   }
 }
 
-export async function deleteSystemeApiKey(): Promise<ActionResult> {
+async function deleteSystemeKey(account: SystemeAccount): Promise<ActionResult> {
   try {
     await requireAdmin();
-    await deleteIntegrationValue('SYSTEME_IO_API_KEY');
+    await deleteIntegrationValue(systemeConfigKey(accountLocale(account)));
     revalidatePath('/dashboard/admin/integrations');
     return { success: true, message: 'API Key 已删除' };
   } catch (e: any) {
@@ -80,12 +84,32 @@ export async function deleteSystemeApiKey(): Promise<ActionResult> {
   }
 }
 
+// 默认（中文）账户
+export async function testSystemeIoConnection(): Promise<ActionResult> { return testSystemeConnection('zh'); }
+export async function saveSystemeApiKey(apiKey: string): Promise<ActionResult> { return saveSystemeKey('zh', apiKey); }
+export async function deleteSystemeApiKey(): Promise<ActionResult> { return deleteSystemeKey('zh'); }
+
+// 英文账户
+export async function testSystemeIoConnectionEn(): Promise<ActionResult> { return testSystemeConnection('en'); }
+export async function saveSystemeApiKeyEn(apiKey: string): Promise<ActionResult> { return saveSystemeKey('en', apiKey); }
+export async function deleteSystemeApiKeyEn(): Promise<ActionResult> { return deleteSystemeKey('en'); }
+
 // ─── Tag configuration ────────────────────────────────────────────────────────
 
 export async function fetchSystemeTags(): Promise<TagsResult> {
   try {
     await requireAdmin();
     return await getTags();
+  } catch (e: any) {
+    return { ok: false, status: 0, body: e?.message ?? '未知错误' };
+  }
+}
+
+// 英文账户标签列表（供 EN 账户的标签校验/选择）
+export async function fetchSystemeTagsEn(): Promise<TagsResult> {
+  try {
+    await requireAdmin();
+    return await getTags('en');
   } catch (e: any) {
     return { ok: false, status: 0, body: e?.message ?? '未知错误' };
   }
@@ -161,14 +185,24 @@ export async function debugFetchRawContact(email?: string): Promise<{ ok: boolea
 
 // ─── Read current config status (server-side) ─────────────────────────────────
 
-export async function getSystemeKeyMasked(): Promise<string | null> {
-  const value = await getIntegrationValue('SYSTEME_IO_API_KEY');
+function maskKey(value: string | null): string | null {
   if (!value) return null;
-  // Return masked version: first 6 + ... + last 4
   if (value.length <= 12) return '••••••••';
   return value.slice(0, 6) + '••••••••' + value.slice(-4);
 }
 
+export async function getSystemeKeyMasked(): Promise<string | null> {
+  return maskKey(await getIntegrationValue('SYSTEME_IO_API_KEY'));
+}
+
+export async function getSystemeKeyMaskedEn(): Promise<string | null> {
+  return maskKey(await getIntegrationValue('SYSTEME_IO_API_KEY_EN'));
+}
+
 export async function isSystemeConfiguredInDb(): Promise<boolean> {
   return isIntegrationConfigured('SYSTEME_IO_API_KEY');
+}
+
+export async function isSystemeConfiguredInDbEn(): Promise<boolean> {
+  return isIntegrationConfigured('SYSTEME_IO_API_KEY_EN');
 }

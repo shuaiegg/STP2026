@@ -9,6 +9,11 @@ import {
   deleteSystemeApiKey,
   getSystemeKeyMasked,
   isSystemeConfiguredInDb,
+  testSystemeIoConnectionEn,
+  saveSystemeApiKeyEn,
+  deleteSystemeApiKeyEn,
+  getSystemeKeyMaskedEn,
+  isSystemeConfiguredInDbEn,
   getTagRules,
 } from './actions';
 
@@ -42,13 +47,16 @@ export default async function IntegrationsPage() {
   const posthogStatus = envStatus('NEXT_PUBLIC_POSTHOG_KEY');
   const notionStatus = envStatus('NOTION_API_KEY');
 
-  // systeme.io: check DB first
-  const [systemeInDb, systemeKeyMasked, tagRules] = await Promise.all([
+  // systeme.io: check DB first（双账户：默认/中文 + 英文）
+  const [systemeInDb, systemeKeyMasked, systemeEnInDb, systemeEnKeyMasked, tagRules] = await Promise.all([
     isSystemeConfiguredInDb(),
     getSystemeKeyMasked(),
+    isSystemeConfiguredInDbEn(),
+    getSystemeKeyMaskedEn(),
     getTagRules(),
   ]);
   const systemeStatus = resolvedStatus(systemeInDb, 'SYSTEME_IO_API_KEY');
+  const systemeEnStatus = resolvedStatus(systemeEnInDb, 'SYSTEME_IO_API_KEY_EN');
 
   const envRows: [string, IntegrationStatus][] = [
     ['RESEND_API_KEY', resendStatus],
@@ -81,18 +89,33 @@ export default async function IntegrationsPage() {
         />
 
         <IntegrationCard
-          name="systeme.io"
-          description="营销自动化平台：新用户注册后自动同步为联系人并打标签，触发对应的自动化邮件序列。"
+          name="systeme.io（中文 / 默认账户）"
+          description="营销自动化平台 — 中文联系人账户。中文用户注册/咨询后自动同步为联系人并打标签，触发中文自动化邮件序列。"
           status={systemeStatus}
           testAction={systemeInDb ? testSystemeIoConnection : undefined}
           testLabel="测试连接"
-          notes="触发点：注册成功 / 首次站点保存（onboarding_completed）"
+          notes="触发点：注册成功 / 首次站点保存（onboarding_completed）。locale≠en 的联系人进此账户。"
           apiKeyEditor={{
             maskedValue: systemeKeyMasked,
             onSave: saveSystemeApiKey,
             onDelete: deleteSystemeApiKey,
           }}
           extra={systemeInDb ? <SystemeTagRules initialRules={tagRules} /> : undefined}
+          icon={<MessageSquare size={20} />}
+        />
+
+        <IntegrationCard
+          name="systeme.io（English 账户）"
+          description="营销自动化平台 — 英文联系人账户。locale=en 的用户注册/咨询后进入此独立账户，便于维护独立的英文邮件序列。未配置时英文联系人将跳过同步（不污染中文账户）。"
+          status={systemeEnStatus}
+          testAction={systemeEnInDb ? testSystemeIoConnectionEn : undefined}
+          testLabel="测试连接"
+          notes="标签规则与中文账户共用同一套触发→标签名映射（上方配置），两个账户内需各自建好相同的基础标签名。"
+          apiKeyEditor={{
+            maskedValue: systemeEnKeyMasked,
+            onSave: saveSystemeApiKeyEn,
+            onDelete: deleteSystemeApiKeyEn,
+          }}
           icon={<MessageSquare size={20} />}
         />
       </section>

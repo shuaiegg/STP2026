@@ -80,7 +80,7 @@ export async function POST(request: Request) {
         if (!isCompetitor) {
             const auditUser = await prisma.user.findUnique({
                 where: { id: session.user.id },
-                select: { email: true, name: true },
+                select: { email: true, name: true, locale: true },
             });
             if (auditUser) {
                 sendAuditCompleteEmail(auditUser, site.id, domain, techScore ?? null).catch((err) => {
@@ -94,11 +94,11 @@ export async function POST(request: Request) {
                 if (siteCount === 1) {
                     getIntegrationValue('SYSTEME_TAG_ON_ONBOARDING').then(async (tagName) => {
                         if (!tagName) return;
-                        const contactResult = await getContactByEmail(auditUser.email);
+                        const contactResult = await getContactByEmail(auditUser.email, auditUser.locale);
                         if (contactResult.ok) {
-                            return addTagToContactByName(contactResult.contact.id, tagName);
+                            return addTagToContactByName(contactResult.contact.id, tagName, auditUser.locale);
                         }
-                        return addContact(auditUser.email, auditUser.name || '', [tagName]);
+                        return addContact(auditUser.email, auditUser.name || '', [tagName], auditUser.locale);
                     }).catch((err) => {
                         console.error('[SiteIntelligence] Failed to sync systeme.io onboarding tag:', err);
                     });

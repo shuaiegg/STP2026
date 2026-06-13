@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
             // Send purchase confirmation email
             const purchasedUser = await prisma.user.findUnique({
                 where: { id: userId },
-                select: { email: true, name: true, credits: true },
+                select: { email: true, name: true, credits: true, locale: true },
             });
             if (purchasedUser) {
                 sendPurchaseSuccessEmail(purchasedUser, creditsToGain, purchasedUser.credits).catch((err) => {
@@ -113,11 +113,11 @@ export async function POST(req: NextRequest) {
                 // Tag in systeme.io on purchase
                 getIntegrationValue('SYSTEME_TAG_ON_PURCHASE').then(async (tagName) => {
                     if (!tagName) return;
-                    const contactResult = await getContactByEmail(purchasedUser.email);
+                    const contactResult = await getContactByEmail(purchasedUser.email, purchasedUser.locale);
                     if (contactResult.ok) {
-                        return addTagToContactByName(contactResult.contact.id, tagName);
+                        return addTagToContactByName(contactResult.contact.id, tagName, purchasedUser.locale);
                     }
-                    return addContact(purchasedUser.email, purchasedUser.name || '', [tagName]);
+                    return addContact(purchasedUser.email, purchasedUser.name || '', [tagName], purchasedUser.locale);
                 }).catch((err) => {
                     console.error('[Creem] Failed to sync systeme.io purchase tag:', err);
                 });

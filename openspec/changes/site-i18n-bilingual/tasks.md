@@ -78,7 +78,7 @@
 - [x] 3.1.1 注册/Google OAuth 回调记录当时界面 locale 到 `User.locale`；dashboard 设置页可修改
 - [x] 3.1.2 邮件模板 en 版本 ×5（welcome / credits-warning / purchase-success / audit-complete / consultation-confirmation）；`consultation-notification`（admin 侧）保持中文
 - [x] 3.1.3 `src/lib/email.ts` 发送入口按 `user.locale` 选模板（找不到 en 版回落 zh）
-- [x] 3.1.4 systeme.io：`addContact` 按 locale 打 `{tag}_en` 后缀标签（代码完成；⚠️ 后台手工预建 `_en` 标签见 `docs/i18n-manual-checklist.md` A1）
+- [x] 3.1.4 systeme.io：**双账户路由**（`en`→`SYSTEME_IO_API_KEY_EN`，其他→默认账户），取代原 `_en` 后缀方案；`getApiKey(locale)` + 全函数 locale 透传，所有触发点（auth/consultation/creem/site-save/admin）传 `User.locale`；admin 集成页新增英文账户卡片（代码完成；⚠️ 配置英文账户 Key + 两账户建同名标签见 `docs/i18n-manual-checklist.md` A1）
 - [x] 3.1.5 PostHog：`locale` 写入 person property + 全事件公共属性（中英漏斗切分的决策数据源）
 - [x] 3.1.6 consultation 表单提交记录页面 locale；admin 咨询管理展示线索语言
 
