@@ -42,6 +42,27 @@ export async function getIntegrationValue(key: string): Promise<string | null> {
   }
 }
 
+/**
+ * 解析触发器对应的标签名（systeme.io 双账户）。
+ * - locale='en'：优先读 `{triggerKey}_EN`（英文账户独立规则），未配置则回退到基础规则
+ * - 其他：读基础 `{triggerKey}`，再回退 legacyKey
+ * 回退语义让"英文账户标签名"默认与中文一致，配置了 _EN 规则才独立。
+ */
+export async function getTriggerTagName(
+  triggerKey: string,
+  locale?: string,
+  legacyKey?: string,
+): Promise<string | null> {
+  if (locale === 'en') {
+    const enRule = await getIntegrationValue(`${triggerKey}_EN`);
+    if (enRule) return enRule;
+    // 未配置英文规则 → 回退到基础标签名
+  }
+  const base = await getIntegrationValue(triggerKey);
+  if (base) return base;
+  return legacyKey ? await getIntegrationValue(legacyKey) : null;
+}
+
 export async function setIntegrationValue(key: string, value: string, updatedBy: string): Promise<void> {
   const encrypted = encrypt(value);
   await prisma.integrationConfig.upsert({

@@ -15,6 +15,11 @@ import {
   getSystemeKeyMaskedEn,
   isSystemeConfiguredInDbEn,
   getTagRules,
+  getTagRulesEn,
+  fetchSystemeTags,
+  saveTagRule,
+  fetchSystemeTagsEn,
+  saveTagRuleEn,
 } from './actions';
 
 // ─── COPY ─────────────────────────────────────────────────────────────────────
@@ -48,12 +53,13 @@ export default async function IntegrationsPage() {
   const notionStatus = envStatus('NOTION_API_KEY');
 
   // systeme.io: check DB first（双账户：默认/中文 + 英文）
-  const [systemeInDb, systemeKeyMasked, systemeEnInDb, systemeEnKeyMasked, tagRules] = await Promise.all([
+  const [systemeInDb, systemeKeyMasked, systemeEnInDb, systemeEnKeyMasked, tagRules, tagRulesEn] = await Promise.all([
     isSystemeConfiguredInDb(),
     getSystemeKeyMasked(),
     isSystemeConfiguredInDbEn(),
     getSystemeKeyMaskedEn(),
     getTagRules(),
+    getTagRulesEn(),
   ]);
   const systemeStatus = resolvedStatus(systemeInDb, 'SYSTEME_IO_API_KEY');
   const systemeEnStatus = resolvedStatus(systemeEnInDb, 'SYSTEME_IO_API_KEY_EN');
@@ -100,7 +106,7 @@ export default async function IntegrationsPage() {
             onSave: saveSystemeApiKey,
             onDelete: deleteSystemeApiKey,
           }}
-          extra={systemeInDb ? <SystemeTagRules initialRules={tagRules} /> : undefined}
+          extra={systemeInDb ? <SystemeTagRules initialRules={tagRules} fetchTagsAction={fetchSystemeTags} saveRuleAction={saveTagRule} /> : undefined}
           icon={<MessageSquare size={20} />}
         />
 
@@ -110,12 +116,13 @@ export default async function IntegrationsPage() {
           status={systemeEnStatus}
           testAction={systemeEnInDb ? testSystemeIoConnectionEn : undefined}
           testLabel="测试连接"
-          notes="标签规则与中文账户共用同一套触发→标签名映射（上方配置），两个账户内需各自建好相同的基础标签名。"
+          notes="英文账户可配置独立的触发→标签名映射；某项留空则运行时回退到中文账户的对应标签名。"
           apiKeyEditor={{
             maskedValue: systemeEnKeyMasked,
             onSave: saveSystemeApiKeyEn,
             onDelete: deleteSystemeApiKeyEn,
           }}
+          extra={systemeEnInDb ? <SystemeTagRules initialRules={tagRulesEn} fetchTagsAction={fetchSystemeTagsEn} saveRuleAction={saveTagRuleEn} fallbackHint="留空的规则将回退使用中文账户的标签名。" /> : undefined}
           icon={<MessageSquare size={20} />}
         />
       </section>

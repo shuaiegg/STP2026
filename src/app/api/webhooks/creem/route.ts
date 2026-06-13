@@ -5,7 +5,7 @@ import { revalidateTag } from "next/cache";
 import { captureServerEvent } from "@/lib/analytics/posthog-server";
 import { sendPurchaseSuccessEmail } from "@/lib/email";
 import { getContactByEmail, addTagToContactByName, addContact } from "@/lib/email/systeme";
-import { getIntegrationValue } from "@/lib/integrations/config";
+import { getTriggerTagName } from "@/lib/integrations/config";
 
 export async function POST(req: NextRequest) {
     const payload = await req.text();
@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
                 });
 
                 // Tag in systeme.io on purchase
-                getIntegrationValue('SYSTEME_TAG_ON_PURCHASE').then(async (tagName) => {
+                getTriggerTagName('SYSTEME_TAG_ON_PURCHASE', purchasedUser.locale).then(async (tagName) => {
                     if (!tagName) return;
                     const contactResult = await getContactByEmail(purchasedUser.email, purchasedUser.locale);
                     if (contactResult.ok) {

@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { revalidateSiteCache } from '@/lib/site-intelligence/sites';
 import { sendAuditCompleteEmail } from '@/lib/email';
 import { addContact, getContactByEmail, addTagToContactByName } from '@/lib/email/systeme';
-import { getIntegrationValue } from '@/lib/integrations/config';
+import { getTriggerTagName } from '@/lib/integrations/config';
 
 export async function POST(request: Request) {
     const session = await auth.api.getSession({ headers: await headers() });
@@ -92,7 +92,7 @@ export async function POST(request: Request) {
                     where: { userId: session.user.id, isCompetitor: false },
                 });
                 if (siteCount === 1) {
-                    getIntegrationValue('SYSTEME_TAG_ON_ONBOARDING').then(async (tagName) => {
+                    getTriggerTagName('SYSTEME_TAG_ON_ONBOARDING', auditUser.locale).then(async (tagName) => {
                         if (!tagName) return;
                         const contactResult = await getContactByEmail(auditUser.email, auditUser.locale);
                         if (contactResult.ok) {

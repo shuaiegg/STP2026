@@ -115,20 +115,26 @@ export async function fetchSystemeTagsEn(): Promise<TagsResult> {
   }
 }
 
-export async function saveTagRule(triggerKey: SystemeTriggerKey, tagName: string): Promise<ActionResult> {
+// 账户 → 规则存储 key 后缀。'en' 用独立的 {key}_EN 规则；'zh'/默认用基础 key。
+const ruleKey = (triggerKey: SystemeTriggerKey, account: SystemeAccount): string =>
+  account === 'en' ? `${triggerKey}_EN` : triggerKey;
+
+async function saveTagRuleFor(account: SystemeAccount, triggerKey: SystemeTriggerKey, tagName: string): Promise<ActionResult> {
   try {
     const session = await requireAdmin();
+    const storeKey = ruleKey(triggerKey, account);
     if (!tagName.trim()) {
-      // Empty string = clear
-      await deleteIntegrationValue(triggerKey);
+      await deleteIntegrationValue(storeKey);
       revalidatePath('/dashboard/admin/integrations');
       return { success: true, message: '已清除标签规则' };
     }
-    await setIntegrationValue(triggerKey, tagName.trim(), session.user.id);
-    // Keep legacy key in sync for backward compat (register trigger)
-    const trigger = SYSTEME_TRIGGERS.find((t) => t.key === triggerKey);
-    if (trigger && 'legacyKey' in trigger && trigger.legacyKey) {
-      await setIntegrationValue(trigger.legacyKey as string, tagName.trim(), session.user.id);
+    await setIntegrationValue(storeKey, tagName.trim(), session.user.id);
+    // 仅默认账户同步 legacy key（向后兼容）；英文账户用独立 _EN 规则，无 legacy
+    if (account === 'zh') {
+      const trigger = SYSTEME_TRIGGERS.find((t) => t.key === triggerKey);
+      if (trigger && 'legacyKey' in trigger && trigger.legacyKey) {
+        await setIntegrationValue(trigger.legacyKey as string, tagName.trim(), session.user.id);
+      }
     }
     revalidatePath('/dashboard/admin/integrations');
     return { success: true, message: `已保存「${tagName}」` };
@@ -137,16 +143,33 @@ export async function saveTagRule(triggerKey: SystemeTriggerKey, tagName: string
   }
 }
 
-export async function getTagRules(): Promise<Record<SystemeTriggerKey, string | null>> {
+async function getTagRulesFor(account: SystemeAccount): Promise<Record<SystemeTriggerKey, string | null>> {
   const entries = await Promise.all(
     SYSTEME_TRIGGERS.map(async (t) => {
-      const val = await getIntegrationValue(t.key);
-      // Fallback to legacyKey for existing data
-      const resolved = val ?? ('legacyKey' in t && t.legacyKey ? await getIntegrationValue(t.legacyKey as string) : null);
+      const val = await getIntegrationValue(ruleKey(t.key, account));
+      // 默认账户回退 legacyKey；英文账户无 legacy（未配置则前端展示空，运行时回退基础规则）
+      const resolved =
+        val ?? (account === 'zh' && 'legacyKey' in t && t.legacyKey ? await getIntegrationValue(t.legacyKey as string) : null);
       return [t.key, resolved] as [SystemeTriggerKey, string | null];
     }),
   );
   return Object.fromEntries(entries) as Record<SystemeTriggerKey, string | null>;
+}
+
+// 默认（中文）账户
+export async function saveTagRule(triggerKey: SystemeTriggerKey, tagName: string): Promise<ActionResult> {
+  return saveTagRuleFor('zh', triggerKey, tagName);
+}
+export async function getTagRules(): Promise<Record<SystemeTriggerKey, string | null>> {
+  return getTagRulesFor('zh');
+}
+
+// 英文账户（独立规则；未配置项运行时回退到中文账户的基础标签名）
+export async function saveTagRuleEn(triggerKey: SystemeTriggerKey, tagName: string): Promise<ActionResult> {
+  return saveTagRuleFor('en', triggerKey, tagName);
+}
+export async function getTagRulesEn(): Promise<Record<SystemeTriggerKey, string | null>> {
+  return getTagRulesFor('en');
 }
 
 // Kept for backward compatibility with existing page snapshots

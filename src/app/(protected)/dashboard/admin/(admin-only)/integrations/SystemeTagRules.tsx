@@ -9,9 +9,14 @@ import type { SystemeTag, TagsResult } from '@/lib/email/systeme';
 
 interface Props {
   initialRules: Record<SystemeTriggerKey, string | null>;
+  // 账户隔离：默认用中文账户的 action，英文卡片传入 EN 变体
+  fetchTagsAction?: () => Promise<TagsResult>;
+  saveRuleAction?: (triggerKey: SystemeTriggerKey, tagName: string) => Promise<{ success: boolean; message: string }>;
+  // 英文账户未配置某规则时，运行时回退到中文账户的基础标签名——提示用
+  fallbackHint?: string;
 }
 
-export function SystemeTagRules({ initialRules }: Props) {
+export function SystemeTagRules({ initialRules, fetchTagsAction = fetchSystemeTags, saveRuleAction = saveTagRule, fallbackHint }: Props) {
   const [tags, setTags] = useState<SystemeTag[]>([]);
   const [tagsState, setTagsState] = useState<'idle' | 'loading' | 'loaded' | 'error'>('idle');
   const [tagsError, setTagsError] = useState('');
@@ -24,7 +29,7 @@ export function SystemeTagRules({ initialRules }: Props) {
   function loadTags() {
     setTagsState('loading');
     setTagsError('');
-    fetchSystemeTags().then((result: TagsResult) => {
+    fetchTagsAction().then((result: TagsResult) => {
       if (result.ok) {
         if (result.tags.length === 0) {
           setTagsError('账户内暂无标签，请先在 systeme.io 创建标签。');
@@ -52,7 +57,7 @@ export function SystemeTagRules({ initialRules }: Props) {
     setSavingKey(triggerKey);
     setSaveResults((prev) => ({ ...prev, [triggerKey]: undefined }));
     try {
-      const res = await saveTagRule(triggerKey, tagName);
+      const res = await saveRuleAction(triggerKey, tagName);
       setSaveResults((prev) => ({ ...prev, [triggerKey]: res }));
       if (res.success) {
         setRules((prev) => ({ ...prev, [triggerKey]: tagName }));
@@ -171,6 +176,7 @@ export function SystemeTagRules({ initialRules }: Props) {
 
       <p className="text-[11px] text-brand-text-muted leading-relaxed">
         每个业务事件触发时，系统将在 systeme.io 中为对应用户创建或更新联系人，并自动打上所选标签。
+        {fallbackHint ? ` ${fallbackHint}` : ''}
       </p>
     </div>
   );

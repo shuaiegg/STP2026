@@ -4,7 +4,7 @@ import prisma from "./prisma";
 import { emailOTP } from "better-auth/plugins";
 import { sendEmail, sendWelcomeEmail } from "./email";
 import { addContact } from "./email/systeme";
-import { getIntegrationValue } from "./integrations/config";
+import { getTriggerTagName } from "./integrations/config";
 import { revalidateTag } from "next/cache";
 import { headers } from "next/headers";
 
@@ -82,12 +82,8 @@ export const auth = betterAuth({
                         console.error('[Auth] Failed to send welcome email:', err);
                     });
 
-                    // Sync to systeme.io — tag from admin config (new key with legacyKey fallback)
-                    Promise.all([
-                        getIntegrationValue('SYSTEME_TAG_ON_REGISTER'),
-                        getIntegrationValue('SYSTEME_NEW_USER_TAG'),
-                    ]).then(([newTag, legacyTag]) => {
-                        const tag = newTag ?? legacyTag;
+                    // Sync to systeme.io — tag resolved per-account by locale (_EN rule w/ fallback)
+                    getTriggerTagName('SYSTEME_TAG_ON_REGISTER', clientLocale, 'SYSTEME_NEW_USER_TAG').then((tag) => {
                         const tags = tag ? [tag] : [];
                         return addContact(user.email, user.name || '', tags, clientLocale);
                     }).catch((err) => {

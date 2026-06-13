@@ -3,7 +3,7 @@
 import prisma from '@/lib/prisma';
 import { sendConsultationNotification, sendConsultationConfirmation } from '@/lib/email';
 import { addContact } from '@/lib/email/systeme';
-import { getIntegrationValue } from '@/lib/integrations/config';
+import { getTriggerTagName } from '@/lib/integrations/config';
 
 // ─── Service-specific detail types ───────────────────────────────────────────
 
@@ -101,7 +101,7 @@ export async function submitConsultation(data: ConsultationFormData): Promise<{
     return { success: false, message: '提交失败，请稍后重试' };
   }
 
-  const tagName = await getIntegrationValue('SYSTEME_TAG_ON_CONSULTATION');
+  const tagName = await getTriggerTagName('SYSTEME_TAG_ON_CONSULTATION', record.locale);
   const tags = tagName ? [tagName] : [];
 
   const [emailNotify, emailConfirm, systemeResult] = await Promise.allSettled([
