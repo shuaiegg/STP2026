@@ -78,7 +78,7 @@
 - [x] 3.1.1 注册/Google OAuth 回调记录当时界面 locale 到 `User.locale`；dashboard 设置页可修改
 - [x] 3.1.2 邮件模板 en 版本 ×5（welcome / credits-warning / purchase-success / audit-complete / consultation-confirmation）；`consultation-notification`（admin 侧）保持中文
 - [x] 3.1.3 `src/lib/email.ts` 发送入口按 `user.locale` 选模板（找不到 en 版回落 zh）
-- [x] 3.1.4 systeme.io：`addContact` 按 locale 打 `{tag}_en` 后缀标签，查无该标签回落基础标签（代码完成；⚠️ systeme.io 后台手工预建 `_en` 标签仍待执行——API 不自动建，已知坑）
+- [x] 3.1.4 systeme.io：`addContact` 按 locale 打 `{tag}_en` 后缀标签（代码完成；⚠️ 后台手工预建 `_en` 标签见 `docs/i18n-manual-checklist.md` A1）
 - [x] 3.1.5 PostHog：`locale` 写入 person property + 全事件公共属性（中英漏斗切分的决策数据源）
 - [x] 3.1.6 consultation 表单提交记录页面 locale；admin 咨询管理展示线索语言
 
@@ -91,8 +91,8 @@
 
 ### 3.3 Creem MoR 核实（非代码任务）
 
-- [ ] 3.3.1 查 Creem 文档/支持：是否 Merchant of Record（VAT/销售税代缴）；结论附录写入 design.md
-- [ ] 3.3.2 据结论决定英文定价页是否带购买按钮（否则英文侧暂只开放免费工具）→ 输出给 `homepage-plg-repositioning`
+- [x] 3.3.1 ✅ Creem **是 MoR**：代收代缴 VAT/GST/销售税至 190+ 国（含 EU via Estonia OSS、UK、US 28+ 州），卖家无需自行注册/申报。结论见 `docs/i18n-manual-checklist.md` D1
+- [x] 3.3.2 ✅ 结论：英文定价页**可直接挂购买按钮**（USD，Creem 代缴税）→ 已输出给 `homepage-plg-repositioning`
 
 ### 3.4 总验收
 

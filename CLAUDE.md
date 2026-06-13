@@ -119,12 +119,11 @@ The app uses Next.js App Router with route groups:
   - `/dashboard/tools` - AI tools; `/dashboard/billing` - Credits; `/dashboard/settings`
   - `/dashboard/onboarding` - New user onboarding flow (shown after registration)
 
-- **`admin/`** - CMS admin routes (ADMIN/EDITOR role required)
-  - `/admin` - Dashboard; `/admin/content` - Content management; `/admin/sync` - Notion sync
-  - `/admin/login` - Login; `/admin/setup` - First-run setup (unprotected); `/admin/users`, `/admin/skills`
-  - `/admin/models` - AI Model Management (provider status, API keys, context assignments)
-  - `/admin/integrations` - Integration config (Resend, systeme.io, PostHog, API keys)
-  - `/admin/consultations` - Consultation request management (view, status, notes)
+- **`(protected)/dashboard/admin/`** - CMS admin routes (ADMIN/EDITOR role required; Chinese UI, not localed)
+  - `/dashboard/admin/content` (+ `[id]`) - Content management; `/dashboard/admin/sync` - Notion sync
+  - `(admin-only)/` subgroup (ADMIN role only): `/dashboard/admin/users`, `/skills`, `/models` (AI model mgmt), `/integrations` (Resend/systeme.io/PostHog/API keys), `/consultations` (lead mgmt), `/orders`, `/credit-refund`
+  - **Legacy `/admin/*` paths 301-redirect to `/dashboard/admin/*`** via `src/middleware.ts` (`/admin/login`→`/login`, `/admin`→`/dashboard`)
+  - **`admin/setup`** - First-run admin setup, stays at root path `/admin/setup` (unprotected, whitelisted in middleware)
 
 - **`api/`** - API routes
   - `api/auth/[...all]` - better-auth handlers
