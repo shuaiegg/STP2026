@@ -5,8 +5,13 @@ import { routing } from "@/i18n/routing";
 // 公开站点的 locale 解析（en 根路径 / zh 前缀），不做自动语言跳转
 const intlMiddleware = createMiddleware(routing);
 
+// 注：运行时 slug/类别重定向不在 middleware 处理（避免每请求 DB/网络往返）。
+// 这些路径都会走 /blog、/blog/category 页面的 notFound 分支，在那里查 Redirect 表 308 跳转。
+// 见 src/lib/redirects.ts。
+
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
+
     // better-auth uses __Secure- prefix on HTTPS, plain name on HTTP
     const sessionCookie =
         request.cookies.get("better-auth.session_token") ??

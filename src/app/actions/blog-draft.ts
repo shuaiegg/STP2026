@@ -19,11 +19,27 @@ function slugify(text: string) {
     return ascii || `post-${Date.now()}`;
 }
 
+function calculateReadingTime(contentMd: string) {
+    // Basic algorithm: CJK 300 chars/min, English 200 words/min
+    const zhCount = (contentMd.match(/[\u4e00-\u9fa5]/g) || []).length;
+    const enWords = contentMd.replace(/[\u4e00-\u9fa5]/g, ' ').trim().split(/\s+/).filter(Boolean).length;
+    
+    const minutes = (zhCount / 300) + (enWords / 200);
+    return Math.max(1, Math.ceil(minutes));
+}
+
 export async function saveToBlogDraft(params: {
     title: string;
     content: string;
     summary?: string;
     locale?: string;
+    authorId?: string;
+    seoMeta?: {
+        metaTitle?: string;
+        metaDescription?: string;
+        keywords?: string[];
+        geoScore?: number;
+    };
 }) {
     try {
         // 7.2 Verify role === 'ADMIN'
@@ -35,13 +51,15 @@ export async function saveToBlogDraft(params: {
             return { success: false, message: 'Unauthorized' };
         }
 
-        const { title, content, summary, locale = 'en' } = params;
+        const { title, content, summary, locale = 'en', authorId, seoMeta } = params;
 
         // 7.3 Implement Content creation logic
         // Generate slug with random suffix to ensure uniqueness
         const baseSlug = slugify(title) || 'untitled';
         const randomSuffix = Math.random().toString(36).substring(2, 7);
         const slug = `${baseSlug}-${randomSuffix}`;
+
+        const readingTime = calculateReadingTime(content);
 
         const newContent = await prisma.content.create({
             data: {
@@ -54,6 +72,17 @@ export async function saveToBlogDraft(params: {
                 visibility: 'PRIVATE',
                 type: 'BLOG',
                 locale,
+                authorId,
+                readingTime,
+                seo: seoMeta ? {
+                    create: {
+                        metaTitle: seoMeta.metaTitle,
+                        metaDescription: seoMeta.metaDescription,
+                        keywords: seoMeta.keywords || [],
+                        geoScore: seoMeta.geoScore,
+                        geoAuditedAt: seoMeta.geoScore ? new Date() : undefined,
+                    }
+                } : undefined
             }
         });
 

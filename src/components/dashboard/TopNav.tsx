@@ -77,7 +77,6 @@ const NAV_LINKS = [
 
 const ADMIN_LINK_CONFIG = [
   { href: '/admin/content', icon: FileText, label: '内容管理' },
-  { href: '/admin/sync', icon: RefreshCw, label: 'Notion 同步' },
   { href: '/admin/users', icon: Users, label: '用户管理' },
   { href: '/admin/orders', icon: ShoppingBag, label: '订单管理' },
   { href: '/admin/skills', icon: Zap, label: '技能管理' },
@@ -150,7 +149,7 @@ export function TopNav({ sites, currentSiteId, user }: TopNavProps) {
   const adminLinks = ADMIN_LINK_CONFIG.filter(link => {
     if (user.role === 'ADMIN') return true;
     if (user.role === 'EDITOR') {
-      return link.href === '/admin/content' || link.href === '/admin/sync';
+      return link.href === '/admin/content';
     }
     return false;
   });

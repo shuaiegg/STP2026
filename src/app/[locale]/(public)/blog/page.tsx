@@ -47,7 +47,7 @@ export default async function BlogPage({
     const t = await getTranslations('blog');
     const [{ contents }, categories] = await Promise.all([
         getPublishedContent({ locale }),
-        getActiveCategories(),
+        getActiveCategories({ locale }),
     ]);
 
     const baseUrl = BASE_URL;

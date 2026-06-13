@@ -314,8 +314,8 @@ MINIO_BUCKET=              # Bucket name: media
 MINIO_PUBLIC_URL=          # Public base URL: https://media.scaletotop.com
 
 # Notion
-NOTION_API_KEY=           # Notion integration token
-NOTION_DATABASE_ID=       # Database ID (from URL between notion.so/ and ?v=)
+NOTION_API_KEY=           # [DEPRECATED] Notion integration token
+NOTION_DATABASE_ID=       # [DEPRECATED] Database ID
 
 # AI Providers (for Skills system)
 ANTHROPIC_API_KEY=        # Claude models

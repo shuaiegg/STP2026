@@ -1,6 +1,7 @@
 import React from 'react';
 import {
     FileText,
+    Plus,
     RefreshCw,
     ExternalLink,
     Edit,
@@ -54,17 +55,17 @@ export default async function ContentManagement({ searchParams }: PageProps) {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-brand-text-primary mb-2">内容管理</h1>
-                    <p className="text-brand-text-secondary">管理从 Notion 同步的文章和页面。</p>
+                    <p className="text-brand-text-secondary">管理全平台博客文章、页面与课程。</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <Button variant="ghost" className="gap-2 font-bold text-xs uppercase tracking-widest bg-brand-surface shadow-sm border border-brand-border">
                         <Filter size={16} />
                         筛选
                     </Button>
-                    <Link href="/dashboard/admin/sync">
+                    <Link href="/dashboard/admin/content/new">
                         <Button variant="gradient" className="gap-2 font-bold text-xs uppercase tracking-widest">
-                            <RefreshCw size={16} />
-                            同步 Notion
+                            <Plus size={16} />
+                            新建文章
                         </Button>
                     </Link>
                 </div>

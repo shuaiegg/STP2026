@@ -108,6 +108,54 @@ export async function uploadImageFromUrl(
 }
 
 /**
+ * Upload an image file (Buffer/Uint8Array) directly to MinIO Storage
+ */
+export async function uploadImageFile(
+    file: Buffer | Uint8Array,
+    filename: string,
+    contentType: string = 'image/png'
+): Promise<UploadResult> {
+    const extension = (filename.split('.').pop() || contentType.split('/')[1] || 'png').toLowerCase();
+    // 脱敏文件名（去 CJK/空格/特殊字符）+ 唯一后缀，避免 URL 破损与同名覆盖
+    const base = filename
+        .replace(/\.[^.]+$/, '')        // 去扩展名
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')    // 非 ASCII/空格 → 连字符
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 60) || 'image';
+    const unique = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    const safeName = `${base}-${unique}.${extension}`;
+    const storagePath = `uploads/${new Date().getFullYear()}/${new Date().getMonth() + 1}/${safeName}`;
+
+    // Upload to MinIO via S3 API
+    await s3.send(new PutObjectCommand({
+        Bucket: STORAGE_BUCKET,
+        Key: storagePath,
+        Body: Buffer.from(file),
+        ContentType: contentType,
+    }));
+
+    const storageUrl = `${process.env.MINIO_PUBLIC_URL}/${STORAGE_BUCKET}/${storagePath}`;
+
+    // Create Media record
+    const media = await prisma.media.create({
+        data: {
+            filename,
+            storageUrl,
+            storagePath,
+            mimeType: contentType,
+            size: file.byteLength,
+        },
+    });
+
+    return {
+        mediaId: media.id,
+        storageUrl: media.storageUrl,
+        storagePath: media.storagePath,
+    };
+}
+
+/**
  * Get media by ID
  */
 export async function getMedia(mediaId: string) {

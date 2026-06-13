@@ -1,12 +1,16 @@
 'use client';
 
-import React from 'react';
-import { Save, RefreshCw, ChevronDown, ChevronUp, Sparkles, CheckCircle, AlertCircle, Lightbulb, Edit } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Save, RefreshCw, ChevronDown, ChevronUp, Sparkles, CheckCircle, AlertCircle, Lightbulb, Edit, Layout, List, Code as CodeIcon } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { updateContentMetadata, updateSeoMetadata, analyzeContentSeo, associateTranslation, dissociateTranslation } from '@/app/actions/content';
+import { parseMarkdownToSections, joinSectionsToMarkdown, ContentSection } from '@/lib/utils/markdown-sections';
+import { EditableSection } from '@/components/editor/EditableSection';
+import { OutlineEditor, OutlineNode } from '@/components/editor/OutlineEditor';
+import { uploadMediaAction } from '@/app/actions/media';
 
 interface SeoMeta {
     metaTitle?: string | null;
@@ -32,7 +36,23 @@ interface Article {
     contentMd: string | null;
     locale: string;
     translationGroupId: string | null;
+    categoryId: string | null;
+    authorId: string | null;
+    coverImageId: string | null;
+    coverImage?: {
+        storageUrl: string | null;
+    } | null;
     seo?: SeoMeta | null;
+}
+
+interface Author {
+    id: string;
+    name: string;
+}
+
+interface Category {
+    id: string;
+    name: string;
 }
 
 interface OtherArticle {
@@ -129,16 +149,21 @@ function FieldComparisonControl({
 
 export function EditForm({
     article,
-    otherArticles = []
+    otherArticles = [],
+    authors = [],
+    categories = []
 }: {
     article: Article;
     otherArticles?: OtherArticle[];
+    authors?: Author[];
+    categories?: Category[];
 }) {
     const router = useRouter();
     const [isPending, setIsPending] = React.useState(false);
     const [isSeoSaving, setIsSeoSaving] = React.useState(false);
     const [isAnalyzing, setIsAnalyzing] = React.useState(false);
     const [isOptimizing, setIsOptimizing] = React.useState(false);
+    const [editorMode, setEditorMode] = React.useState<'sections' | 'outline' | 'raw'>('sections');
     const [seoExpanded, setSeoExpanded] = React.useState(true);
     const [auditResult, setAuditResult] = React.useState<AuditResult | null>(null);
     const [optimizationResult, setOptimizationResult] = React.useState<any>(null);
@@ -153,7 +178,63 @@ export function EditForm({
         summary: article.summary || '',
         contentMd: article.contentMd || '',
         locale: article.locale || 'zh',
+        categoryId: article.categoryId || '',
+        authorId: article.authorId || '',
+        coverImageId: article.coverImageId || '',
     });
+
+    const [contentSections, setContentSections] = React.useState<ContentSection[]>(() => 
+        parseMarkdownToSections(article.contentMd || '')
+    );
+
+    // Sync contentMd when sections change
+    useEffect(() => {
+        if (editorMode !== 'raw') {
+            setFormData(prev => ({
+                ...prev,
+                contentMd: joinSectionsToMarkdown(contentSections)
+            }));
+        }
+    }, [contentSections, editorMode]);
+
+    const handleSectionSave = (id: string, newBody: string) => {
+        setContentSections(prev => 
+            prev.map(s => s.id === id ? { ...s, body: newBody } : s)
+        );
+    };
+
+    const handleOutlineChange = (nodes: OutlineNode[]) => {
+        // Map outline nodes to existing or new sections
+        setContentSections(prev => {
+            return nodes.map((node) => {
+                // Try to find existing section with same heading
+                const existing = prev.find(s => s.heading === node.text);
+                if (existing) return existing;
+
+                // Special case for intro
+                if (node.text === 'Intro' && prev[0]?.heading === '__intro__') return prev[0];
+
+                return {
+                    id: crypto.randomUUID(),
+                    heading: node.text,
+                    body: "",
+                    fullText: `## ${node.text}\n\n`
+                };
+            });
+        });
+    };
+
+    const handleImageUpload = async (file: File) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const result = await uploadMediaAction(formData);
+        if (result.success && result.data) {
+            return { storageUrl: result.data.storageUrl };
+        } else {
+            throw new Error(result.error || 'Upload failed');
+        }
+    };
 
     const [seoData, setSeoData] = React.useState({
         metaTitle: article.seo?.metaTitle || '',
@@ -217,17 +298,20 @@ export function EditForm({
     const effectiveDescription = seoData.metaDescription || formData.summary;
 
     // 统一的保存函数：同时保存文章内容和 SEO 数据
-    const handleUnifiedSave = async (isSyncingToNotion: boolean = false) => {
+    const handleUnifiedSave = async () => {
         setIsPending(true);
         setIsSeoSaving(true);
         try {
-            // 1. 保存文章基本信息 (Title, Slug, Summary, Content)
+            // 1. 保存文章基本信息 (Title, Slug, Summary, Content, etc.)
             const contentResult = await updateContentMetadata(article.id, {
                 title: formData.title,
                 slug: formData.slug,
                 summary: formData.summary,
                 contentMd: formData.contentMd,
                 locale: formData.locale,
+                categoryId: formData.categoryId || null,
+                authorId: formData.authorId || null,
+                coverImageId: formData.coverImageId || null,
             });
 
             if (!contentResult.success) {
@@ -258,7 +342,7 @@ export function EditForm({
 
             // 成功提示
             router.refresh();
-            alert(`✅ 保存成功！\n\n文章内容、SEO 设置及元数据已全部更新。${isSyncingToNotion ? '\n(Notion 同步请求已发送)' : ''}`);
+            alert(`✅ 保存成功！\n\n文章内容、SEO 设置及元数据已全部更新。`);
 
         } catch (error) {
             console.error('Save error:', error);
@@ -271,11 +355,11 @@ export function EditForm({
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        await handleUnifiedSave(true);
+        await handleUnifiedSave();
     };
 
     const handleSeoSave = async () => {
-        await handleUnifiedSave(false);
+        await handleUnifiedSave();
     };
 
     const handleAnalyze = async () => {
@@ -469,8 +553,8 @@ export function EditForm({
                         </div>
                     </div>
 
-                    {/* Language and Translation Pairing controls */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-5 bg-slate-50 rounded-xl border border-slate-100">
+                    {/* Language, Category and Author controls */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-5 bg-slate-50 rounded-xl border border-slate-100">
                         <div className="space-y-2">
                             <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">文章语言 (Locale)</label>
                             <select
@@ -483,50 +567,132 @@ export function EditForm({
                             </select>
                         </div>
 
-                        <div className="space-y-2 flex flex-col justify-end">
-                            {article.translationGroupId ? (
-                                <div className="space-y-1">
-                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1 font-sans">已关联翻译</label>
-                                    {pairedArticles.length > 0 ? (
-                                        pairedArticles.map(p => (
-                                            <div key={p.id} className="flex items-center justify-between bg-white border border-slate-200 px-3 py-1.5 rounded-lg text-xs shadow-sm">
-                                                <span className="font-semibold text-slate-700">{p.locale === 'en' ? '🇺🇸 英文' : '🇨🇳 中文'} ({p.slug})</span>
-                                                <div className="flex gap-2">
-                                                    <Link href={`/dashboard/admin/content/${p.id}`} className="text-brand-secondary hover:underline font-bold">
-                                                        编辑
-                                                    </Link>
-                                                    <button type="button" onClick={handleUnlinkTranslation} className="text-red-500 hover:underline font-bold">
-                                                        解绑
-                                                    </button>
-                                                </div>
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">所属分类</label>
+                            <select
+                                value={formData.categoryId}
+                                onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
+                                className="w-full bg-white border-slate-200 rounded-xl py-2.5 px-3 text-slate-900 font-semibold focus:ring-2 focus:ring-brand-primary/20 transition-all text-sm shadow-sm"
+                            >
+                                <option value="">未分类</option>
+                                {categories.map(cat => (
+                                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">发布作者</label>
+                            <select
+                                value={formData.authorId}
+                                onChange={(e) => setFormData({ ...formData, authorId: e.target.value })}
+                                className="w-full bg-white border-slate-200 rounded-xl py-2.5 px-3 text-slate-900 font-semibold focus:ring-2 focus:ring-brand-primary/20 transition-all text-sm shadow-sm"
+                            >
+                                <option value="">默认作者 (Team)</option>
+                                {authors.map(author => (
+                                    <option key={author.id} value={author.id}>{author.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* Translation Pairing */}
+                    <div className="p-5 bg-slate-50 rounded-xl border border-slate-100">
+                        {article.translationGroupId ? (
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1 font-sans">已关联翻译</label>
+                                {pairedArticles.length > 0 ? (
+                                    pairedArticles.map(p => (
+                                        <div key={p.id} className="flex items-center justify-between bg-white border border-slate-200 px-3 py-1.5 rounded-lg text-xs shadow-sm">
+                                            <span className="font-semibold text-slate-700">{p.locale === 'en' ? '🇺🇸 英文' : '🇨🇳 中文'} ({p.slug})</span>
+                                            <div className="flex gap-2">
+                                                <Link href={`/dashboard/admin/content/${p.id}`} className="text-brand-secondary hover:underline font-bold">
+                                                    编辑
+                                                </Link>
+                                                <button type="button" onClick={handleUnlinkTranslation} className="text-red-500 hover:underline font-bold">
+                                                    解绑
+                                                </button>
                                             </div>
-                                        ))
-                                    ) : (
-                                        <div className="flex items-center justify-between bg-white border border-slate-200 px-3 py-1.5 rounded-lg text-xs shadow-sm">
-                                            <span className="text-slate-400 font-medium italic">无其它配对</span>
-                                            <button type="button" onClick={handleUnlinkTranslation} className="text-red-500 hover:underline font-bold">
-                                                清除ID
-                                            </button>
                                         </div>
-                                    )}
-                                </div>
-                            ) : (
-                                <div className="space-y-1">
-                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1 font-sans">关联现有翻译</label>
-                                    <select
-                                        onChange={(e) => handleLinkTranslation(e.target.value)}
-                                        defaultValue=""
-                                        className="w-full bg-white border-slate-200 rounded-xl py-2 px-3 text-slate-900 font-semibold focus:ring-2 focus:ring-brand-primary/20 transition-all text-xs shadow-sm"
+                                    ))
+                                ) : (
+                                    <div className="flex items-center justify-between bg-white border border-slate-200 px-3 py-1.5 rounded-lg text-xs shadow-sm">
+                                        <span className="text-slate-400 font-medium italic">无其它配对</span>
+                                        <button type="button" onClick={handleUnlinkTranslation} className="text-red-500 hover:underline font-bold">
+                                            清除ID
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1 font-sans">关联现有翻译</label>
+                                <select
+                                    onChange={(e) => handleLinkTranslation(e.target.value)}
+                                    defaultValue=""
+                                    className="w-full bg-white border-slate-200 rounded-xl py-2 px-3 text-slate-900 font-semibold focus:ring-2 focus:ring-brand-primary/20 transition-all text-xs shadow-sm"
+                                >
+                                    <option value="" disabled>选择要配对的{formData.locale === 'zh' ? '英文' : '中文'}文章...</option>
+                                    {oppositeLocaleArticles.map(p => (
+                                        <option key={p.id} value={p.id}>
+                                            [{p.locale.toUpperCase()}] {p.title}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Cover Image */}
+                    <div className="space-y-2">
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">封面图片</label>
+                        <div className="flex items-start gap-4 p-5 bg-slate-50 rounded-xl border border-slate-100">
+                            <div className="w-32 aspect-video bg-white rounded-lg border border-slate-200 overflow-hidden flex-shrink-0 relative group">
+                                {formData.coverImageId ? (
+                                    <img 
+                                        src={article.coverImageId === formData.coverImageId ? article.coverImage?.storageUrl || '' : ''} 
+                                        alt="Cover" 
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-slate-300">
+                                        <Edit size={24} />
+                                    </div>
+                                )}
+                            </div>
+                            <div className="flex-1 space-y-3">
+                                <div className="text-xs text-slate-500">建议尺寸: 1200x630px. 支持拖拽或粘贴到下方编辑器上传后复制 ID，或直接在此上传。</div>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={formData.coverImageId}
+                                        onChange={(e) => setFormData({ ...formData, coverImageId: e.target.value })}
+                                        className="flex-1 bg-white border-slate-200 rounded-lg py-2 px-3 text-xs font-mono"
+                                        placeholder="Media ID (e.g. uuid)"
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        className="text-xs py-2 px-4 rounded-lg bg-white"
+                                        onClick={() => {
+                                            const input = document.createElement('input');
+                                            input.type = 'file';
+                                            input.accept = 'image/*';
+                                            input.onchange = async (e) => {
+                                                const file = (e.target as HTMLInputElement).files?.[0];
+                                                if (file) {
+                                                    const res = await handleImageUpload(file);
+                                                    setFormData(prev => ({ ...prev, coverImageId: (res as any).mediaId || '' }));
+                                                    alert('封面上传成功！请点击下方保存以生效。');
+                                                }
+                                            };
+                                            input.click();
+                                        }}
                                     >
-                                        <option value="" disabled>选择要配对的{formData.locale === 'zh' ? '英文' : '中文'}文章...</option>
-                                        {oppositeLocaleArticles.map(p => (
-                                            <option key={p.id} value={p.id}>
-                                                [{p.locale.toUpperCase()}] {p.title}
-                                            </option>
-                                        ))}
-                                    </select>
+                                        上传图片
+                                    </Button>
                                 </div>
-                            )}
+                            </div>
                         </div>
                     </div>
 
@@ -550,24 +716,79 @@ export function EditForm({
                         />
                     </div>
 
-                    <div className="space-y-2">
-                        {originalSnapshot && aiSnapshot && (
-                            <FieldComparisonControl
-                                label="正文"
-                                current={formData.contentMd}
-                                original={originalSnapshot.formData.contentMd}
-                                ai={aiSnapshot.formData.contentMd}
-                                onSelect={(val) => setFormData({ ...formData, contentMd: val })}
-                            />
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">文章正文</label>
+                            <div className="flex bg-slate-100 p-1 rounded-lg">
+                                <button
+                                    type="button"
+                                    onClick={() => setEditorMode('sections')}
+                                    className={`flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold uppercase rounded-md transition-all ${editorMode === 'sections' ? 'bg-white text-brand-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                >
+                                    <Layout size={12} /> 分段编辑
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setEditorMode('outline')}
+                                    className={`flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold uppercase rounded-md transition-all ${editorMode === 'outline' ? 'bg-white text-brand-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                >
+                                    <List size={12} /> 结构
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setEditorMode('raw')}
+                                    className={`flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold uppercase rounded-md transition-all ${editorMode === 'raw' ? 'bg-white text-brand-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                >
+                                    <CodeIcon size={12} /> 源码
+                                </button>
+                            </div>
+                        </div>
+
+                        {editorMode === 'sections' && (
+                            <div className="space-y-4 animate-in fade-in duration-300">
+                                {contentSections.length > 0 ? (
+                                    contentSections.map(section => (
+                                        <EditableSection
+                                            key={section.id}
+                                            section={section}
+                                            onSave={handleSectionSave}
+                                            onImageUpload={handleImageUpload}
+                                        />
+                                    ))
+                                ) : (
+                                    <div className="p-12 text-center border-2 border-dashed border-slate-100 rounded-2xl text-slate-400 text-sm">
+                                        正文为空，请切换到源码模式输入或在结构模式添加段落
+                                    </div>
+                                )}
+                            </div>
                         )}
-                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">文章正文 (Markdown)</label>
-                        <textarea
-                            rows={15}
-                            value={formData.contentMd}
-                            onChange={(e) => setFormData({ ...formData, contentMd: e.target.value })}
-                            className="w-full bg-slate-50 border-slate-200 rounded-xl py-3 px-4 text-slate-900 font-semibold focus:ring-2 focus:ring-brand-primary/20 transition-all font-mono text-sm min-h-[400px]"
-                            placeholder="在些输入 Markdown 正文..."
-                        />
+
+                        {editorMode === 'outline' && (
+                            <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 animate-in fade-in duration-300">
+                                <OutlineEditor
+                                    initialData={contentSections.map(s => ({ 
+                                        level: s.heading === '__intro__' ? 1 : 2, 
+                                        text: s.heading === '__intro__' ? 'Intro' : s.heading 
+                                    }))}
+                                    onChange={handleOutlineChange}
+                                />
+                                <p className="mt-4 text-[10px] text-slate-400 font-bold uppercase text-center italic">
+                                    拖拽调整顺序，点击 H2/H3 切换层级
+                                </p>
+                            </div>
+                        )}
+
+                        {editorMode === 'raw' && (
+                            <div className="animate-in fade-in duration-300">
+                                <textarea
+                                    rows={25}
+                                    value={formData.contentMd}
+                                    onChange={(e) => setFormData({ ...formData, contentMd: e.target.value })}
+                                    className="w-full bg-slate-900 border-0 rounded-2xl p-6 text-slate-100 font-mono text-sm focus:ring-2 focus:ring-brand-primary/20 transition-all min-h-[500px]"
+                                    placeholder="输入 Markdown 源码..."
+                                />
+                            </div>
+                        )}
                     </div>
 
                     <div className="pt-4 flex items-center gap-4">
@@ -577,7 +798,7 @@ export function EditForm({
                             className="flex-1 gap-2 font-bold py-4 rounded-xl shadow-lg shadow-brand-primary/20"
                         >
                             {isPending ? <RefreshCw size={18} className="animate-spin" /> : <Save size={18} />}
-                            {isPending ? '正在同步至 Notion...' : '保存并反向同步'}
+                            {isPending ? '正在保存...' : '保存更新'}
                         </Button>
                         <Button
                             type="button"

@@ -1,8 +1,36 @@
 'use server';
 
 import prisma from '@/lib/prisma';
-import { updateNotionPageProperties } from '@/lib/notion/client';
 import { revalidatePath } from 'next/cache';
+
+/**
+ * Centrally manage revalidation for all paths affected by a content change.
+ * Handles locale awareness to ensure both en and zh paths are refreshed.
+ */
+async function revalidateContentPaths(content: { slug: string, locale: string, category?: { slug: string } | null }) {
+    // 1. Blog listing pages (always refresh both locales)
+    revalidatePath('/blog');
+    revalidatePath('/zh/blog');
+
+    // 2. Article detail page (specific locale)
+    const detailPath = content.locale === 'en' ? `/blog/${content.slug}` : `/zh/blog/${content.slug}`;
+    revalidatePath(detailPath);
+
+    // 3. Homepages (featured sections)
+    revalidatePath('/');
+    revalidatePath('/zh');
+
+    // 4. Category page
+    if (content.category?.slug) {
+        const categoryPath = content.locale === 'en' 
+            ? `/blog/category/${content.category.slug}` 
+            : `/zh/blog/category/${content.category.slug}`;
+        revalidatePath(categoryPath);
+    }
+
+    // 5. Sitemap
+    revalidatePath('/sitemap.xml');
+}
 
 export async function updateContentMetadata(id: string, data: {
     title?: string;
@@ -11,55 +39,37 @@ export async function updateContentMetadata(id: string, data: {
     contentMd?: string;
     locale?: string;
     translationGroupId?: string | null;
+    categoryId?: string | null;
+    authorId?: string | null;
+    coverImageId?: string | null;
 }) {
     try {
-        // 1. Get the content item to get the notionPageId
-        const content = await prisma.content.findUnique({
+        // Fetch current state for redirect logic and revalidation
+        const current = await prisma.content.findUnique({
             where: { id },
-            select: { notionPageId: true }
+            include: { category: true }
         });
 
-        if (!content || !content.notionPageId) {
-            throw new Error('Content not found or not connected to Notion');
+        if (!current) throw new Error('Content not found');
+
+        // 1. If slug is changing for a PUBLISHED article, create a Redirect
+        if (data.slug && current.status === 'PUBLISHED' && current.slug !== data.slug) {
+            const oldPath = current.locale === 'en' ? `/blog/${current.slug}` : `/zh/blog/${current.slug}`;
+            const newPath = current.locale === 'en' ? `/blog/${data.slug}` : `/zh/blog/${data.slug}`;
+
+            await prisma.$transaction([
+                // 防环：新路径现在重新生效，删除任何指向它的旧重定向（如 A→B 后又 B→A）
+                prisma.redirect.deleteMany({ where: { fromPath: newPath } }),
+                prisma.redirect.upsert({
+                    where: { fromPath: oldPath },
+                    update: { toPath: newPath, statusCode: 301 },
+                    create: { fromPath: oldPath, toPath: newPath, statusCode: 301 },
+                }),
+            ]);
         }
 
-        // 2. Prepare Notion properties
-        const properties: any = {};
-        if (data.title) {
-            properties.Title = {
-                title: [{ text: { content: data.title } }]
-            };
-        }
-        if (data.slug) {
-            properties.Slug = {
-                rich_text: [{ text: { content: data.slug } }]
-            };
-        }
-        if (data.summary) {
-            properties.Summary = {
-                rich_text: [{ text: { content: data.summary } }]
-            };
-        }
-
-        // 3. Update Notion Properties (Best Effort)
-        try {
-            await updateNotionPageProperties(content.notionPageId, properties);
-        } catch (notionError) {
-            console.error('Warning: Failed to sync properties to Notion:', notionError);
-        }
-
-        // 4. Update Notion Content (Blocks) if provided (Best Effort)
-        if (data.contentMd) {
-            try {
-                const { updateNotionPageContent } = await import('@/lib/notion/client');
-                await updateNotionPageContent(content.notionPageId, data.contentMd);
-            } catch (notionError) {
-                console.error('Warning: Failed to sync content to Notion:', notionError);
-            }
-        }
-
-        // 5. Update local database
-        await prisma.content.update({
+        // 2. Update local database
+        const updated = await prisma.content.update({
             where: { id },
             data: {
                 title: data.title,
@@ -68,17 +78,18 @@ export async function updateContentMetadata(id: string, data: {
                 contentMd: data.contentMd,
                 locale: data.locale,
                 translationGroupId: data.translationGroupId,
+                categoryId: data.categoryId,
+                authorId: data.authorId,
+                coverImageId: data.coverImageId,
                 updatedAt: new Date()
-            }
+            },
+            include: { category: true }
         });
 
-        // 6. Revalidate
-        revalidatePath('/dashboard/admin/content');
+        // 3. Revalidate affected paths
+        await revalidateContentPaths(updated);
         revalidatePath(`/dashboard/admin/content/${id}`);
-        if (data.slug) {
-            revalidatePath(`/blog/${data.slug}`);
-        }
-        revalidatePath('/blog');
+        revalidatePath('/dashboard/admin/content');
 
         return { success: true };
     } catch (error) {
@@ -153,10 +164,9 @@ export async function updateSeoMetadata(contentId: string, data: {
         });
 
         // Revalidate paths
-        revalidatePath('/dashboard/admin/content');
+        await revalidateContentPaths(content as any);
         revalidatePath(`/dashboard/admin/content/${contentId}`);
-        revalidatePath(`/blog/${content.slug}`);
-        revalidatePath('/blog');
+        revalidatePath('/dashboard/admin/content');
 
         return { success: true };
     } catch (error) {
@@ -188,7 +198,7 @@ export async function saveSeoOptimizationData(contentId: string, data: {
     try {
         const content = await prisma.content.findUnique({
             where: { id: contentId },
-            select: { id: true, slug: true, notionPageId: true }
+            select: { id: true, slug: true }
         });
 
         if (!content) {
@@ -204,16 +214,6 @@ export async function saveSeoOptimizationData(contentId: string, data: {
                     updatedAt: new Date()
                 }
             });
-
-            // Sync to Notion if connected
-            if (content.notionPageId) {
-                try {
-                    const { updateNotionPageContent } = await import('@/lib/notion/client');
-                    await updateNotionPageContent(content.notionPageId, data.contentMd);
-                } catch (e) {
-                    console.warn('Failed to sync content to Notion:', e);
-                }
-            }
         }
 
         // Upsert all SEO data
@@ -247,10 +247,9 @@ export async function saveSeoOptimizationData(contentId: string, data: {
         });
 
         // Revalidate
-        revalidatePath('/dashboard/admin/content');
+        await revalidateContentPaths(content as any);
         revalidatePath(`/dashboard/admin/content/${contentId}`);
-        revalidatePath(`/blog/${content.slug}`);
-        revalidatePath('/blog');
+        revalidatePath('/dashboard/admin/content');
 
         return { success: true };
     } catch (error) {
@@ -414,6 +413,15 @@ export async function associateTranslation(articleId1: string, articleId2: strin
             data: { translationGroupId: groupId }
         });
 
+        // Revalidate both articles
+        const [fullA1, fullA2] = await Promise.all([
+            prisma.content.findUnique({ where: { id: articleId1 }, include: { category: true } }),
+            prisma.content.findUnique({ where: { id: articleId2 }, include: { category: true } })
+        ]);
+        
+        if (fullA1) await revalidateContentPaths(fullA1);
+        if (fullA2) await revalidateContentPaths(fullA2);
+
         revalidatePath('/dashboard/admin/content');
         revalidatePath(`/dashboard/admin/content/${articleId1}`);
         revalidatePath(`/dashboard/admin/content/${articleId2}`);
@@ -427,11 +435,13 @@ export async function associateTranslation(articleId1: string, articleId2: strin
 
 export async function dissociateTranslation(articleId: string) {
     try {
-        await prisma.content.update({
+        const updated = await prisma.content.update({
             where: { id: articleId },
-            data: { translationGroupId: null }
+            data: { translationGroupId: null },
+            include: { category: true }
         });
 
+        await revalidateContentPaths(updated);
         revalidatePath('/dashboard/admin/content');
         revalidatePath(`/dashboard/admin/content/${articleId}`);
 

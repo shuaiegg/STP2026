@@ -25,7 +25,6 @@ async function getStats() {
         totalContent, 
         totalUsers, 
         activeUsersCount,
-        lastSync, 
         totalCreditsPurchased,
         totalExecutions,
         successExecutions
@@ -42,7 +41,6 @@ async function getStats() {
                 }
             }
         }),
-        prisma.syncLog.findFirst({ orderBy: { startedAt: 'desc' } }),
         prisma.creditTransaction.aggregate({
             _sum: { amount: true },
             where: { amount: { gt: 0 }, type: 'PURCHASE' }
@@ -59,7 +57,6 @@ async function getStats() {
         totalUsers, 
         activityRate,
         successRate,
-        lastSync, 
         revenueCredits: totalCreditsPurchased._sum.amount || 0,
         totalExecutions
     };
@@ -164,10 +161,9 @@ export default async function AdminDashboard() {
                             <div className="text-3xl font-bold text-brand-text-primary font-mono">{stats.totalContent}</div>
                         </div>
                     </div>
-                    <Link href="/dashboard/admin/sync" className="flex items-center gap-1.5 text-xs font-bold text-brand-primary hover:underline">
-                        <RefreshCw size={12} />
-                        <span>最近同步: {stats.lastSync?.completedAt ? new Date(stats.lastSync.completedAt).toLocaleTimeString() : '暂无记录'}</span>
-                    </Link>
+                    <div className="text-xs font-bold text-brand-text-muted uppercase tracking-widest">
+                        全平台博客、页面与课程
+                    </div>
                 </Card>
             </div>
 
@@ -217,7 +213,7 @@ export default async function AdminDashboard() {
                                 <div className="flex items-center justify-between p-4 rounded-xl bg-brand-text-inverted/10 hover:bg-brand-text-inverted/20 transition-all group">
                                     <div className="flex items-center gap-3">
                                         <FileText size={18} />
-                                        <span className="font-bold text-sm">Notion 内容同步</span>
+                                        <span className="font-bold text-sm">内容库管理</span>
                                     </div>
                                     <ArrowUpRight size={18} className="opacity-50 group-hover:opacity-100" />
                                 </div>
@@ -228,10 +224,6 @@ export default async function AdminDashboard() {
                     <Card className="p-8 border-none shadow-sm bg-brand-surface">
                         <h3 className="text-xl font-bold text-brand-text-primary mb-6">系统状态</h3>
                         <div className="space-y-4">
-                            <div className="flex items-center justify-between text-sm">
-                                <span className="text-brand-text-secondary">Notion API</span>
-                                <span className="text-brand-success font-bold">已连接</span>
-                            </div>
                             <div className="flex items-center justify-between text-sm">
                                 <span className="text-brand-text-secondary">Supabase 数据库</span>
                                 <span className="text-brand-success font-bold">正常</span>

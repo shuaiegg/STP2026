@@ -232,6 +232,12 @@ export default function GEOWriterPage() {
                 content: fullContent,
                 summary: finalResult?.seoMetadata?.description || '',
                 locale: form.locale,
+                seoMeta: {
+                    metaTitle: finalResult?.seoMetadata?.title,
+                    metaDescription: finalResult?.seoMetadata?.description,
+                    keywords: finalResult?.seoMetadata?.keywords,
+                    geoScore: finalResult?.scores?.geo,
+                }
             });
 
             if (result.success) {

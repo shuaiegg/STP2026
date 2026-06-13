@@ -12,7 +12,7 @@ datasource db {
 /// Category - System managed, not auto-created from Notion
 model Category {
   id             String    @id @default(uuid())
-  slug           String    @unique
+  slug           String
   name           String
   description    String?
   ctaTitle       String?
@@ -22,11 +22,15 @@ model Category {
   order          Int       @default(0)
   isActive       Boolean   @default(true)
   noIndex        Boolean   @default(false)
+  locale         String    @default("zh")
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
   contents       Content[]
 
+  // slug 按语种唯一：en/zh 可有同名 slug（各自独立类别集）
+  @@unique([locale, slug])
   @@index([isActive, order])
+  @@index([locale, isActive, order])
 }
 
 /// Content - Blog posts, pages, courses synced from Notion or created manually
@@ -44,14 +48,16 @@ model Content {
   publishedAt        DateTime?
   notionPageId       String?        @unique
   notionLastEditedAt DateTime?
-  source             ContentSource  @default(NOTION)
+  source             ContentSource  @default(MANUAL)
   categoryId         String?
+  authorId           String?
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
   readingTime        Int?
   locale             String         @default("zh")
   translationGroupId String?
   category           Category?      @relation(fields: [categoryId], references: [id])
+  author             Author?        @relation(fields: [authorId], references: [id])
   coverImage         Media?         @relation("ContentCover", fields: [coverImageId], references: [id])
   previewTokens      PreviewToken[]
   seo                SeoMeta?
@@ -60,6 +66,31 @@ model Content {
   @@index([locale, status, visibility, publishedAt(sort: Desc)])
   @@index([categoryId, status])
   @@index([type, status])
+  @@index([authorId])
+}
+
+/// Author - Person entity for blog posts
+model Author {
+  id        String    @id @default(uuid())
+  name      String
+  bio       String?
+  avatarId  String?
+  url       String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  avatar    Media?    @relation("AuthorAvatar", fields: [avatarId], references: [id])
+  contents  Content[]
+
+  @@index([name])
+}
+
+/// Redirect - Runtime redirect rules
+model Redirect {
+  id         String   @id @default(uuid())
+  fromPath   String   @unique
+  toPath     String
+  statusCode Int      @default(301)
+  createdAt  DateTime @default(now())
 }
 
 /// SeoMeta - SEO metadata for content, managed separately from Notion
@@ -100,6 +131,7 @@ model Media {
   createdAt     DateTime  @default(now())
   contentCovers Content[] @relation("ContentCover")
   seoOgImages   SeoMeta[] @relation("SeoOgImage")
+  authorAvatars Author[]  @relation("AuthorAvatar")
 
   @@index([notionBlockId])
 }
@@ -411,20 +443,6 @@ model Verification {
 
   @@unique([identifier, value])
   @@index([identifier])
-}
-
-/// SyncLog - Track Notion sync operations
-model SyncLog {
-  id          String    @id @default(uuid())
-  startedAt   DateTime  @default(now())
-  completedAt DateTime?
-  status      String
-  itemsTotal  Int       @default(0)
-  itemsSynced Int       @default(0)
-  itemsFailed Int       @default(0)
-  error       String?
-
-  @@index([startedAt(sort: Desc)])
 }
 
 /// CreditTransaction - Track all credit-related activities

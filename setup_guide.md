@@ -16,8 +16,8 @@
 *   `SUPABASE_SERVICE_ROLE_KEY`: 服务端管理员 Key（用于绕过 RLS 上传 Notion 图片）。
 
 ### Notion CMS
-*   `NOTION_API_KEY`: Notion 机器人集成 Token。
-*   `NOTION_DATABASE_ID`: 用于存储文章的 Notion 数据库 ID。
+*   `NOTION_API_KEY`: [已废弃] Notion 机器人集成 Token。
+*   `NOTION_DATABASE_ID`: [已废弃] 用于存储文章的 Notion 数据库 ID。
 
 ---
 

@@ -54,6 +54,7 @@ export async function getPublishedContent(
                     category: true,
                     coverImage: true,
                     seo: true,
+                    author: true,
                 },
                 orderBy: { publishedAt: 'desc' },
                 take: limit,
@@ -92,6 +93,7 @@ export async function getPublishedContentBySlug(slug: string, locale?: string) {
             category: true,
             coverImage: true,
             seo: true,
+            author: true,
         },
     });
 }
@@ -124,34 +126,46 @@ export async function getContentByPreviewToken(token: string) {
 }
 
 /**
- * Get all active categories
+ * Get all active categories, optionally filtered by locale
  */
-export async function getActiveCategories() {
+export async function getActiveCategories(options?: { locale?: string }) {
     return prisma.category.findMany({
-        where: { isActive: true },
+        where: { 
+            isActive: true,
+            ...(options?.locale && { locale: options.locale }),
+        },
         orderBy: { order: 'asc' },
     });
 }
 
 /**
- * Get category by slug with content count
+ * Get category by slug with content count, optionally filtered by locale
  */
-export async function getCategoryBySlug(slug: string) {
-    const category = await prisma.category.findUnique({
-        where: { slug },
-        include: {
-            _count: {
-                select: {
-                    contents: {
-                        where: {
-                            status: ContentStatus.PUBLISHED,
-                            visibility: Visibility.PUBLIC,
-                        },
+export async function getCategoryBySlug(slug: string, locale?: string) {
+    const countInclude = {
+        _count: {
+            select: {
+                contents: {
+                    where: {
+                        status: ContentStatus.PUBLISHED,
+                        visibility: Visibility.PUBLIC,
+                        ...(locale && { locale }),
                     },
                 },
             },
         },
-    });
+    };
+
+    // slug 已改为按 (locale, slug) 唯一：有 locale 用复合唯一键，否则取首条匹配
+    const category = locale
+        ? await prisma.category.findUnique({
+              where: { locale_slug: { locale, slug } },
+              include: countInclude,
+          })
+        : await prisma.category.findFirst({
+              where: { slug },
+              include: countInclude,
+          });
 
     return category;
 }
@@ -164,9 +178,9 @@ export async function getContentByCategory(
     pagination?: PaginationOptions,
     locale?: string
 ) {
-    const category = await prisma.category.findUnique({
-        where: { slug: categorySlug },
-    });
+    const category = locale
+        ? await prisma.category.findUnique({ where: { locale_slug: { locale, slug: categorySlug } } })
+        : await prisma.category.findFirst({ where: { slug: categorySlug } });
 
     if (!category) return null;
 

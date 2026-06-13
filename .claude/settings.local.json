@@ -211,7 +211,14 @@
       "Bash(sed -n '85,105p' src/app/api/dashboard/site-intelligence/save/route.ts)",
       "Bash(grep -n \"systeme.io 后台该联系人打上了 \\\\`_en\\\\` 后缀标签\" docs/i18n-manual-checklist.md)",
       "Bash(git commit -m 'feat\\(systeme\\): dual-account routing by locale \\(replaces _en tag suffix\\) *)",
-      "Bash(git commit -m 'feat\\(systeme\\): independent per-account tag rules with fallback *)"
+      "Bash(git commit -m 'feat\\(systeme\\): independent per-account tag rules with fallback *)",
+      "Bash(sed -n '71,98p' prisma/schema.prisma)",
+      "Bash(sed -n '13,33p' prisma/schema.prisma)",
+      "Bash(npx tsx *)",
+      "Bash(sed -n '80,95p' \"src/app/[locale]/\\(public\\)/blog/[slug]/page.tsx\")",
+      "Bash(sed -n '13,26p' \"src/app/[locale]/\\(public\\)/blog/category/[slug]/page.tsx\")",
+      "Bash(echo \"=== tsc exit: $? ===\")",
+      "Bash(echo \"=== tsc exit $? ===\")"
     ],
     "additionalDirectories": [
       "/Users/jack/Projects/STP/STP2026/src/app/api/dashboard/sites/[siteId]",

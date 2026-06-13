@@ -50,7 +50,6 @@ function resolvedStatus(dbConfigured: boolean, envVar: string): IntegrationStatu
 export default async function IntegrationsPage() {
   const resendStatus = envStatus('RESEND_API_KEY');
   const posthogStatus = envStatus('NEXT_PUBLIC_POSTHOG_KEY');
-  const notionStatus = envStatus('NOTION_API_KEY');
 
   // systeme.io: check DB first（双账户：默认/中文 + 英文）
   const [systemeInDb, systemeKeyMasked, systemeEnInDb, systemeEnKeyMasked, tagRules, tagRulesEn] = await Promise.all([
@@ -68,7 +67,6 @@ export default async function IntegrationsPage() {
     ['RESEND_API_KEY', resendStatus],
     ['SYSTEME_IO_API_KEY', systemeStatus],
     ['NEXT_PUBLIC_POSTHOG_KEY', posthogStatus],
-    ['NOTION_API_KEY', notionStatus],
   ];
 
   return (
@@ -138,15 +136,6 @@ export default async function IntegrationsPage() {
           envVar="NEXT_PUBLIC_POSTHOG_KEY"
           notes="通过环境变量配置，暂不支持 DB 管理。客户端 posthog-js + 服务端 posthog-node 双路追踪。"
           icon={<Activity size={20} />}
-        />
-
-        <IntegrationCard
-          name="Notion"
-          description="内容数据源：通过 NOTION_API_KEY 和 NOTION_DATABASE_ID 定期同步文章内容，支持增量同步和图片自动迁移到 MinIO。"
-          status={notionStatus}
-          envVar="NOTION_API_KEY"
-          notes="管理入口：/admin/sync"
-          icon={<Database size={20} />}
         />
       </section>
 

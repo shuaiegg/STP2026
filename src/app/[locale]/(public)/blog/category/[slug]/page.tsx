@@ -2,8 +2,9 @@ import React from 'react';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 import Image from 'next/image';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { getCategoryBySlug, getContentByCategory } from '@/lib/content';
+import { findRedirect, redirectCandidates } from '@/lib/redirects';
 import { Card } from '@/components/ui/Card';
 
 interface CategoryPageProps {
@@ -15,11 +16,18 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     const { slug, locale } = await params;
 
     const [category, contentResult] = await Promise.all([
-        getCategoryBySlug(slug),
+        getCategoryBySlug(slug, locale),
         getContentByCategory(slug, undefined, locale),
     ]);
 
     if (!category) {
+        // 旧类别 slug 重定向（如中文 slug 迁移到 ASCII）。
+        // params.slug 的 CJK 可能是 encoded 或 decoded，用候选列表容错匹配
+        const prefix = locale === 'zh' ? '/zh/blog/category/' : '/blog/category/';
+        const hit = await findRedirect(redirectCandidates(prefix, slug));
+        if (hit) {
+            permanentRedirect(hit.toPath);
+        }
         return notFound();
     }
 

@@ -3,8 +3,9 @@ import { getTranslations } from 'next-intl/server';
 import { Link, redirect } from '@/i18n/navigation';
 import Image from 'next/image';
 import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { getPublishedContentBySlug, getRelatedContent } from '@/lib/content';
+import { findRedirect, redirectCandidates } from '@/lib/redirects';
 import { CTA } from '@/components/CTA';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -87,8 +88,13 @@ export default async function BlogPost({ params }: BlogPostProps) {
     ]);
 
     if (!post) {
-        // 该 slug 可能存在于另一语言（如旧收录的中文 URL 落在 en 前缀）
-        // → 308 跳转到正确语言前缀，保留外链/收录权重，而不是 404
+        // 1. slug 改名重定向：查 Redirect 表（旧 slug → 新 slug，308 保权重）
+        const fromPath = locale === 'zh' ? `/zh/blog/${slug}` : `/blog/${slug}`;
+        const hit = await findRedirect(fromPath);
+        if (hit) {
+            permanentRedirect(hit.toPath);
+        }
+        // 2. 该 slug 可能存在于另一语言（如旧收录的中文 URL 落在 en 前缀）
         const otherLocalePost = await getPublishedContentBySlug(slug);
         if (otherLocalePost) {
             redirect({ href: `/blog/${slug}`, locale: otherLocalePost.locale });
@@ -129,8 +135,8 @@ export default async function BlogPost({ params }: BlogPostProps) {
             "dateModified": post.updatedAt?.toISOString() ?? post.publishedAt?.toISOString() ?? undefined,
             "author": [{
                 "@type": "Person",
-                "name": "ScaletoTop Team",
-                "url": baseUrl
+                "name": (post as any).author?.name || "ScaletoTop Team",
+                "url": (post as any).author?.url || baseUrl
             }],
             "publisher": {
                 "@type": "Organization",
@@ -255,6 +261,10 @@ export default async function BlogPost({ params }: BlogPostProps) {
                                     <div>
                                         <div className="font-mono text-xs text-brand-text-muted mb-1">Date</div>
                                         <div className="font-medium text-brand-text-primary">{formatDate(post.publishedAt)}</div>
+                                    </div>
+                                    <div>
+                                        <div className="font-mono text-xs text-brand-text-muted mb-1">Author</div>
+                                        <div className="font-medium text-brand-text-primary">{(post as any).author?.name || 'ScaletoTop Team'}</div>
                                     </div>
                                     <div>
                                         <div className="font-mono text-xs text-brand-text-muted mb-1">Read Time</div>

@@ -12,13 +12,15 @@ interface EditableSectionProps {
     section: ContentSection;
     onSave: (id: string, newBody: string) => void;
     onRegenerate?: (instruction: string) => Promise<boolean>;
+    onImageUpload?: (file: File) => Promise<{ storageUrl: string }>;
     className?: string;
 }
 
-export function EditableSection({ section, onSave, onRegenerate, className = "" }: EditableSectionProps) {
+export function EditableSection({ section, onSave, onRegenerate, onImageUpload, className = "" }: EditableSectionProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [body, setBody] = useState(section.body);
     const [isCopied, setIsCopied] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
 
     // Regeneration State
     const [isRegenOpen, setIsRegenOpen] = useState(false);
@@ -26,6 +28,46 @@ export function EditableSection({ section, onSave, onRegenerate, className = "" 
     const [isRegenerating, setIsRegenerating] = useState(false);
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    // Image Upload Handlers
+    const insertImageAtCursor = (url: string, alt: string = 'image') => {
+        if (!textareaRef.current) return;
+        const start = textareaRef.current.selectionStart;
+        const end = textareaRef.current.selectionEnd;
+        const newBody = body.substring(0, start) + `\n![${alt}](${url})\n` + body.substring(end);
+        setBody(newBody);
+    };
+
+    const handleFileUpload = async (file: File) => {
+        if (!onImageUpload || !file.type.startsWith('image/')) return;
+        
+        setIsUploading(true);
+        try {
+            const { storageUrl } = await onImageUpload(file);
+            insertImageAtCursor(storageUrl, file.name);
+        } catch (error) {
+            console.error('Image upload failed:', error);
+            alert('图片上传失败，请重试');
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+    const handlePaste = async (e: React.ClipboardEvent) => {
+        const file = e.clipboardData.files[0];
+        if (file) {
+            e.preventDefault();
+            await handleFileUpload(file);
+        }
+    };
+
+    const handleDrop = async (e: React.DragEvent) => {
+        const file = e.dataTransfer.files[0];
+        if (file) {
+            e.preventDefault();
+            await handleFileUpload(file);
+        }
+    };
 
     // Auto-resize textarea
     useEffect(() => {
@@ -197,14 +239,26 @@ export function EditableSection({ section, onSave, onRegenerate, className = "" 
 
             {/* Content Area */}
             {isEditing ? (
-                <textarea
-                    ref={textareaRef}
-                    value={body}
-                    onChange={(e) => setBody(e.target.value)}
-                    className="w-full bg-slate-50 border-0 rounded-xl p-4 text-slate-700 font-medium leading-relaxed focus:ring-0 focus:outline-none resize-none font-mono text-sm"
-                    placeholder="在此输入内容..."
-                    spellCheck={false}
-                />
+                <div className="relative">
+                    <textarea
+                        ref={textareaRef}
+                        value={body}
+                        onChange={(e) => setBody(e.target.value)}
+                        onPaste={handlePaste}
+                        onDrop={handleDrop}
+                        className="w-full bg-slate-50 border-0 rounded-xl p-4 text-slate-700 font-medium leading-relaxed focus:ring-0 focus:outline-none resize-none font-mono text-sm"
+                        placeholder="在此输入内容 (支持拖拽/粘贴图片)..."
+                        spellCheck={false}
+                    />
+                    {isUploading && (
+                        <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center rounded-xl">
+                            <div className="flex items-center gap-2 text-brand-primary font-bold">
+                                <RefreshCw size={16} className="animate-spin" />
+                                正在上传图片...
+                            </div>
+                        </div>
+                    )}
+                </div>
             ) : (
                 <div className={`prose prose-slate max-w-none prose-p:leading-relaxed prose-headings:hidden ${isRegenerating ? 'opacity-50 blur-[1px] transition-all' : ''}`}>
                     {/* We rely on ReactMarkdown but render pure body (headings stripped) */}

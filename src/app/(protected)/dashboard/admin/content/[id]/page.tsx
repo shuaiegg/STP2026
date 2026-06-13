@@ -39,6 +39,14 @@ export default async function EditArticlePage({ params }: { params: Promise<{ id
         orderBy: { updatedAt: 'desc' }
     });
 
+    const [authors, categories] = await Promise.all([
+        prisma.author.findMany({ orderBy: { name: 'asc' } }),
+        prisma.category.findMany({ 
+            where: { locale: article.locale },
+            orderBy: { name: 'asc' }
+        }),
+    ]);
+
     return (
         <div className="max-w-4xl mx-auto space-y-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -55,7 +63,7 @@ export default async function EditArticlePage({ params }: { params: Promise<{ id
                                 {article.status}
                             </Badge>
                             <span className="text-xs text-slate-400 font-semibold uppercase tracking-widest">
-                                上次同步: {article.updatedAt.toLocaleDateString()}
+                                上次更新: {article.updatedAt.toLocaleDateString()}
                             </span>
                         </div>
                     </div>
@@ -72,47 +80,16 @@ export default async function EditArticlePage({ params }: { params: Promise<{ id
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2">
-                    <EditForm article={article as any} otherArticles={otherArticles as any} />
+                    <EditForm 
+                        article={article as any} 
+                        otherArticles={otherArticles as any} 
+                        authors={authors as any}
+                        categories={categories as any}
+                    />
                 </div>
 
                 <div className="space-y-6">
-                    <Card className="p-6 border-none shadow-sm bg-white">
-                        <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2">
-                            <Info size={16} className="text-brand-primary" />
-                            Notion 集成
-                        </h3>
-                        <div className="space-y-4">
-                            <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
-                                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Notion 页面 ID</div>
-                                <div className="text-xs font-mono text-slate-600 break-all">{article.notionPageId}</div>
-                            </div>
-                            <div className="flex items-center justify-between p-1">
-                                <span className="text-xs font-bold text-slate-600">双向同步已启用</span>
-                                <div className="w-8 h-4 bg-emerald-500 rounded-full relative">
-                                    <div className="absolute right-0.5 top-0.5 w-3 h-3 bg-white rounded-full" />
-                                </div>
-                            </div>
-                        </div>
-                        <div className="mt-6 pt-6 border-t border-slate-100">
-                            <p className="text-[10px] leading-relaxed text-slate-400 font-semibold">
-                                在此处修改属性将自动同步至您的 Notion 数据库。注意：目前仅支持元数据双向同步，正文暂为单向。
-                            </p>
-                        </div>
-                    </Card>
-
-                    <Card className="p-6 border-none shadow-sm bg-white">
-                        <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-4">文章元数据</h3>
-                        <div className="space-y-3">
-                            <div className="flex justify-between text-xs">
-                                <span className="text-slate-400 font-semibold">分类</span>
-                                <span className="text-slate-900 font-bold">{article.category?.name || '未分类'}</span>
-                            </div>
-                            <div className="flex justify-between text-xs">
-                                <span className="text-slate-400 font-semibold">发布作者</span>
-                                <span className="text-slate-900 font-bold">Administrator</span>
-                            </div>
-                        </div>
-                    </Card>
+                    {/* Sidebar components can go here if needed */}
                 </div>
             </div>
         </div>
