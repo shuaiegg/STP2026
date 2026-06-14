@@ -2,10 +2,11 @@ import { NextResponse } from "next/server";
 import { withSiteContext } from "@/lib/api-utils";
 import prisma from "@/lib/prisma";
 import { getProvider } from "@/lib/skills/providers";
+import { localeDirective } from "@/lib/skills/locale-directive";
 
 async function handler(
     req: Request,
-    { params, site }: { params: { siteId: string }; site: any; session: any }
+    { params, site, session }: { params: { siteId: string }; site: any; session: any }
 ) {
     try {
         const { siteId } = params;
@@ -115,6 +116,7 @@ async function handler(
             }
           ]
         }
+        ${localeDirective((session?.user as { locale?: string })?.locale)}
         `;
 
         // 4. Call LLM
@@ -164,7 +166,7 @@ async function handler(
                             create: plan.articles.map((art: any) => ({
                                 title: art.title,
                                 keyword: art.keyword,
-                                language: art.language || 'zh',
+                                language: art.language || (session?.user as { locale?: string })?.locale || 'zh',
                                 kanbanOrder: art.kanbanOrder,
                                 status: 'IDEATION',
                                 targetChannel: 'SEO'

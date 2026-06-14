@@ -2,12 +2,12 @@ import { NextResponse } from 'next/server';
 import { withSiteContext } from '@/lib/api-utils';
 import { getSemanticGap } from '@/lib/site-intelligence/semantic-gap-service';
 
-export const GET = withSiteContext<{ siteId: string }>(async (request, { site }) => {
+export const GET = withSiteContext<{ siteId: string }>(async (request, { site, session }) => {
     try {
         const url = new URL(request.url);
         const forceRefresh = url.searchParams.get('refresh') === 'true';
 
-        const result = await getSemanticGap(site.id, forceRefresh);
+        const result = await getSemanticGap(site.id, forceRefresh, (session?.user as { locale?: string })?.locale);
 
         return NextResponse.json({
             success: true,

@@ -48,8 +48,8 @@
 
 ### 2.2 其余 AI 输出
 
-- [ ] 2.2.1 策略看板生成（ContentPlan/PlannedArticle 产出）接 `outputLocale`（本轮仅完成 UI 字符串；AI 输出语言未接，待单独处理）
-- [ ] 2.2.2 语义分析 / 市场差距分析输出接 `outputLocale`（同上，AI 输出语言未接）
+- [x] 2.2.1 策略看板生成接输出语言：strategy/generate prompt 注入 localeDirective(user.locale)，PlannedArticle.language 兜底改 locale 感知
+- [x] 2.2.2 语义/本体输出接语言：semantic-gap-service + ontology prompt 注入 localeDirective（market-gap/competitors 无 AI prose，无需处理）
 
 ### 2.3 防回归门禁
 

@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
+import { localeDirective } from '@/lib/skills/locale-directive';
 import { prisma } from '@/lib/prisma';
 import { withSiteContext } from '@/lib/api-utils';
 import { getDefaultProvider } from '@/lib/skills/providers';
 
-export const POST = withSiteContext<{ siteId: string }>(async (request, { site: baseSite }) => {
+export const POST = withSiteContext<{ siteId: string }>(async (request, { site: baseSite, session }) => {
     try {
         const site = await prisma.site.findUnique({
             where: { id: baseSite.id },
@@ -78,7 +79,7 @@ Return ONLY a valid JSON object with the following structure:
 - Keep explanations concise.
 - Ensure 'idealTopicMap' contains 5-10 core semantic pillars a true industry leader in this niche must cover.
 - Do NOT wrap it in markdown code blocks like \`\`\`json.
-        `.trim();
+        `.trim() + localeDirective((session?.user as { locale?: string })?.locale);
 
         const response = await aiProvider.generateContent(prompt, {
             model: defaultModel.id,

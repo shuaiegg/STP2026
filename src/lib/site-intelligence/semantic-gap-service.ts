@@ -1,8 +1,9 @@
 import { prisma } from '@/lib/prisma';
+import { localeDirective } from '@/lib/skills/locale-directive';
 import { getDefaultProvider } from '@/lib/skills/providers';
 import { isBlacklistedTopic } from '@/lib/skills/site-intelligence/constants';
 
-export async function getSemanticGap(siteId: string, forceRefresh: boolean = false) {
+export async function getSemanticGap(siteId: string, forceRefresh: boolean = false, locale?: string) {
     try {
         const site = await prisma.site.findUnique({
             where: { id: siteId },
@@ -106,7 +107,7 @@ Return ONLY a JSON object with this exact structure:
   ]
 }
 Do NOT wrap it in markdown code blocks like \`\`\`json.
-        `.trim();
+        `.trim() + localeDirective(locale);
 
         const response = await aiProvider.generateContent(prompt, {
             model: defaultModel.id,
