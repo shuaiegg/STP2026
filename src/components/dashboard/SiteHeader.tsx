@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslations } from 'next-intl';
 import { HealthScoreBadge } from '@/components/ui/HealthScoreBadge';
 import { Button } from '@/components/ui/Button';
 import { DeleteSiteButton } from '@/components/dashboard/DeleteSiteButton';
@@ -7,11 +8,6 @@ import Link from 'next/link';
 
 // ─── COPY (file scope for i18n readiness) ─────────────────────────────────────
 
-const COPY = {
-  scoreNow: '立即评分',
-  viewMap: '查看星图',
-  runAudit: '运行新审计',
-} as const;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -28,6 +24,7 @@ interface SiteHeaderProps {
 // ─── SiteHeader ───────────────────────────────────────────────────────────────
 
 export function SiteHeader({ site }: SiteHeaderProps) {
+  const t = useTranslations('dashboard.siteHeader');
   const score = site.latestAudit?.overallScore ?? null;
 
   return (
@@ -45,7 +42,7 @@ export function SiteHeader({ site }: SiteHeaderProps) {
               className="text-xs font-bold text-brand-primary hover:underline underline-offset-4 flex items-center gap-1"
             >
               <Zap size={12} aria-hidden="true" />
-              {COPY.scoreNow}
+              {t('scoreNow')}
             </Link>
           )}
         </div>
@@ -54,7 +51,7 @@ export function SiteHeader({ site }: SiteHeaderProps) {
       <div className="flex items-center gap-3">
         <Link href={`/dashboard/site-intelligence/instant-audit?siteId=${site.id}`}>
           <Button variant="outline" size="sm" className="rounded-lg font-bold h-9">
-            {COPY.viewMap}
+            {t('viewMap')}
           </Button>
         </Link>
         <Link href={`/dashboard/site-intelligence/instant-audit?siteId=${site.id}&rescan=1`}>
@@ -63,7 +60,7 @@ export function SiteHeader({ site }: SiteHeaderProps) {
             className="bg-slate-900 hover:bg-slate-800 text-white rounded-lg px-5 font-bold h-9 flex items-center gap-2"
           >
             <RefreshCw size={14} aria-hidden="true" />
-            {COPY.runAudit}
+            {t('runAudit')}
           </Button>
         </Link>
       </div>

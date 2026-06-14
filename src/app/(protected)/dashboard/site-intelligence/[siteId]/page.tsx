@@ -1,4 +1,5 @@
 import React from 'react';
+import { getTranslations } from 'next-intl/server';
 import type { Metadata } from 'next';
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
@@ -9,12 +10,13 @@ import { SiteHeader } from '@/components/dashboard/SiteHeader';
 import { NextStepsBanner } from '@/components/dashboard/NextStepsBanner';
 
 export async function generateMetadata({ params }: { params: Promise<{ siteId: string }> }): Promise<Metadata> {
+    const t = await getTranslations('dashboard.siteDetail');
     const { siteId } = await params;
     const session = await auth.api.getSession({ headers: await headers() });
-    if (!session) return { title: '站点分析' };
+    if (!session) return { title: t('metaTitle') };
     const site = await getSiteById(siteId, session.user.id);
     return {
-        title: site ? `${site.domain} — 站点分析` : '站点分析',
+        title: site ? t('metaTitleWithDomain', { domain: site.domain }) : t('metaTitle'),
         robots: { index: false },
     };
 }

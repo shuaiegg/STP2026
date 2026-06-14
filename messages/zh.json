@@ -882,7 +882,9 @@
       "loadingReport": "生成健康报告中…",
       "fetchErrorTitle": "报告加载失败",
       "fetchErrorDesc": "无法获取审计报告，请重试。",
-      "retry": "重试"
+      "retry": "重试",
+      "metaTitle": "站点分析",
+      "metaTitleWithDomain": "{domain} — 站点分析"
     },
     "overviewPanel": {
       "healthScore": "全站健康得分",
@@ -1141,7 +1143,12 @@
         ],
         "helpTitle": "需要帮助?",
         "helpDesc": "如果您无法修改密码或账号遇到异常，请联系我们的技术支持。"
-      }
+      },
+      "errChangePwd": "修改密码失败",
+      "errChangePwdCheck": "修改密码失败，请检查当前密码是否正确",
+      "errSendCode": "发送验证码失败",
+      "errSetPwd": "设置密码失败，请检查验证码是否正确",
+      "errCodeExpired": "验证码错误或已过期"
     },
     "galaxyMap": {
       "mapping": "正在测绘星图数据...",
@@ -1152,6 +1159,241 @@
       "legendPillar": "支柱页",
       "legendContent": "内容页",
       "legendGap": "内容缺口"
+    },
+    "errors": {
+      "retry": "重试",
+      "unknownError": "未知错误",
+      "onboarding": {
+        "title": "出错了",
+        "description": "我们在准备引导流程时遇到了问题"
+      },
+      "billing": {
+        "title": "账单数据加载失败",
+        "description": "我们在加载您的积分和账单信息时遇到了问题，请尝试刷新页面。"
+      },
+      "library": {
+        "title": "加载资产失败",
+        "description": "我们在加载您的内容资产库时遇到了问题，请尝试刷新页面。"
+      },
+      "tools": {
+        "title": "工具箱加载失败",
+        "description": "我们在加载您的营销工具箱时遇到了问题，请尝试刷新页面。"
+      },
+      "site": {
+        "title": "加载失败",
+        "description": "我们在加载该站点数据时遇到了问题，请尝试刷新页面。"
+      }
+    },
+    "billing": {
+      "title": "积分与订阅",
+      "subtitle": "购买积分以解锁更多 AI 驱动的 SEO 深度分析工具",
+      "currentBalance": "当前余额",
+      "recentTransactions": "最近 10 条消费记录",
+      "noTransactions": "暂无消费记录",
+      "txn": {
+        "purchase": "购买",
+        "consumption": "使用",
+        "bonus": "赠送",
+        "refund": "退款"
+      },
+      "recommended": "推荐",
+      "creditsUnit": "积分",
+      "permanent": "永久有效，不限时间",
+      "unlockAll": "解锁所有 AI 工具",
+      "unitPrice": "单价: ${price} / 积分",
+      "save": "省 {pct}%",
+      "buyNow": "立即购买",
+      "paySuccess": "支付成功！积分将在几分钟内到账",
+      "createOrderFailed": "创建订单失败",
+      "networkFailed": "网络请求失败"
+    },
+    "library": {
+      "title": "内容资产库",
+      "subtitleRich": "您已成功智作并存入库中 {count} 篇高权重文章。",
+      "searchPlaceholder": "搜索标题或关键词...",
+      "emptyTitle": "您的内容库目前空空如也",
+      "emptyDesc": "立即启动 StellarWriter 智作优化器，让您的第一篇高权重文章在此“安家”。",
+      "emptyCta": "立刻去智作",
+      "statusCited": "已引用",
+      "statusChecking": "检查中",
+      "statusNotCited": "未检测到",
+      "statusPending": "待检",
+      "confirmDelete": "确定要删除这篇文章吗？此操作不可撤销。",
+      "deleted": "文章已成功移除",
+      "deleteFailed": "删除失败，请重试",
+      "clicks": "点击 {n}",
+      "impressions": "展示 {n}",
+      "avgPos": "平均排名 #{n}",
+      "editTitle": "编辑文章",
+      "deleteTitle": "删除",
+      "paraUpdated": "段落已在内存中更新，别忘了点击顶部保存按钮。",
+      "aiRewriting": "AI 正在重塑段落...",
+      "aiRewriteFailed": "AI 重写失败",
+      "aiRewriteOk": "AI 段落刷新成功！",
+      "savedToLibrary": "改动已永久存入资产库！",
+      "saveError": "保存过程中出现异常",
+      "titlePlaceholder": "文章标题...",
+      "saving": "正在加固中...",
+      "submitSave": "提交修改并入库",
+      "radarTitle": "实时内容健康度 (Radar)",
+      "radarNote": "“杰克，目前的文本读起来非常像真人撰写。如果您继续增加案例研究，GEO 权重还会进一步提升。”",
+      "coreKeywords": "核心关键词",
+      "editNote": "请注意：修改正文可能会影响到搜索引擎的引用检测。建议每次大幅修改后，在 24 小时后查看最新的流量轨迹。"
+    },
+    "tools": {
+      "title": "营销工具箱",
+      "subtitle": "选择合适的专业工具，开始您的数字化增长实验。",
+      "costCredits": "需 {cost} 积分",
+      "openTool": "立即开启工具",
+      "insufficient": "积分不足，点击充值",
+      "comingSoon": "即将上线",
+      "customTitle": "需要更多定制工具？",
+      "customDesc": "杰克，如果您有其他的增长灵感，可以在“神灯”里直接告诉我，我会为您即时建模并集成到这里。",
+      "items": [
+        {
+          "name": "StellarWriter (智作)",
+          "description": "基于全网竞争数据与 SEO 策略的内容生产引擎，支持 GEO 增益与多维大纲生成。",
+          "category": "内容创作"
+        },
+        {
+          "name": "关键词数据调研",
+          "description": "深度挖掘利基市场关键词，分析搜索量、竞争难度与流量潜力。",
+          "category": "市场研究"
+        },
+        {
+          "name": "SERP 排名优化器",
+          "description": "分析特定页面的排名表现，提供针对性的内容修正与权重提升建议。",
+          "category": "SEO 诊断"
+        },
+        {
+          "name": "多语言本地化",
+          "description": "将您的内容库一键翻译为多国语言，并保留原有的 SEO 权重与排版格式。",
+          "category": "全球化"
+        }
+      ]
+    },
+    "emptyState": {
+      "title": "暂无扫描记录",
+      "desc": "运行首次即时审计以开始构建您的主题权威星图。",
+      "domainLabel": "输入您的网站域名",
+      "placeholder": "例如: example.com",
+      "submit": "添加并扫描",
+      "submitting": "创建中...",
+      "errorEmpty": "请输入域名",
+      "addFailed": "添加失败，请重试",
+      "systemError": "系统错误，请重试"
+    },
+    "siteSelector": {
+      "title": "选择您的网站",
+      "subtitle": "查看并管理您已添加的 SEO 资产",
+      "enterWorkbench": "进入工作台",
+      "addSite": "添加新站点",
+      "addSiteDesc": "开启 AI 驱动的 SEO 增长",
+      "auditNever": "尚未审计",
+      "auditPrefix": "上次审计：",
+      "justNow": "刚刚",
+      "minsAgo": "{n} 分钟前",
+      "hrsAgo": "{n} 小时前",
+      "daysAgo": "{n} 天前"
+    },
+    "siteHeader": {
+      "scoreNow": "立即评分",
+      "viewMap": "查看星图",
+      "runAudit": "运行新审计"
+    },
+    "nextSteps": {
+      "title": "建议下一步",
+      "subtitle": "完善站点配置，解锁 Stellar 的完整 AI 分析能力。",
+      "dismissLabel": "关闭建议横幅",
+      "connectNow": "立即连接",
+      "gscTitle": "连接 Search Console",
+      "gscDesc": "解锁关键词点击量和展示数据",
+      "ga4Title": "连接 Google Analytics",
+      "ga4Desc": "追踪流量来源与转化趋势",
+      "compTitle": "添加竞争对手",
+      "compDesc": "开启跨站点语义差异分析"
+    },
+    "deleteSite": {
+      "trigger": "移除站点",
+      "title": "确认删除站点？",
+      "desc": "此操作将永久删除该站点及其所有审计记录、关键词数据和集成信息，无法恢复。",
+      "confirmLabel": "输入域名",
+      "confirmSuffix": "以确认删除：",
+      "placeholder": "输入域名以确认",
+      "confirm": "确认删除",
+      "deleting": "删除中...",
+      "cancel": "取消",
+      "deleted": "站点已删除",
+      "deleteFailed": "删除失败",
+      "deleteRetry": "删除失败，请重试"
+    },
+    "gscSelector": {
+      "loading": "正在拉取您的 Google Search Console 站点列表...",
+      "title": "选择要关联的 GSC 站点",
+      "desc": "请从以下列表中选择当前项目在 Google Search Console 中对应的所有权资源。",
+      "permission": "权限: ",
+      "select": "选择此站点",
+      "selecting": "绑定中...",
+      "selected": "已绑定",
+      "retry": "重试",
+      "empty": "未在您的 Google 账号下找到任何 Search Console 站点。",
+      "emptyHint": "请确保您授权的 Google 账号拥有网站的数据查看权限。"
+    },
+    "ga4Selector": {
+      "expired": "连接过期，请重新授权 GA4",
+      "fetchFailed": "无法获取 GA4 数据流列表",
+      "networkFailed": "网络请求失败",
+      "saveFailed": "保存失败",
+      "retryRefresh": "重试刷新",
+      "noStreams": "未找到绑定的 数据流",
+      "noStreamsHint": "当前 Google 账号下未检测到可用的 GA4 数据流。",
+      "selectStream": "选择 GA4 数据流",
+      "selectPlaceholder": "-- 请选择一个站点数据流 --",
+      "saving": "保存中...",
+      "confirm": "确认关联"
+    },
+    "ga4Dashboard": {
+      "reauthError": "GA4连接失效或没有数据权限，请在概览页面重新授权关联 GA4。",
+      "loadFailed": "无法加载流量数据",
+      "requestFailed": "请求流量数据失败",
+      "cantRead": "无法读取 GA4 流量数据",
+      "noData30d": "近 30 天无流量数据",
+      "noDataHint": "目前您的站点尚未被记录到有效访问。",
+      "activeUsers": "活跃用户数 (30d)",
+      "totalSessions": "总会话数",
+      "avgEngagement": "平均互动率",
+      "avgDuration": "平均停留时间",
+      "trendTitle": "近 30 天流量趋势 (GA4)",
+      "dateLabel": "日期: {label}",
+      "sessionsName": "会话数",
+      "activeUsersName": "活跃用户数"
+    },
+    "keywordTrend": {
+      "noGsc": "连接 Google Search Console 后追踪关键词排名趋势",
+      "connectGsc": "连接 GSC",
+      "syncPrompt": "同步 GSC 数据以建立基准",
+      "syncHint": "首次同步将记录当前排名快照",
+      "trendPrompt": "已建立基准，明天同步后可查看趋势图",
+      "noQueryData": "GSC 已同步，但暂无关键词排名数据",
+      "noQueryDataHint": "Google 对低流量站点会隐藏关键词级数据，随着站点流量增长数据将自动出现",
+      "syncBtn": "立即同步",
+      "syncingBtn": "同步中…",
+      "resyncBtn": "重新同步",
+      "currentRanking": "当前关键词排名",
+      "trendTitle": "排名趋势 (TOP 5)",
+      "colKeyword": "关键词",
+      "colPos": "排名",
+      "colClicks": "点击",
+      "colImpr": "曝光"
+    },
+    "organicTraffic": {
+      "connectPrompt": "连接 Google Search Console 后查看有机流量趋势",
+      "connectGsc": "连接 GSC",
+      "noData": "暂无流量数据",
+      "totalClicks": "总点击",
+      "totalImpr": "总展示",
+      "avgCtr": "平均 CTR",
+      "clicksLabel": "点击数"
     }
   },
   "legal": {},

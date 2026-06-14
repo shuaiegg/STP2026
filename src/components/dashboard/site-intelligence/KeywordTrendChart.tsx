@@ -1,28 +1,11 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Loader2, RefreshCw } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { Card } from '@/components/ui/Card';
 
-const COPY = {
-    noGsc: '连接 Google Search Console 后追踪关键词排名趋势',
-    connectGsc: '连接 GSC',
-    syncPrompt: '同步 GSC 数据以建立基准',
-    syncHint: '首次同步将记录当前排名快照',
-    trendPrompt: '已建立基准，明天同步后可查看趋势图',
-    noQueryData: 'GSC 已同步，但暂无关键词排名数据',
-    noQueryDataHint: 'Google 对低流量站点会隐藏关键词级数据，随着站点流量增长数据将自动出现',
-    syncBtn: '立即同步',
-    syncingBtn: '同步中…',
-    resyncBtn: '重新同步',
-    currentRanking: '当前关键词排名',
-    trendTitle: '排名趋势 (TOP 5)',
-    colKeyword: '关键词',
-    colPos: '排名',
-    colClicks: '点击',
-    colImpr: '曝光',
-} as const;
 
 const COLORS = ['#10b981', '#00d4ff', '#f59e0b', '#8b5cf6', '#ef4444'];
 
@@ -43,6 +26,7 @@ interface KeywordTrendChartProps {
 }
 
 export function KeywordTrendChart({ siteId, onSyncClick, onConnectClick, hasGsc, isSyncing, refreshKey }: KeywordTrendChartProps) {
+    const t = useTranslations('dashboard.keywordTrend');
     const [trendData, setTrendData] = useState<any[]>([]);
     const [trendKeywords, setTrendKeywords] = useState<string[]>([]);
     const [snapshotCount, setSnapshotCount] = useState(0);
@@ -86,9 +70,9 @@ export function KeywordTrendChart({ siteId, onSyncClick, onConnectClick, hasGsc,
     if (!hasGsc) {
         return (
             <Card className="p-8 bg-white border-slate-200 shadow-sm h-64 flex flex-col items-center justify-center text-center">
-                <p className="text-sm text-slate-500 mb-3">{COPY.noGsc}</p>
+                <p className="text-sm text-slate-500 mb-3">{t('noGsc')}</p>
                 <button onClick={onConnectClick} className="px-4 py-2 bg-brand-primary text-white rounded-xl text-xs font-bold hover:bg-brand-primary/90 transition-colors">
-                    {COPY.connectGsc}
+                    {t('connectGsc')}
                 </button>
             </Card>
         );
@@ -100,15 +84,15 @@ export function KeywordTrendChart({ siteId, onSyncClick, onConnectClick, hasGsc,
             <Card className="p-8 bg-white border-slate-200 shadow-sm flex flex-col items-center justify-center text-center gap-3 min-h-[200px]">
                 <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center text-amber-500 text-lg">⚠</div>
                 <div className="space-y-1 max-w-xs">
-                    <p className="text-sm font-bold text-slate-700">{COPY.noQueryData}</p>
-                    <p className="text-[11px] text-slate-400 leading-relaxed">{COPY.noQueryDataHint}</p>
+                    <p className="text-sm font-bold text-slate-700">{t('noQueryData')}</p>
+                    <p className="text-[11px] text-slate-400 leading-relaxed">{t('noQueryDataHint')}</p>
                 </div>
                 <button
                     onClick={onSyncClick}
                     disabled={isSyncing}
                     className="mt-1 px-3 py-1.5 border border-slate-200 text-slate-500 hover:text-slate-700 rounded-lg text-xs font-bold transition-colors disabled:opacity-50 flex items-center gap-1.5"
                 >
-                    {isSyncing ? <><Loader2 size={11} className="animate-spin" />{COPY.syncingBtn}</> : <><RefreshCw size={11} />{COPY.resyncBtn}</>}
+                    {isSyncing ? <><Loader2 size={11} className="animate-spin" />{t('syncingBtn')}</> : <><RefreshCw size={11} />{t('resyncBtn')}</>}
                 </button>
             </Card>
         );
@@ -118,14 +102,14 @@ export function KeywordTrendChart({ siteId, onSyncClick, onConnectClick, hasGsc,
     if (currentKeywords.length === 0) {
         return (
             <Card className="p-8 bg-white border-slate-200 shadow-sm h-64 flex flex-col items-center justify-center text-center">
-                <p className="text-sm text-slate-500 mb-1">{COPY.syncPrompt}</p>
-                <p className="text-[11px] text-slate-400 mb-4">{COPY.syncHint}</p>
+                <p className="text-sm text-slate-500 mb-1">{t('syncPrompt')}</p>
+                <p className="text-[11px] text-slate-400 mb-4">{t('syncHint')}</p>
                 <button
                     onClick={onSyncClick}
                     disabled={isSyncing}
                     className="px-4 py-2 bg-brand-primary text-white rounded-xl text-xs font-bold hover:bg-brand-primary/90 transition-colors disabled:opacity-60 flex items-center gap-2"
                 >
-                    {isSyncing ? <><Loader2 size={12} className="animate-spin" />{COPY.syncingBtn}</> : COPY.syncBtn}
+                    {isSyncing ? <><Loader2 size={12} className="animate-spin" />{t('syncingBtn')}</> : t('syncBtn')}
                 </button>
             </Card>
         );
@@ -137,13 +121,13 @@ export function KeywordTrendChart({ siteId, onSyncClick, onConnectClick, hasGsc,
             <Card className="bg-white border-slate-200 shadow-sm overflow-hidden">
                 <div className="p-4 border-b border-slate-50 flex items-center justify-between">
                     <div>
-                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{COPY.currentRanking}</h4>
-                        <p className="text-[10px] text-slate-400 mt-0.5">{COPY.trendPrompt}</p>
+                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('currentRanking')}</h4>
+                        <p className="text-[10px] text-slate-400 mt-0.5">{t('trendPrompt')}</p>
                     </div>
                     <button
                         onClick={onSyncClick}
                         disabled={isSyncing}
-                        title={COPY.syncBtn}
+                        title={t('syncBtn')}
                         className="p-2 text-slate-400 hover:text-brand-primary hover:bg-brand-primary/5 rounded-lg transition-colors disabled:opacity-50"
                     >
                         {isSyncing ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
@@ -153,10 +137,10 @@ export function KeywordTrendChart({ siteId, onSyncClick, onConnectClick, hasGsc,
                     <table className="w-full text-xs">
                         <thead className="sticky top-0 bg-slate-50/80 backdrop-blur-sm">
                             <tr>
-                                <th className="text-left px-4 py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest w-full">{COPY.colKeyword}</th>
-                                <th className="text-right px-3 py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">{COPY.colPos}</th>
-                                <th className="text-right px-3 py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">{COPY.colClicks}</th>
-                                <th className="text-right px-4 py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">{COPY.colImpr}</th>
+                                <th className="text-left px-4 py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest w-full">{t('colKeyword')}</th>
+                                <th className="text-right px-3 py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">{t('colPos')}</th>
+                                <th className="text-right px-3 py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">{t('colClicks')}</th>
+                                <th className="text-right px-4 py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">{t('colImpr')}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
@@ -190,7 +174,7 @@ export function KeywordTrendChart({ siteId, onSyncClick, onConnectClick, hasGsc,
     return (
         <Card className="p-6 bg-white border-slate-200 shadow-sm">
             <div className="flex items-center justify-between mb-4">
-                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{COPY.trendTitle}</h4>
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('trendTitle')}</h4>
                 <div className="flex items-center gap-3">
                     <div className="flex gap-3 flex-wrap">
                         {trendKeywords.map((kw, i) => (
@@ -203,7 +187,7 @@ export function KeywordTrendChart({ siteId, onSyncClick, onConnectClick, hasGsc,
                     <button
                         onClick={onSyncClick}
                         disabled={isSyncing}
-                        title={COPY.syncBtn}
+                        title={t('syncBtn')}
                         className="p-1.5 text-slate-300 hover:text-brand-primary rounded-lg transition-colors disabled:opacity-50"
                     >
                         {isSyncing ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}

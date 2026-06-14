@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "test": "vitest",
-    "lint": "eslint"
+    "check:cjk": "tsx scripts/check-cjk.ts",
+    "lint": "eslint && tsx scripts/check-cjk.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

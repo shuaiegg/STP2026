@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { Card } from '@/components/ui/Card';
 
@@ -11,6 +12,7 @@ interface OrganicTrafficChartProps {
 }
 
 export function OrganicTrafficChart({ siteId, hasGsc, onConnectClick }: OrganicTrafficChartProps) {
+    const t = useTranslations('dashboard.organicTraffic');
     const [data, setData] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [totals, setTotals] = useState({ clicks: 0, impressions: 0, ctr: 0 });
@@ -49,12 +51,12 @@ export function OrganicTrafficChart({ siteId, hasGsc, onConnectClick }: OrganicT
     if (!hasGsc) {
         return (
             <Card className="p-8 bg-white border-slate-200 shadow-sm h-64 flex flex-col items-center justify-center text-center">
-                <p className="text-sm text-slate-500 mb-3">连接 Google Search Console 后查看有机流量趋势</p>
+                <p className="text-sm text-slate-500 mb-3">{t('connectPrompt')}</p>
                 <button
                     onClick={onConnectClick}
                     className="px-4 py-2 bg-brand-primary text-white rounded-xl text-xs font-bold hover:bg-brand-primary/90 transition-colors"
                 >
-                    连接 GSC
+                    {t('connectGsc')}
                 </button>
             </Card>
         );
@@ -63,7 +65,7 @@ export function OrganicTrafficChart({ siteId, hasGsc, onConnectClick }: OrganicT
     if (data.length === 0) {
         return (
             <Card className="p-8 bg-white border-slate-200 shadow-sm h-64 flex flex-col items-center justify-center text-center">
-                <p className="text-sm text-slate-500">暂无流量数据</p>
+                <p className="text-sm text-slate-500">{t('noData')}</p>
             </Card>
         );
     }
@@ -83,15 +85,15 @@ export function OrganicTrafficChart({ siteId, hasGsc, onConnectClick }: OrganicT
             {/* KPI Labels */}
             <div className="flex items-center gap-6 mb-4">
                 <div>
-                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">总点击</span>
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">{t('totalClicks')}</span>
                     <span className="text-lg font-black text-slate-900">{formatNumber(totals.clicks)}</span>
                 </div>
                 <div>
-                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">总展示</span>
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">{t('totalImpr')}</span>
                     <span className="text-lg font-black text-slate-900">{formatNumber(totals.impressions)}</span>
                 </div>
                 <div>
-                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">平均 CTR</span>
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">{t('avgCtr')}</span>
                     <span className="text-lg font-black text-slate-900">{totals.ctr.toFixed(1)}%</span>
                 </div>
             </div>
@@ -127,7 +129,7 @@ export function OrganicTrafficChart({ siteId, hasGsc, onConnectClick }: OrganicT
                             fontSize: '11px',
                             color: '#f8fafc',
                         }}
-                        formatter={(value: any) => [value, '点击数']}
+                        formatter={(value: any) => [value, t('clicksLabel')]}
                         labelFormatter={(label: any) => formatDate(String(label))}
                     />
                     <Area

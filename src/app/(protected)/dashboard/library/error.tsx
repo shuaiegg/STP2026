@@ -3,12 +3,7 @@
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { AlertCircle, RefreshCcw } from 'lucide-react';
-
-const COPY = {
-  title: '加载资产失败',
-  description: '我们在加载你的内容资产库时遇到了问题，请尝试刷新页面。',
-  retry: '重试',
-} as const;
+import { useTranslations } from 'next-intl';
 
 export default function Error({
   error,
@@ -17,6 +12,7 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useTranslations('dashboard.errors');
   useEffect(() => {
     console.error(error);
   }, [error]);
@@ -27,15 +23,15 @@ export default function Error({
         <AlertCircle size={32} aria-hidden="true" />
       </div>
       <div className="space-y-2">
-        <h2 className="text-xl font-bold text-slate-900">{COPY.title}</h2>
-        <p className="text-sm text-slate-500 max-w-xs mx-auto">{COPY.description}</p>
+        <h2 className="text-xl font-bold text-slate-900">{t('library.title')}</h2>
+        <p className="text-sm text-slate-500 max-w-xs mx-auto">{t('library.description')}</p>
       </div>
       <Button
         onClick={() => reset()}
         className="bg-slate-900 hover:bg-slate-800 text-white rounded-lg px-6 font-bold flex items-center gap-2"
       >
         <RefreshCcw size={18} aria-hidden="true" />
-        {COPY.retry}
+        {t('retry')}
       </Button>
     </div>
   );

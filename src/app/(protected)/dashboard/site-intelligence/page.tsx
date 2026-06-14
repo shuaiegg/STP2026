@@ -168,7 +168,7 @@ function SiteCard({ site, t, tAudit }: { site: SiteRecord, t: any, tAudit: any }
                     </div>
                     <div className="flex flex-col items-center justify-center border-l border-slate-200">
                         <p className="text-[9px] text-slate-400 uppercase tracking-widest mb-1 font-bold">{t('card.latestScan')}</p>
-                        <p className="text-[10px] text-slate-500 font-mono font-medium">{timeAgo(audit.createdAt, tAudit).replace(/ago|前/, '').trim()}</p>
+                        <p className="text-[10px] text-slate-500 font-mono font-medium">{timeAgo(audit.createdAt, tAudit).replace(/ago|\u524d/, '').trim()}</p>
                     </div>
                 </div>
             ) : (

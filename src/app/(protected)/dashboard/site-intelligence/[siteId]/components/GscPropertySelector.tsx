@@ -1,20 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Check, Loader2 } from 'lucide-react';
 
-const COPY = {
-    loading: '正在拉取您的 Google Search Console 站点列表...',
-    title: '选择要关联的 GSC 站点',
-    desc: '请从以下列表中选择当前项目在 Google Search Console 中对应的所有权资源。',
-    permission: '权限: ',
-    select: '选择此站点',
-    selecting: '绑定中...',
-    selected: '已绑定',
-    retry: '重试',
-    empty: '未在您的 Google 账号下找到任何 Search Console 站点。',
-    emptyHint: '请确保您授权的 Google 账号拥有网站的数据查看权限。',
-} as const;
 
 interface GscProperty {
     siteUrl: string;
@@ -27,6 +16,7 @@ interface GscPropertySelectorProps {
 }
 
 export function GscPropertySelector({ siteId, onSelected }: GscPropertySelectorProps) {
+    const t = useTranslations('dashboard.gscSelector');
     const [properties, setProperties] = useState<GscProperty[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectingId, setSelectingId] = useState<string | null>(null);
@@ -80,7 +70,7 @@ export function GscPropertySelector({ siteId, onSelected }: GscPropertySelectorP
         return (
             <Card className="p-6 border-dashed border-blue-200 bg-blue-50/10 flex flex-col items-center justify-center min-h-[150px]">
                 <div className="w-6 h-6 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mb-2" />
-                <p className="text-xs text-slate-500">{COPY.loading}</p>
+                <p className="text-xs text-slate-500">{t('loading')}</p>
             </Card>
         );
     }
@@ -91,7 +81,7 @@ export function GscPropertySelector({ siteId, onSelected }: GscPropertySelectorP
                 <span className="text-xl">⚠️</span>
                 <p className="text-sm text-rose-700 font-medium">{error}</p>
                 <Button variant="outline" size="sm" onClick={() => window.location.reload()} className="mt-2">
-                    {COPY.retry}
+                    {t('retry')}
                 </Button>
             </Card>
         );
@@ -101,8 +91,8 @@ export function GscPropertySelector({ siteId, onSelected }: GscPropertySelectorP
         return (
             <Card className="p-6 border-amber-200 bg-amber-50 flex flex-col items-center text-center space-y-2">
                 <span className="text-xl">📭</span>
-                <p className="text-sm text-amber-800 font-medium">{COPY.empty}</p>
-                <p className="text-xs text-amber-600">{COPY.emptyHint}</p>
+                <p className="text-sm text-amber-800 font-medium">{t('empty')}</p>
+                <p className="text-xs text-amber-600">{t('emptyHint')}</p>
             </Card>
         );
     }
@@ -110,8 +100,8 @@ export function GscPropertySelector({ siteId, onSelected }: GscPropertySelectorP
     return (
         <Card className="p-6 flex flex-col space-y-4 border-blue-200 bg-white shadow-sm">
             <div className="text-center mb-2">
-                <h3 className="text-sm font-bold text-slate-800 mb-1">{COPY.title}</h3>
-                <p className="text-xs text-slate-500">{COPY.desc}</p>
+                <h3 className="text-sm font-bold text-slate-800 mb-1">{t('title')}</h3>
+                <p className="text-xs text-slate-500">{t('desc')}</p>
             </div>
 
             {error && (
@@ -129,7 +119,7 @@ export function GscPropertySelector({ siteId, onSelected }: GscPropertySelectorP
                         >
                             <div className="flex flex-col min-w-0 flex-1 mr-3">
                                 <span className="text-sm font-medium text-slate-800 font-mono truncate">{prop.siteUrl}</span>
-                                <span className="text-[10px] text-slate-400">{COPY.permission}{prop.permissionLevel}</span>
+                                <span className="text-[10px] text-slate-400">{t('permission')}{prop.permissionLevel}</span>
                             </div>
                             <button
                                 disabled={!!selectingId || !!selectedId}
@@ -143,10 +133,10 @@ export function GscPropertySelector({ siteId, onSelected }: GscPropertySelectorP
                                     }`}
                             >
                                 {isThisSelecting ? (
-                                    <><Loader2 size={12} className="animate-spin" />{COPY.selecting}</>
+                                    <><Loader2 size={12} className="animate-spin" />{t('selecting')}</>
                                 ) : isThisSelected ? (
-                                    <><Check size={12} />{COPY.selected}</>
-                                ) : COPY.select}
+                                    <><Check size={12} />{t('selected')}</>
+                                ) : t('select')}
                             </button>
                         </div>
                     );

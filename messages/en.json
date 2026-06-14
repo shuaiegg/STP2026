@@ -882,7 +882,9 @@
       "loadingReport": "Generating report...",
       "fetchErrorTitle": "Report Load Failed",
       "fetchErrorDesc": "Could not fetch the audit report, please try again.",
-      "retry": "Retry"
+      "retry": "Retry",
+      "metaTitle": "Site Analysis",
+      "metaTitleWithDomain": "{domain} — Site Analysis"
     },
     "overviewPanel": {
       "healthScore": "Health Score",
@@ -1141,7 +1143,12 @@
         ],
         "helpTitle": "Need help?",
         "helpDesc": "If you cannot change your password or encounter account issues, please contact support."
-      }
+      },
+      "errChangePwd": "Failed to change password",
+      "errChangePwdCheck": "Failed to change password — check your current password",
+      "errSendCode": "Failed to send verification code",
+      "errSetPwd": "Failed to set password — check the verification code",
+      "errCodeExpired": "Verification code is incorrect or expired"
     },
     "galaxyMap": {
       "mapping": "Mapping galaxy data...",
@@ -1152,6 +1159,241 @@
       "legendPillar": "Pillar page",
       "legendContent": "Content page",
       "legendGap": "Content gap"
+    },
+    "errors": {
+      "retry": "Retry",
+      "unknownError": "Unknown error",
+      "onboarding": {
+        "title": "Something went wrong",
+        "description": "We hit a problem while preparing the onboarding flow"
+      },
+      "billing": {
+        "title": "Failed to load billing",
+        "description": "We hit a problem loading your credits and billing info. Please refresh the page."
+      },
+      "library": {
+        "title": "Failed to load assets",
+        "description": "We hit a problem loading your content library. Please refresh the page."
+      },
+      "tools": {
+        "title": "Failed to load toolbox",
+        "description": "We hit a problem loading your marketing toolbox. Please refresh the page."
+      },
+      "site": {
+        "title": "Failed to load",
+        "description": "We hit a problem loading this site's data. Please refresh the page."
+      }
+    },
+    "billing": {
+      "title": "Credits & Subscription",
+      "subtitle": "Buy credits to unlock more AI-powered deep SEO analysis tools",
+      "currentBalance": "Current balance",
+      "recentTransactions": "Last 10 transactions",
+      "noTransactions": "No transactions yet",
+      "txn": {
+        "purchase": "Purchase",
+        "consumption": "Usage",
+        "bonus": "Bonus",
+        "refund": "Refund"
+      },
+      "recommended": "Recommended",
+      "creditsUnit": "credits",
+      "permanent": "Never expires",
+      "unlockAll": "Unlock all AI tools",
+      "unitPrice": "Unit: ${price} / credit",
+      "save": "Save {pct}%",
+      "buyNow": "Buy now",
+      "paySuccess": "Payment successful! Credits will arrive within minutes",
+      "createOrderFailed": "Failed to create order",
+      "networkFailed": "Network request failed"
+    },
+    "library": {
+      "title": "Content Library",
+      "subtitleRich": "You've written and stored {count} high-authority articles in your library.",
+      "searchPlaceholder": "Search title or keywords...",
+      "emptyTitle": "Your library is empty for now",
+      "emptyDesc": "Launch the StellarWriter optimizer and give your first high-authority article a home here.",
+      "emptyCta": "Write now",
+      "statusCited": "Cited",
+      "statusChecking": "Checking",
+      "statusNotCited": "Not detected",
+      "statusPending": "Pending",
+      "confirmDelete": "Delete this article? This cannot be undone.",
+      "deleted": "Article removed",
+      "deleteFailed": "Delete failed, please retry",
+      "clicks": "Clicks {n}",
+      "impressions": "Impressions {n}",
+      "avgPos": "Avg. position #{n}",
+      "editTitle": "Edit article",
+      "deleteTitle": "Delete",
+      "paraUpdated": "Paragraph updated in memory — don't forget to click Save at the top.",
+      "aiRewriting": "AI is reshaping the paragraph...",
+      "aiRewriteFailed": "AI rewrite failed",
+      "aiRewriteOk": "Paragraph refreshed by AI!",
+      "savedToLibrary": "Changes saved permanently to your library!",
+      "saveError": "An error occurred while saving",
+      "titlePlaceholder": "Article title...",
+      "saving": "Saving...",
+      "submitSave": "Submit & save to library",
+      "radarTitle": "Live content health (Radar)",
+      "radarNote": "Jack, the text currently reads very much like a human wrote it. Add more case studies and the GEO weight will climb further.",
+      "coreKeywords": "Core keywords",
+      "editNote": "Note: editing the body may affect citation detection by search engines. After major edits, check the latest traffic trend 24 hours later."
+    },
+    "tools": {
+      "title": "Marketing Toolbox",
+      "subtitle": "Choose the right professional tool and start your growth experiments.",
+      "costCredits": "{cost} credits",
+      "openTool": "Open tool",
+      "insufficient": "Insufficient credits — top up",
+      "comingSoon": "Coming soon",
+      "customTitle": "Need more custom tools?",
+      "customDesc": "Jack, if you have other growth ideas, just tell me in the Lamp and I'll model and integrate them here instantly.",
+      "items": [
+        {
+          "name": "StellarWriter",
+          "description": "A content production engine powered by web-wide competitive data and SEO strategy, with GEO boosting and multi-dimensional outline generation.",
+          "category": "Content"
+        },
+        {
+          "name": "Keyword Research",
+          "description": "Deep-mine niche keywords and analyze search volume, difficulty, and traffic potential.",
+          "category": "Market research"
+        },
+        {
+          "name": "SERP Rank Optimizer",
+          "description": "Analyze a page's ranking performance and get targeted content fixes and authority-boost suggestions.",
+          "category": "SEO diagnostics"
+        },
+        {
+          "name": "Multilingual Localization",
+          "description": "Translate your content library into multiple languages in one click, preserving SEO weight and formatting.",
+          "category": "Globalization"
+        }
+      ]
+    },
+    "emptyState": {
+      "title": "No scans yet",
+      "desc": "Run your first instant audit to start building your topical authority galaxy.",
+      "domainLabel": "Enter your website domain",
+      "placeholder": "e.g. example.com",
+      "submit": "Add & scan",
+      "submitting": "Creating...",
+      "errorEmpty": "Please enter a domain",
+      "addFailed": "Failed to add, please retry",
+      "systemError": "System error, please retry"
+    },
+    "siteSelector": {
+      "title": "Select your site",
+      "subtitle": "View and manage the SEO assets you've added",
+      "enterWorkbench": "Enter workbench",
+      "addSite": "Add new site",
+      "addSiteDesc": "Start AI-driven SEO growth",
+      "auditNever": "Not audited yet",
+      "auditPrefix": "Last audit: ",
+      "justNow": "just now",
+      "minsAgo": "{n} min ago",
+      "hrsAgo": "{n} h ago",
+      "daysAgo": "{n} d ago"
+    },
+    "siteHeader": {
+      "scoreNow": "Score now",
+      "viewMap": "View galaxy",
+      "runAudit": "Run new audit"
+    },
+    "nextSteps": {
+      "title": "Suggested next steps",
+      "subtitle": "Complete your site setup to unlock Stellar's full AI analysis.",
+      "dismissLabel": "Dismiss suggestions banner",
+      "connectNow": "Connect now",
+      "gscTitle": "Connect Search Console",
+      "gscDesc": "Unlock keyword clicks and impressions",
+      "ga4Title": "Connect Google Analytics",
+      "ga4Desc": "Track traffic sources and conversion trends",
+      "compTitle": "Add competitors",
+      "compDesc": "Enable cross-site semantic gap analysis"
+    },
+    "deleteSite": {
+      "trigger": "Remove site",
+      "title": "Confirm site deletion?",
+      "desc": "This permanently deletes the site and all its audit records, keyword data, and integrations. It cannot be undone.",
+      "confirmLabel": "Enter domain",
+      "confirmSuffix": " to confirm deletion:",
+      "placeholder": "Enter domain to confirm",
+      "confirm": "Confirm delete",
+      "deleting": "Deleting...",
+      "cancel": "Cancel",
+      "deleted": "Site deleted",
+      "deleteFailed": "Delete failed",
+      "deleteRetry": "Delete failed, please retry"
+    },
+    "gscSelector": {
+      "loading": "Fetching your Google Search Console site list...",
+      "title": "Select the GSC property to link",
+      "desc": "Choose the ownership resource in Google Search Console that matches this project.",
+      "permission": "Permission: ",
+      "select": "Select this site",
+      "selecting": "Linking...",
+      "selected": "Linked",
+      "retry": "Retry",
+      "empty": "No Search Console sites found under your Google account.",
+      "emptyHint": "Make sure the Google account you authorized has data-view permission for the site."
+    },
+    "ga4Selector": {
+      "expired": "Connection expired, please re-authorize GA4",
+      "fetchFailed": "Failed to fetch GA4 data stream list",
+      "networkFailed": "Network request failed",
+      "saveFailed": "Save failed",
+      "retryRefresh": "Refresh & retry",
+      "noStreams": "No bound data stream found",
+      "noStreamsHint": "No available GA4 data stream detected under the current Google account.",
+      "selectStream": "Select GA4 data stream",
+      "selectPlaceholder": "-- Select a property data stream --",
+      "saving": "Saving...",
+      "confirm": "Confirm link"
+    },
+    "ga4Dashboard": {
+      "reauthError": "GA4 connection invalid or no data permission. Please re-authorize GA4 on the overview page.",
+      "loadFailed": "Failed to load traffic data",
+      "requestFailed": "Traffic data request failed",
+      "cantRead": "Cannot read GA4 traffic data",
+      "noData30d": "No traffic data in the last 30 days",
+      "noDataHint": "Your site has no recorded valid visits yet.",
+      "activeUsers": "Active users (30d)",
+      "totalSessions": "Total sessions",
+      "avgEngagement": "Avg. engagement rate",
+      "avgDuration": "Avg. session duration",
+      "trendTitle": "Traffic trend, last 30 days (GA4)",
+      "dateLabel": "Date: {label}",
+      "sessionsName": "Sessions",
+      "activeUsersName": "Active users"
+    },
+    "keywordTrend": {
+      "noGsc": "Connect Google Search Console to track keyword ranking trends",
+      "connectGsc": "Connect GSC",
+      "syncPrompt": "Sync GSC data to establish a baseline",
+      "syncHint": "The first sync records a snapshot of current rankings",
+      "trendPrompt": "Baseline set — sync again tomorrow to see the trend chart",
+      "noQueryData": "GSC synced, but no keyword ranking data yet",
+      "noQueryDataHint": "Google hides keyword-level data for low-traffic sites; it appears automatically as traffic grows",
+      "syncBtn": "Sync now",
+      "syncingBtn": "Syncing...",
+      "resyncBtn": "Re-sync",
+      "currentRanking": "Current keyword rankings",
+      "trendTitle": "Ranking trend (Top 5)",
+      "colKeyword": "Keyword",
+      "colPos": "Position",
+      "colClicks": "Clicks",
+      "colImpr": "Impressions"
+    },
+    "organicTraffic": {
+      "connectPrompt": "Connect Google Search Console to view organic traffic trends",
+      "connectGsc": "Connect GSC",
+      "noData": "No traffic data yet",
+      "totalClicks": "Total clicks",
+      "totalImpr": "Total impressions",
+      "avgCtr": "Avg. CTR",
+      "clicksLabel": "Clicks"
     }
   },
   "legal": {},

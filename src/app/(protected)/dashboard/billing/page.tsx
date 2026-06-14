@@ -6,6 +6,7 @@ import { Wallet, History } from 'lucide-react';
 import { BillingClient } from './BillingClient';
 import { Card } from '@/components/ui/Card';
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 
 export default async function BillingPage() {
     const session = await auth.api.getSession({
@@ -15,6 +16,8 @@ export default async function BillingPage() {
     if (!session || !session.user) {
         redirect('/login');
     }
+
+    const t = await getTranslations('dashboard.billing');
 
     // Fetch user credits and transactions
     const [user, transactions] = await Promise.all([
@@ -31,10 +34,10 @@ export default async function BillingPage() {
 
     const getTransactionTypeLabel = (type: string) => {
         switch (type) {
-            case 'PURCHASE': return { label: '购买', color: 'text-emerald-600 bg-emerald-50' };
-            case 'CONSUMPTION': return { label: '使用', color: 'text-blue-600 bg-blue-50' };
-            case 'BONUS': return { label: '赠送', color: 'text-purple-600 bg-purple-50' };
-            case 'REFUND': return { label: '退款', color: 'text-amber-600 bg-amber-50' };
+            case 'PURCHASE': return { label: t('txn.purchase'), color: 'text-emerald-600 bg-emerald-50' };
+            case 'CONSUMPTION': return { label: t('txn.consumption'), color: 'text-blue-600 bg-blue-50' };
+            case 'BONUS': return { label: t('txn.bonus'), color: 'text-purple-600 bg-purple-50' };
+            case 'REFUND': return { label: t('txn.refund'), color: 'text-amber-600 bg-amber-50' };
             default: return { label: type, color: 'text-slate-600 bg-slate-50' };
         }
     };
@@ -44,8 +47,8 @@ export default async function BillingPage() {
             {/* Header & Balance */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-3xl font-black text-slate-900 font-display italic mb-2 tracking-tight italic">积分与订阅</h1>
-                    <p className="text-slate-500 text-sm font-medium">购买积分以解锁更多 AI 驱动的 SEO 深度分析工具</p>
+                    <h1 className="text-3xl font-black text-slate-900 font-display italic mb-2 tracking-tight italic">{t('title')}</h1>
+                    <p className="text-slate-500 text-sm font-medium">{t('subtitle')}</p>
                 </div>
                 
                 <Card className="bg-slate-900 text-white p-6 min-w-[240px] flex items-center gap-4 shadow-xl border-0">
@@ -53,7 +56,7 @@ export default async function BillingPage() {
                         <Wallet size={24} />
                     </div>
                     <div>
-                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">当前余额</div>
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('currentBalance')}</div>
                         <div className="flex items-baseline gap-1">
                             <span className="text-3xl font-black">{user?.credits ?? 0}</span>
                             <span className="text-xs font-bold text-slate-400 uppercase tracking-tight font-mono">Credits</span>
@@ -71,7 +74,7 @@ export default async function BillingPage() {
             <div className="space-y-4">
                 <div className="flex items-center gap-2 px-1">
                     <History size={18} className="text-slate-400" />
-                    <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">最近 10 条消费记录</h2>
+                    <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('recentTransactions')}</h2>
                 </div>
 
                 <Card className="overflow-hidden border-slate-200">
@@ -107,7 +110,7 @@ export default async function BillingPage() {
                         </div>
                     ) : (
                         <div className="p-12 text-center text-slate-400">
-                            <p className="text-xs font-bold uppercase tracking-widest">暂无消费记录</p>
+                            <p className="text-xs font-bold uppercase tracking-widest">{t('noTransactions')}</p>
                         </div>
                     )}
                 </Card>

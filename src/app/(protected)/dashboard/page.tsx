@@ -56,7 +56,7 @@ async function getUserData(userId: string) {
                 prisma.semanticDebt.count({
                     where: { 
                         site: { userId, isCompetitor: false }, 
-                        priorityLabel: { contains: '高搜索' } 
+                        priorityLabel: { contains: '\u9ad8\u641c\u7d22' } 
                     }
                 }),
                 prisma.plannedArticle.count({

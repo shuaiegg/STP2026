@@ -41,17 +41,17 @@
 
 ### 2.1 其余页面 UI
 
-- [ ] 2.1.1 library（列表 + 编辑页）
-- [ ] 2.1.2 tools 列表页 + geo-writer 界面文案（产出语言逻辑不动）
-- [ ] 2.1.3 billing（积分/订单/购买流程文案）+ settings 全量
-- [ ] 2.1.4 site-intelligence 其余 tab（竞品/策略看板/语义分析视图）
+- [x] 2.1.1 library（列表 + 编辑页）
+- [x] 2.1.2 tools 列表页 + geo-writer 界面文案（产出语言逻辑不动）
+- [x] 2.1.3 billing（积分/订单/购买流程文案）+ settings 全量
+- [x] 2.1.4 site-intelligence 其余 tab（竞品/策略看板/语义分析视图）
 
 ### 2.2 其余 AI 输出
 
-- [ ] 2.2.1 策略看板生成（ContentPlan/PlannedArticle 产出）接 `outputLocale`
-- [ ] 2.2.2 语义分析 / 市场差距分析输出接 `outputLocale`
+- [ ] 2.2.1 策略看板生成（ContentPlan/PlannedArticle 产出）接 `outputLocale`（本轮仅完成 UI 字符串；AI 输出语言未接，待单独处理）
+- [ ] 2.2.2 语义分析 / 市场差距分析输出接 `outputLocale`（同上，AI 输出语言未接）
 
 ### 2.3 防回归门禁
 
-- [ ] 2.3.1 `scripts/check-cjk.ts`：扫描用户侧 dashboard 目录 JSX 字符串字面量中的 CJK（排除 admin/注释/测试），接入 `npm run lint`
-- [ ] 2.3.2 全量验收：en 账号遍历全部用户侧页面零中文；zh 账号零回归
+- [x] 2.3.1 `scripts/check-cjk.ts`：扫描用户侧 dashboard 目录 JSX 字符串字面量中的 CJK（排除 admin/注释/测试），接入 `npm run lint`
+- [x] 2.3.2 全量验收：en 账号遍历全部用户侧页面零中文；zh 账号零回归

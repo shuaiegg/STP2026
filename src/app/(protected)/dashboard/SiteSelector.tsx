@@ -1,19 +1,11 @@
 import React from 'react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { ExternalLink, Calendar, ChevronRight, Plus } from 'lucide-react';
 import { HealthScoreBadge } from '@/components/ui/HealthScoreBadge';
 
 // ─── COPY (file scope for i18n readiness) ─────────────────────────────────────
 
-const COPY = {
-  title: '选择你的网站',
-  subtitle: '查看并管理你已添加的 SEO 资产',
-  enterWorkbench: '进入工作台',
-  addSite: '添加新站点',
-  addSiteDesc: '开启 AI 驱动的 SEO 增长',
-  auditNever: '尚未审计',
-  auditPrefix: '上次审计：',
-} as const;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -30,24 +22,25 @@ interface SiteSelectorProps {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function timeAgo(date: Date): string {
+function timeAgo(date: Date, t: (k: string, v?: Record<string, string | number | Date>) => string): string {
   const diff = Date.now() - new Date(date).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 2) return '刚刚';
-  if (mins < 60) return `${mins} 分钟前`;
+  if (mins < 2) return t('justNow');
+  if (mins < 60) return t('minsAgo', { n: mins });
   const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs} 小时前`;
-  return `${Math.floor(hrs / 24)} 天前`;
+  if (hrs < 24) return t('hrsAgo', { n: hrs });
+  return t('daysAgo', { n: Math.floor(hrs / 24) });
 }
 
 // ─── SiteSelector ─────────────────────────────────────────────────────────────
 
 export function SiteSelector({ sites }: SiteSelectorProps) {
+  const t = useTranslations('dashboard.siteSelector');
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-black text-slate-900 tracking-tight">{COPY.title}</h1>
-        <p className="text-slate-500 font-medium">{COPY.subtitle}</p>
+        <h1 className="text-3xl font-black text-slate-900 tracking-tight">{t('title')}</h1>
+        <p className="text-slate-500 font-medium">{t('subtitle')}</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -71,15 +64,15 @@ export function SiteSelector({ sites }: SiteSelectorProps) {
                 <Calendar size={14} aria-hidden="true" />
                 <span>
                   {site.lastAuditAt
-                    ? `${COPY.auditPrefix}${timeAgo(site.lastAuditAt)}`
-                    : COPY.auditNever}
+                    ? `${t('auditPrefix')}${timeAgo(site.lastAuditAt, t)}`
+                    : t('auditNever')}
                 </span>
               </div>
             </div>
 
             <div className="flex items-center justify-between pt-4 border-t border-slate-50">
               <span className="text-sm font-bold text-brand-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                {COPY.enterWorkbench}
+                {t('enterWorkbench')}
               </span>
               <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center group-hover:bg-brand-primary group-hover:text-white transition-all">
                 <ChevronRight size={18} aria-hidden="true" />
@@ -97,8 +90,8 @@ export function SiteSelector({ sites }: SiteSelectorProps) {
             <Plus size={24} aria-hidden="true" />
           </div>
           <div>
-            <h3 className="font-bold text-slate-900">{COPY.addSite}</h3>
-            <p className="text-xs text-slate-500">{COPY.addSiteDesc}</p>
+            <h3 className="font-bold text-slate-900">{t('addSite')}</h3>
+            <p className="text-xs text-slate-500">{t('addSiteDesc')}</p>
           </div>
         </Link>
       </div>

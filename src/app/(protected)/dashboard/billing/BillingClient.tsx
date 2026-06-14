@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { CREDIT_PRODUCTS } from '@/lib/billing/products';
@@ -10,6 +11,7 @@ import { useSearchParams } from 'next/navigation';
 import posthog from 'posthog-js';
 
 export function BillingClient({ creditsRemaining }: { creditsRemaining: number }) {
+    const t = useTranslations('dashboard.billing');
     const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
     const searchParams = useSearchParams();
 
@@ -19,7 +21,7 @@ export function BillingClient({ creditsRemaining }: { creditsRemaining: number }
 
     useEffect(() => {
         if (searchParams.get('success') === '1') {
-            toast.success('支付成功！积分将在几分钟内到账');
+            toast.success(t('paySuccess'));
         }
     }, [searchParams]);
 
@@ -35,10 +37,10 @@ export function BillingClient({ creditsRemaining }: { creditsRemaining: number }
             if (data.checkoutUrl) {
                 window.location.href = data.checkoutUrl;
             } else {
-                toast.error(data.error || '创建订单失败');
+                toast.error(data.error || t('createOrderFailed'));
             }
         } catch (error) {
-            toast.error('网络请求失败');
+            toast.error(t('networkFailed'));
         } finally {
             setLoadingProductId(null);
         }
@@ -51,7 +53,7 @@ export function BillingClient({ creditsRemaining }: { creditsRemaining: number }
                     {product.recommended && (
                         <div className="absolute top-0 right-0">
                             <div className="bg-brand-secondary text-brand-text-inverted text-[10px] font-bold px-3 py-1 rounded-bl-lg uppercase tracking-wider">
-                                推荐
+                                {t('recommended')}
                             </div>
                         </div>
                     )}
@@ -60,27 +62,27 @@ export function BillingClient({ creditsRemaining }: { creditsRemaining: number }
                         <h3 className="text-lg font-bold text-brand-text-primary mb-1">{product.label}</h3>
                         <div className="flex items-baseline gap-1">
                             <span className="text-4xl font-black text-brand-text-primary">{product.credits}</span>
-                            <span className="text-sm font-bold text-brand-text-secondary uppercase tracking-tight">积分</span>
+                            <span className="text-sm font-bold text-brand-text-secondary uppercase tracking-tight">{t('creditsUnit')}</span>
                         </div>
                     </div>
 
                     <div className="space-y-3 mb-8 flex-grow">
                         <div className="flex items-center gap-2 text-sm text-brand-text-secondary">
                             <Check className="w-4 h-4 text-brand-success shrink-0" />
-                            <span>永久有效，不限时间</span>
+                            <span>{t('permanent')}</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-brand-text-secondary">
                             <Check className="w-4 h-4 text-brand-success shrink-0" />
-                            <span>解锁所有 AI 工具</span>
+                            <span>{t('unlockAll')}</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-brand-text-secondary">
                             <Check className="w-4 h-4 text-brand-success shrink-0" />
-                            <span>单价: ${(product.price / product.credits).toFixed(3)} / 积分</span>
+                            <span>{t('unitPrice', { price: (product.price / product.credits).toFixed(3) })}</span>
                         </div>
                         {product.credits > 50 && (
                             <div className="flex items-center gap-2 text-sm font-bold text-brand-success bg-brand-success/10 px-2 py-1 rounded-md inline-flex w-fit">
                                 <Zap className="w-3 h-3 fill-current" />
-                                <span>省 {Math.round((1 - (product.price / product.credits) / (9 / 50)) * 100)}%</span>
+                                <span>{t('save', { pct: Math.round((1 - (product.price / product.credits) / (9 / 50)) * 100) })}</span>
                             </div>
                         )}
                     </div>
@@ -97,7 +99,7 @@ export function BillingClient({ creditsRemaining }: { creditsRemaining: number }
                             {loadingProductId === product.productId ? (
                                 <Loader2 className="w-5 h-5 animate-spin" />
                             ) : (
-                                '立即购买'
+                                t('buyNow')
                             )}
                         </Button>
                     </div>

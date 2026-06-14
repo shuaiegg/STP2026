@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { 
     Save, ArrowLeft, Wand2, Globe, TrendingUp, 
     ChevronRight, Loader2, Sparkles, AlertCircle,
@@ -18,6 +19,7 @@ import { calculateHumanScore } from '@/lib/utils/ai-detection';
 import { updateTrackedArticle } from '@/app/actions/update-article';
 
 export function LibraryEditor({ initialArticle }: { initialArticle: any }) {
+    const t = useTranslations('dashboard.library');
     const router = useRouter();
     const [isSaving, setIsSaving] = useState(false);
     const [title, setTitle] = useState(initialArticle.title);
@@ -36,11 +38,11 @@ export function LibraryEditor({ initialArticle }: { initialArticle: any }) {
             s.id === id ? { ...s, body: newBody } : s
         );
         setContentSections(updated);
-        toast.info("段落已在内存中更新，别忘了点击顶部保存按钮。");
+        toast.info(t('paraUpdated'));
     };
 
     const handleRegenerate = async (section: ContentSection, instruction: string) => {
-        const loadingId = toast.loading('AI 正在重塑段落...');
+        const loadingId = toast.loading(t('aiRewriting'));
         try {
             const response = await fetch('/api/skills/execute', {
                 method: 'POST',
@@ -59,7 +61,7 @@ export function LibraryEditor({ initialArticle }: { initialArticle: any }) {
 
             const data = await response.json();
             if (!data.success || !data.output?.data?.content) {
-                throw new Error(data.error || 'AI 重写失败');
+                throw new Error(data.error || t('aiRewriteFailed'));
             }
 
             // Note: Per user's direction, we could add a preview here. 
@@ -70,7 +72,7 @@ export function LibraryEditor({ initialArticle }: { initialArticle: any }) {
             );
             setContentSections(updated);
             
-            toast.success('AI 段落刷新成功！', { id: loadingId });
+            toast.success(t('aiRewriteOk'), { id: loadingId });
             return true;
         } catch (error: any) {
             toast.error(error.message, { id: loadingId });
@@ -89,13 +91,13 @@ export function LibraryEditor({ initialArticle }: { initialArticle: any }) {
             });
 
             if (result.success) {
-                toast.success("改动已永久存入资产库！");
+                toast.success(t('savedToLibrary'));
                 router.refresh();
             } else {
                 toast.error(result.message);
             }
         } catch (error) {
-            toast.error("保存过程中出现异常");
+            toast.error(t('saveError'));
         } finally {
             setIsSaving(false);
         }
@@ -117,7 +119,7 @@ export function LibraryEditor({ initialArticle }: { initialArticle: any }) {
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             className="text-xl font-black text-slate-800 bg-transparent border-none outline-none focus:ring-0 w-full md:w-[400px]"
-                            placeholder="文章标题..."
+                            placeholder={t('titlePlaceholder')}
                         />
                         <div className="flex items-center gap-2 mt-1">
                             <Badge className="bg-indigo-50 text-indigo-600 border-indigo-100 text-[9px] uppercase font-black tracking-widest">
@@ -135,7 +137,7 @@ export function LibraryEditor({ initialArticle }: { initialArticle: any }) {
                         className="bg-brand-primary text-white font-black px-8 py-6 border-2 border-black shadow-[6px_6px_0_0_rgba(10,10,10,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
                     >
                         {isSaving ? <Loader2 size={18} className="animate-spin mr-2" /> : <Save size={18} className="mr-2" />}
-                        {isSaving ? '正在加固中...' : '提交修改并入库'}
+                        {isSaving ? t('saving') : t('submitSave')}
                     </Button>
                 </div>
             </div>
@@ -166,7 +168,7 @@ export function LibraryEditor({ initialArticle }: { initialArticle: any }) {
                     {/* SEO Radar */}
                     <Card className="p-8 border-2 border-slate-100 bg-white rounded-3xl shadow-sm">
                         <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-8 flex items-center gap-2">
-                            <TrendingUp size={16} className="text-brand-secondary" /> 实时内容健康度 (Radar)
+                            <TrendingUp size={16} className="text-brand-secondary" /> {t('radarTitle')}
                         </h3>
                         
                         <div className="space-y-8">
@@ -178,7 +180,7 @@ export function LibraryEditor({ initialArticle }: { initialArticle: any }) {
                             </div>
 
                             <div className="space-y-4 pt-4 border-t border-slate-50 text-[11px] font-medium text-slate-500 leading-relaxed italic">
-                                “杰克，目前的文本读起来非常像真人撰写。如果你继续增加案例研究，GEO 权重还会进一步提升。”
+                                {t('radarNote')}
                             </div>
                         </div>
                     </Card>
@@ -186,7 +188,7 @@ export function LibraryEditor({ initialArticle }: { initialArticle: any }) {
                     {/* Keywords */}
                     <Card className="p-8 border-2 border-slate-100 bg-white rounded-3xl shadow-sm">
                         <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
-                            <Globe size={16} className="text-brand-primary" /> 核心关键词
+                            <Globe size={16} className="text-brand-primary" /> {t('coreKeywords')}
                         </h3>
                         <div className="flex flex-wrap gap-2">
                             {initialArticle.keywords?.map((kw: string, i: number) => (
@@ -201,7 +203,7 @@ export function LibraryEditor({ initialArticle }: { initialArticle: any }) {
                         <div className="flex gap-4 items-start">
                             <div className="mt-1"><AlertCircle size={20} className="text-brand-primary" /></div>
                             <p className="text-[11px] font-bold text-slate-600 leading-relaxed">
-                                请注意：修改正文可能会影响到搜索引擎的引用检测。建议每次大幅修改后，在 24 小时后查看最新的流量轨迹。
+                                {t('editNote')}
                             </p>
                         </div>
                     </div>

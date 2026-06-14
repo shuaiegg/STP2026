@@ -9,11 +9,13 @@ import { toast } from "sonner";
 import { translateAuthError } from "@/lib/auth-errors";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 export default function SettingsPage() {
     const router = useRouter();
     const t = useTranslations("dashboard.settings");
+    const locale = useLocale();
+    const localizeError = (m: string) => (locale === "zh" ? translateAuthError(m) : m);
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -102,7 +104,7 @@ export default function SettingsPage() {
                     setError(translateAuthError(errMsg));
                     return;
                 }
-                throw new Error(errMsg || "修改密码失败");
+                throw new Error(errMsg || t("errChangePwd"));
             }
 
             toast.success(t("security.success"));
@@ -110,7 +112,7 @@ export default function SettingsPage() {
             setNewPassword("");
             setConfirmPassword("");
         } catch (err: any) {
-            setError(translateAuthError(err.message || "修改密码失败，请检查当前密码是否正确"));
+            setError(localizeError(err.message || t("errChangePwdCheck")));
         } finally {
             setIsPending(false);
         }
@@ -132,13 +134,13 @@ export default function SettingsPage() {
 
             const data = await response.json();
             if (!response.ok || data.error) {
-                throw new Error(data.error || "发送验证码失败");
+                throw new Error(data.error || t("errSendCode"));
             }
 
             setIsOtpSent(true);
             toast.success(t("security.otpSent"));
         } catch (err: any) {
-            setError(translateAuthError(err.message || "发送验证码失败"));
+            setError(localizeError(err.message || t("errSendCode")));
         } finally {
             setIsPending(false);
         }
@@ -176,7 +178,7 @@ export default function SettingsPage() {
             const data = await response.json();
 
             if (!response.ok || data.error) {
-                throw new Error(data.error || data.message || "设置密码失败，请检查验证码是否正确");
+                throw new Error(data.error || data.message || t("errSetPwd"));
             }
 
             toast.success(t("security.success"));
@@ -186,7 +188,7 @@ export default function SettingsPage() {
             setOtp("");
             setIsOtpSent(false);
         } catch (err: any) {
-            setError(translateAuthError(err.message || "验证码错误或已过期"));
+            setError(localizeError(err.message || t("errCodeExpired")));
         } finally {
             setIsPending(false);
         }

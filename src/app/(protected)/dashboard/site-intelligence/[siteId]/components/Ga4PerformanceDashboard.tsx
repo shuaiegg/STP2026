@@ -1,5 +1,6 @@
 "use client"
 import React, { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { Card } from '@/components/ui/Card';
 import dynamic from 'next/dynamic';
 import { Users, Clock, Activity, MousePointerClick } from 'lucide-react';
@@ -14,6 +15,7 @@ const Tooltip = dynamic(() => import('recharts').then(mod => mod.Tooltip), { ssr
 const CartesianGrid = dynamic(() => import('recharts').then(mod => mod.CartesianGrid), { ssr: false });
 
 export function Ga4PerformanceDashboard({ siteId }: { siteId: string }) {
+    const t = useTranslations('dashboard.ga4Dashboard');
     const [data, setData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -27,14 +29,14 @@ export function Ga4PerformanceDashboard({ siteId }: { siteId: string }) {
 
                 if (result.success) {
                     setData(result.data);
-                } else if (result.needsReauth || result.error?.includes('无访问权限')) {
-                    setError('GA4连接失效或没有数据权限，请在概览页面重新授权关联 GA4。');
+                } else if (result.needsReauth || result.error?.includes('\u65e0\u8bbf\u95ee\u6743\u9650')) {
+                    setError(t('reauthError'));
                 } else {
-                    setError(result.error || '无法加载流量数据');
+                    setError(result.error || t('loadFailed'));
                 }
             } catch (e) {
                 console.error(e);
-                setError('请求流量数据失败');
+                setError(t('requestFailed'));
             } finally {
                 setLoading(false);
             }
@@ -56,7 +58,7 @@ export function Ga4PerformanceDashboard({ siteId }: { siteId: string }) {
         return (
             <div className="flex flex-col items-center justify-center p-12 min-h-[400px] border border-dashed border-rose-200 rounded-xl bg-orange-50/30">
                 <span className="text-3xl mb-3 opacity-80">📉</span>
-                <p className="text-sm font-bold text-orange-900 mb-1">无法读取 GA4 流量数据</p>
+                <p className="text-sm font-bold text-orange-900 mb-1">{t('cantRead')}</p>
                 <p className="text-xs text-orange-700/70 max-w-sm text-center">{error}</p>
             </div>
         );
@@ -66,8 +68,8 @@ export function Ga4PerformanceDashboard({ siteId }: { siteId: string }) {
         return (
             <div className="flex flex-col items-center justify-center p-12 min-h-[400px] border border-dashed border-slate-200 rounded-xl">
                 <span className="text-3xl mb-3 opacity-30">🕸️</span>
-                <p className="text-sm font-bold text-slate-600">近 30 天无流量数据</p>
-                <p className="text-xs text-slate-400">目前您的站点尚未被记录到有效访问。</p>
+                <p className="text-sm font-bold text-slate-600">{t('noData30d')}</p>
+                <p className="text-xs text-slate-400">{t('noDataHint')}</p>
             </div>
         );
     }
@@ -87,7 +89,7 @@ export function Ga4PerformanceDashboard({ siteId }: { siteId: string }) {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <Card className="p-5 flex flex-col justify-between border-slate-200 shadow-sm">
                     <div className="flex justify-between items-start mb-2">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><Users size={12} />活跃用户数 (30d)</span>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><Users size={12} />{t('activeUsers')}</span>
                     </div>
                     <div className="text-3xl font-extrabold text-slate-900 tabular-nums">
                         {totals.activeUsers.toLocaleString()}
@@ -96,7 +98,7 @@ export function Ga4PerformanceDashboard({ siteId }: { siteId: string }) {
 
                 <Card className="p-5 flex flex-col justify-between border-slate-200 shadow-sm">
                     <div className="flex justify-between items-start mb-2">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><MousePointerClick size={12} />总会话数</span>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><MousePointerClick size={12} />{t('totalSessions')}</span>
                     </div>
                     <div className="text-3xl font-extrabold text-slate-900 tabular-nums">
                         {totals.sessions.toLocaleString()}
@@ -105,7 +107,7 @@ export function Ga4PerformanceDashboard({ siteId }: { siteId: string }) {
 
                 <Card className="p-5 flex flex-col justify-between border-slate-200 shadow-sm">
                     <div className="flex justify-between items-start mb-2">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><Activity size={12} />平均互动率</span>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><Activity size={12} />{t('avgEngagement')}</span>
                     </div>
                     <div className="text-3xl font-extrabold text-slate-900 tabular-nums">
                         {formatRate(totals.engagementRate)}
@@ -114,7 +116,7 @@ export function Ga4PerformanceDashboard({ siteId }: { siteId: string }) {
 
                 <Card className="p-5 flex flex-col justify-between border-slate-200 shadow-sm">
                     <div className="flex justify-between items-start mb-2">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><Clock size={12} />平均停留时间</span>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><Clock size={12} />{t('avgDuration')}</span>
                     </div>
                     <div className="text-2xl pt-1 pr-2 font-extrabold text-slate-900 tabular-nums truncate">
                         {formatDuration(totals.averageSessionDuration || 0)}
@@ -127,7 +129,7 @@ export function Ga4PerformanceDashboard({ siteId }: { siteId: string }) {
                 <div className="flex items-center justify-between mb-8">
                     <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
                         <Activity size={16} className="text-orange-500" />
-                        近 30 天流量趋势 (GA4)
+                        {t('trendTitle')}
                     </h3>
                 </div>
                 <div className="h-[350px] w-full">
@@ -166,10 +168,10 @@ export function Ga4PerformanceDashboard({ siteId }: { siteId: string }) {
                                 contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                                 itemStyle={{ fontSize: '12px', fontWeight: 600 }}
                                 labelStyle={{ fontSize: '11px', color: '#64748b', marginBottom: '8px' }}
-                                labelFormatter={(label) => `日期: ${label}`}
+                                labelFormatter={(label) => t('dateLabel', { label })}
                             />
-                            <Area yAxisId="left" type="monotone" dataKey="sessions" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorSessions)" name="会话数" />
-                            <Area yAxisId="left" type="monotone" dataKey="activeUsers" stroke="#f97316" strokeWidth={3} fillOpacity={1} fill="url(#colorUsers)" name="活跃用户数" activeDot={{ r: 6, strokeWidth: 0 }} />
+                            <Area yAxisId="left" type="monotone" dataKey="sessions" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorSessions)" name={t('sessionsName')} />
+                            <Area yAxisId="left" type="monotone" dataKey="activeUsers" stroke="#f97316" strokeWidth={3} fillOpacity={1} fill="url(#colorUsers)" name={t('activeUsersName')} activeDot={{ r: 6, strokeWidth: 0 }} />
                         </AreaChart>
                     </ResponsiveContainer>
                 </div>

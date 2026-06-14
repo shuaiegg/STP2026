@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
     FileText, Calendar, Trash2, Edit3, Share2,
     ChevronRight, CheckCircle2, Clock, AlertCircle,
@@ -13,29 +14,31 @@ import { deleteTrackedArticle } from '@/app/actions/delete-article';
 import { toast } from 'sonner';
 import Link from 'next/link';
 
-const STATUS_BADGE: Record<string, React.ReactNode> = {
-    CITED: <Badge className="bg-emerald-50 text-emerald-600 border-emerald-100 flex items-center gap-1 font-bold text-[10px]"><CheckCircle2 size={10} /> 已引用</Badge>,
-    CHECKING: <Badge className="bg-blue-50 text-blue-600 border-blue-100 flex items-center gap-1 font-bold text-[10px]"><Clock size={10} className="animate-spin" /> 检查中</Badge>,
-    NOT_CITED: <Badge className="bg-orange-50 text-orange-600 border-orange-100 flex items-center gap-1 font-bold text-[10px]"><AlertCircle size={10} /> 未检测到</Badge>,
-};
-const DEFAULT_STATUS_BADGE = <Badge className="bg-slate-50 text-slate-500 border-slate-100 flex items-center gap-1 font-bold text-[10px]"><Clock size={10} /> 待检</Badge>;
-
 export function ArticleList({ initialArticles }: { initialArticles: any[] }) {
+    const t = useTranslations('dashboard.library');
+    const renderStatusBadge = (status: string): React.ReactNode => {
+        switch (status) {
+            case 'CITED': return <Badge className="bg-emerald-50 text-emerald-600 border-emerald-100 flex items-center gap-1 font-bold text-[10px]"><CheckCircle2 size={10} /> {t('statusCited')}</Badge>;
+            case 'CHECKING': return <Badge className="bg-blue-50 text-blue-600 border-blue-100 flex items-center gap-1 font-bold text-[10px]"><Clock size={10} className="animate-spin" /> {t('statusChecking')}</Badge>;
+            case 'NOT_CITED': return <Badge className="bg-orange-50 text-orange-600 border-orange-100 flex items-center gap-1 font-bold text-[10px]"><AlertCircle size={10} /> {t('statusNotCited')}</Badge>;
+            default: return <Badge className="bg-slate-50 text-slate-500 border-slate-100 flex items-center gap-1 font-bold text-[10px]"><Clock size={10} /> {t('statusPending')}</Badge>;
+        }
+    };
     const [articles, setArticles] = useState(initialArticles);
     const [isDeleting, setIsDeleting] = useState<string | null>(null);
 
     const handleDelete = async (id: string) => {
-        if (!confirm("确定要删除这篇文章吗？此操作不可撤销。")) return;
+        if (!confirm(t('confirmDelete'))) return;
         
         setIsDeleting(id);
         try {
             const res = await deleteTrackedArticle(id);
             if (res.success) {
                 setArticles(articles.filter(a => a.id !== id));
-                toast.success("文章已成功移除");
+                toast.success(t('deleted'));
             }
         } catch (error) {
-            toast.error("删除失败，请重试");
+            toast.error(t('deleteFailed'));
         } finally {
             setIsDeleting(null);
         }
@@ -50,7 +53,7 @@ export function ArticleList({ initialArticles }: { initialArticles: any[] }) {
                     <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                         <div className="flex-1 space-y-3">
                             <div className="flex items-center gap-3">
-                                {STATUS_BADGE[article.status] ?? DEFAULT_STATUS_BADGE}
+                                {renderStatusBadge(article.status)}
                                 <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                                     <Calendar size={12} />
                                     {new Date(article.createdAt).toLocaleDateString('zh-CN')}
@@ -73,15 +76,15 @@ export function ArticleList({ initialArticles }: { initialArticles: any[] }) {
                                 <div className="flex items-center gap-4 mt-2 bg-slate-50/50 p-2.5 rounded-xl border border-slate-100 max-w-fit">
                                     <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500">
                                         <MousePointerClick size={12} className="text-blue-500" />
-                                        点击 {article.attribution.clicks}
+                                        {t('clicks', { n: article.attribution.clicks })}
                                     </div>
                                     <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500">
                                         <Eye size={12} className="text-emerald-500" />
-                                        展示 {article.attribution.impressions}
+                                        {t('impressions', { n: article.attribution.impressions })}
                                     </div>
                                     <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500">
                                         <Trophy size={12} className="text-amber-500" />
-                                        平均排名 #{article.attribution.position?.toFixed(1) || '0.0'}
+                                        {t('avgPos', { n: article.attribution.position?.toFixed(1) || '0.0' })}
                                     </div>
                                 </div>
                             )}
@@ -90,7 +93,7 @@ export function ArticleList({ initialArticles }: { initialArticles: any[] }) {
                         <div className="flex items-center gap-2 self-end md:self-center">
                             <div className="p-1 bg-slate-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all flex items-center gap-1 border border-slate-100">
                                 <Link href={`/dashboard/library/edit/${article.id}`}>
-                                    <button className="p-2 hover:bg-white hover:text-brand-primary hover:shadow-sm rounded-md transition-all text-slate-400" title="编辑文章">
+                                    <button className="p-2 hover:bg-white hover:text-brand-primary hover:shadow-sm rounded-md transition-all text-slate-400" title={t('editTitle')}>
                                         <Edit3 size={16} />
                                     </button>
                                 </Link>
@@ -99,7 +102,7 @@ export function ArticleList({ initialArticles }: { initialArticles: any[] }) {
                                     onClick={() => handleDelete(article.id)}
                                     disabled={isDeleting === article.id}
                                     className="p-2 hover:bg-white hover:text-red-500 hover:shadow-sm rounded-md transition-all text-slate-400" 
-                                    title="删除"
+                                    title={t('deleteTitle')}
                                 >
                                     {isDeleting === article.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
                                 </button>

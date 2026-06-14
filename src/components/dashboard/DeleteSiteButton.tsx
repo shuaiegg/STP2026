@@ -1,20 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 
-const COPY = {
-  trigger: '移除站点',
-  title: '确认删除站点？',
-  desc: '此操作将永久删除该站点及其所有审计记录、关键词数据和集成信息，无法恢复。',
-  confirmLabel: '输入域名',
-  confirmSuffix: '以确认删除：',
-  placeholder: '输入域名以确认',
-  confirm: '确认删除',
-  deleting: '删除中...',
-  cancel: '取消',
-} as const;
 
 interface DeleteSiteButtonProps {
   siteId: string;
@@ -22,6 +12,7 @@ interface DeleteSiteButtonProps {
 }
 
 export function DeleteSiteButton({ siteId, domain }: DeleteSiteButtonProps) {
+  const t = useTranslations('dashboard.deleteSite');
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
   const [deleting, setDeleting] = useState(false);
@@ -32,15 +23,15 @@ export function DeleteSiteButton({ siteId, domain }: DeleteSiteButtonProps) {
       const res = await fetch(`/api/dashboard/sites/${siteId}`, { method: 'DELETE' });
       const data = await res.json();
       if (data.success) {
-        toast.success('站点已删除');
+        toast.success(t('deleted'));
         // Hard navigation so the layout re-runs Server Components and TopNav refreshes
         window.location.href = '/dashboard/site-intelligence';
       } else {
-        toast.error(data.error || '删除失败');
+        toast.error(data.error || t('deleteFailed'));
         setOpen(false);
       }
     } catch {
-      toast.error('删除失败，请重试');
+      toast.error(t('deleteRetry'));
       setOpen(false);
     } finally {
       setDeleting(false);
@@ -52,7 +43,7 @@ export function DeleteSiteButton({ siteId, domain }: DeleteSiteButtonProps) {
       <button
         onClick={() => { setOpen(true); setInput(''); }}
         className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
-        title={COPY.trigger}
+        title={t('trigger')}
       >
         <Trash2 size={15} />
       </button>
@@ -72,21 +63,21 @@ export function DeleteSiteButton({ siteId, domain }: DeleteSiteButtonProps) {
             </div>
 
             <div className="text-center space-y-2">
-              <h3 className="text-xl font-black tracking-tight text-slate-900">{COPY.title}</h3>
-              <p className="text-sm text-slate-500 leading-relaxed">{COPY.desc}</p>
+              <h3 className="text-xl font-black tracking-tight text-slate-900">{t('title')}</h3>
+              <p className="text-sm text-slate-500 leading-relaxed">{t('desc')}</p>
             </div>
 
             <div className="space-y-2 bg-slate-50 p-4 rounded-xl border border-slate-100">
               <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                {COPY.confirmLabel}{' '}
+                {t('confirmLabel')}{' '}
                 <strong className="text-slate-700 font-mono normal-case">{domain}</strong>
-                {' '}{COPY.confirmSuffix}
+                {' '}{t('confirmSuffix')}
               </label>
               <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder={COPY.placeholder}
+                placeholder={t('placeholder')}
                 className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 outline-none transition-all font-mono"
                 autoFocus
               />
@@ -98,14 +89,14 @@ export function DeleteSiteButton({ siteId, domain }: DeleteSiteButtonProps) {
                 disabled={deleting}
                 className="flex-1 font-bold rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50"
               >
-                {COPY.cancel}
+                {t('cancel')}
               </button>
               <button
                 onClick={handleDelete}
                 disabled={deleting || input.trim() !== domain}
                 className="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl px-4 py-2.5 text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                {deleting ? COPY.deleting : COPY.confirm}
+                {deleting ? t('deleting') : t('confirm')}
               </button>
             </div>
           </div>

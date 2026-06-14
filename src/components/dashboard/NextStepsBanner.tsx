@@ -1,35 +1,30 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { CheckCircle2, Search, BarChart2, Users, X, ArrowRight } from 'lucide-react';
 
 // ─── COPY & config (file scope for i18n readiness) ────────────────────────────
 
-const COPY = {
-  title: '建议下一步',
-  subtitle: '完善站点配置，解锁 Stellar 的完整 AI 分析能力。',
-  dismissLabel: '关闭建议横幅',
-  connectNow: '立即连接',
-} as const;
 
 const STEPS_CONFIG = [
   {
     id: 'gsc' as const,
-    title: '连接 Search Console',
-    description: '解锁关键词点击量和展示数据',
+    titleKey: 'gscTitle',
+    descKey: 'gscDesc',
     icon: Search,
   },
   {
     id: 'ga4' as const,
-    title: '连接 Google Analytics',
-    description: '追踪流量来源与转化趋势',
+    titleKey: 'ga4Title',
+    descKey: 'ga4Desc',
     icon: BarChart2,
   },
   {
     id: 'competitors' as const,
-    title: '添加竞争对手',
-    description: '开启跨站点语义差异分析',
+    titleKey: 'compTitle',
+    descKey: 'compDesc',
     icon: Users,
   },
 ] as const;
@@ -46,6 +41,7 @@ interface NextStepsBannerProps {
 // ─── NextStepsBanner ──────────────────────────────────────────────────────────
 
 export function NextStepsBanner({ siteId, hasGsc, hasGa4, hasCompetitors }: NextStepsBannerProps) {
+  const t = useTranslations('dashboard.nextSteps');
   const [isDismissed, setIsDismissed] = useState(true); // default true prevents flash
 
   useEffect(() => {
@@ -72,13 +68,13 @@ export function NextStepsBanner({ siteId, hasGsc, hasGa4, hasCompetitors }: Next
   return (
     <div
       role="region"
-      aria-label={COPY.title}
+      aria-label={t('title')}
       className="bg-gradient-to-r from-brand-primary/10 via-white to-brand-primary/5 border border-brand-primary/20 rounded-lg p-6 relative overflow-hidden motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-top-4 duration-700"
     >
       <div className="absolute top-4 right-4">
         <button
           onClick={handleDismiss}
-          aria-label={COPY.dismissLabel}
+          aria-label={t('dismissLabel')}
           className="p-1 hover:bg-slate-100 rounded-lg text-slate-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50"
         >
           <X size={18} aria-hidden="true" />
@@ -87,8 +83,8 @@ export function NextStepsBanner({ siteId, hasGsc, hasGa4, hasCompetitors }: Next
 
       <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
         <div className="flex flex-col gap-1 max-w-sm">
-          <h2 className="text-xl font-black text-slate-900 tracking-tight">{COPY.title}</h2>
-          <p className="text-sm text-slate-500 font-medium">{COPY.subtitle}</p>
+          <h2 className="text-xl font-black text-slate-900 tracking-tight">{t('title')}</h2>
+          <p className="text-sm text-slate-500 font-medium">{t('subtitle')}</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 flex-1">
@@ -112,12 +108,12 @@ export function NextStepsBanner({ siteId, hasGsc, hasGa4, hasCompetitors }: Next
                   {done && <CheckCircle2 size={16} aria-hidden="true" className="text-emerald-500" />}
                 </div>
                 <div className="space-y-0.5">
-                  <p className="text-sm font-bold text-slate-900">{step.title}</p>
-                  <p className="text-[10px] text-slate-500 leading-tight">{step.description}</p>
+                  <p className="text-sm font-bold text-slate-900">{t(step.titleKey)}</p>
+                  <p className="text-[10px] text-slate-500 leading-tight">{t(step.descKey)}</p>
                 </div>
                 {!done && (
                   <div className="pt-1 flex items-center text-[11px] font-black text-brand-primary uppercase tracking-widest">
-                    {COPY.connectNow} <ArrowRight size={12} aria-hidden="true" className="ml-1" />
+                    {t('connectNow')} <ArrowRight size={12} aria-hidden="true" className="ml-1" />
                   </div>
                 )}
               </Link>
