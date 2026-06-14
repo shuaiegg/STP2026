@@ -1,11 +1,11 @@
-import { prisma } from "@/lib/prisma";
+import { prisma, withDbRetry } from "@/lib/prisma";
 import { unstable_cache, revalidateTag } from "next/cache";
 
 export async function getInitialSites(userId: string) {
   return unstable_cache(
     async () => {
       try {
-        const sites = await prisma.site.findMany({
+        const sites = await withDbRetry(() => prisma.site.findMany({
           where: { userId },
           orderBy: { updatedAt: 'desc' },
           select: {
@@ -23,7 +23,7 @@ export async function getInitialSites(userId: string) {
               }
             }
           },
-        });
+        }));
         return sites.map(site => ({
           id: site.id,
           domain: site.domain,
@@ -50,7 +50,7 @@ export async function getSiteById(siteId: string, userId: string) {
   return unstable_cache(
     async () => {
       try {
-        const site = await prisma.site.findUnique({
+        const site = await withDbRetry(() => prisma.site.findUnique({
           where: { id: siteId, userId },
           select: {
             id: true,
@@ -76,7 +76,7 @@ export async function getSiteById(siteId: string, userId: string) {
               }
             }
           }
-        });
+        }));
 
         if (!site) return null;
 
