@@ -35,6 +35,7 @@ interface Article {
     slug: string;
     summary: string | null;
     contentMd: string | null;
+    status: string;
     locale: string;
     translationGroupId: string | null;
     categoryId: string | null;
@@ -342,7 +343,7 @@ export function EditForm({
     const effectiveDescription = seoData.metaDescription || formData.summary;
 
     // 统一的保存函数：同时保存文章内容和 SEO 数据
-    const handleUnifiedSave = async () => {
+    const handleUnifiedSave = async (statusOverride?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED') => {
         setIsPending(true);
         setIsSeoSaving(true);
         try {
@@ -356,6 +357,7 @@ export function EditForm({
                 categoryId: formData.categoryId || null,
                 authorId: formData.authorId || null,
                 coverImageId: formData.coverImageId || null,
+                ...(statusOverride && { status: statusOverride }),
             });
 
             if (!contentResult.success) {
@@ -883,6 +885,26 @@ export function EditForm({
                             {isPending ? <RefreshCw size={18} className="animate-spin" /> : <Save size={18} />}
                             {isPending ? '正在保存...' : '保存更新'}
                         </Button>
+                        {article.status === 'PUBLISHED' ? (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                disabled={isPending}
+                                onClick={() => handleUnifiedSave('DRAFT')}
+                                className="px-6 font-bold rounded-xl border-amber-200 text-amber-700 hover:bg-amber-50"
+                            >
+                                下架
+                            </Button>
+                        ) : (
+                            <Button
+                                type="button"
+                                disabled={isPending}
+                                onClick={() => handleUnifiedSave('PUBLISHED')}
+                                className="px-6 gap-2 font-bold py-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white"
+                            >
+                                <Save size={18} /> 保存并发布
+                            </Button>
+                        )}
                         <Button
                             type="button"
                             variant="ghost"

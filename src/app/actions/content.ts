@@ -132,6 +132,10 @@ export async function updateContentMetadata(id: string, data: {
             ]);
         }
 
+        // 发布转换：草稿经 saveToBlogDraft 默认 visibility=PRIVATE，发布时必须置 PUBLIC，
+        // 否则前台查询（要 PUBLISHED+PUBLIC）查不到 → 404。同时补 publishedAt。
+        const isPublishing = data.status === 'PUBLISHED' && current.status !== 'PUBLISHED';
+
         // 2. Update local database
         const updated = await prisma.content.update({
             where: { id },
@@ -146,6 +150,10 @@ export async function updateContentMetadata(id: string, data: {
                 authorId: data.authorId,
                 coverImageId: data.coverImageId,
                 status: data.status,
+                ...(isPublishing && {
+                    visibility: 'PUBLIC',
+                    publishedAt: current.publishedAt ?? new Date(),
+                }),
                 updatedAt: new Date()
             },
             include: { category: true, seo: true }
