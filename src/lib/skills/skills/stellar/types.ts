@@ -13,6 +13,7 @@ export interface IntelligenceContext {
 export interface PromptStrategy {
     systemPrompt: string;
     buildFullArticlePrompt: (outline: any[]) => string;
+    buildSectionPrompt: (sectionTitle: string, previousContent: string, isFirst: boolean, isLast: boolean) => string;
     model: string;
     temperature: number;
 }

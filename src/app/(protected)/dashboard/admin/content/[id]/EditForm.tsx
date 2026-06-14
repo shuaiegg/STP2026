@@ -728,17 +728,19 @@ export function EditForm({
                         <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">封面图片</label>
                         <div className="flex items-start gap-4 p-5 bg-slate-50 rounded-xl border border-slate-100">
                             <div className="w-32 aspect-video bg-white rounded-lg border border-slate-200 overflow-hidden flex-shrink-0 relative group">
-                                {formData.coverImageId ? (
-                                    <img
-                                        src={coverPreview || (article.coverImageId === formData.coverImageId ? article.coverImage?.storageUrl || '' : '')}
-                                        alt="Cover"
-                                        className="w-full h-full object-cover"
-                                    />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-slate-300">
-                                        <Edit size={24} />
-                                    </div>
-                                )}
+                                {(() => {
+                                    // 优先用新上传的预览 URL；否则用已存封面的 storageUrl（仅当 id 未变更）
+                                    const coverSrc = coverPreview
+                                        || (article.coverImageId === formData.coverImageId ? (article.coverImage?.storageUrl || '') : '');
+                                    return coverSrc ? (
+                                        // eslint-disable-next-line @next/next/no-img-element
+                                        <img src={coverSrc} alt="Cover" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-slate-300">
+                                            <Edit size={24} />
+                                        </div>
+                                    );
+                                })()}
                             </div>
                             <div className="flex-1 space-y-3">
                                 <div className="text-xs text-slate-500">建议尺寸: 1200x630px. 支持拖拽或粘贴到下方编辑器上传后复制 ID，或直接在此上传。</div>

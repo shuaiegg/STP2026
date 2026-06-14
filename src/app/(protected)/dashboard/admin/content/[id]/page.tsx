@@ -20,6 +20,7 @@ async function getArticle(id: string) {
         include: {
             category: true,
             seo: true,
+            coverImage: true,
         }
     });
     return article;
