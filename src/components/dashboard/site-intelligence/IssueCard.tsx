@@ -60,10 +60,12 @@ export default function IssueCard({
 
   const styles = getSeverityStyles(severity);
 
-  // Use translated content if available for the code, fallback to props
-  const displayTitle = tAudit.has(`${code}.title`) ? tAudit(`${code}.title`) : title;
-  const displayExplanation = tAudit.has(`${code}.explanation`) ? tAudit(`${code}.explanation`) : explanation;
-  const displayHowToFix = tAudit.has(`${code}.howToFix`) ? tAudit(`${code}.howToFix`) : howToFix;
+  // Use translated content if available for the code, fallback to props.
+  // Use .raw() so message text containing HTML-like snippets (e.g. "<head>", "<meta>")
+  // is returned literally instead of being parsed as next-intl rich-text tags.
+  const displayTitle = tAudit.has(`${code}.title`) ? (tAudit.raw(`${code}.title`) as string) : title;
+  const displayExplanation = tAudit.has(`${code}.explanation`) ? (tAudit.raw(`${code}.explanation`) as string) : explanation;
+  const displayHowToFix = tAudit.has(`${code}.howToFix`) ? (tAudit.raw(`${code}.howToFix`) as string) : howToFix;
 
   return (
     <Card className="bg-white border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
