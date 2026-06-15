@@ -265,10 +265,20 @@ export class CrawlerService {
     const aboutUrl = urls.find(u => u.toLowerCase().includes('/about') || u.toLowerCase().includes('about-us'));
 
     // Fire off the DNA extraction asynchronously so it doesn't block the crawl startup
-    this.extractBusinessDna(homeUrl, aboutUrl, { locale }).then(dna => {
+    this.extractBusinessDna(homeUrl, aboutUrl, { locale }).then(async (dna) => {
       if (dna) {
         businessDna = dna;
         onProgress({ type: 'dna_extracted', dna });
+
+        // Phase 1.2: Automatically infer competitors based on DNA
+        try {
+          const competitors = await this.inferCompetitors(dna, normalized, { locale });
+          if (competitors && competitors.length > 0) {
+            onProgress({ type: 'competitors_inferred', competitors });
+          }
+        } catch (err) {
+          console.error('[Crawler Service] Failed to infer competitors:', err);
+        }
       }
     }).catch(err => {
       console.error('[Crawler Service] Failed to extract Business DNA:', err);
@@ -455,5 +465,117 @@ Do NOT include markdown formatting or extra text.
     }
 
     return pages;
+  }
+
+  /**
+   * Phase 1.2: Use DNA to find potential competitors via SERP
+   */
+  static async inferCompetitors(dna: BusinessDna, userDomain: string, options?: { locale?: 'zh' | 'en' }): Promise<{ domain: string; reason: string }[]> {
+    const locale = options?.locale || 'zh';
+    try {
+      const aiProvider = await getDefaultProvider();
+      const defaultModel = aiProvider.getDefaultModel();
+
+      // 1. Derive seed keywords from DNA
+      const prompt = `
+You are an expert SEO and Market Intelligence strategist.
+Based on the following Business DNA, derive 3 high-intent "seed keywords" that a potential customer would use to find this business on Google.
+Focus on English keywords for global analysis.
+
+Business DNA:
+- Offerings: ${dna.coreOfferings.join(', ')}
+- Audience: ${dna.targetAudience.join(', ')}
+- Tone: ${dna.brandTone}
+
+Return ONLY a JSON array of strings.
+`.trim();
+
+      const response = await aiProvider.generateContent(prompt, {
+        model: defaultModel.id,
+        temperature: 0.1,
+      });
+
+      let keywords: string[] = [];
+      if (response.content) {
+        const match = response.content.match(/\[[\s\S]*\]/);
+        if (match) keywords = JSON.parse(match[0]);
+      }
+
+      if (keywords.length === 0) keywords = dna.coreOfferings.slice(0, 3);
+
+      // 2. Search SERP for top domains
+      const { DataForSEOClient } = await import('../../external/dataforseo');
+      const allDomains = new Set<string>();
+      
+      // We take the first 2 keywords to keep it fast and budget-friendly
+      for (const kw of keywords.slice(0, 2)) {
+        try {
+          const results = await DataForSEOClient.searchGoogleSERP(kw);
+          for (const res of (results || []).slice(0, 15)) {
+            if (res.type !== 'organic' || !res.url) continue;
+            try {
+              const domain = new URL(res.url).hostname.replace('www.', '');
+              if (this.isCompetitorAllowed(domain, userDomain)) {
+                allDomains.add(domain);
+              }
+            } catch (e) { }
+          }
+        } catch (e) {
+          console.error(`[Crawler Service] SERP failed for ${kw}:`, e);
+        }
+      }
+
+      // 3. Filter and Rank candidates with LLM
+      const domainList = Array.from(allDomains).slice(0, 15);
+      if (domainList.length === 0) return [];
+
+      const selectPrompt = `
+Analyze this list of domains for a business that does: ${dna.coreOfferings.join(', ')}.
+User's own domain is ${userDomain}.
+Identify the top 3 most direct commercial competitors from this list.
+Ignore informational sites (wikipedia, medium), large platforms (amazon, linkedin, github), or tools like reddit/quora.
+
+Domains:
+${domainList.join('\n')}
+
+Return ONLY a JSON array of objects:
+[
+  { "domain": "competitor.com", "reason": "A 1-sentence professional reason in ${locale === 'zh' ? 'Chinese (Simplified)' : 'English'}" }
+]
+`.trim();
+
+      const selectRes = await aiProvider.generateContent(selectPrompt, {
+        model: defaultModel.id,
+        temperature: 0.1,
+      });
+
+      if (selectRes.content) {
+        const match = selectRes.content.match(/\[[\s\S]*\]/);
+        if (match) return JSON.parse(match[0]);
+      }
+    } catch (error) {
+      console.error('[Crawler Service] Competitor inference error:', error);
+    }
+    return [];
+  }
+
+  /**
+   * Basic filter for candidate competitors
+   */
+  static isCompetitorAllowed(domain: string, userDomain: string): boolean {
+    const giants = [
+      'wikipedia.org', 'amazon.com', 'linkedin.com', 'facebook.com', 
+      'youtube.com', 'google.com', 'twitter.com', 'github.com', 
+      'microsoft.com', 'apple.com', 'medium.com', 'reddit.com', 
+      'quora.com', 'pinterest.com', 'instagram.com'
+    ];
+    const normalizedSelf = userDomain.replace('www.', '').toLowerCase();
+    const normalizedDomain = domain.toLowerCase();
+    
+    // Don't include self
+    if (normalizedDomain === normalizedSelf || normalizedDomain.includes(normalizedSelf)) return false;
+    
+    // Don't include giants
+    return !giants.some(g => normalizedDomain.includes(g));
   }
 }

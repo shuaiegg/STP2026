@@ -5,6 +5,7 @@ import { Link, useRouter } from '@/i18n/navigation';
 import posthog from 'posthog-js';
 import { Button } from '@/components/ui/Button';
 import { Globe, ArrowRight } from 'lucide-react';
+import { authClient } from '@/lib/auth-client';
 
 export function HeroAuditInput({ 
   placeholder, 
@@ -19,6 +20,7 @@ export function HeroAuditInput({
 }) {
   const [domain, setDomain] = useState('');
   const router = useRouter();
+  const { data: session } = authClient.useSession();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,9 +36,10 @@ export function HeroAuditInput({
       return;
     }
 
-    posthog.capture('homepage_audit_submitted', { 
+    posthog.capture('hero_domain_submitted', {
       domain: cleaned,
-      locale: locale
+      locale: locale,
+      is_logged_in: !!session
     });
 
     // Save to session storage as secondary backup
@@ -44,7 +47,11 @@ export function HeroAuditInput({
       window.sessionStorage.setItem('pending_audit_domain', cleaned);
     }
 
-    router.push(`/register?domain=${encodeURIComponent(cleaned)}`);
+    if (session) {
+      router.push(`/dashboard/onboarding?domain=${encodeURIComponent(cleaned)}`);
+    } else {
+      router.push(`/login?domain=${encodeURIComponent(cleaned)}`);
+    }
   };
 
   return (

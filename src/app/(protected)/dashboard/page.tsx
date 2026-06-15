@@ -5,6 +5,8 @@ import prisma from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import { SiteSelector } from './SiteSelector';
 import { unstable_cache } from 'next/cache';
+import { GrowthHome } from '@/components/coach/GrowthHome';
+import { getGrowthHomeData } from '@/lib/coach/home';
 
 async function getUserData(userId: string) {
     return unstable_cache(
@@ -20,6 +22,7 @@ async function getUserData(userId: string) {
                         id: true, 
                         domain: true, 
                         name: true, 
+                        onboardingStage: true,
                         audits: {
                             orderBy: { createdAt: 'desc' },
                             take: 1,
@@ -30,12 +33,16 @@ async function getUserData(userId: string) {
                                 createdAt: true,
                             }
                         },
-                        _count: { 
-                            select: { 
-                                gscConnections: true, 
-                                ga4Connections: true 
-                            } 
-                        } 
+                        coachMoves: {
+                            where: { status: { in: ['suggested', 'in_progress'] } },
+                            select: { id: true }
+                        },
+                        _count: {
+                            select: {
+                                gscConnections: true,
+                                ga4Connections: true
+                            }
+                        }
                     }
                 }),
                 prisma.trackedArticle.count({
@@ -88,12 +95,14 @@ async function getUserData(userId: string) {
                 id: s.id,
                 domain: s.domain,
                 name: s.name,
+                onboardingStage: s.onboardingStage,
                 latestHealthScore: s.audits[0] 
                     ? Math.round(((s.audits[0].techScore || 0) + (s.audits[0].contentScore || 0) + (s.audits[0].geoScore || 0)) / 3)
                     : null,
                 lastAuditAt: s.audits[0]?.createdAt || null,
                 hasGsc: s._count.gscConnections > 0,
                 hasGa4: s._count.ga4Connections > 0,
+                openMoveCount: s.coachMoves.length,
             }));
 
             const metrics = {
@@ -145,16 +154,20 @@ export default async function UserDashboard({
 
     const { user, metrics, articleCount, recentArticles, auditCount, sites } = await getUserData(targetUserId);
 
-    // Smart Routing Logic (Task 4.3)
+    // Smart Routing Logic (Task 3.1.1 Implementation)
     if (metrics.totalSites === 0) {
         redirect('/dashboard/onboarding');
     }
 
     if (metrics.totalSites === 1) {
-        redirect(`/dashboard/site-intelligence/${sites[0].id}`);
+        const primarySite = sites[0];
+        const data = await getGrowthHomeData(primarySite.id);
+        return (
+            <GrowthHome site={primarySite} data={data} />
+        );
     }
 
-    // If more than 1 site, show Site Selector
+    // If more than 1 site, show portfolio overview (per-site stage + open move count)
     return (
         <SiteSelector sites={sites} />
     );

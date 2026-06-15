@@ -462,7 +462,17 @@
       "errPassword": "Sign-in failed — check your password",
       "toastOtpSent": "Verification code sent to your email",
       "toastRegistered": "Account created — welcome to ScaletoTop!",
-      "toastSignedIn": "Signed in — welcome back!"
+      "toastSignedIn": "Signed in — welcome back!",
+      "tabOtp": "Email Code",
+      "tabPassword": "Password",
+      "titleSetPassword": "Set a password",
+      "subSetPassword": "For faster access next time, we recommend setting a dedicated password (optional).",
+      "labelNewPassword": "New Password",
+      "labelConfirmPassword": "Confirm Password",
+      "btnSavePassword": "Set Password & Continue",
+      "btnSkip": "Skip for now",
+      "toastPasswordSet": "Password set successfully!",
+      "btnGoogle": "Sign in with Google"
     },
     "register": {
       "titleEmail": "Enter your workspace",
@@ -566,6 +576,41 @@
         "models": "Models",
         "consultations": "Consultations"
       }
+    },
+    "coach": {
+      "title": "Growth Navigator",
+      "subtitle": "Your next best moves for {domain}",
+      "stageLabel": "Stage",
+      "stages": {
+        "recon": "Recon",
+        "unmeasured": "Unmeasured",
+        "plan": "Growth",
+        "scale": "Scale"
+      },
+      "thisWeek": "This week’s priorities",
+      "foundationFirst": "Build the foundation first",
+      "rankedByImpact": "Ranked by impact",
+      "priority": "Top priority",
+      "dismiss": "Dismiss",
+      "allCaughtUp": "All caught up",
+      "allCaughtUpDesc": "No actions needed right now. Connect more data or add competitors to surface new moves.",
+      "pulseTitle": "Momentum",
+      "pulse": {
+        "published": "Published this month",
+        "gaps": "Open opportunities",
+        "impressions": "Impressions (30d)",
+        "needsGsc": "Connect GSC"
+      },
+      "loop": {
+        "title": "Your growth loop",
+        "diagnose": "Diagnose",
+        "diagnoseDesc": "Audit · competitors · gaps",
+        "produce": "Produce",
+        "produceDesc": "Strategy board · library",
+        "measure": "Measure",
+        "measureDesc": "GSC · GA4 · citation tracking"
+      },
+      "insightLabel": "Coach insight"
     },
     "overview": {
       "title": "Overview Center",
@@ -743,6 +788,16 @@
       "buildingMapLabel": "Building",
       "findingGaps": "Growth Opportunities",
       "findingGapsLabel": "Discovering",
+      "intelDna": "Business DNA Extracted",
+      "intelCompetitors": "{count} Competitors Inferred",
+      "auditComplete": "Deep Scan Complete",
+      "confirmTitle": "Review Your Intelligence",
+      "confirmSubtitle": "We've analyzed your business and the market. Confirm these top competitors to build your content strategy.",
+      "dnaLabel": "Your Business DNA (Ontology)",
+      "competitorsLabel": "Market Competitors",
+      "btnConfirmSave": "Confirm & Unlock Growth",
+      "skipConfirmation": "Skip and go to dashboard",
+      "noCompetitorsFound": "No clear commercial competitors identified from search. You can add them manually later.",
       "validationEmpty": "Please enter a website domain",
       "validationInvalid": "Please enter a valid domain (e.g., example.com)",
       "status": {
@@ -1294,7 +1349,14 @@
       "justNow": "just now",
       "minsAgo": "{n} min ago",
       "hrsAgo": "{n} h ago",
-      "daysAgo": "{n} d ago"
+      "daysAgo": "{n} d ago",
+      "stage": {
+        "recon": "Recon",
+        "unmeasured": "Unmeasured",
+        "plan": "Growth",
+        "scale": "Scale"
+      },
+      "openMoves": "{n} actions"
     },
     "siteHeader": {
       "scoreNow": "Score now",

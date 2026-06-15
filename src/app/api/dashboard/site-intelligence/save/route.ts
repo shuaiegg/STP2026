@@ -6,6 +6,10 @@ import { revalidateSiteCache } from '@/lib/site-intelligence/sites';
 import { sendAuditCompleteEmail } from '@/lib/email';
 import { addContact, getContactByEmail, addTagToContactByName } from '@/lib/email/systeme';
 import { getTriggerTagName } from '@/lib/integrations/config';
+import { getSemanticGap } from '@/lib/site-intelligence/semantic-gap-service';
+import { syncSiteStage } from '@/lib/coach/lifecycle';
+import { coachHomeTag } from '@/lib/coach/home';
+import { revalidateTag } from 'next/cache';
 
 export async function POST(request: Request) {
     const session = await auth.api.getSession({ headers: await headers() });
@@ -15,7 +19,7 @@ export async function POST(request: Request) {
 
     try {
         const body = await request.json();
-        const { domain, graphData, techScore, businessDna, issueReport, isCompetitor = false } = body;
+        const { domain, graphData, techScore, businessDna, issueReport, competitors, isCompetitor = false } = body;
 
         if (!domain || !graphData) {
             return NextResponse.json({ error: '缺失必要字段 (域名或图表数据)' }, { status: 400 });
@@ -36,6 +40,30 @@ export async function POST(request: Request) {
             });
         }
 
+        // Save Inferred Competitors
+        if (competitors && Array.isArray(competitors)) {
+            for (const comp of competitors) {
+                try {
+                    await prisma.competitor.upsert({
+                        where: {
+                            siteId_domain: {
+                                siteId: site.id,
+                                domain: comp.domain.toLowerCase()
+                            }
+                        },
+                        update: { reason: comp.reason },
+                        create: {
+                            siteId: site.id,
+                            domain: comp.domain.toLowerCase(),
+                            reason: comp.reason
+                        }
+                    });
+                } catch (e) {
+                    console.error(`[SiteIntelligence Save] Failed to save competitor ${comp.domain}:`, e);
+                }
+            }
+        }
+
         if (businessDna) {
             // Find latest version to increment
             const lastOntology = await prisma.siteOntology.findFirst({
@@ -50,7 +78,7 @@ export async function POST(request: Request) {
                     version: nextVersion,
                     coreOfferings: businessDna.coreOfferings || [],
                     targetAudience: businessDna.targetAudience || [],
-                    painPointsSolved: businessDna.painPointsSolved || [],
+                    painPointsSolved: businessDna.painPoints || [],
                     logicChains: businessDna.logicChains || [],
                     idealTopicMap: businessDna.idealTopicMap || [],
                 }
@@ -75,6 +103,7 @@ export async function POST(request: Request) {
 
         // Revalidate cache
         revalidateSiteCache(site.id);
+        revalidateTag(coachHomeTag(site.id), 'max');
 
         // Post-save notifications (non-blocking, only for user's own sites)
         if (!isCompetitor) {
@@ -82,6 +111,17 @@ export async function POST(request: Request) {
                 where: { id: session.user.id },
                 select: { email: true, name: true, locale: true },
             });
+
+            // Trigger Semantic Gap Analysis asynchronously (cold start)
+            getSemanticGap(site.id, true, auditUser?.locale || 'en').then(async () => {
+                // After gap analysis, sync stage as it might have moved to Stage 1
+                await syncSiteStage(site.id);
+                // Bust coach home cache so the fresh gaps/stage surface on next load
+                revalidateTag(coachHomeTag(site.id), 'max');
+            }).catch((err) => {
+                console.error('[SiteIntelligence Save] Failed to trigger initial semantic gap analysis:', err);
+            });
+
             if (auditUser) {
                 sendAuditCompleteEmail(auditUser, site.id, domain, techScore ?? null).catch((err) => {
                     console.error('[SiteIntelligence] Failed to send audit complete email:', err);

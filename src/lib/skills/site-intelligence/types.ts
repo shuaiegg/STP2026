@@ -24,6 +24,8 @@ export interface BusinessDna {
   targetAudience: string[];
   painPoints: string[];
   brandTone: string;
+  logicChains?: string[];
+  idealTopicMap?: string[];
 }
 
 export interface SiteAuditResult {
@@ -40,8 +42,9 @@ export interface SiteAuditResult {
 export type AuditProgressEvent =
   | { type: 'discovery'; urls: string[]; sitemapFound: boolean; graphData?: import('./graph-generator.service').GraphData; }
   | { type: 'dna_extracted'; dna: BusinessDna; }
+  | { type: 'competitors_inferred'; competitors: { domain: string; reason: string; }[]; }
   | { type: 'progress'; scanned: number; total: number; page?: ScrapedPage; }
-  | { type: 'done'; scanned: number; total: number; sitemapFound: boolean; graphData?: import('./graph-generator.service').GraphData; techScore: number | null; issueReport?: any; }
+  | { type: 'done'; scanned: number; total: number; sitemapFound: boolean; graphData?: import('./graph-generator.service').GraphData; techScore: number | null; issueReport?: any; businessDna?: BusinessDna; }
   | { type: 'error'; error: string; refunded?: boolean; };
 
 // --- API Response Types ---

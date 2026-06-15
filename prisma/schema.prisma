@@ -199,6 +199,7 @@ model Site {
   name             String?
   targetMarkets    String[]
   seedKeywords     String[]
+  onboardingStage  String          @default("0") // "0" (Cold) | "1" (Active) | "2" (Retained) | "2_scale" (Growth)
   isCompetitor     Boolean         @default(false)
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
@@ -212,6 +213,7 @@ model Site {
   keywordSnapshots    SiteKeywordSnapshot[]
   ontologies          SiteOntology[]
   semanticDebts       SemanticDebt[]
+  coachMoves          CoachMove[]
 
   @@index([userId])
   @@index([domain])
@@ -305,10 +307,30 @@ model Competitor {
   id     String   @id @default(uuid())
   siteId String
   domain String
+  reason String?
   topics String[]
   site   Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
 
+  @@unique([siteId, domain])
   @@index([siteId])
+}
+
+model CoachMove {
+  id           String   @id @default(uuid())
+  siteId       String
+  type         String   // connect_gsc|fix_tech|define_ontology|add_competitor
+                        // |write_gap|refresh_decay|internal_links|consolidate|distribute|submit_index
+  stage        String   // "0"|"1"|"2"|"2_scale"
+  status       String   @default("suggested") // suggested|in_progress|done|dismissed|snoozed
+  evidence     Json     // 为什么：真实数字 + 指向 audit/gap/gsc 记录的引用
+  payload      Json     // 执行参数（write_gap: {keyword,title,competitorRefs}）
+  priority     Int
+  autoExecutable Boolean @default(false) // agent 化开关
+  createdAt    DateTime @default(now())
+  resolvedAt   DateTime?
+  site         Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@index([siteId, status])
 }
 
 model ContentPlan {

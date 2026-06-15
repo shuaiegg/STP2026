@@ -23,6 +23,29 @@ export async function createFirstAdmin(data: { email: string; name: string }) {
     return { success: true };
 }
 
+export async function setInitialPassword(password: string) {
+    const reqHeaders = await headers();
+    const session = await auth.api.getSession({ headers: reqHeaders });
+    if (!session) return { success: false, error: "Unauthorized" };
+
+    if (!password || password.length < 8) {
+        return { success: false, error: "Password must be at least 8 characters" };
+    }
+
+    try {
+        // better-auth identifies the user from the session headers (not a body userId).
+        // setPassword is for users who signed up via OTP/OAuth and have no password yet.
+        await auth.api.setPassword({
+            body: { newPassword: password },
+            headers: reqHeaders,
+        });
+        return { success: true };
+    } catch (e: any) {
+        console.error('[Auth Action] Failed to set initial password:', e);
+        return { success: false, error: e.message || "Failed to set password" };
+    }
+}
+
 export async function logout() {
     // Better Auth cleanup is usually done on client, 
     // but we can also do it here if needed by clearing cookies

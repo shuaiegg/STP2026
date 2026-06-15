@@ -462,7 +462,17 @@
       "errPassword": "登录失败，请检查密码",
       "toastOtpSent": "验证码已发送至您的邮箱",
       "toastRegistered": "注册成功！欢迎加入 ScaletoTop",
-      "toastSignedIn": "登录成功，欢迎回来！"
+      "toastSignedIn": "登录成功，欢迎回来！",
+      "tabOtp": "验证码登录",
+      "tabPassword": "密码登录",
+      "titleSetPassword": "设置访问密码",
+      "subSetPassword": "为了您下次能更快速地进入系统，建议设置一个专属的访问密码（可选）。",
+      "labelNewPassword": "新密码",
+      "labelConfirmPassword": "确认新密码",
+      "btnSavePassword": "设置密码并进入",
+      "btnSkip": "暂时跳过",
+      "toastPasswordSet": "密码设置成功！",
+      "btnGoogle": "使用 Google 账号登录"
     },
     "register": {
       "titleEmail": "进入您的工作台",
@@ -566,6 +576,41 @@
         "models": "模型管理",
         "consultations": "咨询管理"
       }
+    },
+    "coach": {
+      "title": "增长导航",
+      "subtitle": "{domain} 的下一步最佳动作",
+      "stageLabel": "阶段",
+      "stages": {
+        "recon": "冷启动",
+        "unmeasured": "待衡量",
+        "plan": "成长期",
+        "scale": "规模期"
+      },
+      "thisWeek": "本周优先事项",
+      "foundationFirst": "先打好地基",
+      "rankedByImpact": "按性价比排序",
+      "priority": "最高优先",
+      "dismiss": "忽略",
+      "allCaughtUp": "已全部完成",
+      "allCaughtUpDesc": "暂时没有需要处理的动作。连接更多数据源或添加竞品以发现新机会。",
+      "pulseTitle": "动量",
+      "pulse": {
+        "published": "本月发布",
+        "gaps": "机会缺口",
+        "impressions": "近30天展示",
+        "needsGsc": "连接 GSC 后显示"
+      },
+      "loop": {
+        "title": "你的增长闭环",
+        "diagnose": "诊断",
+        "diagnoseDesc": "审计 · 竞品 · 缺口",
+        "produce": "生产",
+        "produceDesc": "策略看板 · 内容库",
+        "measure": "衡量",
+        "measureDesc": "GSC · GA4 · 引用追踪"
+      },
+      "insightLabel": "教练洞察"
     },
     "overview": {
       "title": "概览中心",
@@ -743,6 +788,16 @@
       "buildingMapLabel": "正在构建",
       "findingGaps": "市场增长空白",
       "findingGapsLabel": "正在探寻",
+      "intelDna": "业务基因已提取",
+      "intelCompetitors": "{count} 个潜在对手已推断",
+      "auditComplete": "深度审计已完成",
+      "confirmTitle": "检阅情报摘要",
+      "confirmSubtitle": "系统已探明您的业务与市场现状。请确认以下竞争对手，以开启针对性的内容策略。",
+      "dnaLabel": "您的业务基因 (Ontology)",
+      "competitorsLabel": "市场主要对手",
+      "btnConfirmSave": "确认情报并开启增长",
+      "skipConfirmation": "跳过，直接进入控制台",
+      "noCompetitorsFound": "未能从搜索中识别出明确的商业竞争对手。您可以稍后手动添加。",
       "validationEmpty": "请输入网站域名",
       "validationInvalid": "请输入有效的网站域名 (例如 example.com)",
       "status": {
@@ -1294,7 +1349,14 @@
       "justNow": "刚刚",
       "minsAgo": "{n} 分钟前",
       "hrsAgo": "{n} 小时前",
-      "daysAgo": "{n} 天前"
+      "daysAgo": "{n} 天前",
+      "stage": {
+        "recon": "冷启动",
+        "unmeasured": "待衡量",
+        "plan": "成长期",
+        "scale": "规模期"
+      },
+      "openMoves": "{n} 个待办"
     },
     "siteHeader": {
       "scoreNow": "立即评分",

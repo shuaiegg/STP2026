@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { withSiteContext } from "@/lib/api-utils";
 import prisma from "@/lib/prisma";
+import { captureServerEvent } from "@/lib/analytics/posthog-server";
 
 async function handler(
     req: Request,
-    { params }: { params: { siteId: string, articleId: string }; site: any; session: any }
+    { params, site, session }: { params: { siteId: string, articleId: string }; site: any; session: any }
 ) {
     try {
         const { siteId, articleId } = params;
@@ -49,6 +50,17 @@ async function handler(
             where: { id: articleId },
             data: updateData
         });
+
+        // 4. Activation funnel: action completed (article published)
+        if (status === 'COMPLETED' && existingArticle.status !== 'COMPLETED') {
+            const userId = (session.user as any).id;
+            captureServerEvent(userId, 'first_action_completed', {
+                action: 'article_published',
+                siteId: siteId,
+                articleId: articleId,
+                title: existingArticle.title
+            });
+        }
 
         return NextResponse.json({ success: true, article: updatedArticle });
 

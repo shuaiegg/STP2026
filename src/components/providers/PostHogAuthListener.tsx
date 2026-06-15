@@ -23,6 +23,7 @@ export function PostHogAuthListener() {
                 role: user.role,
                 is_admin: user.role === 'ADMIN',
                 locale: user.locale,
+                credits: (user as any).credits,
             });
         } else if (!session && posthog) {
             posthog.reset();

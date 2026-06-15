@@ -14,7 +14,17 @@ interface Site {
   domain: string;
   latestHealthScore: number | null;
   lastAuditAt: Date | null;
+  onboardingStage?: string;
+  openMoveCount?: number;
 }
+
+const STAGE_LABEL_KEY: Record<string, string> = {
+  '0': 'recon',
+  unmeasured: 'unmeasured',
+  '1': 'plan',
+  '2': 'scale',
+  '2_scale': 'scale',
+};
 
 interface SiteSelectorProps {
   sites: Site[];
@@ -59,6 +69,19 @@ export function SiteSelector({ sites }: SiteSelectorProps) {
               </div>
 
               <h2 className="text-xl font-bold text-slate-900 truncate mb-1">{site.domain}</h2>
+
+              <div className="flex items-center gap-2 flex-wrap mb-3">
+                {site.onboardingStage && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest bg-brand-primary-muted text-brand-primary">
+                    {t(`stage.${STAGE_LABEL_KEY[site.onboardingStage] ?? 'recon'}`)}
+                  </span>
+                )}
+                {!!site.openMoveCount && site.openMoveCount > 0 && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest bg-brand-secondary/10 text-brand-secondary">
+                    {t('openMoves', { n: site.openMoveCount })}
+                  </span>
+                )}
+              </div>
 
               <div className="flex items-center gap-2 text-slate-400 text-sm mb-6">
                 <Calendar size={14} aria-hidden="true" />

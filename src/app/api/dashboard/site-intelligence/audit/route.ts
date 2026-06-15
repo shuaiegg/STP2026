@@ -102,6 +102,7 @@ export async function POST(request: Request) {
                     graphData,
                     techScore,
                     issueReport,
+                    businessDna: auditResult.businessDna || undefined,
                 });
             } catch (error: any) {
                 let refunded = false;
