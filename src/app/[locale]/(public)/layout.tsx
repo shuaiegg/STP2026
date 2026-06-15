@@ -1,36 +1,24 @@
-import { headers, cookies } from 'next/headers';
-import { getLocale, getTranslations } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 import { MainLayout } from "@/components/layout/MainLayout";
-import { LanguageSuggestionBanner } from "@/components/layout/LanguageSuggestionBanner";
-import { LOCALE_COOKIE, type Locale } from '@/i18n/routing';
+import { LanguageSuggestionBanner, type BannerCopy } from "@/components/layout/LanguageSuggestionBanner";
+import type { Locale } from '@/i18n/routing';
 
 /**
- * 语言建议（设计决策 2）：
- * - 信号用 Accept-Language（浏览器语言），绝不用 IP——中文买家是人在海外的出海创业者
- * - 仅在浏览器偏好 ≠ 当前 locale 且用户从未手动选择过语言（无 cookie）时展示
- * - 横幅文案使用目标语言的 messages
+ * 语言建议（设计决策 2）：横幅决策已移至客户端（读 navigator.language + cookie），
+ * 因此本布局不再读 headers/cookies → 公共页可静态/ISR。
+ * 这里仅静态注入两种语言的横幅文案。
  */
-async function getLanguageSuggestion(currentLocale: string) {
-    const cookieStore = await cookies();
-    if (cookieStore.get(LOCALE_COOKIE)) return null;
-
-    const headerStore = await headers();
-    const acceptLanguage = headerStore.get('accept-language') ?? '';
-    // 只看首选语言（最高优先级那一项）。无明确信号（空 / 既非 zh 也非 en）→ 不建议，
-    // 避免在 /zh 上对没有英文偏好的访客误显 "Switch to English"。
-    const primary = acceptLanguage.split(',')[0]?.trim().toLowerCase() ?? '';
-    let preferred: Locale | null = null;
-    if (primary.startsWith('zh')) preferred = 'zh';
-    else if (primary.startsWith('en')) preferred = 'en';
-    if (!preferred || preferred === currentLocale) return null;
-
-    const t = await getTranslations({ locale: preferred, namespace: 'banner' });
-    return {
-        target: preferred,
+async function getBannerCopy(): Promise<Record<Locale, BannerCopy>> {
+    const [zh, en] = await Promise.all([
+        getTranslations({ locale: 'zh', namespace: 'banner' }),
+        getTranslations({ locale: 'en', namespace: 'banner' }),
+    ]);
+    const build = (t: Awaited<ReturnType<typeof getTranslations>>): BannerCopy => ({
         suggestion: t('suggestion'),
-        switchLabel: t('switch'),
-        dismissLabel: t('dismiss'),
-    };
+        switch: t('switch'),
+        dismiss: t('dismiss'),
+    });
+    return { zh: build(zh), en: build(en) };
 }
 
 export default async function PublicLayout({
@@ -38,12 +26,11 @@ export default async function PublicLayout({
 }: {
     children: React.ReactNode;
 }) {
-    const locale = await getLocale();
-    const suggestion = await getLanguageSuggestion(locale);
+    const copy = await getBannerCopy();
 
     return (
         <>
-            {suggestion && <LanguageSuggestionBanner {...suggestion} />}
+            <LanguageSuggestionBanner copy={copy} />
             <MainLayout>{children}</MainLayout>
         </>
     );

@@ -1,10 +1,11 @@
 'use server';
 
 import prisma from '@/lib/prisma';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { ContentStatus } from '@prisma/client';
+import { PUBLIC_CONTENT_TAG } from '@/lib/content';
 
 /**
  * Centrally manage revalidation for all paths affected by a content change.
@@ -33,6 +34,9 @@ async function revalidateContentPaths(content: { slug: string, locale: string, c
 
     // 5. Sitemap
     revalidatePath('/sitemap.xml');
+
+    // 6. Bust the cached data layer (getPublishedContent / categories / by-slug)
+    revalidateTag(PUBLIC_CONTENT_TAG, 'max');
 }
 
 const BASE_URL = (process.env.NEXT_PUBLIC_APP_URL || 'https://www.scaletotop.com').replace(/\/$/, '');

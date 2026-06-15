@@ -1,5 +1,9 @@
 import prisma from '@/lib/prisma';
+import { unstable_cache } from 'next/cache';
 import { ContentStatus, Visibility, Content, ContentType } from '@prisma/client';
+
+/** 公共内容缓存 tag —— 发布/编辑文章时 revalidateTag 失效 */
+export const PUBLIC_CONTENT_TAG = 'public-content';
 
 export interface ContentFilters {
     status?: ContentStatus;
@@ -15,9 +19,20 @@ export interface PaginationOptions {
 }
 
 /**
- * Get published content for public pages
+ * Get published content for public pages (cached; busted on publish via PUBLIC_CONTENT_TAG).
  */
 export async function getPublishedContent(
+    filters?: ContentFilters,
+    pagination?: PaginationOptions
+) {
+    return unstable_cache(
+        () => getPublishedContentUncached(filters, pagination),
+        ['published-content', JSON.stringify({ filters, pagination })],
+        { revalidate: 300, tags: [PUBLIC_CONTENT_TAG] },
+    )();
+}
+
+async function getPublishedContentUncached(
     filters?: ContentFilters,
     pagination?: PaginationOptions
 ) {
@@ -82,6 +97,14 @@ export async function getPublishedContent(
  * Get a single published content by slug
  */
 export async function getPublishedContentBySlug(slug: string, locale?: string) {
+    return unstable_cache(
+        () => getPublishedContentBySlugUncached(slug, locale),
+        ['published-content-slug', slug, locale ?? 'any'],
+        { revalidate: 300, tags: [PUBLIC_CONTENT_TAG] },
+    )();
+}
+
+async function getPublishedContentBySlugUncached(slug: string, locale?: string) {
     return prisma.content.findFirst({
         where: {
             slug,
@@ -129,13 +152,17 @@ export async function getContentByPreviewToken(token: string) {
  * Get all active categories, optionally filtered by locale
  */
 export async function getActiveCategories(options?: { locale?: string }) {
-    return prisma.category.findMany({
-        where: { 
-            isActive: true,
-            ...(options?.locale && { locale: options.locale }),
-        },
-        orderBy: { order: 'asc' },
-    });
+    return unstable_cache(
+        () => prisma.category.findMany({
+            where: {
+                isActive: true,
+                ...(options?.locale && { locale: options.locale }),
+            },
+            orderBy: { order: 'asc' },
+        }),
+        ['active-categories', options?.locale ?? 'any'],
+        { revalidate: 300, tags: [PUBLIC_CONTENT_TAG] },
+    )();
 }
 
 /**

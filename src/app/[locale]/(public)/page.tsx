@@ -1,5 +1,7 @@
 /* eslint-disable react/no-unescaped-entities, @typescript-eslint/no-explicit-any */
-export const dynamic = 'force-dynamic';
+// ISR: statically generated, revalidated hourly. Publishing content also calls
+// revalidatePath('/') / ('/zh'), so changes appear immediately — not only after 1h.
+export const revalidate = 3600;
 
 import React from 'react';
 import Image from 'next/image';

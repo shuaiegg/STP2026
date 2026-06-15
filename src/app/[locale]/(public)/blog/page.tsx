@@ -1,4 +1,5 @@
-export const dynamic = 'force-dynamic';
+// ISR: blog index revalidated every 30 min; publishing also revalidatePath('/blog').
+export const revalidate = 1800;
 
 import React from 'react';
 import { Metadata } from 'next';
