@@ -161,6 +161,15 @@ export default async function UserDashboard({
 
     if (metrics.totalSites === 1) {
         const primarySite = sites[0];
+        // 防呆：getUserData 走缓存，可能残留已删站点（幽灵）。落地前实时确认它仍存在，
+        // 否则回落 onboarding —— 避免渲染幽灵站点或与其它路由互跳成环。
+        const stillExists = await prisma.site.findUnique({
+            where: { id: primarySite.id },
+            select: { id: true },
+        });
+        if (!stillExists) {
+            redirect('/dashboard/onboarding');
+        }
         const data = await getGrowthHomeData(primarySite.id);
         return (
             <GrowthHome site={primarySite} data={data} />

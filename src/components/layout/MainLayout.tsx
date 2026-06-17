@@ -8,6 +8,7 @@ import { Button } from '../ui/Button';
 import { LocaleSwitcher } from './LocaleSwitcher';
 import { isPageAvailable } from '@/lib/i18n/page-availability';
 import type { Locale } from '@/i18n/routing';
+import { useSessionContext } from "@/components/providers/SessionProvider";
 import { authClient } from '@/lib/auth-client';
 
 // label 为 messages key（nav.* / footer.*），渲染时翻译
@@ -91,7 +92,7 @@ const Header: React.FC = () => {
     const tCommon = useTranslations('common');
     // SEO 纪律三：当前语言不可用的页面不渲染入口（避免链向 404）
     const navItems = NAV_ITEMS.filter(item => isPageAvailable(item.href, locale));
-    const { data: session } = authClient.useSession();
+    const { session } = useSessionContext();
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 

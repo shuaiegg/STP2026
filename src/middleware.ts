@@ -52,8 +52,14 @@ export async function middleware(request: NextRequest) {
 
     // --- 3. Public routes (locale-aware) ---
 
-    // Redirect already-authenticated users away from login pages (/login, /zh/login)
-    if ((pathname === '/login' || pathname === '/zh/login') && sessionCookie) {
+    // Redirect already-authenticated users away from login pages (/login, /zh/login).
+    // BUT skip this when arriving with ?expired=1 — that means the server validated the
+    // session cookie and found it INVALID (present-but-stale). Without this guard, an
+    // invalid-but-present cookie causes an infinite /dashboard ⇄ /login loop:
+    // middleware trusts presence → /dashboard; server validates → invalid → /login → …
+    if ((pathname === '/login' || pathname === '/zh/login')
+        && sessionCookie
+        && !request.nextUrl.searchParams.has('expired')) {
         return NextResponse.redirect(new URL('/dashboard', request.url));
     }
 

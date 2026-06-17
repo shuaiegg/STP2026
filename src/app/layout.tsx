@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import { Plus_Jakarta_Sans, Instrument_Sans, JetBrains_Mono } from "next/font/google";
 import { CSPostHogProvider } from "@/components/providers/PostHogProvider";
+import { SessionProvider } from "@/components/providers/SessionProvider";
 import { Toaster } from "sonner";
 import { JsonLd } from "@/components/seo/JsonLd";
 import "./globals.css";
@@ -76,9 +77,11 @@ export default async function RootLayout({
         <JsonLd data={websiteSchema} />
       </head>
       <body className="antialiased text-brand-text-primary bg-brand-background">
-        <CSPostHogProvider locale={locale}>
-          {children}
-        </CSPostHogProvider>
+        <SessionProvider>
+          <CSPostHogProvider locale={locale}>
+            {children}
+          </CSPostHogProvider>
+        </SessionProvider>
         <Toaster position="top-right" richColors />
       </body>
     </html>

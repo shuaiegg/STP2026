@@ -5,7 +5,7 @@ import { Link, useRouter } from '@/i18n/navigation';
 import posthog from 'posthog-js';
 import { Button } from '@/components/ui/Button';
 import { Globe, ArrowRight } from 'lucide-react';
-import { authClient } from '@/lib/auth-client';
+import { useSessionContext } from "@/components/providers/SessionProvider";
 
 export function HeroAuditInput({ 
   placeholder, 
@@ -20,7 +20,7 @@ export function HeroAuditInput({
 }) {
   const [domain, setDomain] = useState('');
   const router = useRouter();
-  const { data: session } = authClient.useSession();
+  const { session } = useSessionContext();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

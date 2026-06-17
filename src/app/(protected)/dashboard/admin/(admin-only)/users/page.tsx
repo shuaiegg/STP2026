@@ -25,10 +25,10 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import Link from 'next/link';
 import { getUsers, updateUserCredits, getUserTransactions, revertTransaction } from '@/app/actions/user';
-import { authClient } from '@/lib/auth-client';
+import { useSessionContext } from "@/components/providers/SessionProvider";
 
 export default function UserManagementPage() {
-    const { data: session } = authClient.useSession();
+    const { session } = useSessionContext();
 
     const [users, setUsers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);

@@ -41,7 +41,7 @@ export function DeleteSiteButton({ siteId, domain }: DeleteSiteButtonProps) {
   return (
     <>
       <button
-        onClick={() => { setOpen(true); setInput(''); }}
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOpen(true); setInput(''); }}
         className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
         title={t('trigger')}
       >

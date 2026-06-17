@@ -4,9 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-ScaletoTop is a Next.js 16 (App Router) full-stack CMS platform that uses Notion as a content source. It syncs content from Notion, automatically processes images to MinIO Storage, and publishes to a public blog/marketing site with an admin backend. It also includes a consultation lead-capture system, AI model management, and email/marketing automation.
+ScaletoTop is a Next.js 16 (App Router) full-stack platform for Chinese出海 (going-global) businesses: a **bilingual SEO/GEO content + site-intelligence SaaS**. Content lives in PostgreSQL as the single source of truth (created/edited in the admin backend, source `MANUAL`); it publishes to a public bilingual blog/marketing site. The product also includes a **site-intelligence** suite (audits, competitors, GSC/GA4, strategy board, citation tracking), an **activation coach layer** (guides users to their next best move), a consultation lead-capture system, AI model management, and email/marketing automation. Images are uploaded to self-hosted MinIO via the admin editor.
 
-**Tech Stack**: Next.js 16, React 19, Prisma ORM, PostgreSQL (self-hosted on VPS at `154.12.243.94:54320`), MinIO (self-hosted S3-compatible storage), Notion API, better-auth, TailwindCSS, Resend (email), systeme.io (marketing automation), PostHog (analytics)
+> **Notion has been fully retired** (change `retire-notion-content-cleanup`). `src/lib/notion/` and the `admin/sync` route no longer exist. Do not reintroduce Notion sync; the DB is the content source of truth. (`@notionhq/client` / `notion-to-md` remain in package.json as dead deps pending cleanup; the `ContentSource.NOTION` enum value is retained only for historical rows.)
+
+**Tech Stack**: Next.js 16, React 19, Prisma ORM, PostgreSQL (self-hosted on VPS at `154.12.243.94:54320`), MinIO (self-hosted S3-compatible storage), better-auth (email OTP + password + Google OAuth), next-intl (bilingual), TailwindCSS, Resend (email), systeme.io (marketing automation), PostHog (analytics), DataForSEO (SERP/keywords)
 
 ## Development Commands
 
@@ -121,7 +123,7 @@ The app uses Next.js App Router with route groups:
   - `/dashboard/onboarding` - New user onboarding flow (shown after registration)
 
 - **`(protected)/dashboard/admin/`** - CMS admin routes (ADMIN/EDITOR role required; Chinese UI, not localed)
-  - `/dashboard/admin/content` (+ `[id]`) - Content management; `/dashboard/admin/sync` - Notion sync
+  - `/dashboard/admin/content` (+ `[id]`, `/new`) - Content management (create/edit/publish in-app; no external sync)
   - `(admin-only)/` subgroup (ADMIN role only): `/dashboard/admin/users`, `/skills`, `/models` (AI model mgmt), `/integrations` (Resend/systeme.io/PostHog/API keys), `/consultations` (lead mgmt), `/orders`, `/credit-refund`
   - **Legacy `/admin/*` paths 301-redirect to `/dashboard/admin/*`** via `src/middleware.ts` (`/admin/login`→`/login`, `/admin`→`/dashboard`)
   - **`admin/setup`** - First-run admin setup, stays at root path `/admin/setup` (unprotected, whitelisted in middleware)
@@ -154,40 +156,37 @@ Bilingual via **next-intl**. English is the root-path locale; Chinese uses the `
 
 ### Authentication Flow
 
-Uses **better-auth** with session cookies and Google OAuth:
-1. Middleware (`src/middleware.ts`) checks for `better-auth.session_token` cookie
-2. `/admin/*` routes (except `/admin/login` and `/admin/setup`) require ADMIN or EDITOR role
-3. `/(protected)/*` routes require any authenticated session (USER role sufficient)
-4. Session management handled by better-auth with Prisma adapter
-5. User roles: `ADMIN`, `EDITOR`, `USER` (stored in User table)
+Uses **better-auth** with session cookies. Login is unified on `/login` (the `/register` route is a thin redirect to it):
+1. **Email OTP** or **email + password** (two tabs on the login card). New users sign up via OTP; **only new users** then see an optional, skippable "set a password" step (`setInitialPassword` server action calls `auth.api.setPassword` on the already-authenticated session — no second code). Existing users go straight to the dashboard.
+2. **Google OAuth** (`authClient.signIn.social`) — `socialProviders.google` in `src/lib/auth.ts`; callback `/api/auth/callback/google` must be whitelisted in Google Console (distinct from the GSC/GA4 data-auth callback `/api/auth/google-callback`).
+3. **Domain passthrough**: the homepage hero captures a domain and carries it through login/OAuth (querystring + `sessionStorage`) into onboarding.
+4. **Rate limiting** (`src/lib/auth.ts` `rateLimit`): `max: 100/60s` with a higher `/get-session` rule (1000/60s). Client `useSession` is consolidated into a single subscription via `SessionProvider` (`src/components/providers/SessionProvider.tsx`, `useSessionContext()`); do NOT add standalone `authClient.useSession()` calls (causes 429 cascades).
+5. Middleware (`src/middleware.ts`) checks the `better-auth.session_token` cookie; `/admin/*` requires ADMIN/EDITOR; `/(protected)/*` requires any session.
+6. **`cookieCache`** is enabled (5min) — when changing a session field (e.g. locale switcher), force a refresh with `authClient.getSession({ query: { disableCookieCache: true } })` then hard-reload, or the server keeps returning stale data.
+7. User roles: `ADMIN`, `EDITOR`, `USER`.
 
-### Notion Sync Architecture
+### Content Management (DB-native)
 
-**Critical Flow**: Notion Database → Sync Engine → PostgreSQL + MinIO Storage → Public Site
+Content lives in PostgreSQL `Content` (source `MANUAL`) and is the single source of truth — **there is no external sync**. Create/edit in the admin backend at `/dashboard/admin/content` (+ `/new`, `/[id]`).
 
-**Key Files**:
-- `src/lib/notion/sync.ts` - Core sync logic
-- `src/app/actions/sync.ts` - Server actions for triggering syncs
+- **Editing** (`src/app/actions/content.ts`): `createContent` / `updateContentMetadata` (publish transition sets `visibility: PUBLIC` + `publishedAt`) / `deleteContent` (relation cleanup). Markdown is the body format.
+- **Images**: uploaded to MinIO via the editor (`uploadImageFromUrl` / direct upload in `src/lib/storage.ts`), stored in `Media`, linked via `coverImageId` / `ogImageId`.
+- **Revalidation**: `revalidateContentPaths()` revalidates `/`, `/zh`, `/blog`, `/zh/blog`, the detail + category paths, `/sitemap.xml`, and busts the `public-content` cache tag (see Caching Strategy).
+- **Publishing → flywheel**: on publish, `upsertTrackedArticleFromContent` creates a `TrackedArticle` (status `PENDING`) for GEO citation tracking; the cron at `/api/cron/verify` checks `PENDING`/`CHECKING` rows.
 
-**Sync Process**:
-1. Query Notion database for pages with `Status = "Ready"`
-2. For each page:
-   - Extract properties: Title, Slug, Summary, Category, Cover, ReadingTime
-   - Convert Notion blocks to Markdown using `notion-to-md`
-   - Download ALL images from Notion URLs
-   - Upload images to MinIO (`media` bucket)
-   - Replace image URLs in markdown with MinIO public URLs
-   - Calculate reading time (300 chars/min for CJK, 200 words/min for English)
-   - Upsert to `Content` table
-3. Log sync operation to `SyncLog` table
-4. Call `revalidatePath()` to update Next.js cache
+### Activation Coach Layer
 
-**Incremental Sync**: Compares `notionLastEditedAt` timestamps to skip unchanged pages (unless `force: true`)
+**Architecture**: `src/lib/coach/*` + `src/components/coach/GrowthHome.tsx` — an orchestration layer over existing organs (audit/ontology/competitor/gap/strategy-board) that tells the user "what to do next, and why".
 
-**Image Processing**:
-- All images (cover + inline) downloaded from Notion and uploaded to MinIO
-- Stored in `Media` table with `notionBlockId` for deduplication
-- Custom transformer in `notion-to-md` ensures images are captured
+- `lifecycle.ts` — `classifyStage` 2D matrix (GSC impressions × maturity): stages `0` / `unmeasured` / `1` / `2` / `2_scale`; thresholds in `STAGE_THRESHOLDS`. `syncSiteStage` writes `Site.onboardingStage` and records `CoachMove` `stage_transition` events.
+- `registry.ts` — move definitions with `detect`/`reason`/`humanCTA`/`deepLink` + readiness gating (foundation moves gate growth moves). `buildMoveContext` collects all signals in ONE parallel batch; `computeMoves` is pure (zero DB writes on render). Moves are ephemeral (synthetic id `siteId:type`) and only **lazily persisted** as `CoachMove` rows when the user acts (dismiss/start/complete via `src/app/actions/coach.ts`).
+- `home.ts` — `getGrowthHomeData` (cached per-site under tag `coach-home-${siteId}`) returns stage + aha **insight** (DNA + competitor + gap) + top-3 moves + honest momentum Pulse.
+- **Cold-start onboarding** (`OnboardingClient.tsx`): streams `audit → DNA → competitor inference → gap` as a "逐条点亮" reveal; on save lands on `/dashboard` (the Growth Home). If DNA extraction fails, degrade to a "site health" framing — never show a wrong business understanding.
+
+### Dashboard Shell & i18n switching
+
+- Sidebar IA: `src/components/dashboard/SidebarNav.tsx` — drawer-style nav whose primary items are the **Diagnose / Produce / Measure** loop (product positioning = information architecture). Mounted via `DashboardShell`.
+- Dashboard is NOT locale-routed; UI language follows `User.locale` injected through `NextIntlClientProvider` in `(protected)/layout.tsx`. The sidebar language switcher writes `User.locale` (`authClient.updateUser`), force-refreshes the session cookie cache, then hard-reloads.
 
 ### AI Skills System
 
@@ -248,19 +247,18 @@ Uses **better-auth** with session cookies and Google OAuth:
 ### Data Model Key Concepts
 
 **Content Lifecycle**:
-- Status: `DRAFT` → `SYNCED` → `PUBLISHED` → `ARCHIVED`
-- Visibility: `PUBLIC`, `PRIVATE`, `UNLISTED`
-- Source: `NOTION` (synced) or `MANUAL` (created in admin)
+- Status: `DRAFT` → `PUBLISHED` → `ARCHIVED` (legacy rows may have `SYNCED`)
+- Visibility: `PUBLIC`, `PRIVATE`, `UNLISTED` — publishing sets `PUBLIC` + `publishedAt`
+- Source: `MANUAL` (created in admin) — `NOTION` retained only for historical rows
+- `locale` + `translationGroupId` pair en/zh versions for hreflang
 
 **Categories**:
-- Manually managed, NOT auto-created during sync
-- Sync finds existing categories by name (case-insensitive) or creates with slug
+- Manually managed in admin; not auto-created
 - Each category has CTA configuration for category pages
 
 **Media**:
-- Centralized storage for all images
+- Centralized storage for all images (uploaded via the admin editor to MinIO)
 - Linked via `coverImageId` in Content and `ogImageId` in SeoMeta
-- Deduplication via `notionBlockId`
 
 **Preview Tokens**:
 - Temporary tokens for sharing unpublished content
@@ -314,9 +312,9 @@ MINIO_SECRET_KEY=          # MinIO secret key
 MINIO_BUCKET=              # Bucket name: media
 MINIO_PUBLIC_URL=          # Public base URL: https://media.scaletotop.com
 
-# Notion
-NOTION_API_KEY=           # [DEPRECATED] Notion integration token
-NOTION_DATABASE_ID=       # [DEPRECATED] Database ID
+# DataForSEO (SERP / keyword data for site intelligence + competitor inference)
+DATAFORSEO_LOGIN=
+DATAFORSEO_PASSWORD=
 
 # AI Providers (for Skills system)
 ANTHROPIC_API_KEY=        # Claude models
@@ -356,25 +354,11 @@ VPS_PROXY_URL=             # CLIProxy base URL
 VPS_PROXY_KEY=             # CLIProxy auth key — NEVER store in DB, env only
 ```
 
-## Notion Database Requirements
-
-Your Notion database MUST have these properties (case-sensitive):
-
-| Property | Type | Required | Description |
-|----------|------|----------|-------------|
-| Title | Title | Yes | Post title |
-| Slug | Text | Yes | URL slug (e.g., `my-first-post`) |
-| Status | Select | Yes | Must have "Ready" option - only syncs if Status = "Ready" |
-| Category | Select | No | Category name (must match existing category) |
-| Summary | Text | No | Post excerpt |
-| Cover | Files & media | No | Cover image (fallback to page cover) |
-| ReadingTime | Text/Number | No | Manual override (auto-calculated if missing) |
-
 ## Server Actions Pattern
 
 All data mutations use Next.js Server Actions (`'use server'`):
-- `src/app/actions/sync.ts` - Notion sync operations
-- `src/app/actions/content.ts` - Content CRUD
+- `src/app/actions/content.ts` - Content CRUD (create/update/publish/delete)
+- `src/app/actions/coach.ts` - Coach move status (dismiss/start/complete)
 - `src/app/actions/category.ts` - Category management
 - `src/app/actions/auth.ts` - Authentication helpers
 - `src/app/actions/skills.ts` - AI skill execution
@@ -407,38 +391,21 @@ Pattern: Server Actions return `{ success: boolean, message: string, data?: any 
 1. Update `prisma/schema.prisma` (add field to `Content` model)
 2. Run `npx prisma db push` (dev) or `npx prisma migrate dev` (production)
 3. Run `npx prisma generate`
-4. Update `src/lib/notion/sync.ts` to extract from Notion (if applicable)
-5. Update admin forms in `src/app/admin/content/`
-6. Restart dev server
-
-### Triggering Notion Sync
-
-**Via Admin UI**: Navigate to `/admin/sync` and click "Sync All" or "Sync Single"
-
-**Programmatically**:
-```typescript
-import { syncAllContent } from '@/app/actions/sync';
-
-// Full sync
-await syncAllContent({ force: false });
-
-// Force sync (ignore timestamps)
-await syncAllContent({ force: true });
-```
-
-**Via API Route** (for cron jobs): Create an API route at `src/app/api/sync/all/route.ts`
+4. Update the admin content form (`src/app/(protected)/dashboard/admin/content/`) + `src/app/actions/content.ts`
+5. Restart dev server
 
 ### Handling Image Storage
 
-Images are stored in self-hosted **MinIO** (S3-compatible). Images are automatically handled during Notion sync. For manual uploads:
+Images are stored in self-hosted **MinIO** (S3-compatible), uploaded via the admin editor:
 
 ```typescript
 import { uploadImageFromUrl } from '@/lib/storage';
 
 const result = await uploadImageFromUrl(imageUrl, {
-  notionBlockId: 'unique-id', // for deduplication
+  filename: 'my-image.png', // optional
 });
 // Returns: { mediaId, storageUrl, storagePath }
+// (options also accepts a legacy `notionBlockId` for historical dedup)
 ```
 
 **Storage config** (`src/lib/storage.ts` uses `@aws-sdk/client-s3` with `forcePathStyle: true`):
@@ -486,11 +453,7 @@ const result = await uploadImageFromUrl(imageUrl, {
 
 ### Working with Categories
 
-Categories are pre-defined and managed separately from Notion:
-
-1. Seed via Prisma or create in admin UI
-2. Notion sync finds categories by name match
-3. If category doesn't exist, sync creates it with auto-generated slug
+Categories are managed in the admin UI (or seeded via Prisma) and assigned when creating/editing content.
 
 **Category CTA**: Each category page can have custom CTA (title, description, button text/URL)
 
@@ -527,9 +490,9 @@ Categories are pre-defined and managed separately from Notion:
 
 ### Post-Deployment
 
-1. Run initial sync: Visit `/admin/sync` and trigger "Sync All"
-2. Verify images are uploaded to MinIO (`media` bucket)
-3. Check blog pages are accessible at `/blog`
+1. Verify blog pages render at `/` and `/zh/blog` (ISR — see Caching Strategy)
+2. Verify image uploads reach MinIO (`media` bucket)
+3. After auth/coach changes, smoke-test on real device: email OTP, Google login, set-password (new user), language switch, site delete
 
 ## SEO Infrastructure
 
@@ -581,26 +544,28 @@ openspec/
 
 ## Caching Strategy
 
-- **ISR (Incremental Static Regeneration)**: Blog pages use on-demand revalidation
-- **Revalidation**: Triggered after sync via `revalidatePath('/blog')` and `revalidatePath('/')`
-- **Dynamic Routes**: `/blog/[slug]` generated on-demand, cached until revalidated
+- **Public pages ISR**: homepage (`revalidate = 3600`) and blog index (`revalidate = 1800`) are statically generated + revalidated; publishing also `revalidatePath`s them on demand.
+- **Data-layer cache**: `getPublishedContent` / `getPublishedContentBySlug` / `getActiveCategories` are wrapped in `unstable_cache` under tag `public-content` (busted on publish via `revalidateTag`). This is the main perf lever — local dev hits the remote DB at high latency, so caching takes pages from ~4s to ~20ms.
+- **Site/user caches**: `getInitialSites` (sidebar) is tagged `user-${userId}`; **adding or deleting a site must call `revalidateUserSitesCache(userId)`** or the sidebar shows stale sites. Per-site data tagged `site-${siteId}`.
+- **Coach home**: cached per-site under `coach-home-${siteId}`; coach actions bust it.
+- Note: `<html lang>` is correct per-locale; full static-export of `[locale]` is intentionally NOT done (would require moving `<html>` out of the root layout).
 
 ## Troubleshooting
 
-**Sync fails with "Page missing required Slug property"**:
-- Ensure Notion page has Slug field filled
-- Check property name is exactly "Slug" (case-sensitive)
+**Published article 404s**:
+- Confirm publish set `visibility: PUBLIC` + `publishedAt` (handled by `updateContentMetadata`)
+- Confirm the path was revalidated (`revalidateContentPaths`) and the `public-content` tag busted
 
-**Images not syncing**:
-- Verify `MINIO_ENDPOINT`, `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY`, `MINIO_BUCKET` are set
-- Check MinIO `media` bucket exists with public read policy
-- If `media.scaletotop.com` returns 504, the Coolify reverse proxy for MinIO port 9000 needs fixing (see `openspec/technical-backlog.md`)
-- Look for errors in sync logs (`SyncLog` table)
+**Deleted/added site still shows in sidebar**:
+- The sidebar reads `getInitialSites` (tag `user-${userId}`). Ensure the delete/save route calls `revalidateUserSitesCache(userId)`.
 
-**Categories not matching**:
-- Categories must exist in database before sync
-- Sync matches by name (case-insensitive)
-- Auto-creates if missing, but verify slug generation
+**429 on `/get-session` / auth loops**:
+- Check `rateLimit` in `src/lib/auth.ts` (max + `/get-session` rule) and that client session reads go through the single `SessionProvider` (no standalone `useSession`)
+
+**Images not loading**:
+- Verify `MINIO_ENDPOINT`, `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY`, `MINIO_BUCKET`; bucket `media` has public read
+- If `media.scaletotop.com` returns 504, fix the Coolify reverse proxy for MinIO port 9000 (see `openspec/technical-backlog.md`)
+- Locally, the image domain may be intercepted by a proxy — add `media.scaletotop.com` to proxy DIRECT rules
 
 **Auth redirect loops**:
 - Clear cookies
@@ -616,7 +581,7 @@ openspec/
 
 ### Users
 
-**Admin/Editor users** (internal team): manage content sync from Notion, monitor platform metrics, handle user credits and permissions. Context: desktop-first, operational mindset — they need to act fast and trust what they see.
+**Admin/Editor users** (internal team): author/publish content in-app, monitor platform metrics, handle user credits and permissions. Context: desktop-first, operational mindset — they need to act fast and trust what they see.
 
 **Regular users** (Chinese overseas businesses / 海外华人创业者): SEO/GEO analytics, content planning, site intelligence. Context: results-oriented, time-pressured, need to quickly understand what to do next.
 

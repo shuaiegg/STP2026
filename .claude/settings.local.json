@@ -239,14 +239,40 @@
       "Bash(git stash *)",
       "Bash(python3 -c \"import json; json.load\\(open\\('.claude/settings.local.json'\\)\\); print\\('✅ settings.local.json JSON 合法'\\)\")",
       "Bash(git push *)",
-      "Bash(node -e \"console.log\\(JSON.stringify\\(require\\('./messages/en.json'\\).dashboard.coach,null,2\\)\\)\")"
+      "Bash(node -e \"console.log\\(JSON.stringify\\(require\\('./messages/en.json'\\).dashboard.coach,null,2\\)\\)\")",
+      "Bash(node -e \"console.log\\('next', require\\('next/package.json'\\).version\\)\")",
+      "Bash(grep -E \"Error|error|Failed|Dynamic server|/\\\\[locale\\\\]\\( |$\\)|/\\\\[locale\\\\]/blog|/\\\\[locale\\\\]/pricing|/\\\\[locale\\\\]/about|Revalidate|First Load\")",
+      "Bash(node -e \"const e=require\\('./messages/en.json'\\).banner,z=require\\('./messages/zh.json'\\).banner;console.log\\('en.banner:',e&&Object.keys\\(e\\),'| zh.banner:',z&&Object.keys\\(z\\)\\)\")",
+      "Bash(echo \"server PID $!, 等待启动...\")",
+      "Bash(curl -s -o /dev/null -w \"total=%{time_total}s\\\\n\" http://localhost:3100/zh)",
+      "Bash(lsof -ti:3100)",
+      "Bash(cd /Users/jack/Projects/STP/STP2026 *)",
+      "Bash(node -e \"console.log\\(require\\('better-auth/package.json'\\).version\\)\")",
+      "Bash(node -e \"console.log\\('en:',require\\('./messages/en.json'\\).dashboard.topNav.nextLang,'| zh:',require\\('./messages/zh.json'\\).dashboard.topNav.nextLang\\)\")",
+      "Bash(grep -oE \"\\(slate|indigo|amber|rose|emerald|red|blue\\)-[0-9]{2,3}/[0-9]+\" src/components/dashboard/SidebarNav.tsx)",
+      "Bash(grep -oE \"\\(slate|indigo|amber|rose|emerald|red|blue\\)-[0-9]{2,3}\" src/components/dashboard/SidebarNav.tsx)",
+      "Bash(cat /Users/jack/.claude/settings.json 2>/dev/null | head -80)",
+      "Read(//Users/jack/.claude/**)",
+      "Bash(curl -s -o /dev/null http://localhost:3100/)",
+      "Bash(break)",
+      "Bash(curl -s -o /dev/null -w \"local status=%{http_code}\\\\n\" \"http://localhost:3100/blog/how-to-build-ai-native-company\")",
+      "Bash(PORT=3200 npm run dev)",
+      "Bash(curl -s -o /dev/null http://localhost:3200/)",
+      "Bash(curl -s -o /dev/null -w 'raw-token: %{http_code} → %{redirect_url}\\\\n' -H 'Cookie: better-auth.session_token=__TRACKED_VAR__' http://localhost:3200/dashboard)",
+      "Bash(curl -s -o /dev/null -w '%{http_code} %{url_effective}\\\\n' -L --max-redirs 8 -H 'Cookie: better-auth.session_token=__TRACKED_VAR__' http://localhost:3200/dashboard)",
+      "Bash(lsof -i:3200)",
+      "Bash(curl -s -o /dev/null -w 'raw: %{http_code} → %{redirect_url}\\\\n' -H 'Cookie: better-auth.session_token=__TRACKED_VAR__' http://localhost:3000/dashboard)",
+      "Bash(curl -s -o /dev/null -w 'final: %{http_code} %{url_effective} \\(redirs=%{num_redirects}\\)\\\\n' -L --max-redirs 12 -H 'Cookie: better-auth.session_token=__TRACKED_VAR__' http://localhost:3000/dashboard)",
+      "Bash(curl -s -D - -o /dev/null -L --max-redirs 10 \"http://localhost:3000/dashboard\")",
+      "Bash(curl -s -D - -o /dev/null -L --max-redirs 8 -H 'Cookie: better-auth.session_token=__TRACKED_VAR__' http://localhost:3000/dashboard)"
     ],
     "additionalDirectories": [
       "/Users/jack/Projects/STP/STP2026/src/app/api/dashboard/sites/[siteId]",
       "/Users/jack/Projects/STP/STP2026/src/lib",
       "/Users/jack/Projects/STP/STP2026/src/app/(public)/blog/[slug]",
       "/Users/jack/Projects/STP/STP2026/openspec/changes",
-      "/Users/jack/Projects/STP/STP2026/.next"
+      "/Users/jack/Projects/STP/STP2026/.next",
+      "/tmp"
     ]
   },
   "enabledPlugins": {

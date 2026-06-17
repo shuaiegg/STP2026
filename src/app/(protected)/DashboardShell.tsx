@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { usePathname } from 'next/navigation';
-import { TopNav } from '@/components/dashboard/TopNav';
+import { SidebarNav } from '@/components/dashboard/SidebarNav';
 
 interface Site {
     id: string;
@@ -36,17 +36,19 @@ export function DashboardShell({
 
     return (
         <div className="min-h-screen bg-brand-surface flex flex-col">
-            <TopNav
+            <SidebarNav
                 sites={initialSites}
                 currentSiteId={currentSiteId}
                 user={session.user}
             />
             
-            <main className="flex-1 p-6 md:p-10 overflow-auto">
-                <div className="max-w-7xl mx-auto">
-                    {children}
-                </div>
-            </main>
+            <div className="flex-1 md:pl-64 flex flex-col min-h-screen">
+                <main className="flex-1 p-6 md:p-10 overflow-auto">
+                    <div className="max-w-7xl mx-auto">
+                        {children}
+                    </div>
+                </main>
+            </div>
         </div>
     );
 }

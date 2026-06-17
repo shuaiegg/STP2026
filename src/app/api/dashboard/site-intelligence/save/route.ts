@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
-import { revalidateSiteCache } from '@/lib/site-intelligence/sites';
+import { revalidateSiteCache, revalidateUserSitesCache } from '@/lib/site-intelligence/sites';
 import { sendAuditCompleteEmail } from '@/lib/email';
 import { addContact, getContactByEmail, addTagToContactByName } from '@/lib/email/systeme';
 import { getTriggerTagName } from '@/lib/integrations/config';
@@ -101,8 +101,9 @@ export async function POST(request: Request) {
             },
         });
 
-        // Revalidate cache
+        // Revalidate cache: site's own + user's site-list (sidebar shows new site immediately)
         revalidateSiteCache(site.id);
+        revalidateUserSitesCache(session.user.id);
         revalidateTag(coachHomeTag(site.id), 'max');
 
         // Post-save notifications (non-blocking, only for user's own sites)

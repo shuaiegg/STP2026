@@ -35,10 +35,10 @@ export const AXIOS_HEADERS = {
  * @param attempt 当前尝试次数（用于重试逻辑）
  */
 export async function fetchHtml(
-    url: string, 
-    timeout = 15000, 
+    url: string,
+    timeout = 15000,
     attempt = 1
-): Promise<{ html: string; loadTime: number; status: number; error?: string }> {
+): Promise<{ html: string; loadTime: number; status: number; error?: string; transport?: boolean }> {
     const startTime = Date.now();
     const proxyManager = ProxyManager.getInstance();
     
@@ -94,11 +94,14 @@ export async function fetchHtml(
         }
 
         console.error(`[Crawler Fetcher] Error fetching ${url}: ${errorMessage}`);
-        return {
-            html: '',
-            loadTime,
-            status: error.response?.status || 500,
-            error: errorMessage
-        };
+
+        // 区分两类失败：
+        // - 服务器响应了错误状态(error.response 存在) → 站点可达，这是一条"坏页面"发现，status 为真实码
+        // - 无任何响应(超时/DNS/连接拒绝/重置) → 传输失败，status:0 + transport:true，才计入熔断
+        const httpStatus = error.response?.status;
+        if (httpStatus) {
+            return { html: '', loadTime, status: httpStatus, error: errorMessage };
+        }
+        return { html: '', loadTime, status: 0, error: errorMessage, transport: true };
     }
 }

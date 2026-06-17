@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/Badge';
 import GalaxyMap from '@/components/dashboard/site-intelligence/GalaxyMap';
 import HealthReport from '@/components/dashboard/site-intelligence/HealthReport';
 import Link from 'next/link';
-import { authClient } from "@/lib/auth-client";
+import { useSessionContext } from "@/components/providers/SessionProvider";
 import { toast } from "sonner";
 import { Globe, ShieldCheck, Copy, Check, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -50,7 +50,7 @@ interface AuditHistoryItem {
 function InstantAuditInner() {
     const searchParams = useSearchParams();
     const router = useRouter();
-    const { data: session } = authClient.useSession();
+    const { session } = useSessionContext();
     const t = useTranslations('dashboard.instantAudit');
 
     const timeAgo = (iso: string) => {

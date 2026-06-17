@@ -2,11 +2,11 @@
 
 import { usePostHog } from 'posthog-js/react';
 import { useEffect } from 'react';
-import { authClient } from "@/lib/auth-client";
+import { useSessionContext } from "@/components/providers/SessionProvider";
 
 export function PostHogAuthListener() {
     const posthog = usePostHog();
-    const { data: session } = authClient.useSession();
+    const { session } = useSessionContext();
 
     useEffect(() => {
         if (session?.user && posthog) {

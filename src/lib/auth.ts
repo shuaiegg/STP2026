@@ -177,6 +177,12 @@ export const auth = betterAuth({
     ],
     rateLimit: {
         window: 60,
-        max: process.env.NODE_ENV === 'production' ? 10 : 20,
+        max: 100,
+        customRules: {
+            "/get-session": {
+                window: 60,
+                max: 1000,
+            }
+        }
     },
 });

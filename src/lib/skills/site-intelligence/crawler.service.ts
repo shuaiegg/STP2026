@@ -95,9 +95,9 @@ export class CrawlerService {
   /**
    * 抓取单页数据 (Facade for fetchHtml + Parser)
    */
-  static async scrapePage(url: string): Promise<{ page: ScrapedPage | null, status: number, error?: string }> {
-    const { html, loadTime, status, error } = await fetchHtml(url);
-    if (!html) return { page: null, status, error };
+  static async scrapePage(url: string): Promise<{ page: ScrapedPage | null, status: number, error?: string, transport?: boolean }> {
+    const { html, loadTime, status, error, transport } = await fetchHtml(url);
+    if (!html) return { page: null, status, error, transport };
     const page = CrawlerParser.extractPageData(html, url, loadTime, status);
     return { page, status, error };
   }
@@ -132,7 +132,13 @@ export class CrawlerService {
       const next = async () => {
         if (isTerminated) {
           if (activeTasks.size === 0) {
-            reject(terminationError);
+            // 熔断时：只要抓到过页面，站点显然可达 —— 返回部分结果（代理抖动不应整单失败）；
+            // 一页都没抓到才判定真正不可访问。
+            if (results.length > 0) {
+              resolve(results);
+            } else {
+              reject(terminationError);
+            }
           }
           return;
         }
@@ -154,22 +160,23 @@ export class CrawlerService {
 
           const task = (async () => {
             try {
-              const { page, status, error } = await this.scrapePage(url);
+              const { page, status, error, transport } = await this.scrapePage(url);
               if (page) {
                 results.push(page);
                 scanned++;
                 consecutiveFailures = 0; // 重置连续失败计数器
                 onBatchDone?.(scanned, total, [page]);
+              } else if (transport) {
+                // 传输失败（超时/DNS/连接拒绝）：没拿到任何响应 → 才计入熔断
+                errorCount++;
+                consecutiveFailures++;
               } else {
-                // 如果没有返回页面数据，判断是否为 4xx
-                if (status >= 400 && status < 500) {
-                  // 4xx 不计入熔断，但计入总错误数
-                  errorCount++;
-                } else {
-                  // 网络错误/超时/5xx 计入熔断
-                  errorCount++;
-                  consecutiveFailures++;
-                }
+                // 服务器响应了 HTTP 错误状态（4xx/5xx）：站点可达，这是一条"坏页面"审计发现，
+                // 绝不中止审计；可达即重置连续失败计数。
+                // TODO(first-impression-and-shell 呈现层): 收集 { url, status } 进 issueReport 展示
+                errorCount++;
+                consecutiveFailures = 0;
+                console.warn(`[Crawler Service] Broken page (finding, not abort): ${url} → ${status}`);
               }
 
               if (consecutiveFailures >= 5) {

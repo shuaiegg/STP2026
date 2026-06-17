@@ -13,7 +13,9 @@ export default async function ProtectedLayout({ children }: { children: React.Re
     });
 
     if (!session) {
-        redirect('/login');
+        // ?expired=1 tells middleware the cookie was present but invalid, so it must NOT
+        // bounce /login back to /dashboard (which would infinite-loop).
+        redirect('/login?expired=1');
     }
 
     const initialSites = await getInitialSites(session.user.id);

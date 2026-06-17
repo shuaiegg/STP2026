@@ -16,7 +16,7 @@ import {
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { authClient } from '@/lib/auth-client';
+import { useSessionContext } from "@/components/providers/SessionProvider";
 import Link from 'next/link';
 
 const tools = [
@@ -57,7 +57,7 @@ const tools = [
 export default function MarketingToolsPage() {
     const t = useTranslations('dashboard.tools');
     const toolItems = t.raw('items') as { name: string; description: string; category: string }[];
-    const { data: session } = authClient.useSession();
+    const { session } = useSessionContext();
     const currentCredits = Number((session?.user as any)?.credits || 0);
     const [skillCosts, setSkillCosts] = useState<Record<string, number>>({});
 

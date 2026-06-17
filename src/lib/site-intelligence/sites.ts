@@ -120,3 +120,12 @@ export function revalidateSiteCache(siteId?: string) {
     revalidateTag("site-cache");
   }
 }
+
+/**
+ * Revalidates a user's site list cache (getInitialSites → tags ["user-cache", `user-${userId}`]).
+ * Must be called after adding/deleting a site so the sidebar/site list reflect the change.
+ */
+export function revalidateUserSitesCache(userId: string) {
+  // @ts-ignore — Next.js 16 type requires 2 args but 1-arg form works at runtime
+  revalidateTag(`user-${userId}`);
+}

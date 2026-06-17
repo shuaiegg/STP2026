@@ -60,12 +60,12 @@ import { saveTrackedArticle } from '@/app/actions/tracked-articles';
 import { saveToBlogDraft } from '@/app/actions/blog-draft';
 import posthog from 'posthog-js';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { authClient } from '@/lib/auth-client';
+import { useSessionContext } from '@/components/providers/SessionProvider';
 
 export default function GEOWriterPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { data: session } = authClient.useSession();
+    const { session } = useSessionContext();
     const [step, setStep] = useState(1); // 1: Research, 2: Strategy, 3: Creation
     const researchPanelRef = useRef<HTMLDivElement>(null);
     const [loading, setLoading] = useState(false);

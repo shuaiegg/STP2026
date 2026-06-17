@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
-import { revalidateSiteCache } from '@/lib/site-intelligence/sites';
+import { revalidateSiteCache, revalidateUserSitesCache } from '@/lib/site-intelligence/sites';
 
 export async function GET(
     request: Request,
@@ -64,8 +64,10 @@ export async function DELETE(
             where: { id: siteId },
         });
 
-        // Clear cache
+        // Clear cache: the site's own cache AND the user's site-list cache
+        // (getInitialSites powers the sidebar; without this it shows the deleted site).
         revalidateSiteCache(siteId);
+        revalidateUserSitesCache(session.user.id);
 
         return NextResponse.json({ success: true, message: 'Site deleted successfully' });
     } catch (error: any) {

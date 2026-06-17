@@ -13,6 +13,7 @@ import { useRouter } from 'next/navigation';
 import posthog from 'posthog-js';
 import { dismissCoachMove, startCoachMove } from '@/app/actions/coach';
 import type { GrowthHomeData } from '@/lib/coach/home';
+import { DeleteSiteButton } from '@/components/dashboard/DeleteSiteButton';
 
 const MOVE_ICONS: Record<string, React.ReactNode> = {
     connect_gsc: <BarChart3 size={18} />,
@@ -68,17 +69,27 @@ export function GrowthHome({ site, data }: GrowthHomeProps) {
         <div className="space-y-10">
             {/* ── Context bar ───────────────────────────────────────── */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-display font-bold text-brand-text-primary tracking-tight">
-                        {t('title')}
-                    </h1>
-                    <p className="text-sm text-brand-text-secondary mt-1">
-                        {t('subtitle', { domain: site.domain })}
-                    </p>
+                <div className="flex items-start justify-between w-full md:w-auto">
+                    <div>
+                        <h1 className="text-2xl font-display font-bold text-brand-text-primary tracking-tight">
+                            {t('title')}
+                        </h1>
+                        <p className="text-sm text-brand-text-secondary mt-1">
+                            {t('subtitle', { domain: site.domain })}
+                        </p>
+                    </div>
+                    <div className="md:hidden flex items-center">
+                        <DeleteSiteButton siteId={site.id} domain={site.domain} />
+                    </div>
                 </div>
-                <Badge variant="default" className="self-start md:self-auto">
-                    {t('stageLabel')} · {t(`stages.${stageKey}`)}
-                </Badge>
+                <div className="flex items-center gap-3">
+                    <div className="hidden md:block">
+                        <DeleteSiteButton siteId={site.id} domain={site.domain} />
+                    </div>
+                    <Badge variant="default" className="self-start md:self-auto">
+                        {t('stageLabel')} · {t(`stages.${stageKey}`)}
+                    </Badge>
+                </div>
             </div>
 
             {/* ── Aha insight: understands your business + an opening ── */}

@@ -11,11 +11,11 @@ import { Link } from '@/i18n/navigation';
 import posthog from 'posthog-js';
 
 import { CREDIT_PRODUCTS } from '@/lib/billing/products';
-import { authClient } from '@/lib/auth-client';
+import { useSessionContext } from "@/components/providers/SessionProvider";
 
 export default function PricingClient() {
     const t = useTranslations('pricing');
-    const { data: session } = authClient.useSession();
+    const { session } = useSessionContext();
 
     useEffect(() => {
         posthog.capture('pricing_viewed');

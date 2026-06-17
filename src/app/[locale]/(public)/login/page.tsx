@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { authClient } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -35,7 +34,6 @@ export default function UserLoginPage() {
     const [isPending, setIsPending] = useState(false);
     const [error, setError] = useState("");
     const [isNewUser, setIsNewUser] = useState<boolean | null>(null);
-    const router = useRouter();
 
     // Persist domain in sessionStorage
     React.useEffect(() => {
@@ -177,9 +175,10 @@ export default function UserLoginPage() {
                 });
                 const data = await response.json();
                 if (!response.ok || data.error) throw new Error(data.error || data.message || t("errOtpWrong"));
-                
+
+                // 老用户：直接进入，不再打扰设置密码（仅新用户走 set-password 步）
                 toast.success(t("toastSignedIn"));
-                setStep("set-password");
+                handleRedirect();
             }
         } catch (err: any) {
             setError(localizeError(err.message || t("errOtpCheck")));
@@ -217,11 +216,11 @@ export default function UserLoginPage() {
     const handleSetPassword = async (e: React.FormEvent) => {
         e.preventDefault();
         if (newPassword !== confirmPassword) {
-            setError(locale === 'zh' ? "密码不匹配" : "Passwords do not match");
+            setError(t("errMismatch"));
             return;
         }
         if (newPassword.length < 8) {
-            setError(locale === 'zh' ? "密码至少需要 8 位" : "Password must be at least 8 characters");
+            setError(t("errPasswordLength"));
             return;
         }
 
@@ -257,16 +256,11 @@ export default function UserLoginPage() {
     };
 
     return (
-        <div className="min-h-screen bg-brand-surface flex items-center justify-center p-6 relative overflow-hidden">
-            <div className="absolute inset-0 grid-bg opacity-40 pointer-events-none" />
-
-            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-brand-secondary/5 rounded-full blur-[120px] pointer-events-none" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-brand-accent/5 rounded-full blur-[120px] pointer-events-none" />
-
-            <div className="w-full max-w-md relative z-10">
+        <div className="min-h-screen bg-brand-surface flex items-center justify-center p-6">
+            <div className="w-full max-w-md">
                 <div className="text-center mb-10 stagger-1 animate-slide-in-up">
                     <Link href="/" className="inline-block mb-8 group">
-                        <div className="w-12 h-12 bg-brand-primary border-2 border-brand-border-heavy flex items-center justify-center font-display font-black text-2xl text-brand-text-inverted shadow-[4px_4px_0_0_rgba(10,10,10,1)] group-hover:translate-x-[2px] group-hover:translate-y-[2px] group-hover:shadow-none transition-all duration-200">
+                        <div className="w-12 h-12 bg-brand-primary flex items-center justify-center font-display font-black text-2xl text-white rounded-lg shadow-md hover:scale-105 transition-all duration-200">
                             S
                         </div>
                     </Link>
@@ -284,19 +278,19 @@ export default function UserLoginPage() {
                     </p>
                 </div>
 
-                <Card className="border-2 border-brand-border-heavy bg-white shadow-[8px_8px_0_0_rgba(10,10,10,1)] stagger-2 animate-slide-in-up overflow-hidden">
+                <Card className="bg-white shadow-lg rounded-xl border border-brand-border stagger-2 animate-slide-in-up overflow-hidden">
                     {/* TABS (Only on initial step) */}
                     {step === "initial" && (
-                        <div className="flex border-b-2 border-brand-border-heavy bg-brand-surface">
+                        <div className="flex border-b border-brand-border bg-brand-surface">
                             <button
                                 onClick={() => setActiveTab("otp")}
-                                className={`flex-1 py-4 text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === "otp" ? "bg-white text-brand-text-primary" : "text-brand-text-muted hover:text-brand-text-primary"}`}
+                                className={`flex-1 py-4 text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === "otp" ? "bg-white text-brand-text-primary font-bold" : "text-brand-text-muted hover:text-brand-text-primary"}`}
                             >
                                 {t("tabOtp")}
                             </button>
                             <button
                                 onClick={() => setActiveTab("password")}
-                                className={`flex-1 py-4 text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === "password" ? "bg-white text-brand-text-primary" : "text-brand-text-muted hover:text-brand-text-primary"}`}
+                                className={`flex-1 py-4 text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === "password" ? "bg-white text-brand-text-primary font-bold" : "text-brand-text-muted hover:text-brand-text-primary"}`}
                             >
                                 {t("tabPassword")}
                             </button>
@@ -332,7 +326,7 @@ export default function UserLoginPage() {
                                             type="email"
                                             value={email}
                                             onChange={(e) => setEmail(e.target.value)}
-                                            className="w-full bg-brand-surface border-2 border-brand-border rounded-none py-3 pl-11 pr-4 text-brand-text-primary placeholder:text-brand-text-muted focus:border-brand-primary transition-all outline-none text-sm font-medium"
+                                            className="w-full bg-brand-surface border border-brand-border-heavy rounded-lg py-3 pl-11 pr-4 text-brand-text-primary placeholder:text-brand-text-muted focus:border-brand-primary transition-all outline-none text-sm font-medium"
                                             placeholder="your@email.com"
                                             required
                                         />
@@ -342,7 +336,7 @@ export default function UserLoginPage() {
                                 <Button
                                     type="submit"
                                     disabled={isPending || !email}
-                                    className="w-full h-12 bg-brand-primary hover:bg-brand-primary-hover text-brand-text-inverted border-2 border-brand-border-heavy shadow-[4px_4px_0_0_rgba(10,10,10,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all font-bold text-sm flex items-center justify-center gap-2 group"
+                                    className="w-full h-12 bg-brand-text-primary hover:bg-brand-text-primary text-white rounded-lg shadow-sm hover:shadow transition-all font-bold text-sm flex items-center justify-center gap-2 group"
                                 >
                                     {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <>{t("btnEnter")} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></>}
                                 </Button>
@@ -360,7 +354,7 @@ export default function UserLoginPage() {
                                             type="email"
                                             value={email}
                                             onChange={(e) => setEmail(e.target.value)}
-                                            className="w-full bg-brand-surface border-2 border-brand-border rounded-none py-3 pl-11 pr-4 text-brand-text-primary placeholder:text-brand-text-muted focus:border-brand-primary transition-all outline-none text-sm font-medium"
+                                            className="w-full bg-brand-surface border border-brand-border-heavy rounded-lg py-3 pl-11 pr-4 text-brand-text-primary placeholder:text-brand-text-muted focus:border-brand-primary transition-all outline-none text-sm font-medium"
                                             required
                                         />
                                     </div>
@@ -373,7 +367,7 @@ export default function UserLoginPage() {
                                             type="password"
                                             value={password}
                                             onChange={(e) => setPassword(e.target.value)}
-                                            className="w-full bg-brand-surface border-2 border-brand-border rounded-none py-3 pl-11 pr-4 text-brand-text-primary outline-none text-sm font-medium"
+                                            className="w-full bg-brand-surface border border-brand-border-heavy rounded-lg py-3 pl-11 pr-4 text-brand-text-primary outline-none text-sm font-medium"
                                             required
                                         />
                                     </div>
@@ -381,7 +375,7 @@ export default function UserLoginPage() {
                                 <Button
                                     type="submit"
                                     disabled={isPending}
-                                    className="w-full h-12 bg-brand-primary hover:bg-brand-primary-hover text-brand-text-inverted border-2 border-brand-border-heavy shadow-[4px_4px_0_0_rgba(10,10,10,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all font-bold text-sm flex items-center justify-center gap-2 group"
+                                    className="w-full h-12 bg-brand-text-primary hover:bg-brand-text-primary text-white rounded-lg shadow-sm hover:shadow transition-all font-bold text-sm flex items-center justify-center gap-2 group"
                                 >
                                     {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <>{t("btnLogin")} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></>}
                                 </Button>
@@ -396,11 +390,11 @@ export default function UserLoginPage() {
 
                         {/* SOCIAL LOGIN (Only on initial step) */}
                         {step === "initial" && (
-                            <div className="mt-6 pt-6 border-t-2 border-brand-border">
+                            <div className="mt-6 pt-6 border-t border-brand-border">
                                 <Button
                                     onClick={handleGoogleLogin}
                                     variant="outline"
-                                    className="w-full h-12 border-2 border-brand-border-heavy hover:bg-brand-surface transition-all font-bold text-sm flex items-center justify-center gap-3 group"
+                                    className="w-full h-12 border border-brand-border-heavy rounded-lg hover:bg-brand-surface transition-all font-bold text-sm flex items-center justify-center gap-3 group"
                                 >
                                     <svg className="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
                                         <path
@@ -436,7 +430,7 @@ export default function UserLoginPage() {
                                             type="text"
                                             value={name}
                                             onChange={(e) => setName(e.target.value)}
-                                            className="w-full bg-brand-surface border-2 border-brand-border rounded-none py-3 pl-11 pr-4 text-brand-text-primary placeholder:text-brand-text-muted focus:border-brand-primary transition-all outline-none text-sm font-medium"
+                                            className="w-full bg-brand-surface border border-brand-border-heavy rounded-lg py-3 pl-11 pr-4 text-brand-text-primary placeholder:text-brand-text-muted focus:border-brand-primary transition-all outline-none text-sm font-medium"
                                             placeholder={t("placeholderName")}
                                             required
                                             autoFocus
@@ -447,7 +441,7 @@ export default function UserLoginPage() {
                                 <Button
                                     type="submit"
                                     disabled={isPending || !name}
-                                    className="w-full h-12 bg-brand-secondary hover:bg-brand-secondary-hover text-brand-text-primary border-2 border-brand-border-heavy shadow-[4px_4px_0_0_rgba(10,10,10,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all font-bold text-sm flex items-center justify-center gap-2 group"
+                                    className="w-full h-12 bg-brand-secondary hover:bg-brand-secondary-hover text-white rounded-lg shadow-sm hover:shadow transition-all font-bold text-sm flex items-center justify-center gap-2 group"
                                 >
                                     {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <>{t("btnGetCode")} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></>}
                                 </Button>
@@ -467,7 +461,7 @@ export default function UserLoginPage() {
                                             type="text"
                                             value={otp}
                                             onChange={(e) => setOtp(e.target.value)}
-                                            className="w-full bg-brand-surface border-2 border-brand-border rounded-none py-3 pl-11 pr-4 text-brand-text-primary focus:border-brand-primary transition-all outline-none text-sm font-mono tracking-[0.5em] font-bold"
+                                            className="w-full bg-brand-surface border border-brand-border-heavy rounded-lg py-3 pl-11 pr-4 text-brand-text-primary focus:border-brand-primary transition-all outline-none text-sm font-mono tracking-[0.5em] font-bold"
                                             placeholder="000000"
                                             maxLength={6}
                                             required
@@ -479,7 +473,7 @@ export default function UserLoginPage() {
                                 <Button
                                     type="submit"
                                     disabled={isPending || otp.length < 6}
-                                    className="w-full h-12 bg-brand-secondary hover:bg-brand-secondary-hover text-brand-text-primary border-2 border-brand-border-heavy shadow-[4px_4px_0_0_rgba(10,10,10,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all font-bold text-sm flex items-center justify-center gap-2 group"
+                                    className="w-full h-12 bg-brand-secondary hover:bg-brand-secondary-hover text-white rounded-lg shadow-sm hover:shadow transition-all font-bold text-sm flex items-center justify-center gap-2 group"
                                 >
                                     {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <>{t("btnVerify")} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></>}
                                 </Button>
@@ -498,7 +492,7 @@ export default function UserLoginPage() {
                                                 type="password"
                                                 value={newPassword}
                                                 onChange={(e) => setNewPassword(e.target.value)}
-                                                className="w-full bg-brand-surface border-2 border-brand-border rounded-none py-3 pl-11 pr-4 text-brand-text-primary outline-none text-sm font-medium"
+                                                className="w-full bg-brand-surface border border-brand-border-heavy rounded-lg py-3 pl-11 pr-4 text-brand-text-primary outline-none text-sm font-medium"
                                                 placeholder="At least 8 chars"
                                                 minLength={8}
                                                 required
@@ -513,7 +507,7 @@ export default function UserLoginPage() {
                                                 type="password"
                                                 value={confirmPassword}
                                                 onChange={(e) => setConfirmPassword(e.target.value)}
-                                                className="w-full bg-brand-surface border-2 border-brand-border rounded-none py-3 pl-11 pr-4 text-brand-text-primary outline-none text-sm font-medium"
+                                                className="w-full bg-brand-surface border border-brand-border-heavy rounded-lg py-3 pl-11 pr-4 text-brand-text-primary outline-none text-sm font-medium"
                                                 required
                                             />
                                         </div>
@@ -524,7 +518,7 @@ export default function UserLoginPage() {
                                     <Button
                                         type="submit"
                                         disabled={isPending}
-                                        className="w-full h-12 bg-brand-primary hover:bg-brand-primary-hover text-brand-text-inverted border-2 border-brand-border-heavy shadow-[4px_4px_0_0_rgba(10,10,10,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all font-bold text-sm flex items-center justify-center gap-2 group"
+                                        className="w-full h-12 bg-brand-text-primary hover:bg-brand-text-primary text-white rounded-lg shadow-sm hover:shadow transition-all font-bold text-sm flex items-center justify-center gap-2 group"
                                     >
                                         {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <>{t("btnSavePassword")} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></>}
                                     </Button>
