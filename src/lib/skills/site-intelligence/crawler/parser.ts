@@ -21,7 +21,11 @@ export class CrawlerParser {
      * 提取页面内的链接并分类为同源和外链
      */
     static extractLinkTypes(html: string, domain: string, sourceUrl: string): { internalUrls: string[], externalUrls: string[] } {
-        const $ = cheerio.load(html);
+        return this.linkTypesFrom(cheerio.load(html), domain, sourceUrl);
+    }
+
+    /** $-based core (avoids re-parsing HTML; shared by extractPageData) */
+    private static linkTypesFrom($: cheerio.CheerioAPI, domain: string, sourceUrl: string): { internalUrls: string[], externalUrls: string[] } {
         const internalUrls: string[] = [];
         const externalUrls: string[] = [];
         const domainObj = new URL(domain);
@@ -68,14 +72,149 @@ export class CrawlerParser {
     }
 
     /**
-     * 从 HTML 中提取 SEO 和内容指标
+     * Task 1.2.1: 解析 JSON-LD 类型
+     * 容错：@graph/多 script/脏 JSON；失败按无
+     */
+    static extractSchemaTypes(html: string): string[] {
+        return this.schemaTypesFrom(cheerio.load(html));
+    }
+
+    /** $-based core (avoids re-parsing HTML; shared by extractPageData) */
+    private static schemaTypesFrom($: cheerio.CheerioAPI): string[] {
+        const types: string[] = [];
+
+        $('script[type="application/ld+json"]').each((_, el) => {
+            try {
+                const raw = $(el).html() || '';
+                const json = JSON.parse(raw);
+
+                const extractTypes = (obj: any) => {
+                    if (!obj || typeof obj !== 'object') return;
+                    if (Array.isArray(obj)) {
+                        obj.forEach(extractTypes);
+                        return;
+                    }
+                    if (obj['@graph'] && Array.isArray(obj['@graph'])) {
+                        obj['@graph'].forEach(extractTypes);
+                    }
+                    if (obj['@type']) {
+                        const t = obj['@type'];
+                        if (Array.isArray(t)) {
+                            t.forEach((v: string) => { if (typeof v === 'string') types.push(v); });
+                        } else if (typeof t === 'string') {
+                            types.push(t);
+                        }
+                    }
+                };
+
+                extractTypes(json);
+            } catch (e) {
+                // 脏 JSON 容错：失败按无计
+            }
+        });
+
+        return [...new Set(types)];
+    }
+
+    /**
+     * Task 1.2.4: 提取时效信号
+     * schema 优先，meta 兜底
+     */
+    static extractDates(html: string): boolean {
+        return this.hasDatesFrom(cheerio.load(html));
+    }
+
+    /** $-based core (avoids re-parsing HTML; shared by extractPageData) */
+    private static hasDatesFrom($: cheerio.CheerioAPI): boolean {
+        // Schema.org JSON-LD: datePublished / dateModified
+        const scripts = $('script[type="application/ld+json"]').toArray();
+        for (const el of scripts) {
+            try {
+                const raw = $(el).html() || '';
+                const json = JSON.parse(raw);
+                const checkDates = (obj: any): boolean => {
+                    if (!obj || typeof obj !== 'object') return false;
+                    if (Array.isArray(obj)) return obj.some(checkDates);
+                    if (obj['@graph']) return checkDates(obj['@graph']);
+                    return !!(obj.datePublished || obj.dateModified);
+                };
+                if (checkDates(json)) return true;
+            } catch (e) { }
+        }
+
+        // Meta fallback
+        const metaDate = $('meta[name="date"], meta[name="datePublished"], meta[name="article:published_time"], meta[property="article:published_time"]').attr('content');
+        if (metaDate) return true;
+
+        // time element
+        if ($('time[datetime]').length > 0) return true;
+
+        return false;
+    }
+
+    /**
+     * Task 1.2.5: 提取作者信号
+     * author schema 或 byline
+     */
+    static extractAuthor(html: string): boolean {
+        return this.hasAuthorFrom(cheerio.load(html));
+    }
+
+    /** $-based core (avoids re-parsing HTML; shared by extractPageData) */
+    private static hasAuthorFrom($: cheerio.CheerioAPI): boolean {
+        // JSON-LD author
+        const scripts = $('script[type="application/ld+json"]').toArray();
+        for (const el of scripts) {
+            try {
+                const raw = $(el).html() || '';
+                const json = JSON.parse(raw);
+                const checkAuthor = (obj: any): boolean => {
+                    if (!obj || typeof obj !== 'object') return false;
+                    if (Array.isArray(obj)) return obj.some(checkAuthor);
+                    if (obj['@graph']) return checkAuthor(obj['@graph']);
+                    return !!(obj.author);
+                };
+                if (checkAuthor(json)) return true;
+            } catch (e) { }
+        }
+
+        // Meta author
+        if ($('meta[name="author"]').attr('content')) return true;
+
+        // Common byline patterns
+        if ($('[class*="author"], [rel="author"], [itemprop="author"]').length > 0) return true;
+
+        return false;
+    }
+
+    /**
+     * Task 1.2.3: 检测问句式标题
+     * h2/h3 含 ? 或 What/How/Why/When/Which (中英)
+     */
+    static countQuestionHeadings($: cheerio.CheerioAPI): number {
+        const QUESTION_WORDS = /^(what|how|why|when|which|who|where|can|does|is|are|do|will|should|could|would)\b/i;
+        // 中文疑问词开头
+        const CHINESE_QUESTION = /^(为什么|怎么|如何|哪些|什么|哪个|哪里|几|多少|是否|能否|有没有|可以吗|怎样)/;
+
+        let count = 0;
+        $('h2, h3').each((_, el) => {
+            const text = $(el).text().trim();
+            if (text.includes('?') || text.includes('？') || QUESTION_WORDS.test(text) || CHINESE_QUESTION.test(text)) {
+                count++;
+            }
+        });
+        return count;
+    }
+
+    /**
+     * 从 HTML 中提取 SEO 和内容指标（含 GEO 就绪度字段）
      */
     static extractPageData(html: string, url: string, loadTime: number, status: number): ScrapedPage {
-        const $ = cheerio.load(html);
+        const $ = cheerio.load(html); // single parse — shared by all extractors below
         const domainHostname = new URL(url).hostname;
 
         // 提取内链和外链
-        const { internalUrls, externalUrls } = this.extractLinkTypes(html, `https://${domainHostname}`, url);
+        const { internalUrls, externalUrls } = this.linkTypesFrom($, `https://${domainHostname}`, url);
         const internalLinks = internalUrls.slice(0, 50);
         const externalLinks = externalUrls.slice(0, 50);
 
@@ -86,10 +225,30 @@ export class CrawlerParser {
         const h2 = $('h2').map((_, el) => $(el).text().trim()).get().filter(t => t.length > 0).slice(0, 10);
         const h3 = $('h3').map((_, el) => $(el).text().trim()).get().filter(t => t.length > 0).slice(0, 10);
 
+        // GEO extractors run on the shared $ BEFORE scripts are stripped below.
+        // Task 1.2.1 — JSON-LD 类型
+        const schemaTypes = this.schemaTypesFrom($);
+
+        // GEO: Task 1.2.4 — 时效
+        const hasDates = this.hasDatesFrom($);
+
+        // GEO: Task 1.2.5 — 作者
+        const hasAuthor = this.hasAuthorFrom($);
+
+        // GEO: Task 1.2.3 — 问句式标题（在 script/style 移除前）
+        const questionHeadingCount = this.countQuestionHeadings($);
+
+        // GEO: Task 1.2.2 — 列表/表格计数（在 script/style 移除前）
+        const listCount = $('ul, ol').length;
+        const tableCount = $('table').length;
+
         // 计算词数（去除脚本/样式内容）
         $('script, style, noscript').remove();
         const bodyText = $('body').text().replace(/\s+/g, ' ').trim();
         const wordCount = this.estimateWordCount(bodyText);
+
+        // GEO: Task 1.2.6 — FAQPage 由 schemaTypes 派生
+        const hasFaq = schemaTypes.some(t => t === 'FAQPage');
 
         return {
             url,
@@ -107,7 +266,15 @@ export class CrawlerParser {
             canonicalUrl: $('link[rel="canonical"]').attr('href') || null,
             hasOgImage: !!$('meta[property="og:image"]').attr('content'),
             hasViewportMeta: !!$('meta[name="viewport"]').length,
-            hasStructuredData: !!$('script[type="application/ld+json"]').length,
+            hasStructuredData: schemaTypes.length > 0 || !!$('script[type="application/ld+json"]').length,
+            // GEO fields
+            schemaTypes,
+            listCount,
+            tableCount,
+            questionHeadingCount,
+            hasDates,
+            hasAuthor,
+            hasFaq,
         };
     }
 }

@@ -87,10 +87,12 @@ export async function POST(request: Request) {
 
                 const userLocale = (session.user as any).locale as 'zh' | 'en' || 'zh';
 
-                // 5. 生成 SEO 体检报告与评分
+                // 5. 生成 SEO + GEO 体检报告与评分
                 const issueReport = analyzeAudit(auditResult.pages, {
                     sitemapFound: auditResult.sitemapFound,
-                    sitemapUrls: auditResult.allUrls // 使用 allUrls 作为 sitemap 的参考（sitemap 发现模式下 allUrls 即为 sitemap URLs）
+                    sitemapUrls: auditResult.allUrls, // 使用 allUrls 作为 sitemap 的参考
+                    geoSignals: auditResult.geoSignals, // Task 2.1.1–2.1.3: pass GEO site signals
+                    badPages: auditResult.badPages, // Task 2.4.2
                 }, { locale: userLocale });
                 const techScore = issueReport.techScore;
 

@@ -20,6 +20,7 @@ export async function POST(request: Request) {
     try {
         const body = await request.json();
         const { domain, graphData, techScore, businessDna, issueReport, competitors, isCompetitor = false } = body;
+        const geoScore: number | null = issueReport?.geoScore ?? null;
 
         if (!domain || !graphData) {
             return NextResponse.json({ error: '缺失必要字段 (域名或图表数据)' }, { status: 400 });
@@ -92,6 +93,7 @@ export async function POST(request: Request) {
                 siteId: site.id,
                 status: 'done',
                 techScore: techScore ?? null,
+                geoScore: geoScore,  // Task 2.3.1: write GEO score to DB
                 pageCount,
                 report: {
                     graphData,

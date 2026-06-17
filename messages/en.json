@@ -837,7 +837,47 @@
       "errStream": "Unable to read response stream",
       "errSave": "Save failed",
       "errAnalysis": "An error occurred during analysis",
-      "errGeneric": "System busy, please try again later"
+      "errGeneric": "System busy, please try again later",
+      "result": {
+        "analysisCompleted": "Analysis Completed",
+        "diagnosticReport": "Diagnostic Report: {domain}",
+        "preliminaryScan": "Preliminary scan · Scanned {scanned}/{total} pages",
+        "businessUnderstanding": "How We Understand Your Business",
+        "coreOffering": "Core Offering",
+        "targetAudience": "Target Audience",
+        "brandTone": "Brand Tone",
+        "dnaFallbackDesc": "Automatically switched to Technical SEO Health Check. No clear business fingerprints were extracted, skipped DNA context to ensure accuracy.",
+        "geoReadiness": "AI Search Engine Readiness (GEO)",
+        "geoScore": "GEO Readiness Score",
+        "geoScoreDesc": "Evaluates content structure for AI search citation",
+        "geoCrawlerStatus": "AI Crawler Status",
+        "geoCrawlersBlocked": "Some AI Crawlers Blocked",
+        "geoCrawlersAllowed": "All AI Crawlers Allowed",
+        "botStatus": {
+          "blocked": "Blocked",
+          "allowed": "Allowed",
+          "unknown": "Unknown"
+        },
+        "issuesTitle": "Issues Hindering Your Rankings",
+        "techScore": "Tech Score",
+        "badPagesFound": "{count} pages returned error states",
+        "badPagesDesc": "These pages are unreachable and will heavily impact search rankings. Expand \"Dead Link\" below to see the full URL list.",
+        "affectsPages": "Affects {count} pages",
+        "explanation": "Explanation",
+        "howToFix": "How to Fix",
+        "affectedPagesCount": "Affected Pages ({count})",
+        "collapseDetails": "Collapse Details",
+        "viewAllIssues": "View all {count} issues",
+        "noIssuesTitle": "No Technical Issues Found",
+        "noIssuesDesc": "Congratulations! Your site performed perfectly during this audit, hitting no penalty points.",
+        "growthRadar": "Growth Radar & Market Gaps",
+        "competitorsDesc": "AI has inferred the following competitors. Select them to begin tracking content, semantic maps, and identifying gaps.",
+        "noCompetitorsInferred": "No competitors inferred automatically. Add a domain to enable gap analysis:",
+        "manuallyAdded": "Manually added",
+        "addButton": "Add",
+        "gscPrompt": "Recommended: Connect Google Search Console",
+        "gscDesc": "Import real performance data to automatically map high-value traffic opportunities."
+      }
     },
     "instantAudit": {
       "title": "Instant Audit",
@@ -918,7 +958,9 @@
         "warning": "Warning",
         "info": "Info",
         "notFound": "No issues found",
-        "notFoundDesc": "Your website performed perfectly in this audit, with no detected SEO risks."
+        "notFoundDesc": "Your website performed perfectly in this audit, with no detected SEO risks.",
+        "badPagesFound": "{count} pages returned error states",
+        "badPagesDesc": "These pages are unreachable and will heavily impact search rankings. Expand \"Dead Link\" below to see the full URL list."
       }
     },
     "issueCard": {

@@ -264,7 +264,9 @@
       "Bash(curl -s -o /dev/null -w 'raw: %{http_code} → %{redirect_url}\\\\n' -H 'Cookie: better-auth.session_token=__TRACKED_VAR__' http://localhost:3000/dashboard)",
       "Bash(curl -s -o /dev/null -w 'final: %{http_code} %{url_effective} \\(redirs=%{num_redirects}\\)\\\\n' -L --max-redirs 12 -H 'Cookie: better-auth.session_token=__TRACKED_VAR__' http://localhost:3000/dashboard)",
       "Bash(curl -s -D - -o /dev/null -L --max-redirs 10 \"http://localhost:3000/dashboard\")",
-      "Bash(curl -s -D - -o /dev/null -L --max-redirs 8 -H 'Cookie: better-auth.session_token=__TRACKED_VAR__' http://localhost:3000/dashboard)"
+      "Bash(curl -s -D - -o /dev/null -L --max-redirs 8 -H 'Cookie: better-auth.session_token=__TRACKED_VAR__' http://localhost:3000/dashboard)",
+      "Bash(npx vitest *)",
+      "Bash(curl -s \"https://scaletotop.com/robots.txt\")"
     ],
     "additionalDirectories": [
       "/Users/jack/Projects/STP/STP2026/src/app/api/dashboard/sites/[siteId]",

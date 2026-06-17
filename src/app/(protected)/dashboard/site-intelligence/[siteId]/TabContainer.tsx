@@ -134,8 +134,8 @@ export function TabContainer({
     `px-4 py-3 text-sm border-b-2 transition-all whitespace-nowrap ` +
     `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50 focus-visible:ring-inset ` +
     (activeTab === key
-      ? 'border-brand-secondary text-gray-900 font-bold'
-      : 'border-transparent text-slate-500 font-medium hover:text-slate-700 hover:border-slate-300');
+      ? 'border-brand-secondary text-brand-text-primary font-bold'
+      : 'border-transparent text-brand-text-secondary font-medium hover:text-brand-text-primary hover:border-brand-border');
 
   return (
     <div className="space-y-6">
@@ -143,7 +143,7 @@ export function TabContainer({
       <div
         role="tablist"
         aria-label={t('ariaLabel')}
-        className="flex border-b border-slate-200 overflow-x-auto scrollbar-hide sticky top-14 bg-white/80 backdrop-blur-md z-30 -mx-6 md:-mx-10 px-6 md:px-10"
+        className="flex border-b border-brand-border overflow-x-auto scrollbar-hide sticky top-14 bg-white/80 backdrop-blur-md z-30 -mx-6 md:-mx-10 px-6 md:px-10"
       >
         <button role="tab" id="tab-overview" aria-selected={activeTab === 'overview'} aria-controls="tabpanel-overview"
           onClick={() => handleTabChange('overview')} className={tabCls('overview')}>
@@ -217,17 +217,17 @@ export function TabContainer({
             {visitedTabs.has('audit') && (
               <div className="space-y-6">
                 {loadingReport ? (
-                  <div className="flex flex-col items-center justify-center p-12 text-slate-500">
+                  <div className="flex flex-col items-center justify-center p-12 text-brand-text-secondary">
                     <div className="w-8 h-8 rounded-full border-2 border-brand-primary border-t-transparent motion-safe:animate-spin mb-4" aria-hidden="true" />
                     <p className="text-sm font-medium">{t('loadingReport')}</p>
                   </div>
                 ) : fetchError ? (
                   <div role="alert" className="flex flex-col items-center justify-center p-12 text-center space-y-4">
-                    <p className="text-sm font-bold text-slate-900">{t('fetchErrorTitle')}</p>
-                    <p className="text-sm text-slate-500">{t('fetchErrorDesc')}</p>
+                    <p className="text-sm font-bold text-brand-text-primary">{t('fetchErrorTitle')}</p>
+                    <p className="text-sm text-brand-text-secondary">{t('fetchErrorDesc')}</p>
                     <button
                       onClick={() => { setIssueReportLoaded(false); fetchReport(); }}
-                      className="px-4 py-2 text-sm font-bold bg-slate-900 text-white rounded-lg hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/50"
+                      className="px-4 py-2 text-sm font-bold bg-brand-primary text-white rounded-lg hover:bg-brand-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50"
                     >
                       {t('retry')}
                     </button>

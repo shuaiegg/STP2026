@@ -48,23 +48,23 @@
 
 ### 2.4 坏页面作为审计发现（呈现层）
 > 核心层已落地：HTTP 错误状态（4xx/5xx）不再触发熔断/中止审计，只有传输失败（超时/DNS/连接拒绝）才熔断（`crawler.service.ts` / `fetcher.ts`，`transport` 标志）。本节做"呈现"。
-- [ ] 2.4.1 `crawlWithConcurrency` 收集 `{ url, status }` 坏页面清单，经 `performFullAuditWithProgress` 返回（扩展 `SiteAuditResult`，见代码 TODO）
-- [ ] 2.4.2 save 路由把坏页面写入 `issueReport`（或独立字段）
-- [ ] 2.4.3 审计结果 UI 展示"N 个页面返回错误"+ 可展开 URL/状态码清单（双语）
-- [ ] 2.4.4 验证：含坏页面的站点审计完成，且坏页面在结果里作为可操作发现呈现
+- [x] 2.4.1 `crawlWithConcurrency` 收集 `{ url, status }` 坏页面清单，经 `performFullAuditWithProgress` 返回（扩展 `SiteAuditResult`，见代码 TODO）
+- [x] 2.4.2 save 路由把坏页面写入 `issueReport`（或独立字段）
+- [x] 2.4.3 审计结果 UI 展示"N 个页面返回错误"+ 可展开 URL/状态码清单（双语）
+- [x] 2.4.4 验证：含坏页面的站点审计完成，且坏页面在结果里作为可操作发现呈现
 
 ### 2.5 揭示屏重做："真实问题清单"证明我们看了你的站（design 决策 9–12）
 > 数据已存在（`audit-analyzer.ts` 的 `IssueItem[]`）；这是呈现 + 语言 + 叙事升级。
-- [ ] 2.5.1 语言修复：洞察(DNA/问题/竞品)跟 `User.locale`；en 用户审英文站必须全英文（修 prompt locale 真正生效 + LLM 不遵守时兜底/二次纠正）
-- [ ] 2.5.2 指标卡 → 真实问题清单：每条 = 严重度图标 + 标题 + 受影响页数 + 怎么修；P0/P1 排前；颜色=严重度
-- [ ] 2.5.3 具体到页面：用 `affectedUrls` 点名真实页面（"你的 /pricing 缺 meta description"）
-- [ ] 2.5.4 渐进展开：默认 top 3–5，"查看全部 N 条"展开
-- [ ] 2.5.5 修溢出 + token 化：指标/卡片正常字号换行，去掉等宽硬塞；brand-* + rounded-lg
-- [ ] 2.5.6 诚实框定：顶部 "Preliminary scan · 已扫 X/N 页"（双语）
-- [ ] 2.5.7 空态转行动：竞品空 → "添加竞品看缺口"输入；无 GSC → "连接 GSC 看真实排名"
-- [ ] 2.5.8 叙事主线：懂你 → 你的网站卡在哪 → 机会 → [解锁]（非三等价盒子，有开场句）
-- [ ] 2.5.9 GEO 露出：揭示屏至少 1 条 GEO-readiness 发现（头条优先用「AI 爬虫准入」）。**依赖 `geo-readiness-audit` change**——该维度就绪则消费其 GEO issue/geoScore；未就绪则优雅降级（不显示 GEO 条，不阻塞首屏）
-- [ ] 2.5.10 验证（真机）：en 审 scaletotop 全英文；问题清单具体到页;空竞品给行动入口;无溢出
+- [x] 2.5.1 语言修复：洞察(DNA/问题/竞品)跟 `User.locale`；en 用户审英文站必须全英文（修 prompt locale 真正生效 + LLM 不遵守时兜底/二次纠正）
+- [x] 2.5.2 指标卡 → 真实问题清单：每条 = 严重度图标 + 标题 + 受影响页数 + 怎么修；P0/P1 排前；颜色=严重度
+- [x] 2.5.3 具体到页面：用 `affectedUrls` 点名真实页面（"你的 /pricing 缺 meta description"）
+- [x] 2.5.4 渐进展开：默认 top 3–5，"查看全部 N 条"展开
+- [x] 2.5.5 修溢出 + token 化：指标/卡片正常字号换行，去掉等宽硬塞；brand-* + rounded-lg
+- [x] 2.5.6 诚实框定：顶部 "Preliminary scan · 已扫 X/N 页"（双语）
+- [x] 2.5.7 空态转行动：竞品空 → "添加竞品看缺口"输入；无 GSC → "连接 GSC 看真实排名"
+- [x] 2.5.8 叙事主线：懂你 → 你的网站卡在哪 → 机会 → [解锁]（非三等价盒子，有开场句）
+- [x] 2.5.9 GEO 露出：揭示屏至少 1 条 GEO-readiness 发现（头条优先用「AI 爬虫准入」）。**依赖 `geo-readiness-audit` change**——该维度就绪则消费其 GEO issue/geoScore；未就绪则优雅降级（不显示 GEO 条，不阻塞首屏）
+- [x] 2.5.10 验证（真机）：en 审 scaletotop 全英文；问题清单具体到页;空竞品给行动入口;无溢出
 
 ---
 

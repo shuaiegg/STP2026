@@ -26,11 +26,11 @@ interface SiteRecord {
 }
 
 function TechScoreBadge({ score }: { score: number | null }) {
-    if (score === null) return <span className="text-slate-400 text-xs font-mono">N/A</span>;
+    if (score === null) return <span className="text-brand-text-muted text-xs font-mono">N/A</span>;
     const color =
-        score >= 80 ? 'bg-green-100 text-green-700' :
-            score >= 50 ? 'bg-amber-100 text-amber-700' :
-                'bg-red-100 text-red-700';
+        score >= 80 ? 'bg-brand-success/15 text-brand-success' :
+            score >= 50 ? 'bg-brand-warning/15 text-brand-warning' :
+                'bg-brand-error/15 text-brand-error';
     return <span className={`text-[10px] font-bold font-mono px-2 py-0.5 rounded-full inline-block ${color}`}>{score}</span>;
 }
 
@@ -101,15 +101,15 @@ export default async function SiteIntelligencePage() {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                        <h1 className="text-2xl font-bold tracking-tight text-slate-900">{t('title')}</h1>
+                        <h1 className="text-2xl font-bold tracking-tight text-brand-text-primary">{t('title')}</h1>
                         <Badge variant="default" className="bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20 border-0">{t('betaTag')}</Badge>
                     </div>
-                    <p className="text-sm text-slate-500">
+                    <p className="text-sm text-brand-text-secondary">
                         {t('subtitle')}
                     </p>
                 </div>
                 <Link href="/dashboard/site-intelligence/instant-audit">
-                    <Button className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm px-6 font-bold">
+                    <Button className="bg-brand-primary hover:bg-brand-primary-hover text-white rounded-xl shadow-sm px-6 font-bold">
                         {t('newScan')}
                     </Button>
                 </Link>
@@ -131,49 +131,48 @@ export default async function SiteIntelligencePage() {
     );
 }
 
-
 function SiteCard({ site, t, tAudit }: { site: SiteRecord, t: any, tAudit: any }) {
     const audit = site.latestAudit;
     return (
-        <Card className="bg-white border-slate-200 shadow-sm p-6 flex flex-col gap-5 hover:border-brand-primary/20 hover:shadow-md transition-all rounded-2xl group relative overflow-hidden">
+        <Card className="bg-white border-brand-border shadow-sm p-6 flex flex-col gap-5 hover:border-brand-primary/20 hover:shadow-md transition-all rounded-2xl group relative overflow-hidden">
             {/* Top decorative gradient line */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand-primary/20 to-indigo-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
 
             {/* Domain Header */}
             <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                    <p className="text-base font-bold text-slate-900 truncate tracking-tight">{site.domain}</p>
-                    <p className="text-[10px] text-slate-400 font-mono uppercase tracking-widest mt-1">
+                    <p className="text-base font-bold text-brand-text-primary truncate tracking-tight">{site.domain}</p>
+                    <p className="text-[10px] text-brand-text-muted font-mono uppercase tracking-widest mt-1">
                         {t('card.addedAt', { time: timeAgo(site.createdAt, tAudit) })}
                     </p>
                 </div>
-                <div className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-slate-50 border border-slate-100 mt-1">
+                <div className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-brand-surface border border-brand-border/40 mt-1">
                     <div
                         className="w-2.5 h-2.5 rounded-full"
-                        style={{ background: audit ? '#10b981' : '#cbd5e1' }}
+                        style={{ background: audit ? 'var(--color-brand-secondary)' : 'var(--color-brand-border)' }}
                     />
                 </div>
             </div>
 
             {/* Stats Overview */}
             {audit ? (
-                <div className="grid grid-cols-3 gap-3 text-center bg-slate-50 rounded-xl p-3 border border-slate-100">
+                <div className="grid grid-cols-3 gap-3 text-center bg-brand-surface rounded-xl p-3 border border-brand-border/40">
                     <div className="flex flex-col items-center justify-center">
-                        <p className="text-[9px] text-slate-400 uppercase tracking-widest mb-1 font-bold">{t('card.pages')}</p>
-                        <p className="text-sm font-bold text-slate-700 font-mono">{audit.pageCount}</p>
+                        <p className="text-[9px] text-brand-text-muted uppercase tracking-widest mb-1 font-bold">{t('card.pages')}</p>
+                        <p className="text-sm font-bold text-brand-text-secondary font-mono">{audit.pageCount}</p>
                     </div>
-                    <div className="flex flex-col items-center justify-center border-l border-slate-200">
-                        <p className="text-[9px] text-slate-400 uppercase tracking-widest mb-1 font-bold">{t('card.techScore')}</p>
+                    <div className="flex flex-col items-center justify-center border-l border-brand-border/30">
+                        <p className="text-[9px] text-brand-text-muted uppercase tracking-widest mb-1 font-bold">{t('card.techScore')}</p>
                         <TechScoreBadge score={audit.techScore} />
                     </div>
-                    <div className="flex flex-col items-center justify-center border-l border-slate-200">
-                        <p className="text-[9px] text-slate-400 uppercase tracking-widest mb-1 font-bold">{t('card.latestScan')}</p>
-                        <p className="text-[10px] text-slate-500 font-mono font-medium">{timeAgo(audit.createdAt, tAudit).replace(/ago|\u524d/, '').trim()}</p>
+                    <div className="flex flex-col items-center justify-center border-l border-brand-border/30">
+                        <p className="text-[9px] text-brand-text-muted uppercase tracking-widest mb-1 font-bold">{t('card.latestScan')}</p>
+                        <p className="text-[10px] text-brand-text-secondary font-mono font-medium">{timeAgo(audit.createdAt, tAudit).replace(/ago|\u524d/, '').trim()}</p>
                     </div>
                 </div>
             ) : (
-                <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 border-dashed flex items-center justify-center h-[76px]">
-                    <p className="text-[11px] text-slate-400 font-medium">{t('card.noAudit')}</p>
+                <div className="bg-brand-surface rounded-xl p-4 border border-brand-border/40 border-dashed flex items-center justify-center h-[76px]">
+                    <p className="text-[11px] text-brand-text-muted font-medium">{t('card.noAudit')}</p>
                 </div>
             )}
 
@@ -185,7 +184,7 @@ function SiteCard({ site, t, tAudit }: { site: SiteRecord, t: any, tAudit: any }
                 >
                     <Button
                         variant="outline"
-                        className="w-full text-xs font-semibold rounded-xl border-slate-200 hover:bg-slate-50 hover:text-brand-primary"
+                        className="w-full text-xs font-semibold rounded-xl border-brand-border hover:bg-brand-surface hover:text-brand-primary"
                     >
                         {t('card.workbench')}
                     </Button>
@@ -195,7 +194,7 @@ function SiteCard({ site, t, tAudit }: { site: SiteRecord, t: any, tAudit: any }
                     className="flex-1"
                 >
                     <Button
-                        className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl shadow-none"
+                        className="w-full bg-brand-surface-alt hover:bg-brand-surface text-brand-text-secondary text-xs font-semibold rounded-xl shadow-none"
                     >
                         {t('card.rescan')}
                     </Button>

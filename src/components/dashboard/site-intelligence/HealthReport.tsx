@@ -4,7 +4,7 @@ import React from 'react';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import IssueCard from './IssueCard';
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, AlertCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 export interface HealthReportProps {
@@ -18,6 +18,7 @@ export interface HealthReportProps {
       warning: number;
       info: number;
     };
+    badPages?: any[];
   } | null;
   previousIssueReport?: HealthReportProps['issueReport'] | null;
 }
@@ -27,12 +28,12 @@ export default function HealthReport({ issueReport, previousIssueReport }: Healt
 
   if (!issueReport) {
     return (
-      <Card className="bg-slate-50 border-slate-200 border-dashed p-12 shadow-sm flex flex-col items-center justify-center text-center">
-        <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-4">
-          <span className="text-xl text-slate-400">?</span>
+      <Card className="bg-brand-surface border-brand-border border-dashed p-12 shadow-sm flex flex-col items-center justify-center text-center">
+        <div className="w-12 h-12 rounded-full bg-brand-surface-alt flex items-center justify-center mb-4">
+          <span className="text-xl text-brand-text-muted">?</span>
         </div>
-        <h3 className="text-sm font-bold text-slate-900 mb-1">{t('noData')}</h3>
-        <p className="text-xs text-slate-500 max-w-xs">
+        <h3 className="text-sm font-bold text-brand-text-primary mb-1">{t('noData')}</h3>
+        <p className="text-xs text-brand-text-secondary max-w-xs">
           {t('noDataDesc')}
         </p>
       </Card>
@@ -40,9 +41,9 @@ export default function HealthReport({ issueReport, previousIssueReport }: Healt
   }
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600 bg-green-50 border-green-100';
-    if (score >= 50) return 'text-amber-600 bg-amber-50 border-amber-100';
-    return 'text-red-600 bg-red-50 border-red-100';
+    if (score >= 80) return 'text-brand-success bg-brand-secondary-muted/30 border-brand-secondary/20';
+    if (score >= 50) return 'text-brand-warning bg-brand-accent-muted/30 border-brand-accent/20';
+    return 'text-brand-error bg-brand-error/10 border-brand-error/20';
   };
 
   const scoreCards = [
@@ -82,34 +83,34 @@ export default function HealthReport({ issueReport, previousIssueReport }: Healt
     <div className="space-y-6">
       {/* Delta Banner */}
       {deltaInfo && (
-        <Card className="px-4 py-3 border-slate-200 bg-slate-50/50 flex items-center justify-between shadow-sm">
+        <Card className="px-4 py-3 border-brand-border bg-brand-surface/50 flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('delta.title')}</span>
-            <div className="h-3 w-[1px] bg-slate-200 mx-1" />
+            <span className="text-[10px] font-bold text-brand-text-muted uppercase tracking-widest">{t('delta.title')}</span>
+            <div className="h-3 w-[1px] bg-brand-border mx-1" />
             <div className="flex items-center gap-4">
               {deltaInfo.newCount === 0 && deltaInfo.fixedCount === 0 ? (
                 <div className="flex items-center gap-1.5">
-                  <Minus className="w-3.5 h-3.5 text-slate-400" />
-                  <span className="text-xs font-bold text-slate-600">{t('delta.noChange')}</span>
+                  <Minus className="w-3.5 h-3.5 text-brand-text-muted" />
+                  <span className="text-xs font-bold text-brand-text-secondary">{t('delta.noChange')}</span>
                 </div>
               ) : (
                 <>
                   {deltaInfo.newCount > 0 && (
                     <div className="flex items-center gap-1.5">
-                      <TrendingDown className="w-3.5 h-3.5 text-rose-500" />
-                      <span className="text-xs font-bold text-slate-700">{t('delta.newIssues', { count: deltaInfo.newCount })}</span>
+                      <TrendingDown className="w-3.5 h-3.5 text-brand-error" />
+                      <span className="text-xs font-bold text-brand-text-secondary">{t('delta.newIssues', { count: deltaInfo.newCount })}</span>
                     </div>
                   )}
                   {deltaInfo.fixedCount > 0 && (
                     <div className="flex items-center gap-1.5">
-                      <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
-                      <span className="text-xs font-bold text-slate-700">{t('delta.fixedIssues', { count: deltaInfo.fixedCount })}</span>
+                      <TrendingUp className="w-3.5 h-3.5 text-brand-success" />
+                      <span className="text-xs font-bold text-brand-text-secondary">{t('delta.fixedIssues', { count: deltaInfo.fixedCount })}</span>
                     </div>
                   )}
                   {deltaInfo.pageCountChanges.slice(0, 2).map((change) => (
-                    <div key={change.code} className="flex items-center gap-1.5 px-2 py-0.5 bg-white rounded border border-slate-100">
-                      {change.diff > 0 ? <TrendingDown className="w-3 h-3 text-rose-400" /> : <TrendingUp className="w-3 h-3 text-emerald-400" />}
-                      <span className="text-[10px] font-bold text-slate-500">
+                    <div key={change.code} className="flex items-center gap-1.5 px-2 py-0.5 bg-brand-background rounded border border-brand-border">
+                      {change.diff > 0 ? <TrendingDown className="w-3 h-3 text-brand-error" /> : <TrendingUp className="w-3 h-3 text-brand-success" />}
+                      <span className="text-[10px] font-bold text-brand-text-secondary">
                         {change.title}: {change.diff > 0 ? '↑' : '↓'} {t('delta.pages', { count: Math.abs(change.diff) })}
                       </span>
                     </div>
@@ -119,7 +120,7 @@ export default function HealthReport({ issueReport, previousIssueReport }: Healt
             </div>
           </div>
           {deltaInfo.fixedCount > 0 && deltaInfo.newCount === 0 && issueReport.issues.length === 0 && (
-            <Badge className="bg-emerald-500 text-white border-0 text-[10px] font-bold animate-pulse">
+            <Badge className="bg-brand-secondary text-white border-0 text-[10px] font-bold animate-pulse">
               {t('delta.allFixed')}
             </Badge>
           )}
@@ -136,22 +137,37 @@ export default function HealthReport({ issueReport, previousIssueReport }: Healt
         ))}
       </div>
 
+      {/* Dead Pages Warning Banner */}
+      {issueReport.badPages && issueReport.badPages.length > 0 && (
+        <Card className="p-4 rounded-xl border border-brand-error/20 bg-brand-error/10 flex items-start gap-3 shadow-sm">
+          <AlertCircle className="text-brand-error shrink-0 mt-0.5" size={16} />
+          <div className="space-y-1">
+            <p className="text-xs font-bold text-brand-error">
+              {t('issues.badPagesFound', { count: issueReport.badPages.length })}
+            </p>
+            <p className="text-[10px] text-brand-text-secondary leading-relaxed">
+              {t('issues.badPagesDesc')}
+            </p>
+          </div>
+        </Card>
+      )}
+
       {/* Issues List */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold text-slate-900">{t('issues.title', { count: issueReport.issues.length })}</h3>
+          <h3 className="text-sm font-bold text-brand-text-primary">{t('issues.title', { count: issueReport.issues.length })}</h3>
           <div className="flex gap-3">
             <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-red-500" />
-              <span className="text-[10px] font-bold text-slate-500">{issueReport.stats.critical} {t('issues.critical')}</span>
+              <div className="w-2 h-2 rounded-full bg-brand-error" />
+              <span className="text-[10px] font-bold text-brand-text-secondary">{issueReport.stats.critical} {t('issues.critical')}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-amber-500" />
-              <span className="text-[10px] font-bold text-slate-500">{issueReport.stats.warning} {t('issues.warning')}</span>
+              <div className="w-2 h-2 rounded-full bg-brand-warning" />
+              <span className="text-[10px] font-bold text-brand-text-secondary">{issueReport.stats.warning} {t('issues.warning')}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-blue-500" />
-              <span className="text-[10px] font-bold text-slate-500">{issueReport.stats.info} {t('issues.info')}</span>
+              <div className="w-2 h-2 rounded-full bg-brand-info" />
+              <span className="text-[10px] font-bold text-brand-text-secondary">{issueReport.stats.info} {t('issues.info')}</span>
             </div>
           </div>
         </div>
@@ -163,12 +179,12 @@ export default function HealthReport({ issueReport, previousIssueReport }: Healt
             ))}
           </div>
         ) : (
-          <Card className="p-12 border-dashed border-green-200 bg-green-50/30 flex flex-col items-center justify-center text-center">
-            <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-4">
-              <span className="text-xl text-green-600">✓</span>
+          <Card className="p-12 border-dashed border-brand-success/30 bg-brand-success/5 flex flex-col items-center justify-center text-center">
+            <div className="w-12 h-12 rounded-full bg-brand-success/15 flex items-center justify-center mb-4 text-brand-success">
+              <span className="text-xl">✓</span>
             </div>
-            <h3 className="text-sm font-bold text-green-800">{t('issues.notFound')}</h3>
-            <p className="text-xs text-green-600/70">
+            <h3 className="text-sm font-bold text-brand-success mb-1">{t('issues.notFound')}</h3>
+            <p className="text-xs text-brand-text-muted">
               {t('issues.notFoundDesc')}
             </p>
           </Card>

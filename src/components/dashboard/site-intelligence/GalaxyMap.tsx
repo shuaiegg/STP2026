@@ -269,12 +269,12 @@ export default function GalaxyMap({ siteId, data, onNodeClick, isLoading }: Gala
 
       {/* Loading overlay */}
       {isLoading && (
-        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[#060d1f]/85 backdrop-blur-sm">
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm">
           <div className="relative w-14 h-14">
             <div className="absolute inset-0 rounded-full border-2 border-indigo-500/20 border-t-indigo-400 animate-spin" />
             <div className="absolute inset-2 rounded-full border border-blue-500/10 border-t-blue-400/60 animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
           </div>
-          <p className="mt-5 text-[10px] font-mono text-slate-400 uppercase tracking-[0.2em]">{t('mapping')}</p>
+          <p className="mt-5 text-[10px] font-mono text-white/60 uppercase tracking-[0.2em]">{t('mapping')}</p>
         </div>
       )}
 
@@ -282,7 +282,7 @@ export default function GalaxyMap({ siteId, data, onNodeClick, isLoading }: Gala
       {!isLoading && mergedData.nodes.length === 0 && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
           <div className="text-4xl opacity-30">🛸</div>
-          <p className="text-slate-500 text-xs font-mono tracking-widest uppercase">{t('enterDomain')}</p>
+          <p className="text-white/40 text-xs font-mono tracking-widest uppercase">{t('enterDomain')}</p>
         </div>
       )}
 
@@ -329,7 +329,7 @@ export default function GalaxyMap({ siteId, data, onNodeClick, isLoading }: Gala
       <div className="absolute top-4 right-4">
         <button
           onClick={() => setUse3D(!use3D)}
-          className="px-3 py-1.5 bg-slate-800/80 backdrop-blur-sm border border-slate-600/40 rounded-lg text-[10px] font-bold text-slate-400 hover:text-white hover:border-slate-500/60 transition-all shadow-lg"
+          className="px-3 py-1.5 bg-black/60 backdrop-blur-sm border border-white/10 rounded-lg text-[10px] font-bold text-white/70 hover:text-white hover:border-white/30 transition-all shadow-lg"
         >
           {use3D ? t('mode2d') : t('mode3d')}
         </button>
@@ -337,7 +337,7 @@ export default function GalaxyMap({ siteId, data, onNodeClick, isLoading }: Gala
 
       {/* Legend */}
       {mergedData.nodes.length > 0 && (
-        <div className="absolute bottom-4 left-4 flex items-center gap-4 px-3 py-2 bg-slate-900/70 backdrop-blur-sm rounded-xl border border-slate-700/30">
+        <div className="absolute bottom-4 left-4 flex items-center gap-4 px-3 py-2 bg-black/60 backdrop-blur-sm rounded-xl border border-white/10">
           {[
             { color: '#818cf8', label: t('legendRoot') },
             { color: '#34d399', label: t('legendPillar') },
@@ -353,11 +353,12 @@ export default function GalaxyMap({ siteId, data, onNodeClick, isLoading }: Gala
                   boxShadow: dashed ? 'none' : `0 0 6px ${color}88`,
                 }}
               />
-              <span className="text-[9px] text-slate-500 font-mono tracking-wide">{label}</span>
+              <span className="text-[9px] text-white/50 font-mono tracking-wide">{label}</span>
             </div>
           ))}
         </div>
       )}
+
     </div>
   );
 }

@@ -1,5 +1,5 @@
-import { ScrapedPage, SiteAuditResult, AuditProgressEvent } from './types';
-import { fetchHtml } from './crawler/fetcher';
+import { ScrapedPage, SiteAuditResult, AuditProgressEvent, GeoSiteSignals, BadPage } from './types';
+import { fetchHtml, fetchSiteSignals } from './crawler/fetcher';
 import { CrawlerParser } from './crawler/parser';
 import { CrawlerStrategy } from './crawler/strategy';
 import { getDefaultProvider } from '@/lib/skills/providers';
@@ -109,8 +109,9 @@ export class CrawlerService {
     urls: string[],
     limit = 5,
     onBatchDone?: (scanned: number, total: number, pages: ScrapedPage[]) => void
-  ): Promise<ScrapedPage[]> {
+  ): Promise<{ pages: ScrapedPage[]; badPages: BadPage[] }> {
     const results: ScrapedPage[] = [];
+    const badPages: BadPage[] = [];  // Task 2.4.1: collect HTTP error findings
     const total = urls.length;
     let scanned = 0;
     let errorCount = 0;
@@ -132,10 +133,8 @@ export class CrawlerService {
       const next = async () => {
         if (isTerminated) {
           if (activeTasks.size === 0) {
-            // 熔断时：只要抓到过页面，站点显然可达 —— 返回部分结果（代理抖动不应整单失败）；
-            // 一页都没抓到才判定真正不可访问。
             if (results.length > 0) {
-              resolve(results);
+              resolve({ pages: results, badPages });
             } else {
               reject(terminationError);
             }
@@ -144,7 +143,7 @@ export class CrawlerService {
         }
 
         if (queue.length === 0 && activeTasks.size === 0) {
-          resolve(results);
+          resolve({ pages: results, badPages });
           return;
         }
 
@@ -171,9 +170,11 @@ export class CrawlerService {
                 errorCount++;
                 consecutiveFailures++;
               } else {
-                // 服务器响应了 HTTP 错误状态（4xx/5xx）：站点可达，这是一条"坏页面"审计发现，
-                // 绝不中止审计；可达即重置连续失败计数。
-                // TODO(first-impression-and-shell 呈现层): 收集 { url, status } 进 issueReport 展示
+                // 服务器响应了 HTTP 错误状态（4xx/5xx）：站点可达，这是一条"坏页面"审计发现
+                // Task 2.4.1: 收集 { url, status } 进 badPages
+                if (status >= 400) {
+                  badPages.push({ url, status });
+                }
                 errorCount++;
                 consecutiveFailures = 0;
                 console.warn(`[Crawler Service] Broken page (finding, not abort): ${url} → ${status}`);
@@ -231,7 +232,7 @@ export class CrawlerService {
     const { urls, sitemapFound } = await this.discoverUrls(normalized);
     const targetUrls = this.sampleUrls(urls, 100);
 
-    const pages = await this.crawlWithConcurrency(targetUrls, 5);
+    const { pages, badPages } = await this.crawlWithConcurrency(targetUrls, 5);
 
     const averageLoadTime =
       pages.length > 0
@@ -246,6 +247,7 @@ export class CrawlerService {
       allUrls: urls,
       pages: await this.clusterPages(pages),
       averageLoadTime,
+      badPages,
     };
   }
 
@@ -291,11 +293,18 @@ export class CrawlerService {
       console.error('[Crawler Service] Failed to extract Business DNA:', err);
     });
 
+    // Task 1.1.1–1.1.4: Fetch GEO site-level signals in parallel with page crawl
+    // fetchSiteSignals never throws — failures degrade to "unknown"/null
+    const geoSiteSignalsPromise = fetchSiteSignals(normalized).catch((err) => {
+      console.error('[Crawler Service] GEO site signals fetch failed (non-fatal):', err);
+      return null;
+    });
+
     const targetUrls = this.sampleUrls(urls, 100);
     const totalCount = urls.length; // 实际发现的总数
     const scanLimit = targetUrls.length; // 本次实际抓取的限制数
 
-    const pages = await this.crawlWithConcurrency(
+    const { pages, badPages } = await this.crawlWithConcurrency(
       targetUrls,
       5,
       (scanned, _, batchPages) => {
@@ -304,6 +313,11 @@ export class CrawlerService {
         });
       }
     );
+
+    const geoSignalsResult = await geoSiteSignalsPromise;
+    const geoSignals: { site: GeoSiteSignals } | undefined = geoSignalsResult
+      ? { site: geoSignalsResult }
+      : undefined;
 
     const averageLoadTime =
       pages.length > 0
@@ -318,7 +332,9 @@ export class CrawlerService {
       allUrls: urls,
       pages: await this.clusterPages(pages, { locale }),
       averageLoadTime,
-      businessDna
+      businessDna,
+      geoSignals,
+      badPages,  // Task 2.4.1
     };
   }
 

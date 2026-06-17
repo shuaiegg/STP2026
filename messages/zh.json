@@ -837,7 +837,47 @@
       "errStream": "无法读取响应流",
       "errSave": "保存失败",
       "errAnalysis": "分析过程中发生错误",
-      "errGeneric": "系统繁忙，请稍后再试"
+      "errGeneric": "系统繁忙，请稍后再试",
+      "result": {
+        "analysisCompleted": "分析完成",
+        "diagnosticReport": "诊断报告：{domain}",
+        "preliminaryScan": "初步扫描 · 已扫 {scanned}/{total} 页",
+        "businessUnderstanding": "我们对你业务的理解",
+        "coreOffering": "核心定位",
+        "targetAudience": "目标受众",
+        "brandTone": "品牌调性",
+        "dnaFallbackDesc": "已自动转为技术 SEO 体检。由于首页未提取到明确的前端业务指纹，系统已跳过 DNA 业务理解以确保数据纯净。",
+        "geoReadiness": "AI 搜索引擎就绪度 (GEO Readiness)",
+        "geoScore": "GEO 就绪得分",
+        "geoScoreDesc": "评估站点能否被 AI 引擎检索与引用的结构度",
+        "geoCrawlerStatus": "AI 爬虫准入状态",
+        "geoCrawlersBlocked": "部分 AI 爬虫被屏蔽",
+        "geoCrawlersAllowed": "AI 爬虫完全准入",
+        "botStatus": {
+          "blocked": "屏蔽",
+          "allowed": "准入",
+          "unknown": "未知"
+        },
+        "issuesTitle": "拖累排名的关键问题",
+        "techScore": "技术得分",
+        "badPagesFound": "检测到 {count} 个页面返回错误",
+        "badPagesDesc": "这些页面不可访问，将对搜索引擎排名造成严重负面影响。请展开下方「死链」查看详细 URL 列表。",
+        "affectsPages": "影响了 {count} 个典型页面",
+        "explanation": "问题说明",
+        "howToFix": "如何修复",
+        "affectedPagesCount": "受影响页面 ({count})",
+        "collapseDetails": "收起详情",
+        "viewAllIssues": "查看全部 {count} 条问题",
+        "noIssuesTitle": "未发现技术问题",
+        "noIssuesDesc": "恭喜！您的网站在本次初步体检中表现极佳，未命中任何明显扣分项。",
+        "growthRadar": "开启增长雷达与市场空白",
+        "competitorsDesc": "AI 已为您搜寻并推断出以下竞争对手。确认它们以开始抓取内容、盘点星图并寻找高商机词空白。",
+        "noCompetitorsInferred": "未能自动识别到竞争对手，添加一个域名以开启市场空白分析：",
+        "manuallyAdded": "手动添加",
+        "addButton": "添加",
+        "gscPrompt": "建议配合：接入 Google Search Console 导入点击数据",
+        "gscDesc": "自动导入实际关键词表现，精确校正您的语义债务和高性价比增长机会。"
+      }
     },
     "instantAudit": {
       "title": "即时审计",
@@ -918,7 +958,9 @@
         "warning": "警告",
         "info": "提示",
         "notFound": "未发现问题",
-        "notFoundDesc": "您的网站在本次审计中表现完美，未检测到任何 SEO 风险。"
+        "notFoundDesc": "您的网站在本次审计中表现完美，未检测到任何 SEO 风险。",
+        "badPagesFound": "检测到 {count} 个页面返回错误",
+        "badPagesDesc": "这些页面不可访问，将对搜索引擎排名造成严重负面影响。请展开下方「死链」查看详细 URL 列表。"
       }
     },
     "issueCard": {

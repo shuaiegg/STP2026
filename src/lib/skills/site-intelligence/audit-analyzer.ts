@@ -1,4 +1,4 @@
-import { ScrapedPage } from './types';
+import { ScrapedPage, GeoSiteSignals, BadPage } from './types';
 
 export type Severity = 'critical' | 'warning' | 'info';
 
@@ -20,12 +20,14 @@ export interface AuditIssueReport {
   techScore: number;
   contentScore: number;
   seoScore: number;
+  geoScore: number;  // Task 2.1.3: GEO readiness score (0-100)
   issues: IssueItem[];
   stats: {
     critical: number;
     warning: number;
     info: number;
   };
+  badPages?: BadPage[];
 }
 
 const ISSUE_TRANSLATIONS: Record<string, Record<'zh' | 'en', { title: string; explanation: string; howToFix: string }>> = {
@@ -280,6 +282,92 @@ const ISSUE_TRANSLATIONS: Record<string, Record<'zh' | 'en', { title: string; ex
       explanation: 'No JSON-LD structured data was found. Structured data helps show rich snippets in search results.',
       howToFix: 'Add appropriate Schema.org JSON-LD markup based on content type (Article, Product, etc.).'
     }
+  },
+  // ── GEO readiness issues (Tasks 2.2.1–2.2.4) ─────────────────────────────
+  // Task 2.2.4: Zero "已被/未被引用" language; only describe readiness, not performance
+  'GEO_AI_CRAWLER_BLOCKED': {
+    'zh': {
+      title: 'AI 爬虫被屏蔽',
+      explanation: '您的 robots.txt 屏蔽了下列 AI 爬虫器，这些引擎将无法读取您的内容。',
+      howToFix: '在 robots.txt 中移除对该 Bot 的 Disallow 规则，或新增显式 Allow: / 规则。'
+    },
+    'en': {
+      title: 'AI Crawler Blocked',
+      explanation: 'Your robots.txt is blocking the following AI crawlers, which will prevent those engines from reading your content.',
+      howToFix: 'Remove the Disallow rule for that bot in robots.txt, or add an explicit Allow: / rule.'
+    }
+  },
+  'GEO_NO_SCHEMA': {
+    'zh': {
+      title: '结构化数据覆盖不足',
+      explanation: '您的页面中只有少数页包含 JSON-LD 结构化数据，AI 引擎难以理解并引用结构不清晰的内容。',
+      howToFix: '为主要内容页（博客文章、产品页、关于页）添加 Article、Organization 等 Schema.org JSON-LD 标记。'
+    },
+    'en': {
+      title: 'Low Structured Data Coverage',
+      explanation: 'Only a small fraction of your pages have JSON-LD structured data, making it hard for AI engines to understand and reference your content.',
+      howToFix: 'Add Article, Organization, or other Schema.org JSON-LD markup to your main content pages.'
+    }
+  },
+  'GEO_NO_ANSWER_STRUCTURE': {
+    'zh': {
+      title: '缺少可提取的答案结构',
+      explanation: '内容缺乏列表、表格或问答式标题，AI 引擎难以从中摘取可引用片段。',
+      howToFix: '在文章中多使用列表、表格和“What/How/Why”式标题，方便 AI 分块引用。'
+    },
+    'en': {
+      title: 'Weak Answer-Extractable Structure',
+      explanation: 'Content lacks lists, tables, or question-style headings, making it harder for AI engines to extract citable snippets.',
+      howToFix: 'Use bullet lists, tables, and question-style H2/H3 headings (What/How/Why) to create self-contained, citable blocks.'
+    }
+  },
+  'GEO_NO_FAQ': {
+    'zh': {
+      title: '缺少 FAQ / FAQPage 结构',
+      explanation: 'FAQ 页面和 FAQPage Schema 是 AI 引擎最容易引用的内容格式之一。',
+      howToFix: '创建 FAQ 页面并添加 FAQPage JSON-LD 结构化数据。'
+    },
+    'en': {
+      title: 'No FAQ / FAQPage Schema',
+      explanation: 'FAQ pages with FAQPage schema are among the most easily referenced content formats for AI engines.',
+      howToFix: 'Create FAQ pages and add FAQPage JSON-LD structured data.'
+    }
+  },
+  'GEO_STALE_NO_DATES': {
+    'zh': {
+      title: '内容缺少时效信号',
+      explanation: '大多数页面未标注发布时间或更新时间，AI 引擎并不知道您的内容是否新鲜。',
+      howToFix: '在 JSON-LD 中加入 datePublished 和 dateModified，或在 meta 标签中添加 article:published_time。'
+    },
+    'en': {
+      title: 'Content Lacks Freshness Signals',
+      explanation: 'Most pages lack datePublished or dateModified signals, so AI engines cannot determine whether your content is current.',
+      howToFix: 'Add datePublished and dateModified in JSON-LD, or article:published_time meta tags.'
+    }
+  },
+  'GEO_NO_AUTHOR': {
+    'zh': {
+      title: '缺少作者 / E-E-A-T 信号',
+      explanation: '大多数页面未标注作者信息，影响 AI 引擎对内容可信度的判断。',
+      howToFix: '在 JSON-LD 中加入 author 字段，或在页面中显示作者署名。'
+    },
+    'en': {
+      title: 'Missing Author / E-E-A-T Signal',
+      explanation: 'Most pages lack author attribution, which impacts how AI engines assess the credibility of your content.',
+      howToFix: 'Add an author field in JSON-LD, or display a visible author byline on your pages.'
+    }
+  },
+  'GEO_NO_LLMS_TXT': {
+    'zh': {
+      title: '缺少 llms.txt 文件',
+      explanation: 'llms.txt 是新兴标准，帮助 AI 引擎更好地理解您的内容结构。目前您的站点没有提供该文件。',
+      howToFix: '在站点根目录创建 /llms.txt 文件，列出您的主要内容和 API。可参考 llmstxt.org 标准。'
+    },
+    'en': {
+      title: 'No llms.txt File',
+      explanation: 'llms.txt is an emerging standard that helps AI engines better understand your content structure. Your site does not have this file.',
+      howToFix: 'Create a /llms.txt file at your site root listing your main content and APIs. See llmstxt.org for the standard.'
+    }
   }
 };
 
@@ -289,7 +377,7 @@ const ISSUE_TRANSLATIONS: Record<string, Record<'zh' | 'en', { title: string; ex
  */
 export function analyzeAudit(
   pages: ScrapedPage[],
-  meta?: { sitemapFound?: boolean; sitemapUrls?: string[] },
+  meta?: { sitemapFound?: boolean; sitemapUrls?: string[]; geoSignals?: { site: GeoSiteSignals }; badPages?: BadPage[] },
   options?: { locale?: 'zh' | 'en' }
 ): AuditIssueReport {
   const locale = options?.locale || 'zh';
@@ -299,6 +387,7 @@ export function analyzeAudit(
       techScore: 100,
       contentScore: 100,
       seoScore: 100,
+      geoScore: 100,
       issues: [],
       stats: { critical: 0, warning: 0, info: 0 },
     };
@@ -345,9 +434,10 @@ export function analyzeAudit(
   }
 
   // 1. DEAD_LINK (status 4xx/5xx)
-  const deadLinks = pages
-    .filter((p) => p.status >= 400)
-    .map((p) => ({ url: p.url, detail: `HTTP ${p.status}` }));
+  const deadLinks = [
+    ...pages.filter((p) => p.status >= 400).map((p) => ({ url: p.url, detail: `HTTP ${p.status}` })),
+    ...(meta?.badPages || []).map((p) => ({ url: p.url, detail: `HTTP ${p.status}` }))
+  ];
   addIssue(
     'DEAD_LINK',
     'critical',
@@ -628,23 +718,145 @@ export function analyzeAudit(
         - sitemapPenalty
   ));
 
+  // --- GEO Readiness Scoring (Tasks 2.1.1 – 2.1.3) ---
+
+  // GEO_WEIGHTS — config constants (can be tuned)
+  const GEO_WEIGHTS = {
+    aiCrawlerBlock: 40,   // P0: existential — any blocked bot = heavy penalty
+    schema: 20,           // P1: schema coverage
+    answerStructure: 15,  // P2: lists/tables/question headings
+    faq: 10,              // P2: FAQ coverage
+    dates: 8,             // P3: freshness signals
+    author: 7,            // P3: E-E-A-T
+    llmsTxt: 0,           // info: deducted separately as a light nudge
+  };
+
+  const geoIssues: IssueItem[] = [];
+
+  const addGeoIssue = (
+    code: string,
+    severity: Severity,
+    affectedPages: AffectedPage[]
+  ) => {
+    if (affectedPages.length > 0) {
+      const trans = ISSUE_TRANSLATIONS[code]?.[locale] || { title: code, explanation: '', howToFix: '' };
+      geoIssues.push({ code, severity, title: trans.title, explanation: trans.explanation, howToFix: trans.howToFix, affectedPages });
+    }
+  };
+
+  let geoScore = 100;
+
+  // ── 2.1.1 Site-level gate: AI crawler block ─────────────────────────────────
+  const geoSite = meta?.geoSignals?.site;
+  const blockedBots: string[] = [];
+  if (geoSite?.aiCrawlerStatus) {
+    for (const [botName, status] of Object.entries(geoSite.aiCrawlerStatus)) {
+      if (status === 'blocked') blockedBots.push(botName);
+    }
+  }
+
+  if (blockedBots.length > 0) {
+    // Heavy penalty: each blocked bot removes a share of the crawler penalty
+    const perBotPenalty = GEO_WEIGHTS.aiCrawlerBlock / 5; // 5 possible bots
+    geoScore -= blockedBots.length * perBotPenalty;
+    const siteUrl = `https://${domain}`;
+    const blockedDetail = locale === 'zh'
+      ? `屏蔽的爬虫: ${blockedBots.join(', ')}`
+      : `Blocked crawlers: ${blockedBots.join(', ')}`;
+    addGeoIssue('GEO_AI_CRAWLER_BLOCKED', 'critical', [{ url: siteUrl, detail: blockedDetail }]);
+  }
+
+  // llms.txt: light nudge (info-level only)
+  if (geoSite && geoSite.hasLlmsTxt === false) {
+    addGeoIssue('GEO_NO_LLMS_TXT', 'info', [{ url: `https://${domain}`, detail: locale === 'zh' ? '站点级别' : 'Site level' }]);
+    geoScore -= 3; // small nudge
+  }
+
+  // ── 2.1.2 Page-level aggregation ────────────────────────────────────────────
+  const validPages = pages.filter(p => p.status < 400);
+  const totalValid = validPages.length || 1; // avoid division by zero
+
+  // Schema coverage (P1)
+  const pagesWithSchema = validPages.filter(p => p.schemaTypes && p.schemaTypes.length > 0);
+  const schemaCoverageRate = pagesWithSchema.length / totalValid;
+  if (schemaCoverageRate < 0.5) {
+    const penalty = GEO_WEIGHTS.schema * (1 - schemaCoverageRate);
+    geoScore -= penalty;
+    const detail = locale === 'zh'
+      ? `${pagesWithSchema.length}/${totalValid} 页有结构化数据`
+      : `${pagesWithSchema.length}/${totalValid} pages have structured data`;
+    addGeoIssue('GEO_NO_SCHEMA', 'warning', [{ url: `https://${domain}`, detail }]);
+  }
+
+  // Answer structure coverage (P2): must have ≥1 list OR table OR question heading
+  const pagesWithAnswerStructure = validPages.filter(
+    p => (p.listCount ?? 0) > 0 || (p.tableCount ?? 0) > 0 || (p.questionHeadingCount ?? 0) > 0
+  );
+  const answerStructureRate = pagesWithAnswerStructure.length / totalValid;
+  if (answerStructureRate < 0.4) {
+    const penalty = GEO_WEIGHTS.answerStructure * (1 - answerStructureRate);
+    geoScore -= penalty;
+    const detail = locale === 'zh'
+      ? `${pagesWithAnswerStructure.length}/${totalValid} 页有列表/表格/问答标题`
+      : `${pagesWithAnswerStructure.length}/${totalValid} pages have answer-extractable structure`;
+    addGeoIssue('GEO_NO_ANSWER_STRUCTURE', 'warning', [{ url: `https://${domain}`, detail }]);
+  }
+
+  // FAQ coverage (P2)
+  const pagesWithFaq = validPages.filter(p => p.hasFaq);
+  if (pagesWithFaq.length === 0) {
+    geoScore -= GEO_WEIGHTS.faq;
+    addGeoIssue('GEO_NO_FAQ', 'warning', [{ url: `https://${domain}`, detail: locale === 'zh' ? '站点无 FAQPage' : 'No FAQPage found' }]);
+  }
+
+  // Freshness signals (P3)
+  const pagesWithDates = validPages.filter(p => p.hasDates);
+  const datesRate = pagesWithDates.length / totalValid;
+  if (datesRate < 0.5) {
+    const penalty = GEO_WEIGHTS.dates * (1 - datesRate);
+    geoScore -= penalty;
+    const detail = locale === 'zh'
+      ? `${pagesWithDates.length}/${totalValid} 页有时效信号`
+      : `${pagesWithDates.length}/${totalValid} pages have freshness signals`;
+    addGeoIssue('GEO_STALE_NO_DATES', 'info', [{ url: `https://${domain}`, detail }]);
+  }
+
+  // Author / E-E-A-T (P3)
+  const pagesWithAuthor = validPages.filter(p => p.hasAuthor);
+  const authorRate = pagesWithAuthor.length / totalValid;
+  if (authorRate < 0.5) {
+    const penalty = GEO_WEIGHTS.author * (1 - authorRate);
+    geoScore -= penalty;
+    const detail = locale === 'zh'
+      ? `${pagesWithAuthor.length}/${totalValid} 页有作者信息`
+      : `${pagesWithAuthor.length}/${totalValid} pages have author info`;
+    addGeoIssue('GEO_NO_AUTHOR', 'info', [{ url: `https://${domain}`, detail }]);
+  }
+
+  const finalGeoScore = Math.max(0, Math.round(geoScore));
+
+  // Merge GEO issues into the main issues list
+  const allIssues = [...issues, ...geoIssues];
+
   // Final stats
   const stats = {
-    critical: issues.filter((i) => i.severity === 'critical').length,
-    warning: issues.filter((i) => i.severity === 'warning').length,
-    info: issues.filter((i) => i.severity === 'info').length,
+    critical: allIssues.filter((i) => i.severity === 'critical').length,
+    warning: allIssues.filter((i) => i.severity === 'warning').length,
+    info: allIssues.filter((i) => i.severity === 'info').length,
   };
 
   return {
     techScore,
     contentScore,
     seoScore,
-    issues: issues.sort((a, b) => {
+    geoScore: finalGeoScore,
+    issues: allIssues.sort((a, b) => {
       const severityWeight: Record<Severity, number> = { critical: 3, warning: 2, info: 1 };
       const scoreA = severityWeight[a.severity] * 1000 + a.affectedPages.length;
       const scoreB = severityWeight[b.severity] * 1000 + b.affectedPages.length;
       return scoreB - scoreA;
     }),
     stats,
+    badPages: meta?.badPages || [],
   };
 }
