@@ -8,7 +8,8 @@
     "start": "next start",
     "test": "vitest",
     "check:cjk": "tsx scripts/check-cjk.ts",
-    "lint": "eslint && tsx scripts/check-cjk.ts"
+    "check:i18n-nav": "tsx scripts/check-i18n-nav.ts",
+    "lint": "eslint && tsx scripts/check-cjk.ts && tsx scripts/check-i18n-nav.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
