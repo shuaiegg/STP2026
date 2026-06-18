@@ -2,13 +2,13 @@
 
 import React, { useState } from "react";
 import { authClient } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Lock, Loader2, CheckCircle2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { translateAuthError } from "@/lib/auth-errors";
-import { Link } from "@/i18n/navigation";
+// i18n router so a /zh visitor lands on /zh/login (not the English /login).
+import { Link, useRouter } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 
 export default function ResetPasswordPage() {

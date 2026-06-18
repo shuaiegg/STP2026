@@ -48,8 +48,11 @@ export function HeroAuditInput({
     }
 
     if (session) {
-      router.push(`/dashboard/onboarding?domain=${encodeURIComponent(cleaned)}`);
+      // /dashboard/* 不是 locale 路由——用 window.location 绕过 i18n router 的前缀，
+      // 否则在 /zh 上会变成 /zh/dashboard/onboarding → 404。
+      window.location.href = `/dashboard/onboarding?domain=${encodeURIComponent(cleaned)}`;
     } else {
+      // /login 是 locale 路由——保留 i18n router，让 zh 用户落到 /zh/login。
       router.push(`/login?domain=${encodeURIComponent(cleaned)}`);
     }
   };
