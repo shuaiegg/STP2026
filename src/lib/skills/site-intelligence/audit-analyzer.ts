@@ -28,6 +28,8 @@ export interface AuditIssueReport {
     info: number;
   };
   badPages?: BadPage[];
+  /** GEO site-level signals (AI crawler status / llms.txt) — surfaced in the reveal UI */
+  geoSignals?: { site: GeoSiteSignals };
 }
 
 const ISSUE_TRANSLATIONS: Record<string, Record<'zh' | 'en', { title: string; explanation: string; howToFix: string }>> = {
@@ -390,6 +392,7 @@ export function analyzeAudit(
       geoScore: 100,
       issues: [],
       stats: { critical: 0, warning: 0, info: 0 },
+      geoSignals: meta?.geoSignals,
     };
   }
 
@@ -858,5 +861,6 @@ export function analyzeAudit(
     }),
     stats,
     badPages: meta?.badPages || [],
+    geoSignals: meta?.geoSignals,
   };
 }
