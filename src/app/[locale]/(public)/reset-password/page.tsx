@@ -61,7 +61,7 @@ export default function ResetPasswordPage() {
             <div className="w-full max-w-md">
                 <div className="text-center mb-10">
                     <Link href="/" className="inline-block mb-8">
-                        <div className="w-12 h-12 bg-brand-primary border-2 border-brand-border-heavy flex items-center justify-center font-display font-black text-2xl text-brand-text-inverted shadow-[4px_4px_0_0_rgba(10,10,10,1)]">
+                        <div className="w-12 h-12 bg-brand-primary rounded-xl flex items-center justify-center font-display font-black text-2xl text-brand-text-inverted shadow-sm">
                             S
                         </div>
                     </Link>
@@ -69,7 +69,7 @@ export default function ResetPasswordPage() {
                     <p className="text-brand-text-secondary">{t("sub")}</p>
                 </div>
 
-                <Card className="p-8 border-2 border-brand-border-heavy bg-white shadow-[8px_8px_0_0_rgba(10,10,10,1)]">
+                <Card className="p-8 bg-white shadow-lg rounded-xl border border-brand-border">
                     {isSuccess ? (
                         <div className="text-center space-y-6">
                             <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-500 mx-auto">
@@ -125,7 +125,7 @@ export default function ResetPasswordPage() {
                             <Button
                                 type="submit"
                                 disabled={isPending}
-                                className="w-full h-12 bg-brand-primary hover:bg-brand-primary-hover text-brand-text-inverted border-2 border-brand-border-heavy shadow-[4px_4px_0_0_rgba(10,10,10,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all font-bold text-sm flex items-center justify-center gap-2"
+                                className="w-full h-12 bg-brand-secondary hover:bg-brand-secondary-hover text-white rounded-lg shadow-sm hover:shadow transition-all font-bold text-sm flex items-center justify-center gap-2"
                             >
                                 {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <>{t("btnReset")}</>}
                             </Button>
