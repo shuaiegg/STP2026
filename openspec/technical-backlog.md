@@ -7,14 +7,14 @@
 
 ## 🔧 随时可做（< 1 天，无前置条件）
 
-| 任务 | 来源 | 说明 |
-|---|---|---|
-| Geo-writer 加公开导航入口 + 首页工具区块 | Sprint 4.1 | 30 分钟，提升工具曝光 |
-| PostHog：工具页访问追踪 | Sprint 1.2.4 | `geo-writer` 页面加 `posthog.capture` |
-| PostHog：`content_plan_created` 事件 | Sprint 1.4.4 | Strategy Board 里补一行 |
-| PostHog：`article_saved_to_library` 事件 | Sprint 1.6.2 | Library 保存时补追踪 |
-| 验证密码重置邮件流程 | Sprint 2.2.2 | 手动测试，无需写代码 |
-| `npm run build` 全量验证 | AI 模型管理 1.6.5 | 确认生产构建无报错 |
+| 任务 | 来源 | 说明 | 状态 |
+|---|---|---|---|
+| Geo-writer 加公开导航入口 + 首页工具区块 | Sprint 4.1 | 30 分钟，提升工具曝光 | ✅ 导航已加/首页推迟到 `homepage-plg-repositioning` |
+| PostHog：工具页访问追踪 | Sprint 1.2.4 | `geo-writer` 页面加 `posthog.capture` | ✅ 已完成 |
+| PostHog：`content_plan_created` 事件 | Sprint 1.4.4 | Strategy Board 里补一行 | ✅ 已完成 |
+| PostHog：`article_saved_to_library` 事件 | Sprint 1.6.2 | Library 保存时补追踪 | ✅ 已完成 |
+| 验证密码重置邮件流程 | Sprint 2.2.2 | 手动测试，无需写代码 | ✅ 已完成 |
+| `npm run build` 全量验证 | AI 模型管理 1.6.5 | 确认生产构建无报错 | ✅ 已完成 |
 
 ---
 
@@ -24,6 +24,10 @@
 - **MinIO 反代修复（Sprint 0.1.5）**  
   修复 `media.scaletotop.com` → MinIO S3 端口 9000 的 Coolify 反向代理配置。  
   修好后解锁：0.5.2（Notion 图片同步验证）+ 0.5.3（博客封面图）
+
+- **VPS Postgres 自动备份**（retire-notion-content-cleanup 0.1）  
+  配置 pg_dump cron + 异地存储 / Coolify 备份。Notion 退役后 DB 是内容唯一副本，需在有运维窗口时完成。  
+  完成后执行一次手动全量备份并确认可恢复（retire-notion 0.2）。
 
 ### 当 systeme.io 自动化规则需要配置时
 - **Sprint 2.4.4**：在 systeme.io 平台配置 `registered` 标签 → 7 天引导序列（纯平台操作，无需写代码）

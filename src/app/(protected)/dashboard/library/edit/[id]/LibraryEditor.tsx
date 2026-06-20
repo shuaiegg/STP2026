@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/Badge';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import posthog from 'posthog-js';
 import { EditableSection } from '@/components/editor/EditableSection';
 import { parseMarkdownToSections, joinSectionsToMarkdown, ContentSection } from '@/lib/utils/markdown-sections';
 import { calculateHumanScore } from '@/lib/utils/ai-detection';
@@ -92,6 +93,9 @@ export function LibraryEditor({ initialArticle }: { initialArticle: any }) {
 
             if (result.success) {
                 toast.success(t('savedToLibrary'));
+                posthog.capture('article_saved_to_library', {
+                    articleId: initialArticle.id
+                });
                 router.refresh();
             } else {
                 toast.error(result.message);

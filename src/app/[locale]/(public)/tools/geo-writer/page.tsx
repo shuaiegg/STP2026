@@ -106,6 +106,10 @@ export default function GEOWriterPage() {
         locale: 'en'
     });
 
+    useEffect(() => {
+        posthog.capture('tool_page_viewed', { tool: 'geo-writer' });
+    }, []);
+
     // Initialize from URL parameters
     useEffect(() => {
         const keywordParam = searchParams.get('keyword');

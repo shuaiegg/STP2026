@@ -95,6 +95,29 @@ export const auth = betterAuth({
     },
     emailAndPassword: {
         enabled: true,
+        async sendResetPassword({ user, url, token }) {
+            if (process.env.NODE_ENV !== 'production') {
+                console.log(`[Auth] Reset password email request for ${user.email}. URL: ${url}`);
+            }
+            await sendEmail({
+                to: user.email,
+                subject: user.locale === 'en' ? 'Reset Your ScaletoTop Password' : '重置您的 ScaletoTop 密码',
+                html: `
+                    <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px; max-width: 500px; margin: 0 auto;">
+                        <h1 style="color: #4F46E5;">ScaletoTop</h1>
+                        <p style="font-size: 16px; color: #374151;">您好，</p>
+                        <p style="font-size: 14px; color: #374151; line-height: 1.5;">我们收到了您重置密码的请求。请点击下面的按钮以重置您的密码：</p>
+                        <div style="text-align: center; margin: 30px 0;">
+                            <a href="${url}" style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">重置密码</a>
+                        </div>
+                        <p style="font-size: 12px; color: #6B7280; line-height: 1.5;">如果按钮无法点击，您也可以复制并粘贴以下链接到浏览器中：<br/>
+                        <a href="${url}" style="color: #4F46E5;">${url}</a></p>
+                        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
+                        <p style="font-size: 12px; color: #9CA3AF;">如果您没有请求重置密码，请忽略此邮件。</p>
+                    </div>
+                `
+            });
+        }
     },
     socialProviders: {
         google: {

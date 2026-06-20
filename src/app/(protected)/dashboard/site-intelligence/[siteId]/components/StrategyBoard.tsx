@@ -241,6 +241,10 @@ export function StrategyBoard({ siteId }: { siteId: string }) {
             
             if (data.success) {
                 toast.success(t('toasts.generateSuccess'));
+                posthog.capture('content_plan_created', {
+                    siteId,
+                    planCount: data.plans?.length || 0
+                });
                 await fetchStrategies();
             } else if (data.conflict) {
                 if (window.confirm(data.message || t('toasts.generateConflict'))) {

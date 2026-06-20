@@ -10,6 +10,7 @@ import { translateAuthError } from "@/lib/auth-errors";
 // i18n router so a /zh visitor lands on /zh/login (not the English /login).
 import { Link, useRouter } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
 
 export default function ResetPasswordPage() {
     const t = useTranslations("auth.reset");
@@ -21,6 +22,8 @@ export default function ResetPasswordPage() {
     const [isSuccess, setIsSuccess] = useState(false);
     const [error, setError] = useState("");
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const token = searchParams.get("token") || "";
 
     const handleReset = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -36,6 +39,7 @@ export default function ResetPasswordPage() {
         try {
             const { error: authError } = await authClient.resetPassword({
                 newPassword: password,
+                token: token,
             });
 
             if (authError) {
