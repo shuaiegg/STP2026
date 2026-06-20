@@ -6,10 +6,17 @@ Bilingual SEO/GEO content + site-intelligence SaaS for businesses (English and C
 
 ## Your Role in This Workflow
 
-You implement tasks from OpenSpec changes. Before writing any code:
+You implement AND verify OpenSpec changes. Your session covers two phases:
+
+**Phase 1 — Apply**
 1. Read `openspec/changes/<name>/design.md` — especially the **Implementation Notes** section at the bottom
 2. Read `openspec/changes/<name>/tasks.md` — work through tasks in order
 3. Read `rules/ai-constraints.md` — critical rules that prevent common mistakes
+
+**Phase 2 — Verify** (run after apply, in the same session)
+1. Spec compliance: re-read `design.md` and check that the implementation matches the intent — flag any drift
+2. Behavioral verification: launch the dev server (`npm run dev`) and open the browser to verify the feature works as expected in the real app
+3. Report findings as: CRITICAL (must fix before archive) / WARNING (should fix) / OK
 
 ## Critical Constraints
 
