@@ -6,7 +6,7 @@ compatibility: Requires openspec CLI.
 metadata:
   author: openspec
   version: "1.0"
-  generatedBy: "1.2.0"
+  generatedBy: "1.4.1"
 ---
 
 Archive a completed change in the experimental workflow.
@@ -30,7 +30,10 @@ Archive a completed change in the experimental workflow.
 
    Parse the JSON to understand:
    - `schemaName`: The workflow being used
+   - `planningHome`, `changeRoot`, `artifactPaths`, and `actionContext`: path and scope context
    - `artifacts`: List of artifacts with their status (`done` or other)
+
+   If status reports `actionContext.mode: "workspace-planning"`, explain that workspace archive is not supported in this slice and STOP. Do not move workspace changes into repo-local archives or edit linked repos.
 
    **If any artifacts are not `done`:**
    - Display warning listing incomplete artifacts
@@ -52,7 +55,7 @@ Archive a completed change in the experimental workflow.
 
 4. **Assess delta spec sync state**
 
-   Check for delta specs at `openspec/changes/<name>/specs/`. If none exist, proceed without sync prompt.
+   Use `artifactPaths.specs.existingOutputPaths` from status JSON to check for delta specs. If none exist, proceed without sync prompt.
 
    **If delta specs exist:**
    - Compare each delta spec with its corresponding main spec at `openspec/specs/<capability>/spec.md`
@@ -67,19 +70,19 @@ Archive a completed change in the experimental workflow.
 
 5. **Perform the archive**
 
-   Create the archive directory if it doesn't exist:
+   Create an `archive` directory under `planningHome.changesDir` if it doesn't exist:
    ```bash
-   mkdir -p openspec/changes/archive
+   mkdir -p "<planningHome.changesDir>/archive"
    ```
 
    Generate target name using current date: `YYYY-MM-DD-<change-name>`
 
    **Check if target already exists:**
    - If yes: Fail with error, suggest renaming existing archive or using different date
-   - If no: Move the change directory to archive
+   - If no: Move `changeRoot` to the archive directory
 
    ```bash
-   mv openspec/changes/<name> openspec/changes/archive/YYYY-MM-DD-<name>
+   mv "<changeRoot>" "<planningHome.changesDir>/archive/YYYY-MM-DD-<name>"
    ```
 
 6. **Display summary**
@@ -98,11 +101,20 @@ Archive a completed change in the experimental workflow.
 
 **Change:** <change-name>
 **Schema:** <schema-name>
-**Archived to:** openspec/changes/archive/YYYY-MM-DD-<name>/
+**Archived to:** the archive path derived from `planningHome.changesDir`/YYYY-MM-DD-<name>/
 **Specs:** ✓ Synced to main specs (or "No delta specs" or "Sync skipped")
 
 All artifacts complete. All tasks complete.
 ```
+
+**Before archiving — AI Constraints Check**
+
+Ask the user: "在这次 change 里，Gemini 或 Antigravity 有没有犯过可以用规则预防的错误？"
+
+- 有 → 提示用户把这条规则加入 `rules/ai-constraints.md`，格式参考文件现有条目
+- 没有 → 直接继续 archive
+
+这一步保持 `rules/ai-constraints.md` 与实际问题同步，不要跳过。
 
 **Guardrails**
 - Always prompt for change selection if not provided

@@ -6,7 +6,7 @@ compatibility: Requires openspec CLI.
 metadata:
   author: openspec
   version: "1.0"
-  generatedBy: "1.2.0"
+  generatedBy: "1.4.1"
 ---
 
 Propose a new change - create the change and generate all artifacts in one step.
@@ -37,7 +37,7 @@ When ready to implement, run /opsx:apply
    ```bash
    openspec new change "<name>"
    ```
-   This creates a scaffolded change at `openspec/changes/<name>/` with `.openspec.yaml`.
+   This creates a scaffolded change in the planning home resolved by the CLI with `.openspec.yaml`.
 
 3. **Get the artifact build order**
    ```bash
@@ -46,6 +46,7 @@ When ready to implement, run /opsx:apply
    Parse the JSON to get:
    - `applyRequires`: array of artifact IDs needed before implementation (e.g., `["tasks"]`)
    - `artifacts`: list of all artifacts with their status and dependencies
+   - `planningHome`, `changeRoot`, `artifactPaths`, and `actionContext`: path and scope context. Use these instead of assuming repo-local paths.
 
 4. **Create artifacts in sequence until apply-ready**
 
@@ -63,10 +64,10 @@ When ready to implement, run /opsx:apply
         - `rules`: Artifact-specific rules (constraints for you - do NOT include in output)
         - `template`: The structure to use for your output file
         - `instruction`: Schema-specific guidance for this artifact type
-        - `outputPath`: Where to write the artifact
+        - `resolvedOutputPath`: Resolved path or pattern to write the artifact
         - `dependencies`: Completed artifacts to read for context
       - Read any completed dependency files for context
-      - Create the artifact file using `template` as the structure
+      - Create the artifact file using `template` as the structure and write it to `resolvedOutputPath`
       - Apply `context` and `rules` as constraints - but do NOT copy them into the file
       - Show brief progress: "Created <artifact-id>"
 
@@ -108,3 +109,20 @@ After completing all artifacts, summarize:
 - If context is critically unclear, ask the user - but prefer making reasonable decisions to keep momentum
 - If a change with that name already exists, ask if user wants to continue it or create a new one
 - Verify each artifact file exists after writing before proceeding to next
+- **Always append an Implementation Notes section at the end of design.md** — this is mandatory context for Gemini CLI / Antigravity when they implement:
+
+  ```markdown
+  ## Implementation Notes (for Gemini / Antigravity)
+
+  **已知遗留冲突：**
+  - [根据 explore 阶段发现填写：文件 + 冲突描述 + 绕开方式，若无则写"无已知冲突"]
+
+  **禁止触碰范围：**
+  - [列出不得修改的文件或模块，若无则写"无限制"]
+
+  **本 change 边界：**
+  - [只允许改动的文件范围]
+
+  **其他注意事项：**
+  - [特殊约束、已知 gotchas，若无则写"无"]
+  ```

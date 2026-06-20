@@ -2,32 +2,50 @@ schema: spec-driven
 
 # Project context — shown to AI when creating artifacts
 context: |
-  Tech stack: Next.js 16 (App Router), React 19, TypeScript, TailwindCSS v4, Prisma ORM, PostgreSQL (Supabase), better-auth
+  Product: ScaletoTop — a bilingual SEO/GEO content + site-intelligence SaaS.
+  Target users: businesses (English and Chinese-speaking) that need to efficiently grow organic visibility via SEO and GEO (Generative Engine Optimization). Includes Chinese 出海 companies going global AND English-first businesses expanding to new markets.
+
+  Tech stack: Next.js 16 (App Router), React 19, TypeScript, TailwindCSS, Prisma ORM, PostgreSQL (self-hosted on VPS at 154.12.243.94:54320 — NOT Supabase), better-auth, MinIO (self-hosted S3-compatible image storage)
+
+  Internationalization: bilingual via next-intl. English at root path (/), Chinese at /zh prefix. Dashboard is NOT locale-routed. Use i18n Link from @/i18n/navigation for public links; next/link only for /dashboard/*.
 
   Design system: rules/design.md is the source of truth. Key constraints:
-  - Colors: primary accent #10b981 (emerald), hover #059669, muted #d1fae5; secondary accent #f59e0b (amber); success #16a34a — all via --color-brand-* CSS variables
-  - Border-radius: rounded-lg (8px) default, rounded-xl for modals only — never rounded-0
-  - Fonts: Plus Jakarta Sans (display/headings) + Noto Sans SC (CJK fallback) + Instrument Sans (body) + JetBrains Mono (code)
-  - Logo gradient (linear-gradient(135deg, #34d399, #38bdf8)) appears ONLY on the logo mark SVG — never as a UI background
-  - Removed utility classes that must never be used: .border-brutalist, .brutalist-hover, .bg-gradient-brand, .text-gradient-brand
-  - Brand voice: 精准·实用·有底气 — use "你" not "您" in Chinese copy
-  - All user-visible strings must be in a const COPY/ITEMS object for i18n readiness
-  - Server Components by default; 'use client' only when hooks/browser APIs needed
-  - next/image for all images, generateMetadata on every page
+  - Brand personality: 专业·精准·可信 (Professional, Precise, Trustworthy)
+  - Colors: ALL colors via --color-brand-* CSS variables or Tailwind brand-* classes — NEVER hardcoded hex
+  - Primary interactive color: brand-secondary (#00d4ff)
+  - Logo gradient (linear-gradient(135deg, #00ff88, #00d4ff)) appears ONLY on the logo mark — NEVER on buttons, backgrounds, or decorative elements
+  - Aesthetic reference: Stripe Dashboard — data-rich, chart-forward, operational density. Anti-pattern: purple gradients, glassmorphism, decorative backgrounds
+  - Removed utility classes that must NEVER be used: .border-brutalist, .border-brutalist-sm, .border-brutalist-accent, .brutalist-hover, .bg-gradient-brand, .text-gradient-brand
+  - Border-radius: rounded-lg (8px) on all interactive elements; rounded-xl for modals only; never rounded-0
+  - Cards: hover:shadow-md transition-shadow — no pixel-offset box-shadows
+  - Fonts: Plus Jakarta Sans (display/headings) + Noto Sans SC (CJK fallback)
+  - Section spacing: py-16 minimum on public pages (py-20 or py-24 preferred)
+  - Page max-width: max-w-7xl mx-auto px-4 sm:px-6 lg:px-8
 
-  Two user segments: SEO beginners (public pages, acquisition focus) and advanced SEO/SEM professionals (dashboard, efficiency focus).
-  Long-term vision: globally scalable platform — design tokens and components must be culturally neutral.
+  Copy rules:
+  - Chinese copy uses "您" not "你" — respectful register for B2B audience
+  - Headlines lead with the benefit, not the feature name
+  - All user-visible strings must be in a const COPY/ITEMS object at file scope (i18n readiness)
+
+  Next.js patterns:
+  - Server Components by default; 'use client' only when hooks or browser APIs are needed
+  - next/image for all content images (not <img> tags)
+  - Every new route segment needs an error.tsx boundary
+  - Pages export generateMetadata or a static metadata object
+
+  User emotional goals when opening the dashboard: 信心 (confidence in data), 掌控感 (control over growth), 专业感 (this is a serious tool).
 
 # Per-artifact rules
 rules:
   proposal:
-    - Always state the long-term product positioning (globally scalable SEO/SEM platform) when the change involves public-facing pages or design
-    - Identify whether the change affects public pages (beginner audience) or dashboard (expert audience) — these require different visual registers
+    - State the product positioning (bilingual SEO/GEO platform for businesses growing organic visibility) when the change involves public-facing pages or design
+    - Identify whether the change affects public pages (acquisition focus, bilingual EN+ZH) or dashboard (operational efficiency, Chinese UI) — these require different visual registers
     - Mark any change to CSS tokens or utility classes as BREAKING
+    - Note if the change affects i18n routing — public pages must use locale-aware Link from @/i18n/navigation
 
   tasks:
     - For any task that creates or modifies a page or UI component, append a "Design Compliance" sub-group with these tasks:
-        - Verify all colors use brand token classes (no hardcoded hex)
+        - Verify all colors use brand token classes — no hardcoded hex, no ad-hoc Tailwind colors (slate-900, emerald-600, blue-50, etc.)
         - Verify no removed utility classes (.border-brutalist, .brutalist-hover, .bg-gradient-brand, .text-gradient-brand)
         - Verify rounded-lg on all interactive elements
         - Verify all user-visible strings are in a const COPY/ITEMS object

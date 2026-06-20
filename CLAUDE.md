@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-ScaletoTop is a Next.js 16 (App Router) full-stack platform for Chinese出海 (going-global) businesses: a **bilingual SEO/GEO content + site-intelligence SaaS**. Content lives in PostgreSQL as the single source of truth (created/edited in the admin backend, source `MANUAL`); it publishes to a public bilingual blog/marketing site. The product also includes a **site-intelligence** suite (audits, competitors, GSC/GA4, strategy board, citation tracking), an **activation coach layer** (guides users to their next best move), a consultation lead-capture system, AI model management, and email/marketing automation. Images are uploaded to self-hosted MinIO via the admin editor.
+ScaletoTop is a Next.js 16 (App Router) full-stack platform for businesses (English and Chinese-speaking) that need to efficiently grow organic visibility via SEO and GEO: a **bilingual SEO/GEO content + site-intelligence SaaS**. Content lives in PostgreSQL as the single source of truth (created/edited in the admin backend, source `MANUAL`); it publishes to a public bilingual blog/marketing site. The product also includes a **site-intelligence** suite (audits, competitors, GSC/GA4, strategy board, citation tracking), an **activation coach layer** (guides users to their next best move), a consultation lead-capture system, AI model management, and email/marketing automation. Images are uploaded to self-hosted MinIO via the admin editor.
 
 > **Notion has been fully retired** (change `retire-notion-content-cleanup`). `src/lib/notion/` and the `admin/sync` route no longer exist. Do not reintroduce Notion sync; the DB is the content source of truth. (`@notionhq/client` / `notion-to-md` remain in package.json as dead deps pending cleanup; the `ContentSource.NOTION` enum value is retained only for historical rows.)
 
@@ -583,7 +583,7 @@ openspec/
 
 **Admin/Editor users** (internal team): author/publish content in-app, monitor platform metrics, handle user credits and permissions. Context: desktop-first, operational mindset — they need to act fast and trust what they see.
 
-**Regular users** (Chinese overseas businesses / 海外华人创业者): SEO/GEO analytics, content planning, site intelligence. Context: results-oriented, time-pressured, need to quickly understand what to do next.
+**Regular users** (English and Chinese-speaking businesses growing organic visibility via SEO/GEO): SEO/GEO analytics, content planning, site intelligence. Context: results-oriented, time-pressured, need to quickly understand what to do next.
 
 Job to be done: "Show me what's happening and what I should do about it."
 
