@@ -8,9 +8,9 @@
 
 ### 1.1 GSC 生产配置（立即，运维）
 
-- [ ] 1.1.1 Coolify 添加 `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET`，核对 `GOOGLE_REDIRECT_URI` 为生产域名
-- [ ] 1.1.2 Google Cloud Console 核对 OAuth redirect URI 白名单含生产回调地址
-- [ ] 1.1.3 验收：scaletotop.com 在 site-intelligence 完成 GSC 连接，关键词数据出现
+- [x] 1.1.1 Coolify 添加 `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET`，核对 `GOOGLE_REDIRECT_URI` 为生产域名
+- [x] 1.1.2 Google Cloud Console 核对 OAuth redirect URI 白名单含生产回调地址
+- [x] 1.1.3 验收：scaletotop.com 在 site-intelligence 完成 GSC 连接，关键词数据出现
 
 ### 1.2 看板 → geo-writer 直通
 
@@ -25,7 +25,7 @@
 - [x] 1.3.1 实现 `upsertTrackedArticleFromContent(content)`：url 自然键查重、keywords 取 SeoMeta（兜底标题）、幂等
 - [x] 1.3.2 在博客发布动作（Content.status → PUBLISHED 且 type=BLOG）挂钩调用
 - [x] 1.3.3 关联 `PlannedArticle`（经 articleId 反查）状态 → `COMPLETED`
-- [ ] 1.3.4 验收：admin 发布一篇文章 → TrackedArticle 列表出现该 url 且状态 PENDING 待检测；重复发布不产生重复记录
+- [x] 1.3.4 验收：admin 发布一篇文章 → TrackedArticle 列表出现该 url 且状态 PENDING 待检测；重复发布不产生重复记录
 
 ---
 
@@ -41,12 +41,12 @@
 
 ### 2.2 首批英文文章基线
 
-- [ ] 2.2.1 从策略看板（或手动）选 3-5 个英文选题（贴近客户画像的 SEO/GEO 垂直话题）
-- [ ] 2.2.2 geo-writer 逐篇生成（language=en），每篇人工评分并记录
-- [ ] 2.2.3 汇总归因：哪个 pipeline 环节是最大失分源 → 输出结论："直接量产" 或 "先修 X 环节"（若需修，另起后续 change，不在本期擅自改 pipeline）
-- [ ] 2.2.4 ≥70 分文章存为博客草稿，待 `site-i18n-bilingual` S2 的 `Content.locale` 就位后发布
+- [x] 2.2.1 从策略看板（或手动）选 3-5 个英文选题（贴近客户画像的 SEO/GEO 垂直话题）
+- [x] 2.2.2 geo-writer 逐篇生成（language=en），每篇人工评分并记录
+- [x] 2.2.3 汇总归因：哪个 pipeline 环节是最大失分源 → 输出结论："直接量产" 或 "先修 X 环节"（若需修，另起后续 change，不在本期擅自改 pipeline）
+- [x] 2.2.4 ≥70 分文章存为博客草稿，待 `site-i18n-bilingual` S2 的 `Content.locale` 就位后发布
 
 ### 2.3 总验收
 
-- [ ] 2.3.1 design.md「验收基准」全项通过（看板→检测队列零复制粘贴全流程演练）
-- [ ] 2.3.2 中文侧立即可用：用飞轮为 scaletotop 发一篇中文文章走完全程
+- [x] 2.3.1 design.md「验收基准」全项通过（看板→检测队列零复制粘贴全流程演练）
+- [x] 2.3.2 中文侧立即可用：用飞轮为 scaletotop 发一篇中文文章走完全程

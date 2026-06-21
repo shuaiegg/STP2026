@@ -48,5 +48,7 @@ When a score falls short, attribute the failure to a specific pipeline stage for
 
 | Date | Title | Language | Info (30) | Flow (20) | SEO (20) | Tone (20) | Fact (10) | Total | Attribution / Action |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| | | | | | | | | | |
+| 2026-06-21 | B2B SaaS SEO Strategy: How to Capture High-Intent Overseas Traffic | en | 25 | 17 | 17 | 16 | 9 | 84 | OK / Save as Draft |
+| 2026-06-21 | Bilingual Content Marketing: Optimizing CJK and English Translation Workflows | en | 26 | 18 | 18 | 17 | 9 | 88 | OK / Save as Draft |
+| 2026-06-21 | AI Engine Citation Optimization (GEO): The New Frontier of Digital Visibility | en | 24 | 16 | 18 | 15 | 9 | 82 | OK / Save as Draft |
 
