@@ -1,4 +1,4 @@
-/* eslint-disable react/no-unescaped-entities, @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // ISR: statically generated, revalidated hourly. Publishing content also calls
 // revalidatePath('/') / ('/zh'), so changes appear immediately — not only after 1h.
 export const revalidate = 3600;
@@ -10,7 +10,6 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
 import { getPublishedContent } from '@/lib/content';
 import { 
   Search, 
@@ -20,8 +19,7 @@ import {
   Zap, 
   ShieldCheck, 
   ArrowUpRight,
-  MessageCircle,
-  BarChart3
+  MessageCircle
 } from 'lucide-react';
 
 import { getMetadataAlternates, BASE_URL } from '@/lib/seo/locale-metadata';
@@ -79,17 +77,45 @@ function SectionHeading({ subtitle, title, description, centered = false }: {
   );
 }
 
-function PillarCard({ title, desc, learnMore, icon: Icon, color }: { title: string; desc: string; learnMore: string; icon: any; color: string }) {
+function PillarCard({ 
+  title, 
+  desc, 
+  learnMore, 
+  icon: Icon, 
+  imageSrc, 
+  imageAlt, 
+  color 
+}: { 
+  title: string; 
+  desc: string; 
+  learnMore: string; 
+  icon: any; 
+  imageSrc: string; 
+  imageAlt: string; 
+  color: string; 
+}) {
   return (
     <div className="group border border-brand-border rounded-xl p-8 bg-white hover:shadow-xl transition-[border-color,transform,box-shadow] duration-300 h-full flex flex-col">
       <div className={`w-14 h-14 rounded-xl ${color} flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-300`}>
         <Icon className="w-7 h-7" />
       </div>
       <h3 className="text-xl font-bold text-brand-text-primary mb-4">{title}</h3>
-      <p className="text-brand-text-secondary leading-relaxed flex-1">
+      <p className="text-brand-text-secondary leading-relaxed mb-6">
         {desc}
       </p>
-      <div className="mt-8 pt-6 border-t border-brand-border/50">
+      
+      {/* Product Screenshot */}
+      <div className="relative aspect-[16/10] w-full border border-brand-border rounded-lg overflow-hidden mb-6 bg-brand-surface">
+        <Image
+          src={imageSrc}
+          alt={imageAlt}
+          fill
+          sizes="(max-width: 768px) 100vw, 33vw"
+          className="object-cover"
+        />
+      </div>
+
+      <div className="mt-auto pt-6 border-t border-brand-border/50">
         <div className="flex items-center text-sm font-bold text-brand-text-muted group-hover:text-brand-secondary transition-colors duration-200">
           {learnMore} <ChevronRight className="ml-1 w-4 h-4" />
         </div>
@@ -99,7 +125,6 @@ function PillarCard({ title, desc, learnMore, icon: Icon, color }: { title: stri
 }
 
 async function FeaturedPosts({ locale }: { locale: string }) {
-  const t = await getTranslations('home.resources');
   let contents: any[] = [];
   try {
     const result = await getPublishedContent({ locale }, { limit: 3 });
@@ -206,21 +231,27 @@ export default async function Home({
               desc={t('pillars.diagnosis.desc')}
               learnMore={t('pillars.learnMore')}
               icon={Search}
-              color="bg-emerald-50 text-emerald-600"
+              imageSrc="/assets/images/site-intelligence.png"
+              imageAlt="Site Intelligence Web Audit Report Dashboard"
+              color="bg-brand-secondary-muted text-brand-secondary-hover"
             />
             <PillarCard
               title={t('pillars.production.title')}
               desc={t('pillars.production.desc')}
               learnMore={t('pillars.learnMore')}
               icon={PenTool}
-              color="bg-amber-50 text-amber-600"
+              imageSrc="/assets/images/geo-writer.png"
+              imageAlt="geo-writer Content Editor and Outline Dashboard"
+              color="bg-brand-accent-muted text-brand-accent-hover"
             />
             <PillarCard
               title={t('pillars.verification.title')}
               desc={t('pillars.verification.desc')}
               learnMore={t('pillars.learnMore')}
               icon={LineChart}
-              color="bg-blue-50 text-blue-600"
+              imageSrc="/assets/images/citation-tracker.png"
+              imageAlt="AI Citation and Search Visibility Tracker panel"
+              color="bg-brand-info-muted text-brand-info-hover"
             />
           </div>
         </div>
@@ -311,7 +342,7 @@ export default async function Home({
       {/* ⑥ Consultation Section */}
       <section className="py-16 bg-white border-t border-brand-border">
         <div className="max-w-7xl mx-auto px-6 text-center">
-          <div className="inline-flex items-center gap-4 p-4 rounded-2xl bg-brand-surface border border-brand-border">
+          <div className="inline-flex items-center gap-4 p-4 rounded-xl bg-brand-surface border border-brand-border">
             <div className="w-10 h-10 rounded-full bg-brand-secondary/10 flex items-center justify-center text-brand-secondary">
               <MessageCircle className="w-5 h-5" />
             </div>

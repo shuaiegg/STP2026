@@ -32,8 +32,11 @@ export const auth = betterAuth({
                             clientLocale = cookieMatch[1];
                         } else if (referer) {
                             clientLocale = (referer.includes("/zh/") || referer.endsWith("/zh")) ? "zh" : "en";
-                        } else if (/(^|,)\s*zh\b/i.test(acceptLanguage)) {
-                            clientLocale = "zh";
+                        } else {
+                            const primary = acceptLanguage.split(',')[0]?.trim().toLowerCase() ?? '';
+                            if (primary.startsWith('zh')) {
+                                clientLocale = "zh";
+                            }
                         }
                     } catch {
                         // headers 不可用时保持默认 'en'

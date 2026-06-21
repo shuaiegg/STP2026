@@ -21,11 +21,11 @@
 
 ### 1.3 首页结构实装
 
-- [ ] 1.3.1 重构 `src/app/[locale]/(public)/page.tsx`：区块①-⑥，Server Component 优先，hero 本期为"输入框 UI + 提交跳 /register"最简版
-- [ ] 1.3.2 能力三栏配真实产品截图（截图需中英 dashboard 通用，避免暴露中文界面给英文访客——优先选图表/报告类视觉）
-- [ ] 1.3.3 咨询次要 CTA 区块（单行、安静），指向 `/consultation`
-- [ ] 1.3.4 `generateMetadata` 双语（title/description/OG/canonical/hreflang 接 i18n 基建）
-- [ ] 1.3.5 设计检查清单全项过一遍 + `/audit` ≥14/20 + `/polish` + `/web-design-guidelines`
+- [x] 1.3.1 重构 `src/app/[locale]/(public)/page.tsx`：区块①-⑥，Server Component 优先，hero 本期为"输入框 UI + 提交跳 /register"最简版
+- [x] 1.3.2 能力三栏配真实产品截图（截图需中英 dashboard 通用，避免暴露中文界面给英文访客——优先选图表/报告类视觉）
+- [x] 1.3.3 咨询次要 CTA 区块（单行、安静），指向 `/consultation`
+- [x] 1.3.4 `generateMetadata` 双语（title/description/OG/canonical/hreflang 接 i18n 基建）
+- [x] 1.3.5 设计检查清单全项过一遍 + `/audit` ≥14/20 + `/polish` + `/web-design-guidelines`
 
 ---
 

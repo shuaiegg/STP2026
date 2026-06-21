@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import React from 'react';
 import { getTranslations } from 'next-intl/server';
 import { Link, redirect } from '@/i18n/navigation';
@@ -97,14 +98,16 @@ export default async function BlogPost({ params }: BlogPostProps) {
         // 2. 该 slug 可能存在于另一语言（如旧收录的中文 URL 落在 en 前缀）
         const otherLocalePost = await getPublishedContentBySlug(slug);
         if (otherLocalePost) {
-            redirect({ href: `/blog/${slug}`, locale: otherLocalePost.locale });
+            const targetPath = otherLocalePost.locale === 'zh' ? `/zh/blog/${slug}` : `/blog/${slug}`;
+            permanentRedirect(targetPath);
         }
         return notFound();
     }
 
-    const formatDate = (date: Date | null) => {
+    const formatDate = (date: Date | string | null) => {
         if (!date) return 'Not Published';
-        return date.toLocaleDateString('zh-CN', {
+        const d = typeof date === 'string' ? new Date(date) : date;
+        return d.toLocaleDateString('zh-CN', {
             year: 'numeric',
             month: '2-digit',
             day: '2-digit'
@@ -126,13 +129,20 @@ export default async function BlogPost({ params }: BlogPostProps) {
     }
 
     if (!blogSchema) {
+        const toIso = (d: any) => {
+            if (!d) return undefined;
+            if (d instanceof Date) return d.toISOString();
+            if (typeof d === 'string') return new Date(d).toISOString();
+            return undefined;
+        };
+
         blogSchema = {
             "@context": "https://schema.org",
             "@type": "BlogPosting",
             "headline": post.title,
             "image": [coverSrc],
-            "datePublished": post.publishedAt?.toISOString() ?? undefined,
-            "dateModified": post.updatedAt?.toISOString() ?? post.publishedAt?.toISOString() ?? undefined,
+            "datePublished": toIso(post.publishedAt),
+            "dateModified": toIso(post.updatedAt) || toIso(post.publishedAt),
             "author": [{
                 "@type": "Person",
                 "name": (post as any).author?.name || "ScaletoTop Team",

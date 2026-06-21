@@ -63,9 +63,9 @@
 
 ### 2.4 验收
 
-- [ ] 2.4.1 发布一篇英文测试文章：仅出现在 `/blog`，不出现在 `/zh/blog` 与中文 sitemap
-- [ ] 2.4.2 配对一组中英文章，互相输出 hreflang；解除配对后 hreflang 消失
-- [ ] 2.4.3 Google Rich Results Test 验证 BlogPosting；hreflang 用 Screaming Frog 或 technicalseo.com 工具抽查
+- [x] 2.4.1 发布一篇英文测试文章：仅出现在 `/blog`，不出现在 `/zh/blog` 与中文 sitemap
+- [x] 2.4.2 配对一组中英文章，互相输出 hreflang；解除配对后 hreflang 消失
+- [x] 2.4.3 Google Rich Results Test 验证 BlogPosting；hreflang 用 Screaming Frog 或 technicalseo.com 工具抽查
 
 ---
 
@@ -86,8 +86,8 @@
 
 - [x] 3.2.1 `CookieConsentBanner` 组件（双语、所有 locale 统一展示）：接受 / 拒绝，状态存 cookie
 - [x] 3.2.2 PostHog init 改 `opt_out_capturing_by_default: true`，接受后 `opt_in_capturing()`；GTM 纳入同一门控
-- [ ] 3.2.3 隐私政策页更新 cookie/分析说明（中英双语）
-- [ ] 3.2.4 验证：未同意前 Network 无 PostHog/GTM 请求；同意后事件正常
+- [x] 3.2.3 隐私政策页更新 cookie/分析说明（中英双语）
+- [x] 3.2.4 验证：未同意前 Network 无 PostHog/GTM 请求；同意后事件正常
 
 ### 3.3 Creem MoR 核实（非代码任务）
 
@@ -96,7 +96,7 @@
 
 ### 3.4 总验收
 
-- [ ] 3.4.1 design.md「验收基准」全项通过
-- [ ] 3.4.2 模拟英文新用户全流程：`/` 落地 → 注册 → 英文 welcome 邮件 → systeme.io `_en` 标签 → PostHog locale 属性
-- [ ] 3.4.3 模拟中文老用户回归：`/zh/` 全流程无回归；旧链接 301 正常
-- [ ] 3.4.4 GSC 提交新 sitemap，记录收录基线
+- [x] 3.4.1 design.md「验收基准」全项通过
+- [x] 3.4.2 模拟英文新用户全流程：`/` 落地 → 注册 → 英文 welcome 邮件 → systeme.io `_en` 标签 → PostHog locale 属性
+- [x] 3.4.3 模拟中文老用户回归：`/zh/` 全流程无回归；旧链接 301 正常
+- [x] 3.4.4 GSC 提交新 sitemap，记录收录基线

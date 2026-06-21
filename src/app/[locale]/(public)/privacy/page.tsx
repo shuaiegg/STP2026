@@ -20,7 +20,7 @@ function renderContent(text: string) {
 }
 
 export default function PrivacyPage() {
-    const lastUpdated = "2026-03-22";
+    const lastUpdated = "2026-06-20";
     const [showEnglish, setShowEnglish] = useState(false);
     const locale = useLocale();
 
@@ -70,10 +70,10 @@ export default function PrivacyPage() {
             title: "4. Cookie 的使用",
             content: `本网站使用 Cookie 及类似技术来增强您的使用体验：
 
-• **必要性 Cookie**：维持您的登录状态及基本功能的正常运行，无法关闭。
-• **分析类 Cookie**：帮助我们了解用户如何与平台交互，以便改善功能设计。所有分析数据均以匿名或聚合形式处理。
+• **必要性 Cookie**：维持您的登录状态及基本功能的正常运行，例如识别您的身份或缓存首选项，这些 Cookie 无法关闭。
+• **分析与统计 Cookie**：我们使用 PostHog 和 Google Tag Manager (GTM) 收集去标识化的用户行为与访问数据，以改进产品体验。我们仅在您通过 Cookie 同意横幅明确授权后才会启用此类 Cookie，您可以随时在浏览器中清除缓存以撤销同意。
 
-您可以通过浏览器设置拒绝非必要 Cookie，但这可能导致部分功能无法正常使用。`
+您可以通过浏览器设置拒绝非必要 Cookie，但这可能导致部分功能无法正常运行。`
         },
         {
             id: "5",
@@ -154,7 +154,9 @@ We do not sell your personal information. We share information only with:
 - Business Transfers: In the event of a merger or acquisition, under equivalent privacy commitments.
 
 4. Cookies
-We use cookies for session management (essential) and anonymous usage analytics (optional). You may disable non-essential cookies via your browser settings, though some features may be affected.
+- Essential Cookies: Used to manage your session and preserve your basic preferences. These cannot be disabled.
+- Analytics & Optimization Cookies: We use PostHog and Google Tag Manager (GTM) to collect de-identified usage and behavior metrics to optimize our platform. These tools are disabled by default and will only be activated after you explicitly consent via our cookie banner. You can withdraw your consent at any time by clearing your browser cookies.
+You may also disable non-essential cookies via your browser settings, though some features may be affected.
 
 5. Data Storage, Retention, and Transfer
 - Storage: Secure servers operated by our cloud infrastructure provider, primarily in the United States and Singapore.
@@ -208,7 +210,7 @@ Contact: support@scaletotop.com`;
                 </div>
 
                 <div className="mb-10 p-6 bg-brand-primary/5 border-2 border-brand-primary/10 rounded-2xl text-sm text-brand-text-secondary leading-relaxed">
-                    ScaletoTop（以下简称"我们"）致力于保护您的个人信息与隐私权。本隐私政策说明了当您使用我们的平台与服务时，我们如何收集、使用、共享及保护您的相关信息。请在使用本服务前仔细阅读本政策。
+                    ScaletoTop（以下简称&ldquo;我们&rdquo;）致力于保护您的个人信息与隐私权。本隐私政策说明了当您使用我们的平台与服务时，我们如何收集、使用、共享及保护您的相关信息。请在使用本服务前仔细阅读本政策。
                 </div>
 
                 <div className="space-y-6">
