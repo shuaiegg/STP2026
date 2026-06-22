@@ -53,7 +53,18 @@ Archive a completed change in the experimental workflow.
 
    **If no tasks file exists:** Proceed without task-related warning.
 
-4. **Assess delta spec sync state**
+4. **MANDATORY VERIFICATION GATE — do not skip or bypass**
+
+   Before archiving, confirm that `/verify <change-name>` has been run and returned a **PASS** verdict.
+
+   - If the user ran `/verify` in this session and it passed → confirm with them and proceed
+   - If `/verify` has NOT been run → STOP. Say: "归档前需要先通过验证。请先运行 `/verify <change-name>`，确认 PASS 后再归档。"
+   - Do NOT accept "it looks fine" as a substitute for an explicit PASS verdict
+   - Do NOT proceed to archive without the user confirming verification passed
+
+   This gate ensures AI-implemented changes are runtime-verified by a human before being finalized.
+
+5. **Assess delta spec sync state**
 
    Use `artifactPaths.specs.existingOutputPaths` from status JSON to check for delta specs. If none exist, proceed without sync prompt.
 

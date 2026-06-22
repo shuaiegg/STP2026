@@ -1,7 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Save, RefreshCw, ChevronDown, ChevronUp, Sparkles, CheckCircle, AlertCircle, Lightbulb, Edit, Layout, List, Code as CodeIcon } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Save, RefreshCw, ChevronDown, ChevronUp, Sparkles, CheckCircle, AlertCircle, Lightbulb, Edit, Layout, List, Code as CodeIcon, Eye, Clock, Type } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useRouter } from 'next/navigation';
@@ -10,6 +12,9 @@ import { updateContentMetadata, updateSeoMetadata, analyzeContentSeo, associateT
 import { parseMarkdownToSections, joinSectionsToMarkdown, ContentSection } from '@/lib/utils/markdown-sections';
 import { EditableSection } from '@/components/editor/EditableSection';
 import { OutlineEditor, OutlineNode } from '@/components/editor/OutlineEditor';
+import { EditorToolbar } from '@/components/editor/EditorToolbar';
+import { MediaLibraryModal } from '@/components/editor/MediaLibraryModal';
+import { InternalLinkModal } from '@/components/editor/InternalLinkModal';
 import { uploadMediaAction } from '@/app/actions/media';
 import { toast } from 'sonner';
 
@@ -167,13 +172,30 @@ export function EditForm({
     const [isAnalyzing, setIsAnalyzing] = React.useState(false);
     const [isOptimizing, setIsOptimizing] = React.useState(false);
     // 新文章（正文为空）默认进「源码」模式，给一个能立刻打字的入口；有内容则进分段
-    const [editorMode, setEditorMode] = React.useState<'sections' | 'outline' | 'raw'>(
+    const [editorMode, setEditorMode] = React.useState<'sections' | 'outline' | 'raw' | 'preview'>(
         article.contentMd && article.contentMd.trim() ? 'sections' : 'raw'
     );
     const [seoExpanded, setSeoExpanded] = React.useState(true);
     const [auditResult, setAuditResult] = React.useState<AuditResult | null>(null);
     const [optimizationResult, setOptimizationResult] = React.useState<any>(null);
     const [contentType, setContentType] = React.useState<'TOFU' | 'MOFU' | 'BOFU'>('MOFU');
+
+    const rawTextareaRef = React.useRef<HTMLTextAreaElement>(null);
+
+    // Media Library & Internal Link modals
+    const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
+    const [internalLinkOpen, setInternalLinkOpen] = useState(false);
+
+    // Auto-save state
+    const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+    const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
+    const [isDirty, setIsDirty] = useState(false);
+    const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const initialFormDataRef = useRef({ ...article });
+
+    // Word count & reading time
+    const [wordCount, setWordCount] = useState({ zh: 0, en: 0, total: 0 });
+    const [readingTime, setReadingTime] = useState(0);
 
     const [originalSnapshot, setOriginalSnapshot] = React.useState<OptimizationSnapshot | null>(null);
     const [aiSnapshot, setAiSnapshot] = React.useState<OptimizationSnapshot | null>(null);
@@ -229,9 +251,9 @@ export function EditForm({
 
     // contentMd 是唯一真相源；sections 是它的派生视图。
     // 切换模式时双向转换，避免"源码输入后切回分段被空 sections 覆盖"的数据丢失。
-    const switchEditorMode = (mode: 'sections' | 'outline' | 'raw') => {
+    const switchEditorMode = (mode: 'sections' | 'outline' | 'raw' | 'preview') => {
         if (mode === editorMode) return;
-        if (mode === 'raw') {
+        if (mode === 'raw' || mode === 'preview') {
             // 离开分段/结构 → 把 sections 合成回 contentMd
             setFormData(prev => ({ ...prev, contentMd: joinSectionsToMarkdown(contentSections) }));
         } else {
@@ -240,6 +262,112 @@ export function EditForm({
         }
         setEditorMode(mode);
     };
+
+    // ── Word Count & Reading Time ──────────────────────────────
+    useEffect(() => {
+        const text = formData.contentMd || '';
+        const zhCount = (text.match(/[\u4e00-\u9fa5]/g) || []).length;
+        const enWords = text.replace(/[\u4e00-\u9fa5]/g, ' ').trim().split(/\s+/).filter(Boolean).length;
+        setWordCount({ zh: zhCount, en: enWords, total: zhCount + enWords });
+        const minutes = (zhCount / 300) + (enWords / 200);
+        setReadingTime(Math.max(1, Math.ceil(minutes)));
+    }, [formData.contentMd]);
+
+    // ── Auto-Save (debounce ~2s) ──────────────────────────────
+    useEffect(() => {
+        // Track dirty state
+        const hasChanges = formData.title !== (article.title || '') ||
+            formData.slug !== (article.slug || '') ||
+            formData.summary !== (article.summary || '') ||
+            formData.contentMd !== (article.contentMd || '');
+        setIsDirty(hasChanges);
+
+        if (!hasChanges) return;
+
+        // Clear previous timer
+        if (autoSaveTimerRef.current) {
+            clearTimeout(autoSaveTimerRef.current);
+        }
+
+        // Set new timer
+        autoSaveTimerRef.current = setTimeout(async () => {
+            setAutoSaveStatus('saving');
+            try {
+                await updateContentMetadata(article.id, {
+                    title: formData.title,
+                    slug: formData.slug,
+                    summary: formData.summary,
+                    contentMd: formData.contentMd,
+                    locale: formData.locale,
+                    categoryId: formData.categoryId || null,
+                    authorId: formData.authorId || null,
+                    coverImageId: formData.coverImageId || null,
+                });
+                setAutoSaveStatus('saved');
+                setLastSavedAt(new Date());
+                setIsDirty(false);
+            } catch {
+                setAutoSaveStatus('idle');
+            }
+        }, 2000);
+
+        return () => {
+            if (autoSaveTimerRef.current) {
+                clearTimeout(autoSaveTimerRef.current);
+            }
+        };
+    }, [formData.title, formData.slug, formData.summary, formData.contentMd, article.id, article.title, article.slug, article.summary, article.contentMd, formData.locale, formData.categoryId, formData.authorId, formData.coverImageId]);
+
+    // ── beforeunload warning ──────────────────────────────────
+    useEffect(() => {
+        const handler = (e: BeforeUnloadEvent) => {
+            if (isDirty) {
+                e.preventDefault();
+            }
+        };
+        window.addEventListener('beforeunload', handler);
+        return () => window.removeEventListener('beforeunload', handler);
+    }, [isDirty]);
+
+    // ── Media Library callbacks ────────────────────────────────
+    const handleMediaLibrarySelect = useCallback((url: string, alt: string) => {
+        if (editorMode === 'raw' && rawTextareaRef.current) {
+            const ta = rawTextareaRef.current;
+            const start = ta.selectionStart;
+            const end = ta.selectionEnd;
+            const imageMarkdown = `\n![${alt}](${url})\n`;
+            const newContent = formData.contentMd.substring(0, start) + imageMarkdown + formData.contentMd.substring(end);
+            setFormData(prev => ({ ...prev, contentMd: newContent }));
+            requestAnimationFrame(() => {
+                ta.focus();
+                const pos = start + imageMarkdown.length;
+                ta.setSelectionRange(pos, pos);
+            });
+        } else {
+            // Append to end in non-raw modes
+            setFormData(prev => ({ ...prev, contentMd: prev.contentMd + `\n![${alt}](${url})\n` }));
+            setContentSections(parseMarkdownToSections(formData.contentMd + `\n![${alt}](${url})\n`));
+        }
+    }, [editorMode, formData.contentMd]);
+
+    const handleInternalLinkSelect = useCallback((markdownLink: string) => {
+        if (editorMode === 'raw' && rawTextareaRef.current) {
+            const ta = rawTextareaRef.current;
+            const start = ta.selectionStart;
+            const end = ta.selectionEnd;
+            const newContent = formData.contentMd.substring(0, start) + markdownLink + formData.contentMd.substring(end);
+            setFormData(prev => ({ ...prev, contentMd: newContent }));
+            requestAnimationFrame(() => {
+                ta.focus();
+                const pos = start + markdownLink.length;
+                ta.setSelectionRange(pos, pos);
+            });
+        } else {
+            // Append to end in non-raw modes
+            setFormData(prev => ({ ...prev, contentMd: prev.contentMd + ' ' + markdownLink }));
+            setContentSections(parseMarkdownToSections(formData.contentMd + ' ' + markdownLink));
+        }
+    }, [editorMode, formData.contentMd]);
 
     // sections 变更后立即同步回 contentMd，保证保存时拿到最新内容
     const applySections = (next: ContentSection[]) => {
@@ -551,6 +679,50 @@ export function EditForm({
 
     return (
         <div className="space-y-6">
+            {/* Auto-Save Status Bar */}
+            <div className="flex items-center justify-between px-4 py-2 bg-white rounded-xl border border-brand-border shadow-sm">
+                <div className="flex items-center gap-4">
+                    {/* Word Count */}
+                    <div className="flex items-center gap-1.5 text-xs text-brand-text-secondary">
+                        <Type size={12} />
+                        <span className="font-mono">
+                            {wordCount.zh > 0 && `${wordCount.zh} 字`}
+                            {wordCount.zh > 0 && wordCount.en > 0 && ' + '}
+                            {wordCount.en > 0 && `${wordCount.en} words`}
+                            {wordCount.total === 0 && '无内容'}
+                        </span>
+                    </div>
+                    {/* Reading Time */}
+                    <div className="flex items-center gap-1.5 text-xs text-brand-text-secondary">
+                        <Clock size={12} />
+                        <span className="font-mono">约 {readingTime} 分钟阅读</span>
+                    </div>
+                </div>
+                {/* Save Status */}
+                <div className="flex items-center gap-1.5 text-xs">
+                    {autoSaveStatus === 'saving' && (
+                        <>
+                            <RefreshCw size={12} className="animate-spin text-brand-primary" />
+                            <span className="text-brand-primary font-medium">保存中...</span>
+                        </>
+                    )}
+                    {autoSaveStatus === 'saved' && lastSavedAt && (
+                        <>
+                            <CheckCircle size={12} className="text-brand-success" />
+                            <span className="text-brand-success font-medium">
+                                已保存 {lastSavedAt.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                        </>
+                    )}
+                    {autoSaveStatus === 'idle' && isDirty && (
+                        <span className="text-brand-warning font-medium">⛏ 未保存</span>
+                    )}
+                    {autoSaveStatus === 'idle' && !isDirty && (
+                        <span className="text-brand-text-muted">✓ 无更改</span>
+                    )}
+                </div>
+            </div>
+
             {/* Main Content Form */}
             <Card className="p-8 border-none shadow-sm bg-white">
                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -824,9 +996,16 @@ export function EditForm({
                                 <button
                                     type="button"
                                     onClick={() => switchEditorMode('raw')}
-                                    className={`flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold uppercase rounded-md transition-all ${editorMode === 'raw' ? 'bg-white text-brand-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                    className={`flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold uppercase rounded-md transition-all ${editorMode === 'raw' ? 'bg-white text-brand-primary shadow-sm' : 'text-brand-text-muted hover:text-brand-text-secondary'}`}
                                 >
                                     <CodeIcon size={12} /> 源码
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => switchEditorMode('preview')}
+                                    className={`flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold uppercase rounded-md transition-all ${editorMode === 'preview' ? 'bg-white text-brand-primary shadow-sm' : 'text-brand-text-muted hover:text-brand-text-secondary'}`}
+                                >
+                                    <Eye size={12} /> 预览
                                 </button>
                             </div>
                         </div>
@@ -840,10 +1019,12 @@ export function EditForm({
                                             section={section}
                                             onSave={handleSectionSave}
                                             onImageUpload={handleImageUpload}
+                                            onOpenMediaLibrary={() => setMediaLibraryOpen(true)}
+                                            onInsertInternalLink={() => setInternalLinkOpen(true)}
                                         />
                                     ))
                                 ) : (
-                                    <div className="p-12 text-center border-2 border-dashed border-slate-100 rounded-2xl text-slate-400 text-sm">
+                                    <div className="p-12 text-center border-2 border-dashed border-brand-border rounded-2xl text-brand-text-muted text-sm">
                                         正文为空，请切换到源码模式输入或在结构模式添加段落
                                     </div>
                                 )}
@@ -851,7 +1032,7 @@ export function EditForm({
                         )}
 
                         {editorMode === 'outline' && (
-                            <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 animate-in fade-in duration-300">
+                            <div className="p-6 bg-brand-surface-alt rounded-2xl border border-brand-border animate-in fade-in duration-300">
                                 <OutlineEditor
                                     initialData={contentSections.map(s => ({ 
                                         level: s.heading === '__intro__' ? 1 : 2, 
@@ -859,7 +1040,7 @@ export function EditForm({
                                     }))}
                                     onChange={handleOutlineChange}
                                 />
-                                <p className="mt-4 text-[10px] text-slate-400 font-bold uppercase text-center italic">
+                                <p className="mt-4 text-[10px] text-brand-text-muted font-bold uppercase text-center italic">
                                     拖拽调整顺序，点击 H2/H3 切换层级
                                 </p>
                             </div>
@@ -867,13 +1048,31 @@ export function EditForm({
 
                         {editorMode === 'raw' && (
                             <div className="animate-in fade-in duration-300">
+                                <EditorToolbar
+                                    textareaRef={rawTextareaRef}
+                                    body={formData.contentMd}
+                                    onBodyChange={(newBody) => setFormData({ ...formData, contentMd: newBody })}
+                                    onOpenMediaLibrary={() => setMediaLibraryOpen(true)}
+                                    onInsertInternalLink={() => setInternalLinkOpen(true)}
+                                />
                                 <textarea
+                                    ref={rawTextareaRef}
                                     rows={25}
                                     value={formData.contentMd}
                                     onChange={(e) => setFormData({ ...formData, contentMd: e.target.value })}
-                                    className="w-full bg-slate-900 border-0 rounded-2xl p-6 text-slate-100 font-mono text-sm focus:ring-2 focus:ring-brand-primary/20 transition-all min-h-[500px]"
+                                    className="w-full bg-brand-primary border-0 rounded-2xl p-6 text-brand-text-inverted font-mono text-sm focus:ring-2 focus:ring-brand-primary/20 transition-all min-h-[500px]"
                                     placeholder="输入 Markdown 源码..."
                                 />
+                            </div>
+                        )}
+
+                        {editorMode === 'preview' && (
+                            <div className="animate-in fade-in duration-300 p-8 bg-white rounded-2xl border border-brand-border min-h-[500px]">
+                                <article className="prose max-w-none text-brand-text-secondary prose-headings:font-bold prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-p:leading-relaxed prose-a:text-brand-primary prose-a:no-underline hover:prose-a:underline prose-img:rounded-xl prose-blockquote:border-l-brand-primary prose-blockquote:bg-brand-surface/30 prose-blockquote:rounded-r-xl prose-blockquote:py-1 prose-code:bg-brand-surface-alt prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-brand-primary prose-code:font-mono prose-code:text-sm prose-pre:bg-brand-primary prose-pre:text-brand-text-inverted">
+                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                        {formData.contentMd || '无内容可预览'}
+                                    </ReactMarkdown>
+                                </article>
                             </div>
                         )}
                     </div>
@@ -1355,6 +1554,21 @@ export function EditForm({
                     </div>
                 )}
             </Card>
+
+            {/* Media Library Modal */}
+            <MediaLibraryModal
+                open={mediaLibraryOpen}
+                onClose={() => setMediaLibraryOpen(false)}
+                onSelect={handleMediaLibrarySelect}
+            />
+
+            {/* Internal Link Modal */}
+            <InternalLinkModal
+                open={internalLinkOpen}
+                onClose={() => setInternalLinkOpen(false)}
+                onSelect={handleInternalLinkSelect}
+                currentLocale={formData.locale}
+            />
         </div>
     );
 }

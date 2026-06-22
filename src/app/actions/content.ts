@@ -112,6 +112,11 @@ export async function updateContentMetadata(id: string, data: {
     status?: ContentStatus;
 }) {
     try {
+        const session = await auth.api.getSession({ headers: await headers() });
+        if (!session || !['ADMIN', 'EDITOR'].includes((session.user as any).role)) {
+            return { success: false, error: '权限不足' };
+        }
+
         // Fetch current state for redirect logic and revalidation
         const current = await prisma.content.findUnique({
             where: { id },
@@ -199,6 +204,11 @@ export async function updateSeoMetadata(contentId: string, data: {
     suggestedLinks?: string[];
 }) {
     try {
+        const session = await auth.api.getSession({ headers: await headers() });
+        if (!session || !['ADMIN', 'EDITOR'].includes((session.user as any).role)) {
+            return { success: false, error: '权限不足' };
+        }
+
         // Check if content exists
         const content = await prisma.content.findUnique({
             where: { id: contentId },
@@ -540,6 +550,11 @@ export async function dissociateTranslation(articleId: string) {
  */
 export async function createCategory(name: string, locale: string) {
     try {
+        const session = await auth.api.getSession({ headers: await headers() });
+        if (!session || !['ADMIN', 'EDITOR'].includes((session.user as any).role)) {
+            return { success: false, error: '权限不足' };
+        }
+
         const trimmed = name.trim();
         if (!trimmed) return { success: false, error: '分类名不能为空' };
 
@@ -572,6 +587,11 @@ export async function createCategory(name: string, locale: string) {
  */
 export async function createAuthor(name: string) {
     try {
+        const session = await auth.api.getSession({ headers: await headers() });
+        if (!session || !['ADMIN', 'EDITOR'].includes((session.user as any).role)) {
+            return { success: false, error: '权限不足' };
+        }
+
         const trimmed = name.trim();
         if (!trimmed) return { success: false, error: '作者名不能为空' };
 
@@ -644,6 +664,54 @@ export async function deleteContent(id: string) {
         return { success: true };
     } catch (error) {
         console.error('Failed to delete content:', error);
+        return { success: false, error: String(error) };
+    }
+}
+
+/**
+ * Search published content for internal link insertion.
+ * Returns up to 10 articles matching query by title or slug.
+ */
+export async function searchPublishedContent(
+    query: string,
+    locale?: string,
+) {
+    try {
+        const session = await auth.api.getSession({
+            headers: await headers()
+        });
+
+        if (!session || !['ADMIN', 'EDITOR'].includes((session.user as any).role)) {
+            return { success: false, error: 'Unauthorized' };
+        }
+
+        const q = query.trim();
+        if (!q) {
+            return { success: true, data: [] };
+        }
+
+        const articles = await prisma.content.findMany({
+            where: {
+                status: 'PUBLISHED',
+                ...(locale ? { locale } : {}),
+                OR: [
+                    { title: { contains: q, mode: 'insensitive' } },
+                    { slug: { contains: q, mode: 'insensitive' } },
+                ],
+            },
+            select: {
+                id: true,
+                title: true,
+                slug: true,
+                locale: true,
+            },
+            take: 10,
+            orderBy: { publishedAt: 'desc' },
+        });
+
+        return { success: true, data: articles };
+    } catch (error) {
+        console.error('Search published content failed:', error);
         return { success: false, error: String(error) };
     }
 }

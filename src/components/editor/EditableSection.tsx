@@ -3,20 +3,24 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 import { Edit2, Save, X, RefreshCw, Wand2, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { ContentSection } from '@/lib/utils/markdown-sections';
 import { Mermaid } from '@/components/ui/Mermaid';
+import { EditorToolbar } from '@/components/editor/EditorToolbar';
 
 interface EditableSectionProps {
     section: ContentSection;
     onSave: (id: string, newBody: string) => void;
     onRegenerate?: (instruction: string) => Promise<boolean>;
     onImageUpload?: (file: File) => Promise<{ storageUrl: string }>;
+    onOpenMediaLibrary?: () => void;
+    onInsertInternalLink?: () => void;
     className?: string;
 }
 
-export function EditableSection({ section, onSave, onRegenerate, onImageUpload, className = "" }: EditableSectionProps) {
+export function EditableSection({ section, onSave, onRegenerate, onImageUpload, onOpenMediaLibrary, onInsertInternalLink, className = "" }: EditableSectionProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [body, setBody] = useState(section.body);
     const [isCopied, setIsCopied] = useState(false);
@@ -34,20 +38,40 @@ export function EditableSection({ section, onSave, onRegenerate, onImageUpload, 
         if (!textareaRef.current) return;
         const start = textareaRef.current.selectionStart;
         const end = textareaRef.current.selectionEnd;
-        const newBody = body.substring(0, start) + `\n![${alt}](${url})\n` + body.substring(end);
+        const imageMarkdown = `\n![${alt}](${url})\n`;
+        const newBody = body.substring(0, start) + imageMarkdown + body.substring(end);
         setBody(newBody);
+
+        // Focus textarea at the insertion point after render
+        const cursorPos = start + imageMarkdown.length;
+        requestAnimationFrame(() => {
+            if (textareaRef.current) {
+                textareaRef.current.focus();
+                textareaRef.current.setSelectionRange(cursorPos, cursorPos);
+                // Scroll to cursor position
+                textareaRef.current.scrollTop = textareaRef.current.scrollHeight;
+            }
+        });
     };
 
-    const handleFileUpload = async (file: File) => {
+    const handleFileUpload = async (file: File, retryCount = 0) => {
         if (!onImageUpload || !file.type.startsWith('image/')) return;
         
         setIsUploading(true);
         try {
             const { storageUrl } = await onImageUpload(file);
-            insertImageAtCursor(storageUrl, file.name);
+            insertImageAtCursor(storageUrl, file.name.replace(/\.[^.]+$/, ''));
         } catch (error) {
             console.error('Image upload failed:', error);
-            alert('图片上传失败，请重试');
+            if (retryCount < 2) {
+                // Auto-retry up to 2 times
+                await new Promise(r => setTimeout(r, 1000));
+                return handleFileUpload(file, retryCount + 1);
+            }
+            // Final failure — show inline error with retry option
+            if (confirm('图片上传失败，是否重试？')) {
+                return handleFileUpload(file, 0);
+            }
         } finally {
             setIsUploading(false);
         }
@@ -240,6 +264,13 @@ export function EditableSection({ section, onSave, onRegenerate, onImageUpload, 
             {/* Content Area */}
             {isEditing ? (
                 <div className="relative">
+                    <EditorToolbar
+                        textareaRef={textareaRef}
+                        body={body}
+                        onBodyChange={setBody}
+                        onOpenMediaLibrary={onOpenMediaLibrary}
+                        onInsertInternalLink={onInsertInternalLink}
+                    />
                     <textarea
                         ref={textareaRef}
                         value={body}
@@ -294,6 +325,7 @@ export function EditableSection({ section, onSave, onRegenerate, onImageUpload, 
                             }
                         }}
                         remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeRaw]}
                     >
                         {section.body}
                     </ReactMarkdown>
