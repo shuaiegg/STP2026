@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useCompletion } from '@ai-sdk/react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -62,7 +62,7 @@ import posthog from 'posthog-js';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSessionContext } from '@/components/providers/SessionProvider';
 
-export default function GEOWriterPage() {
+function GEOWriterPageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { session } = useSessionContext();
@@ -76,6 +76,7 @@ export default function GEOWriterPage() {
     const [auditResult, setAuditResult] = useState<any>(null);
     const [finalResult, setFinalResult] = useState<any>(null);
     const [error, setError] = useState<string | null>(null);
+    const [streamError, setStreamError] = useState<string | null>(null);
     const [contentSections, setContentSections] = useState<ContentSection[]>([]);
     const [selectedKeyword, setSelectedKeyword] = useState<string>(''); // 选中的主关键词
     const [liveHumanScore, setLiveHumanScore] = useState<number | null>(null);
@@ -720,7 +721,8 @@ export default function GEOWriterPage() {
             if (msg.includes('Insufficient credits') || msg.includes('402')) {
                 setCreditError(true);
             } else {
-                setError(msg);
+                // Set streamError and keep step=3 so the error is visible in the content area
+                setStreamError(msg);
             }
             setLoading(false);
         }
@@ -731,6 +733,7 @@ export default function GEOWriterPage() {
         // Do NOT set global loading state to true, relies on isStreaming
         // setLoading(true);
         setError(null);
+        setStreamError(null);
         setCreditError(false);
         setIsSaved(false);
         setViewMode('preview'); // Always land on the stream preview, not any previous tab
@@ -1333,7 +1336,7 @@ export default function GEOWriterPage() {
                         </div>
                     )}
 
-                    {step === 3 && (finalResult || streamResult.isLoading) && (
+                    {step === 3 && (finalResult || streamResult.isLoading || streamError) && (
                         <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500 pb-20">
                             {/* Navigation Tabs */}
                             <div className="flex p-1.5 bg-slate-100 rounded-2xl w-fit border border-slate-200 shadow-inner">
@@ -1445,7 +1448,30 @@ export default function GEOWriterPage() {
 
                             {/* Main Display Area */}
                             <Card className="p-12 border-2 border-brand-border-heavy bg-white relative shadow-[20px_20px_0_0_rgba(10,10,10,0.03)] rounded-3xl min-h-[600px]">
-                                {viewMode === 'preview' && (
+                                {/* Streaming Error Panel */}
+                                {streamError && !finalResult && !streamResult.isLoading && (
+                                    <div className="flex flex-col items-center justify-center min-h-[400px] gap-6 text-center">
+                                        <div className="w-16 h-16 rounded-2xl bg-brand-error/10 flex items-center justify-center">
+                                            <Zap size={28} className="text-brand-error" />
+                                        </div>
+                                        <div className="max-w-lg space-y-2">
+                                            <h3 className="text-xl font-black text-brand-text-primary">生成失败</h3>
+                                            <p className="text-sm text-brand-text-muted leading-relaxed">
+                                                {streamError}
+                                            </p>
+                                        </div>
+                                        <button
+                                            onClick={handleRewrite}
+                                            className="flex items-center gap-2 bg-brand-primary text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-brand-primary/90 transition-colors active:scale-95"
+                                        >
+                                            <RefreshCw size={16} />
+                                            重新生成
+                                        </button>
+                                    </div>
+                                )}
+
+                                {viewMode === 'preview' && !streamError && (
+
                                     <div className="prose prose-brand max-w-none">
                                         <h1 className="text-4xl font-black mb-10 italic text-brand-text-primary leading-tight">{finalResult?.seoMetadata?.title || selectedKeyword || form.keywords}</h1>
                                         <div className="space-y-8 text-brand-text-secondary leading-relaxed text-lg">
@@ -1828,5 +1854,13 @@ export default function GEOWriterPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function GEOWriterPage() {
+    return (
+        <Suspense>
+            <GEOWriterPageContent />
+        </Suspense>
     );
 }

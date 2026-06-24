@@ -8,12 +8,14 @@ export * from './gemini-provider';
 export * from './claude-provider';
 export * from './deepseek-provider';
 export * from './vps-provider';
+export * from './openai-provider';
 
 import { IAIProvider, AIProviderName } from '../types';
 import { GeminiProvider } from './gemini-provider';
 import { ClaudeProvider } from './claude-provider';
 import { DeepSeekProvider } from './deepseek-provider';
 import { VPSProvider } from './vps-provider';
+import { OpenAIProvider } from './openai-provider';
 
 /**
  * Provider registry - singleton instances
@@ -44,6 +46,9 @@ export function getProvider(name: AIProviderName): IAIProvider {
         case 'deepseek':
             provider = new DeepSeekProvider();
             break;
+        case 'openai':
+            provider = new OpenAIProvider();
+            break;
         default:
             throw new Error(`Unknown provider: ${name}`);
     }
@@ -59,7 +64,7 @@ export function getProvider(name: AIProviderName): IAIProvider {
 export async function getAvailableProviders(): Promise<AIProviderName[]> {
     const available: AIProviderName[] = [];
 
-    const providerNames: AIProviderName[] = ['vps', 'gemini', 'claude', 'deepseek'];
+    const providerNames: AIProviderName[] = ['vps', 'gemini', 'claude', 'deepseek', 'openai'];
 
     for (const name of providerNames) {
         try {

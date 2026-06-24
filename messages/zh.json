@@ -1081,6 +1081,10 @@
       "clicksCol": "点击",
       "impressionsCol": "曝光",
       "ctrCol": "点击率",
+      "tableQueryCol": "搜索词",
+      "tableClicksCol": "点击",
+      "tableImpressionsCol": "曝光",
+      "tableCtrCol": "点击率",
       "notProvided": "(未提供)"
     },
     "auditHistory": {
@@ -1522,7 +1526,8 @@
       "totalClicks": "总点击",
       "totalImpr": "总展示",
       "avgCtr": "平均 CTR",
-      "clicksLabel": "点击数"
+      "clicksLabel": "点击数",
+      "noTrendData": "日均流量较低，GSC 暂不提供按天展示的趋势数据。上方数据为近 30 天汇总。"
     }
   },
   "legal": {},

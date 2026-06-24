@@ -21,12 +21,18 @@ const KNOWN_MODELS: Record<string, Array<{ id: string; label: string }>> = {
     { id: 'deepseek-chat', label: 'DeepSeek Chat' },
     { id: 'deepseek-reasoner', label: 'DeepSeek Reasoner' },
   ],
+  openai: [
+    { id: 'gpt-4o', label: 'GPT-4o' },
+    { id: 'gpt-4o-mini', label: 'GPT-4o Mini' },
+    { id: 'o3-mini', label: 'o3-mini (reasoning)' },
+  ],
 };
 
 const CONTEXTS = [
   { key: 'skill_default', label: 'Skills 默认模型', description: '无 per-skill 覆盖时的兜底模型' },
   { key: 'consultation', label: '咨询方案生成', description: 'AI 分析用户需求并生成方案草稿' },
   { key: 'embedding', label: '知识库 Embedding', description: 'RAG 向量化（Sprint 3）' },
+  { key: 'content_generation', label: 'GEO 文章生成', description: 'GEO Writer 流式内容生成（/api/generate-stream）' },
 ];
 
 const PROVIDERS = [
@@ -34,6 +40,7 @@ const PROVIDERS = [
   { id: 'claude', label: 'Anthropic Claude' },
   { id: 'gemini', label: 'Google Gemini' },
   { id: 'deepseek', label: 'DeepSeek' },
+  { id: 'openai', label: 'OpenAI' },
 ];
 
 interface Props {

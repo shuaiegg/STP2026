@@ -30,15 +30,17 @@ export interface ProviderStatus {
 }
 
 export async function getProviderStatuses(): Promise<ProviderStatus[]> {
-  const [claudeMask, geminiMask, deepseekMask] = await Promise.all([
+  const [claudeMask, geminiMask, deepseekMask, openaiMask] = await Promise.all([
     getProviderKeyMask('claude'),
     getProviderKeyMask('gemini'),
     getProviderKeyMask('deepseek'),
+    getProviderKeyMask('openai'),
   ]);
 
   const hasDbClaude = !!claudeMask;
   const hasDbGemini = !!geminiMask;
   const hasDbDeepseek = !!deepseekMask;
+  const hasDbOpenai = !!openaiMask;
 
   return [
     {
@@ -70,6 +72,13 @@ export async function getProviderStatuses(): Promise<ProviderStatus[]> {
       source: hasDbDeepseek ? 'db' : process.env.DEEPSEEK_API_KEY ? 'env' : 'none',
       keyMask: deepseekMask,
     },
+    {
+      name: 'openai',
+      label: 'OpenAI',
+      configured: hasDbOpenai || !!process.env.OPENAI_API_KEY,
+      source: hasDbOpenai ? 'db' : process.env.OPENAI_API_KEY ? 'env' : 'none',
+      keyMask: openaiMask,
+    },
   ];
 }
 
@@ -78,7 +87,7 @@ export async function getProviderStatuses(): Promise<ProviderStatus[]> {
 export async function saveProviderKey(provider: string, apiKey: string): Promise<ActionResult> {
   try {
     const session = await requireAdmin();
-    if (!['claude', 'gemini', 'deepseek'].includes(provider))
+    if (!['claude', 'gemini', 'deepseek', 'openai'].includes(provider))
       return { success: false, message: '不支持的 Provider' };
     if (!apiKey.trim()) return { success: false, message: 'API Key 不能为空' };
     await setIntegrationValue(`PROVIDER_KEY_${provider}`, apiKey.trim(), session.user.id);
@@ -146,6 +155,18 @@ export async function testProviderConnection(provider: string): Promise<TestResu
 
     if (provider === 'deepseek') {
       const res = await fetch('https://api.deepseek.com/models', {
+        headers: { Authorization: `Bearer ${key}` },
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!res.ok) {
+        const body = await res.text();
+        return { ok: false, error: `${res.status}: ${body.slice(0, 120)}` };
+      }
+      return { ok: true, latencyMs: Date.now() - start };
+    }
+
+    if (provider === 'openai') {
+      const res = await fetch('https://api.openai.com/v1/models', {
         headers: { Authorization: `Bearer ${key}` },
         signal: AbortSignal.timeout(10000),
       });
@@ -228,6 +249,24 @@ export async function verifyModelAccess(provider: string, modelId: string): Prom
 
     if (provider === 'deepseek') {
       const res = await fetch('https://api.deepseek.com/chat/completions', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${key}`, 'content-type': 'application/json' },
+        body: JSON.stringify({
+          model: modelId,
+          messages: [{ role: 'user', content: 'hi' }],
+          max_tokens: 1,
+        }),
+        signal: AbortSignal.timeout(15000),
+      });
+      if (!res.ok) {
+        const body = await res.text();
+        return { ok: false, error: `${res.status}: ${body.slice(0, 120)}` };
+      }
+      return { ok: true, latencyMs: Date.now() - start };
+    }
+
+    if (provider === 'openai') {
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: { Authorization: `Bearer ${key}`, 'content-type': 'application/json' },
         body: JSON.stringify({

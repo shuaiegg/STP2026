@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import { collectStageSignals, type OnboardingStage } from './lifecycle';
+import { collectStageSignals, classifyStage, type OnboardingStage } from './lifecycle';
 
 export type MoveType =
     | 'connect_gsc'
@@ -105,7 +105,7 @@ export const COACH_MOVES_REGISTRY: MoveDefinition[] = [
     {
         type: 'write_gap_high_intent',
         foundation: false,
-        stages: ['unmeasured', '1', '2', '2_scale'],
+        stages: ['0', 'unmeasured', '1', '2', '2_scale'],
         title: { zh: '抢占高意向流量缺口', en: 'Capture high-intent gaps' },
         reason: (ev) => ({
             zh: ev.topGap
@@ -236,7 +236,9 @@ export async function buildMoveContext(siteId: string): Promise<MoveContext> {
 
     return {
         siteId,
-        stage: (site?.onboardingStage as OnboardingStage) ?? '0',
+        // Compute stage live from real signals (not from stale DB value).
+        // syncSiteStage() only runs on explicit events, so DB value can lag.
+        stage: classifyStage(signals),
         hasGsc: signals.hasGsc,
         hasOntology: !!ontology,
         competitorCount,

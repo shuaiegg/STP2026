@@ -1,6 +1,7 @@
 
 import { streamText } from 'ai';
-import { streamWithFallback, MODEL_CHAIN } from '@/lib/vps-proxy';
+import { getStreamingClient } from '@/lib/vps-proxy';
+import { resolveModelForContext } from '@/lib/skills/model-resolver';
 import { StrategyComposer } from '@/lib/skills/skills/stellar/StrategyComposer';
 import { IntelligenceContext } from '@/lib/skills/skills/stellar/types';
 import { humanizePro } from '@/lib/utils/humanize';
@@ -85,6 +86,22 @@ export async function POST(req: Request) {
         const chargeResult = await chargeUser(session.user.id, 'GEO_WRITER_FULL', `GEO Writer: ${input.keywords}`);
         if (!chargeResult.success) return new Response(JSON.stringify({ error: chargeResult.error }), { status: 402 });
 
+        // Resolve model from Admin DB config; fallback to deepseek/deepseek-chat
+        // Only override defaults when admin has explicitly set a modelId — the
+        // hardcoded model-resolver fallback returns vps/undefined, which doesn't
+        // map to a real model on the VPS proxy.
+        let resolvedProvider: string = 'deepseek';
+        let resolvedModelId: string = 'deepseek-chat';
+        try {
+            const resolved = await resolveModelForContext('content_generation');
+            if (resolved.modelId) {
+                resolvedProvider = resolved.provider;
+                resolvedModelId = resolved.modelId;
+            }
+        } catch {
+            // DB unavailable — use fallback
+        }
+
         const executionId = providedId || `exec_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
         await prisma.skillExecution.create({
             data: {
@@ -126,7 +143,9 @@ export async function POST(req: Request) {
 
                     if (!outline || outline.length === 0) {
                         const fallbackPrompt = strategy.buildFullArticlePrompt([{ level: 1, text: input.keywords || 'Article' }]);
-                        const result = await streamWithFallback(MODEL_CHAIN.premium, {
+                        const model = await getStreamingClient(resolvedProvider as any, resolvedModelId);
+                        const result = await streamText({
+                            model,
                             system: strategy.systemPrompt,
                             messages: [{ role: 'user', content: fallbackPrompt }],
                             temperature: 0.7,
@@ -141,7 +160,9 @@ export async function POST(req: Request) {
                         }
                     } else {
                         const fullArticlePrompt = strategy.buildFullArticlePrompt(outline);
-                        const result = await streamWithFallback(MODEL_CHAIN.premium, {
+                        const model = await getStreamingClient(resolvedProvider as any, resolvedModelId);
+                        const result = await streamText({
+                            model,
                             system: strategy.systemPrompt,
                             messages: [{ role: 'user', content: fullArticlePrompt }],
                             temperature: 0.7,
@@ -171,8 +192,8 @@ export async function POST(req: Request) {
                                 errorMessage: status === 'failed' ? errorMsg : undefined,
                                 executionTimeMs: Date.now() - startTime,
                                 tokensUsed: finalUsage?.totalTokens || 0,
-                                modelUsed: MODEL_CHAIN.premium[0],
-                                provider: 'vps-proxy'
+                                modelUsed: resolvedModelId,
+                                provider: resolvedProvider
                             }
                         });
                         console.log(`✅ [Stream-Log] Final update for ${executionId}: ${status}`);

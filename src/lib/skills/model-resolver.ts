@@ -16,7 +16,7 @@ export interface ResolvedModel {
   modelId: string | undefined;
 }
 
-const VALID_PROVIDERS: AIProviderName[] = ['vps', 'claude', 'gemini', 'deepseek'];
+const VALID_PROVIDERS: AIProviderName[] = ['vps', 'claude', 'gemini', 'deepseek', 'openai'];
 
 function isValidProvider(p: string): p is AIProviderName {
   return VALID_PROVIDERS.includes(p as AIProviderName);

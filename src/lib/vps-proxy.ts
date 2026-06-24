@@ -1,6 +1,11 @@
 
 import { createOpenAI } from '@ai-sdk/openai';
-import { generateText, streamText } from 'ai';
+import { createAnthropic } from '@ai-sdk/anthropic';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { createDeepSeek } from '@ai-sdk/deepseek';
+import { generateText, streamText, type LanguageModel } from 'ai';
+import type { AIProviderName } from '@/lib/skills/types';
+import { getProviderApiKey } from '@/lib/integrations/config';
 
 const VPS_BASE_URL = process.env.VPS_GATEWAY_URL || 'http://154.12.243.94:8317/v1';
 const VPS_API_KEY = process.env.VPS_GATEWAY_KEY || 'sk-5DLE3ByOrXqKOkE5i';
@@ -9,6 +14,39 @@ export const vpsClient = createOpenAI({
     baseURL: VPS_BASE_URL,
     apiKey: VPS_API_KEY,
 });
+
+/**
+ * Returns a LanguageModel for any supported streaming provider.
+ * Resolves API keys from DB (encrypted) → env var fallback.
+ */
+export async function getStreamingClient(provider: AIProviderName, modelId: string): Promise<LanguageModel> {
+    switch (provider) {
+        case 'vps':
+            return vpsClient(modelId);
+        case 'openai': {
+            const key = await getProviderApiKey('openai');
+            if (!key) throw new Error('OpenAI API Key 未配置');
+            return createOpenAI({ apiKey: key })(modelId);
+        }
+        case 'deepseek': {
+            const key = await getProviderApiKey('deepseek');
+            if (!key) throw new Error('DeepSeek API Key 未配置');
+            return createDeepSeek({ apiKey: key })(modelId);
+        }
+        case 'claude': {
+            const key = await getProviderApiKey('claude');
+            if (!key) throw new Error('Anthropic API Key 未配置');
+            return createAnthropic({ apiKey: key })(modelId);
+        }
+        case 'gemini': {
+            const key = await getProviderApiKey('gemini');
+            if (!key) throw new Error('Google API Key 未配置');
+            return createGoogleGenerativeAI({ apiKey: key })(modelId);
+        }
+        default:
+            throw new Error(`Unsupported streaming provider: ${provider}`);
+    }
+}
 
 /**
  * Priority-ordered model fallback chain.

@@ -88,6 +88,7 @@ const PROVIDER_ENV_KEYS: Record<string, string[]> = {
   claude: ['ANTHROPIC_API_KEY'],
   gemini: ['GOOGLE_API_KEY', 'GOOGLE_AI_API_KEY', 'GEMINI_API_KEY'],
   deepseek: ['DEEPSEEK_API_KEY'],
+  openai: ['OPENAI_API_KEY'],
 };
 
 /** Returns the API key for a provider: DB (decrypted) → env var fallback */

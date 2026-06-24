@@ -81,7 +81,7 @@ export interface ISkill {
 /**
  * Supported AI providers
  */
-export type AIProviderName = 'gemini' | 'claude' | 'deepseek' | 'vps';
+export type AIProviderName = 'gemini' | 'claude' | 'deepseek' | 'vps' | 'openai';
 
 /**
  * AI model configurations

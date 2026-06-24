@@ -16,6 +16,7 @@ export function OrganicTrafficChart({ siteId, hasGsc, onConnectClick }: OrganicT
     const [data, setData] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [totals, setTotals] = useState({ clicks: 0, impressions: 0, ctr: 0 });
+    const [hasSummary, setHasSummary] = useState(false);
 
     useEffect(() => {
         if (!hasGsc) {
@@ -26,15 +27,26 @@ export function OrganicTrafficChart({ siteId, hasGsc, onConnectClick }: OrganicT
             try {
                 const res = await fetch(`/api/dashboard/sites/${siteId}/gsc/performance`);
                 const json = await res.json();
-                if (json.success && json.daily) {
-                    setData(json.daily);
-                    const totalClicks = json.daily.reduce((sum: number, d: any) => sum + (d.clicks || 0), 0);
-                    const totalImpressions = json.daily.reduce((sum: number, d: any) => sum + (d.impressions || 0), 0);
-                    setTotals({
-                        clicks: totalClicks,
-                        impressions: totalImpressions,
-                        ctr: totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0,
-                    });
+                if (json.success) {
+                    setData(json.daily || []);
+                    // Prefer pre-computed summary; fall back to summing daily rows
+                    if (json.summary && (json.summary.impressions > 0 || json.summary.clicks > 0)) {
+                        setTotals({
+                            clicks: json.summary.clicks,
+                            impressions: json.summary.impressions,
+                            ctr: json.summary.ctr * 100,
+                        });
+                        setHasSummary(true);
+                    } else if (json.daily?.length) {
+                        const totalClicks = json.daily.reduce((sum: number, d: any) => sum + (d.clicks || 0), 0);
+                        const totalImpressions = json.daily.reduce((sum: number, d: any) => sum + (d.impressions || 0), 0);
+                        setTotals({
+                            clicks: totalClicks,
+                            impressions: totalImpressions,
+                            ctr: totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0,
+                        });
+                        setHasSummary(totalClicks > 0 || totalImpressions > 0);
+                    }
                 }
             } catch (e) {
                 console.error('Failed to load traffic data:', e);
@@ -62,7 +74,8 @@ export function OrganicTrafficChart({ siteId, hasGsc, onConnectClick }: OrganicT
         );
     }
 
-    if (data.length === 0) {
+    // No data at all (truly empty or API error)
+    if (!hasSummary && data.length === 0) {
         return (
             <Card className="p-8 bg-white border-brand-border shadow-sm h-64 flex flex-col items-center justify-center text-center">
                 <p className="text-sm text-brand-text-secondary">{t('noData')}</p>
@@ -98,6 +111,7 @@ export function OrganicTrafficChart({ siteId, hasGsc, onConnectClick }: OrganicT
                 </div>
             </div>
 
+            {data.length > 0 ? (
             <ResponsiveContainer width="100%" height={180}>
                 <AreaChart data={data}>
                     <defs>
@@ -141,6 +155,13 @@ export function OrganicTrafficChart({ siteId, hasGsc, onConnectClick }: OrganicT
                     />
                 </AreaChart>
             </ResponsiveContainer>
+            ) : (
+                <div className="h-[180px] flex items-center justify-center">
+                    <p className="text-[11px] text-brand-text-muted text-center leading-relaxed">
+                        {t('noTrendData')}
+                    </p>
+                </div>
+            )}
         </Card>
     );
 }

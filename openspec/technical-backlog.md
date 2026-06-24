@@ -64,3 +64,26 @@
 - **Sprint 4.2：Case Studies 页面**  
   需要 3 个真实匿名案例（行业 / 挑战 / 方案 / 结果数据）  
   代码结构已就绪，素材一到位即可上线
+
+---
+
+## 🔭 增长主页探索收敛（2026-06-24）
+
+> 来源：`/openspec:explore` 对"onboarding 后主页体验"的排查。已拆出三个 active change（`activation-funnel-instrumentation` / `growth-home-data-pipeline` / `business-dna-into-content`）。以下为同次探索中**确认存在但暂不启动**的项。
+
+### ⚠️ 待修复后处理：GEO 引用检测名实不符
+- `/api/cron/verify` 的 "Citation Verification" 实际只用 DataForSEO 查 **Google SERP**，文章 URL 进前 100 即标 `status: 'CITED'`、`citationSource: 'Google SERP'`——并未查询任何大模型（ChatGPT/Perplexity/Claude）。
+- **对外风险**：不可宣传成"AI 引用追踪"，否则构成虚假宣传。
+- **两条路**（P0/P1/P2 修复完后再定）：
+  1. 诚实化文案：UI 改为"收录/排名追踪"，承认是 Google SERP 检查；
+  2. 真做 GEO：接入大模型查询管线，验证内容是否被 AI 实际引用（工作量大，非 MVP）。
+
+### 📅 P3 · 真空期价值与召回（依赖 `growth-home-data-pipeline` 落地）
+- Day1 竞品对标：stage 0/unmeasured 时主页主角换成"竞品在这些词上吃流量、你没有"（借 DataForSEO 即时数据，填 GSC 攒数据的空窗）。
+- 每周增长简报邮件：展示量变化 / 竞品动作 / 本周一招——慢反馈产品的召回引擎。
+- 触发条件：P1 主页数据基建就位 + P0 漏斗埋点能量出留存基线后启动。
+
+### 📅 P4 · 站点详情 IA 重构（中长期）
+- 当前 `site-intelligence/[siteId]` 有 8 个 tab，认知负荷与教练层"少决策"初衷相悖。
+- 重新分组，并与 GrowthHome 的 overview 去重（可能合并）。
+- 触发条件：P1 把"主页 vs 详情"的分工先定下来之后。

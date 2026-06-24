@@ -3,10 +3,10 @@
  * Provides common functionality for all AI providers
  */
 
-import { IAIProvider, AIModel, AIResponse, AIGenerateOptions } from '../types';
+import { IAIProvider, AIModel, AIResponse, AIGenerateOptions, AIProviderName } from '../types';
 
 export abstract class BaseAIProvider implements IAIProvider {
-    abstract name: 'gemini' | 'claude' | 'deepseek' | 'vps';
+    abstract name: AIProviderName;
     abstract models: AIModel[];
 
     /**
