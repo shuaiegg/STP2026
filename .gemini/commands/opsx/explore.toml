@@ -43,6 +43,16 @@ Depending on what the user brings, you might:
 - Identify patterns already in use
 - Surface hidden complexity
 
+**Code Discovery Protocol — use codebase-memory MCP first**
+
+When exploring code, always start with MCP tools before falling back to grep/find:
+1. `search_graph(name_pattern)` — find functions, classes, routes by name
+2. `trace_path(function_name, mode=calls|data_flow|cross_service)` — trace call chains and data flows
+3. `get_code_snippet(qualified_name)` — get exact source for a symbol with precise line ranges
+4. `search_code(pattern)` — graph-augmented text search
+
+Use `Read` / `grep` / `find` only as supplements — for config files, non-code files, or when MCP results need deeper context. Do NOT start exploration with grep.
+
 **Compare options**
 - Brainstorm multiple approaches
 - Build comparison tables

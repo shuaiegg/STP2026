@@ -95,6 +95,10 @@ const Header: React.FC = () => {
     const { session } = useSessionContext();
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    // cookieCache 会在客户端同步读取 session，导致 SSR(null) 与 client(user) 结构不同 → hydration 错误
+    // mounted guard 确保首次 client render 与 SSR 输出一致，useEffect 后再切换真实状态
+    const [mounted, setMounted] = React.useState(false);
+    React.useEffect(() => { setMounted(true); }, []);
 
     React.useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
@@ -137,7 +141,7 @@ const Header: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-4">
                     <LocaleSwitcher className="hidden sm:inline-flex text-sm text-brand-text-muted hover:text-brand-primary transition-colors font-medium" />
-                    {session ? (
+                    {mounted && session ? (
                         <NextLink href="/dashboard">
                             <Button as="span" variant="ghost" size="sm" className="text-xs uppercase tracking-widest font-bold">{tCommon('dashboard')}</Button>
                         </NextLink>
@@ -146,8 +150,8 @@ const Header: React.FC = () => {
                             <Button as="span" variant="ghost" size="sm" className="text-xs uppercase tracking-widest font-bold">{tCommon('login')}</Button>
                         </Link>
                     )}
-                    
-                    {session ? (
+
+                    {mounted && session ? (
                         <div className="relative" ref={dropdownRef}>
                             <button
                                 onClick={() => setDropdownOpen(o => !o)}

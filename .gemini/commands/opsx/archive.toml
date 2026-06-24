@@ -157,6 +157,18 @@ Target archive directory already exists.
 3. Wait until a different date to archive
 ```
 
+7. **更新代码知识图谱**
+
+   归档完成后，运行重新索引让知识图谱反映本次 change 的代码变更：
+
+   ```bash
+   REPO=$(git rev-parse --show-toplevel) && ~/.local/bin/codebase-memory-mcp cli index_repository "{\"repo_path\":\"$REPO\"}" 2>&1 | grep -E '"status"|"nodes"|"edges"'
+   ```
+
+   - 预期输出包含 `"status":"indexed"` 及节点/边数量
+   - 若 `codebase-memory-mcp` 未安装，跳过此步骤，不报错
+   - 将索引结果追加到 Archive Complete 摘要末尾：`**Knowledge graph:** ✓ Re-indexed (<N> nodes, <M> edges)`
+
 **Guardrails**
 - Always prompt for change selection if not provided
 - Use artifact graph (openspec status --json) for completion checking
