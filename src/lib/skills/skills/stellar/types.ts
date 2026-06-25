@@ -47,6 +47,8 @@ export interface StellarWriterInput {
     url?: string;
     autoVisuals?: boolean;
     researchMode?: 'discovery' | 'deep_analysis' | 'full' | 'section_regenerate';
+    /** Site ID used to load business DNA into the generation prompt */
+    siteId?: string;
     /** For section_regenerate mode */
     sectionHeading?: string;
     sectionContent?: string;

@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma';
 import { revalidateSiteCache } from '@/lib/site-intelligence/sites';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
+import { revalidateTag } from 'next/cache';
+import { coachHomeTag } from '@/lib/coach/home';
 
 export async function POST(
     request: Request,
@@ -241,6 +243,9 @@ export async function POST(
         });
 
         revalidateSiteCache(siteId);
+        // Bust the coach-home cache so Growth Home exits syncing state immediately
+        // after data arrives, rather than waiting for the 5-minute TTL.
+        revalidateTag(coachHomeTag(siteId), 'max');
 
         return NextResponse.json({
             success: true,

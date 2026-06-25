@@ -16,7 +16,7 @@ type OnboardingState = 'IDLE' | 'ANALYZING' | 'CONFIRMING' | 'SAVING' | 'DONE' |
 
 // ─── OnboardingClient ─────────────────────────────────────────────────────────
 
-export function OnboardingClient() {
+export function OnboardingClient({ daysSinceSignup = 0 }: { daysSinceSignup?: number }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const domainFromUrl = searchParams.get('domain');
@@ -166,10 +166,11 @@ export function OnboardingClient() {
           
           const saveData = await saveRes.json();
           if (saveData.success) {
-            posthog.capture('onboarding_completed', { 
-                domain: domain, 
+            posthog.capture('onboarding_completed', {
+                domain: domain,
                 competitors_count: finalCompetitors.length,
-                has_dna: !!businessDna 
+                has_dna: !!businessDna,
+                days_since_signup: daysSinceSignup,
             });
             setState('DONE');
             // Land on the growth home (coach moment), not the raw tab grid.

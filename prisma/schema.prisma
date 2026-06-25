@@ -181,7 +181,8 @@ model User {
   image           String?
   locale          String              @default("zh")
   credits               Int                 @default(0)
-  lastCreditWarningAt   DateTime?
+  lastCreditWarningAt        DateTime?
+  firstMeaningfulActionAt    DateTime?
   accounts        Account[]
   transactions    CreditTransaction[]
   sessions        Session[]

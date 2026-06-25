@@ -83,6 +83,22 @@
 - 每周增长简报邮件：展示量变化 / 竞品动作 / 本周一招——慢反馈产品的召回引擎。
 - 触发条件：P1 主页数据基建就位 + P0 漏斗埋点能量出留存基线后启动。
 
+### ✅ 已修复的既有 bug（2026-06-25 P1 真机验证时发现）
+- **settings security.tips 数组渲染崩溃**：`dashboard/settings/page.tsx` 用 `t.rich("security.tips")` 渲染一个**数组**消息，next-intl 不支持数组消息 → `INVALID_MESSAGE` 报错。与 P0/P1/P2 无关的既有 bug，已改为 `t.raw(...)` + `.map()` 渲染。留痕备查。
+
+### 🖼️ 自动配图占位图（autoVisuals）治理（2026-06-25 发现）
+- 内容生成的 autoVisuals 会往正文塞 `loremflickr.com` 占位图 URL，进入发布内容后 blog 页 `next/image` 因域名未配置而**整页崩**。
+- 已做的**止血**（`blog/[slug]/page.tsx` markdown 图片渲染器）：
+  1. 改用普通 `<img>`（替换 `next/image`），任意外域不再整页崩；
+  2. 修非法嵌套：原 `<figure>/<div>/<figcaption>` 被 ReactMarkdown 包进 `<p>` → 每图一个 hydration 错（崩溃修好后才浮现）。已全部改为 `<span className="block">`（合法的 `<p>` 内联子元素），消除 hydration 报错。
+- **根因待办**：autoVisuals 不应把临时占位图（loremflickr）写进**发布**内容——应生成真实图（MinIO 上传）或在发布前替换/剔除占位图。独立排期。
+
+### 🎨 geo-writer 全文件 i18n + token 归正（2026-06-25 发现）
+- `src/app/[locale]/(public)/tools/geo-writer/page.tsx` 是**公开双语页**（`[locale]` 路由），但全文件 **121 处 `slate-*` 硬编码色 + 0 处 i18n**（无 `useTranslations`、无 COPY 对象，文案全内联中文）→ **EN 用户访问该工具看到的是中文**，且违反 token 纪律。
+- 来源：P2 站点选择器审查时发现是文件级既有债（新加的选择器只是随了大流，故未做局部补丁）。
+- 建议：对该文件单独跑一次 `/normalize`（slate → `--color-brand-*`）+ 文案抽取到 next-intl messages（zh/en）。工作量中等（121 处色 + 全量文案），独立排期。
+- 对比参考：`library/edit/[id]/LibraryEditor.tsx` 已部分迁移（有 COPY + useTranslations，但仍残留 ~19 处 slate），可一并归正。
+
 ### 📅 P4 · 站点详情 IA 重构（中长期）
 - 当前 `site-intelligence/[siteId]` 有 8 个 tab，认知负荷与教练层"少决策"初衷相悖。
 - 重新分组，并与 GrowthHome 的 overview 去重（可能合并）。

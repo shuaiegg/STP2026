@@ -12,6 +12,7 @@ import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
 import { TOOL_COSTS } from "@/lib/config/credit-costs";
 import { captureServerEvent } from "@/lib/analytics/posthog-server";
+import { EVENTS, daysSinceSignup } from "@/lib/analytics/events";
 import { sendCreditsWarningEmail } from "@/lib/email";
 
 // Initialize skills on module load
@@ -113,6 +114,7 @@ export async function POST(request: NextRequest) {
         }
 
         const cost = isRepeat ? 0 : getSkillCost(skillName, input);
+        const isFirstMeaningfulAction = !user.firstMeaningfulActionAt;
 
         if (user.credits < cost) {
             return NextResponse.json(
@@ -131,13 +133,12 @@ export async function POST(request: NextRequest) {
 
         // Process transaction and log in a Prisma transaction
         const dbResult = await prisma.$transaction(async (tx) => {
-            // 1. Deduct credits
+            // 1. Deduct credits (and stamp first meaningful action if applicable)
             const updatedUser = await tx.user.update({
                 where: { id: user.id },
                 data: {
-                    credits: {
-                        decrement: cost
-                    }
+                    credits: { decrement: cost },
+                    ...(isFirstMeaningfulAction && { firstMeaningfulActionAt: new Date() }),
                 }
             });
 
@@ -180,6 +181,14 @@ export async function POST(request: NextRequest) {
             duration_ms: executionTime,
             success: true,
         });
+
+        if (isFirstMeaningfulAction) {
+            captureServerEvent(session.user.id, EVENTS.FIRST_MEANINGFUL_ACTION_COMPLETED, {
+                action_type: 'generated',
+                days_since_signup: daysSinceSignup(user),
+                credits_spent: cost,
+            });
+        }
 
         const remaining = dbResult.updatedUser.credits;
         if (remaining < 50) {

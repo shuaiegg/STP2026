@@ -7,6 +7,8 @@ import { SiteSelector } from './SiteSelector';
 import { unstable_cache } from 'next/cache';
 import { GrowthHome } from '@/components/coach/GrowthHome';
 import { getGrowthHomeData } from '@/lib/coach/home';
+import { captureServerEvent } from '@/lib/analytics/posthog-server';
+import { EVENTS, daysSinceSignup } from '@/lib/analytics/events';
 
 async function getUserData(userId: string) {
     return unstable_cache(
@@ -14,7 +16,7 @@ async function getUserData(userId: string) {
             const [user, sitesWithAudits, articleCount, recentArticles, highPriorityDebts, totalPlannedArticles, perSiteMinCoverage, auditCount] = await Promise.all([
                 prisma.user.findUnique({
                     where: { id: userId },
-                    select: { credits: true, name: true, email: true }
+                    select: { credits: true, name: true, email: true, createdAt: true }
                 }),
                 prisma.site.findMany({
                     where: { userId, isCompetitor: false },
@@ -171,6 +173,16 @@ export default async function UserDashboard({
             redirect('/dashboard/onboarding');
         }
         const data = await getGrowthHomeData(primarySite.id);
+
+        if (user) {
+            const days = daysSinceSignup(user);
+            captureServerEvent(targetUserId, EVENTS.DASHBOARD_RETURNED, {
+                days_since_signup: days,
+                is_return: days >= 1,
+                landing_surface: 'growth_home',
+            });
+        }
+
         return (
             <GrowthHome site={primarySite} data={data} />
         );

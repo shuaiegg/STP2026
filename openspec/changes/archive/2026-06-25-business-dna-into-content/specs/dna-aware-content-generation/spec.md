@@ -11,6 +11,17 @@ When generating article content for a site that has a business ontology, the sys
 - **WHEN** content is generated via any writing entry point (Stellar writer skill or the streaming generation route)
 - **THEN** the business DNA MUST be present in the composed system prompt for each
 
+### Requirement: Logged-in writing UI supplies the site context
+A logged-in writing surface SHALL let the user choose which site the content is for, and SHALL pass that site's id to the generation request so business DNA can be loaded.
+
+#### Scenario: Logged-in user selects a site before generating
+- **WHEN** a logged-in user generates content from a writing UI that offers a site selector
+- **THEN** the chosen `siteId` MUST be included in the generation request `input`, and the resulting system prompt MUST include that site's business DNA (when present)
+
+#### Scenario: Anonymous or no-site context
+- **WHEN** content is generated without any site context (anonymous public tool, or no site selected)
+- **THEN** no `siteId` is required, generation MUST succeed, and the business DNA section MUST be omitted
+
 ### Requirement: Graceful degradation without ontology
 The system SHALL NOT fail or degrade existing behavior when a site has no business ontology.
 

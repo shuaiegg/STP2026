@@ -1,5 +1,8 @@
-## ADDED Requirements
+# gsc-auto-sync Specification
 
+## Purpose
+TBD - created by archiving change growth-home-data-pipeline. Update Purpose after archive.
+## Requirements
 ### Requirement: Selecting a GSC property triggers an initial data sync
 When a user selects a Google Search Console property for a site, the system SHALL trigger an initial GSC data sync so keyword snapshot data begins populating without any further manual action.
 
@@ -17,3 +20,11 @@ After an initial sync completes, the Growth Home stage and pulse SHALL reflect t
 #### Scenario: Stage advances once impressions exist
 - **WHEN** the initial sync has populated `SiteKeywordSnapshot` with non-zero impressions in the trailing window
 - **THEN** `classifyStage` MUST read those impressions (no longer zero) when the Growth Home is next computed
+
+### Requirement: Growth Home reflects synced data promptly
+When a GSC sync completes, the system SHALL invalidate the Growth Home cache so the syncing state clears and freshly synced data/insight appear without waiting for the cache TTL to elapse.
+
+#### Scenario: Cache invalidated after sync
+- **WHEN** a GSC sync completes successfully for a site
+- **THEN** the `coach-home-${siteId}` cache tag MUST be revalidated, so the next Growth Home load shows the synced data and clears the syncing state rather than serving a stale syncing view for up to the cache TTL
+

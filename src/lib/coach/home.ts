@@ -5,6 +5,7 @@ import type { OnboardingStage } from './lifecycle';
 
 export const coachHomeTag = (siteId: string) => `coach-home-${siteId}`;
 
+
 export interface PulseStat {
     value: number;
     /** GSC 未连时这类指标不可得，渲染为"连接后显示"而非伪造 */
@@ -26,16 +27,36 @@ export interface GrowthHomeData {
         gapOpportunities: PulseStat;
         impressions30d: PulseStat;
     };
+    /**
+     * GSC has been connected and property selected, but snapshot data is still
+     * backfilling. False once data arrives or the sync window has elapsed.
+     */
+    syncing: boolean;
 }
 
 /**
- * 啊哈时刻：基于本体（懂你）+ 竞品/缺口（懂市场）合成一句具体洞察。
- * 不是"审计完成✅"，而是"您是做 X 的，竞品在 Y 你没有"。
+ * 啊哈时刻：基于本体（懂你）+ 竞品/缺口（懂市场）+ GSC 真实排名合成一句具体洞察。
+ * 优先级：真实排名发现 > ontology+gap+comp > ontology+gap > ontology+comp > ontology only
  */
-function buildInsight(ctx: MoveContext): CoachInsight | null {
+function buildInsight(ctx: MoveContext, nearFirstPage?: { keyword: string; position: number; impressions: number } | null): CoachInsight | null {
     const offering = ctx.ontology?.coreOfferings?.[0]?.trim();
     const comp = ctx.topCompetitor?.domain;
     const gap = ctx.topGap;
+
+    // Real ranking discovery: highest-priority when GSC data exists
+    if (nearFirstPage && ctx.impressions30d > 0) {
+        const pos = Math.round(nearFirstPage.position);
+        if (offering) {
+            return {
+                zh: `您专注于「${offering}」，已在「${nearFirstPage.keyword}」排名第 ${pos} 位——距第一页仅一步之遥，这是最快的提升机会。`,
+                en: `You focus on "${offering}" and rank #${pos} for "${nearFirstPage.keyword}" — one push away from page one.`,
+            };
+        }
+        return {
+            zh: `您在「${nearFirstPage.keyword}」排名第 ${pos} 位，距第一页仅一步之遥——这是您最快的提升机会。`,
+            en: `You rank #${pos} for "${nearFirstPage.keyword}" — one push away from page one. That's your fastest win.`,
+        };
+    }
 
     if (offering && gap && comp) {
         return {
@@ -69,22 +90,41 @@ async function computeGrowthHomeData(siteId: string): Promise<GrowthHomeData> {
     monthStart.setDate(1);
     monthStart.setHours(0, 0, 0, 0);
 
-    const [ctx, publishedThisMonth] = await Promise.all([
+    const [ctx, publishedThisMonth, gscConnection, snapshotCount, nearFirstPageKwd] = await Promise.all([
         buildMoveContext(siteId),
         prisma.plannedArticle.count({
             where: { contentPlan: { siteId }, status: 'COMPLETED', updatedAt: { gte: monthStart } },
         }),
+        // lastSyncAt is null before first sync completes — used to detect the syncing window
+        prisma.gscConnection.findFirst({
+            where: { siteId, propertyId: { not: null } },
+            select: { lastSyncAt: true },
+        }),
+        // Check if any snapshots exist yet
+        prisma.siteKeywordSnapshot.count({ where: { siteId } }),
+        // Keyword closest to first page (positions 11–20) with meaningful impressions
+        prisma.siteKeyword.findFirst({
+            where: { siteId, position: { gte: 11, lte: 20 }, impressions: { gt: 0 } },
+            orderBy: { position: 'asc' },
+            select: { keyword: true, position: true, impressions: true },
+        }),
     ]);
+
+    // syncing = GSC property selected but initial sync hasn't completed yet (lastSyncAt is still null)
+    const syncing = ctx.hasGsc && snapshotCount === 0 && gscConnection?.lastSyncAt === null;
 
     return {
         stage: ctx.stage,
-        insight: buildInsight(ctx),
+        insight: buildInsight(ctx, nearFirstPageKwd && nearFirstPageKwd.position !== null && nearFirstPageKwd.impressions !== null
+            ? { keyword: nearFirstPageKwd.keyword, position: nearFirstPageKwd.position, impressions: nearFirstPageKwd.impressions }
+            : null),
         moves: computeMoves(ctx),
         pulse: {
             publishedThisMonth: { value: publishedThisMonth, available: true },
             gapOpportunities: { value: ctx.gapCount, available: true },
             impressions30d: { value: ctx.impressions30d, available: ctx.hasGsc },
         },
+        syncing,
     };
 }
 

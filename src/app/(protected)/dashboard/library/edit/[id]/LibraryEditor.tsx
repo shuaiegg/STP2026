@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { 
-    Save, ArrowLeft, Wand2, Globe, TrendingUp, 
+import {
+    Save, ArrowLeft, Wand2, Globe, TrendingUp,
     ChevronRight, Loader2, Sparkles, AlertCircle,
     LayoutDashboard, Library, CheckCircle2, Copy
 } from 'lucide-react';
@@ -19,6 +19,12 @@ import { parseMarkdownToSections, joinSectionsToMarkdown, ContentSection } from 
 import { calculateHumanScore } from '@/lib/utils/ai-detection';
 import { updateTrackedArticle } from '@/app/actions/update-article';
 
+const COPY = {
+    sitePicker: '关联站点业务基因（可选）',
+    sitePickerDefault: '不关联（通用写作）',
+    sitePickerHint: '关联后 AI 改写将贴合该站点定位',
+} as const;
+
 export function LibraryEditor({ initialArticle }: { initialArticle: any }) {
     const t = useTranslations('dashboard.library');
     const router = useRouter();
@@ -27,6 +33,17 @@ export function LibraryEditor({ initialArticle }: { initialArticle: any }) {
     const [contentSections, setContentSections] = useState<ContentSection[]>(() =>
         initialArticle.optimizedContent ? parseMarkdownToSections(initialArticle.optimizedContent) : []
     );
+    const [selectedSiteId, setSelectedSiteId] = useState('');
+    const [userSites, setUserSites] = useState<{ id: string; name: string; domain: string }[]>([]);
+
+    useEffect(() => {
+        fetch('/api/dashboard/sites')
+            .then(r => r.json())
+            .then(data => {
+                if (data.sites) setUserSites(data.sites.filter((s: any) => !s.isCompetitor));
+            })
+            .catch(() => {});
+    }, []);
 
     const liveHumanScore = useMemo(() => {
         if (contentSections.length === 0) return null;
@@ -55,7 +72,8 @@ export function LibraryEditor({ initialArticle }: { initialArticle: any }) {
                         sectionHeading: section.heading,
                         sectionContent: section.body,
                         sectionInstruction: instruction,
-                        keywords: initialArticle.keywords?.[0] || 'SEO Content'
+                        keywords: initialArticle.keywords?.[0] || 'SEO Content',
+                        ...(selectedSiteId ? { siteId: selectedSiteId } : {}),
                     }
                 })
             });
@@ -202,6 +220,25 @@ export function LibraryEditor({ initialArticle }: { initialArticle: any }) {
                             ))}
                         </div>
                     </Card>
+
+                    {userSites.length > 0 && (
+                        <Card className="p-8 border-2 border-slate-100 bg-white rounded-3xl shadow-sm">
+                            <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                                <Globe size={16} className="text-brand-secondary" /> {COPY.sitePicker}
+                            </h3>
+                            <select
+                                value={selectedSiteId}
+                                onChange={(e) => setSelectedSiteId(e.target.value)}
+                                className="w-full bg-white border-2 border-slate-100 p-3 rounded-lg outline-none focus:border-brand-primary transition-all text-xs font-bold shadow-sm"
+                            >
+                                <option value="">{COPY.sitePickerDefault}</option>
+                                {userSites.map(site => (
+                                    <option key={site.id} value={site.id}>{site.name || site.domain}</option>
+                                ))}
+                            </select>
+                            <p className="text-[10px] text-slate-400 font-semibold mt-2">{COPY.sitePickerHint}</p>
+                        </Card>
+                    )}
 
                     <div className="p-6 bg-brand-primary/5 rounded-3xl border-2 border-dashed border-brand-primary/20">
                         <div className="flex gap-4 items-start">

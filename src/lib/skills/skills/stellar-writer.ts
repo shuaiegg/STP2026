@@ -11,6 +11,7 @@ import { StellarAuditor } from './stellar/StellarAuditor';
 import { StellarEditor } from './stellar/StellarEditor';
 import { StellarWriterOutput, StellarWriterInput, IntelligenceContext } from './stellar/types';
 import { StellarParser } from './stellar/utils/parser';
+import { getBusinessDNA } from './stellar/business-dna';
 
 export class StellarWriterSkill extends BaseSkill {
     name = 'stellar-writer';
@@ -56,7 +57,8 @@ export class StellarWriterSkill extends BaseSkill {
             // ═══════════════════════════════════════════════════════════
             if (mode === 'deep_analysis') {
                 const intelligence = await IntelligenceEngine.gather(keywords, location, 'deep', stellarInput.url);
-                const strategy = StrategyComposer.compose(intelligence, stellarInput);
+                const businessDna = stellarInput.siteId ? await getBusinessDNA(stellarInput.siteId) : null;
+                const strategy = StrategyComposer.compose(intelligence, { ...stellarInput, businessDna });
 
                 // Call LLM for outline only
                 const provider = getProvider(this.preferredProvider);
@@ -237,7 +239,8 @@ RULES:
                 intelligence = await IntelligenceEngine.gather(keywords, location, 'deep', stellarInput.url);
             }
 
-            const strategy = StrategyComposer.compose(intelligence, stellarInput);
+            const businessDna = stellarInput.siteId ? await getBusinessDNA(stellarInput.siteId) : null;
+            const strategy = StrategyComposer.compose(intelligence, { ...stellarInput, businessDna });
             const provider = getProvider(this.preferredProvider);
 
             // Re-generate outline if missing (since Full Production might skip Deep Analysis if user doesn't pass one)

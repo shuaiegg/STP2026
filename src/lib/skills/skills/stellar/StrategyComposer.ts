@@ -1,5 +1,6 @@
 
 import { IntelligenceContext, PromptStrategy } from './types';
+import { BusinessDNA } from './business-dna';
 import { buildSERPEnhancedPrompt } from '@/lib/utils/prompt-enhancer';
 import { ContentGapAnalyzer } from '@/lib/utils/content-gap-analyzer';
 
@@ -60,12 +61,17 @@ export class StrategyComposer {
             `CONTENT TYPE: ${contentType === 'landing_page' ? 'Conversion-focused landing page. Include CTAs, benefits-first structure, and social proof.' : contentType === 'guide' ? 'Comprehensive how-to guide. Use numbered steps, heavy use of H3 sub-sections, and practical examples.' : 'Long-form SEO blog post. Balance authority with readability.'}`,
         ].filter(Boolean).join('\n');
 
+        // Build business DNA section — locale-aware, only when DNA is present
+        const businessDna: BusinessDNA | null = options.businessDna ?? null;
+        const isZh = /[一-龥]/.test(keywords);
+        const businessDnaCtx = businessDna ? buildBusinessDnaSection(businessDna, isZh) : '';
+
         const systemPrompt = `Role: Elite SEO Expert & GEO Strategist
 Goal: Generate high-density, authoritative, human-like Markdown content.
 
 <personalization>
 ${personalizationCtx}
-</personalization>
+</personalization>${businessDnaCtx}
 
 <constraints>
   Tone: Objective, Analytical (NO promotional hyperbole)
@@ -147,5 +153,41 @@ ${role}
             model: 'deepseek-chat',
             temperature: 0.85
         };
+    }
+}
+
+function buildBusinessDnaSection(dna: BusinessDNA, isZh: boolean): string {
+    const parts: string[] = [];
+
+    if (isZh) {
+        if (dna.coreOfferings.length > 0) parts.push(`  核心服务/产品：${dna.coreOfferings.join(' / ')}`);
+        if (dna.targetAudience.length > 0) parts.push(`  目标受众：${dna.targetAudience.join(' / ')}`);
+        if (dna.painPointsSolved.length > 0) parts.push(`  解决的核心痛点：${dna.painPointsSolved.join(' / ')}`);
+
+        if (parts.length === 0) return '';
+        return `
+
+<business_dna>
+  以下是本文所属企业的业务基因。请据此写作（而非泛泛而谈）：
+  · 以「目标受众」为明确读者对象，开篇可直击其核心痛点；
+  · 用「核心服务/产品」所在领域的专业深度来组织论点、举例与数据；
+  · 保持客观分析，绝不变成对该企业的推销、自我宣传或点名吹捧。
+${parts.join('\n')}
+</business_dna>`;
+    } else {
+        if (dna.coreOfferings.length > 0) parts.push(`  Core offerings: ${dna.coreOfferings.join(' / ')}`);
+        if (dna.targetAudience.length > 0) parts.push(`  Target audience: ${dna.targetAudience.join(' / ')}`);
+        if (dna.painPointsSolved.length > 0) parts.push(`  Pain points addressed: ${dna.painPointsSolved.join(' / ')}`);
+
+        if (parts.length === 0) return '';
+        return `
+
+<business_dna>
+  Below is the business DNA of the company this article is for. Write accordingly (not generically):
+  · Address the target audience explicitly as your reader; you may open by hitting their core pain points.
+  · Bring the domain depth implied by the core offerings to your arguments, examples, and data.
+  · Stay objective and analytical — never turn this into promotion, self-praise, or name-dropping the business.
+${parts.join('\n')}
+</business_dna>`;
     }
 }

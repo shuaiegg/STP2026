@@ -582,7 +582,8 @@
         "integrations": "集成管理",
         "models": "模型管理",
         "consultations": "咨询管理"
-      }
+      },
+      "overview": "总览"
     },
     "coach": {
       "title": "增长导航",

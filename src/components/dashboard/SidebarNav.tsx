@@ -26,7 +26,8 @@ import {
   Globe,
   Search,
   LineChart,
-  ShieldAlert
+  ShieldAlert,
+  Home,
 } from 'lucide-react';
 import { HealthScoreBadge } from '@/components/ui/HealthScoreBadge';
 import { authClient } from '@/lib/auth-client';
@@ -123,8 +124,14 @@ export function SidebarNav({ sites, currentSiteId, user }: SidebarNavProps) {
   // 反复 prefetch/导航该重定向路由，触发浏览器导航限流、卡死）。
   const homeHref = siteId ? '/dashboard' : '/dashboard/onboarding';
 
-  // Primary Navigation mapping: Diagnose / Produce / Measure
+  // Primary Navigation mapping: Overview → Diagnose → Produce → Measure
   const primaryLinks = [
+    {
+      name: t('overview'),
+      href: homeHref,
+      icon: Home,
+      isActive: pathname === '/dashboard',
+    },
     {
       name: t('diagnose'),
       href: siteId ? `/dashboard/site-intelligence/${siteId}` : '/dashboard/onboarding',
@@ -172,8 +179,8 @@ export function SidebarNav({ sites, currentSiteId, user }: SidebarNavProps) {
   });
 
   const SidebarContent = () => (
-    <div className="flex-1 flex flex-col justify-between h-full bg-white text-brand-text-primary">
-      <div className="space-y-6 py-5">
+    <div className="flex-1 flex flex-col h-full bg-white text-brand-text-primary">
+      <div className="flex-1 min-h-0 overflow-y-auto space-y-6 py-5">
         {/* Workspace Brand Title */}
         <div className="px-6 flex items-center justify-between">
           <Link href={homeHref} className="flex items-center gap-2.5 group">
@@ -184,11 +191,12 @@ export function SidebarNav({ sites, currentSiteId, user }: SidebarNavProps) {
               ScaletoTop
             </span>
           </Link>
-          <button 
-            onClick={() => setIsMobileOpen(false)} 
-            className="md:hidden p-1.5 rounded-lg hover:bg-brand-surface text-brand-text-muted"
+          <button
+            onClick={() => setIsMobileOpen(false)}
+            aria-label={t('closeMobileMenu')}
+            className="md:hidden p-1.5 rounded-lg hover:bg-brand-surface text-brand-text-muted focus-visible:ring-2 focus-visible:ring-brand-secondary focus-visible:outline-none"
           >
-            <X size={18} />
+            <X size={18} aria-hidden="true" />
           </button>
         </div>
 
@@ -198,7 +206,7 @@ export function SidebarNav({ sites, currentSiteId, user }: SidebarNavProps) {
             <div className="relative">
               <button
                 onClick={() => setIsSiteOpen(prev => !prev)}
-                className="w-full flex items-center justify-between p-3 rounded-lg border border-brand-border hover:border-brand-border-heavy hover:bg-brand-surface/60 hover:shadow-sm transition-all focus:outline-none"
+                className="w-full flex items-center justify-between p-3 rounded-lg border border-brand-border hover:border-brand-border-heavy hover:bg-brand-surface/60 hover:shadow-sm transition-colors focus-visible:ring-2 focus-visible:ring-brand-secondary focus-visible:outline-none"
               >
                 <div className="flex flex-col items-start min-w-0 pr-2">
                   <span className="text-xs font-black uppercase tracking-widest text-brand-text-muted mb-0.5">{t('mySite')}</span>
@@ -269,9 +277,9 @@ export function SidebarNav({ sites, currentSiteId, user }: SidebarNavProps) {
               key={link.name}
               href={link.href}
               onClick={() => setIsMobileOpen(false)}
-              className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-all ${
-                link.isActive 
-                  ? 'bg-brand-text-primary text-white font-bold shadow-sm' 
+              className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-colors ${
+                link.isActive
+                  ? 'bg-brand-text-primary text-white font-bold shadow-sm'
                   : 'text-brand-text-secondary hover:text-brand-text-primary hover:bg-brand-surface font-medium'
               }`}
             >
@@ -319,9 +327,9 @@ export function SidebarNav({ sites, currentSiteId, user }: SidebarNavProps) {
                       key={link.href}
                       href={link.href}
                       onClick={() => setIsMobileOpen(false)}
-                      className={`flex items-center gap-2.5 px-4 py-2 rounded-lg text-xs transition-all ${
-                        isActive 
-                          ? 'bg-brand-border text-brand-text-primary font-bold' 
+                      className={`flex items-center gap-2.5 px-4 py-2 rounded-lg text-xs transition-colors ${
+                        isActive
+                          ? 'bg-brand-border text-brand-text-primary font-bold'
                           : 'text-brand-text-muted hover:text-brand-text-primary hover:bg-brand-surface'
                       }`}
                     >
@@ -338,7 +346,7 @@ export function SidebarNav({ sites, currentSiteId, user }: SidebarNavProps) {
       </div>
 
       {/* User Info Area (bottom sticky) */}
-      <div className="border-t border-brand-border p-4 space-y-4 bg-brand-surface/60">
+      <div className="shrink-0 border-t border-brand-border p-4 space-y-4 bg-brand-surface/60">
         {/* Credits usage display */}
         <div className="flex items-center justify-between bg-white p-2.5 rounded-lg border border-brand-border">
           <div className="flex items-center gap-2">
@@ -387,7 +395,7 @@ export function SidebarNav({ sites, currentSiteId, user }: SidebarNavProps) {
           <button
             onClick={toggleLanguage}
             disabled={isSwitchingLang}
-            className="flex items-center gap-1.5 hover:text-brand-secondary transition-colors focus:outline-none"
+            className="flex items-center gap-1.5 hover:text-brand-secondary transition-colors focus-visible:ring-2 focus-visible:ring-brand-secondary focus-visible:outline-none rounded"
           >
             <Globe size={13} />
             <span>{t('nextLang')}</span>
@@ -395,7 +403,7 @@ export function SidebarNav({ sites, currentSiteId, user }: SidebarNavProps) {
 
           <button
             onClick={handleSignOut}
-            className="flex items-center gap-1.5 text-brand-error hover:text-brand-error transition-colors focus:outline-none"
+            className="flex items-center gap-1.5 text-brand-error hover:text-brand-error transition-colors focus-visible:ring-2 focus-visible:ring-brand-error focus-visible:outline-none rounded"
           >
             <LogOut size={13} />
             <span>{t('signOut')}</span>
@@ -417,9 +425,10 @@ export function SidebarNav({ sites, currentSiteId, user }: SidebarNavProps) {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsMobileOpen(true)}
-            className="p-1.5 -ml-1.5 text-brand-text-secondary hover:bg-brand-surface rounded-lg transition-colors"
+            aria-label={t('openMobileMenu')}
+            className="p-1.5 -ml-1.5 text-brand-text-secondary hover:bg-brand-surface rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-brand-secondary focus-visible:outline-none"
           >
-            <Menu size={22} />
+            <Menu size={22} aria-hidden="true" />
           </button>
           <span className="text-sm font-bold text-brand-text-primary font-display truncate max-w-[150px]">
             {displayedSite ? displayedSite.domain : 'ScaletoTop'}

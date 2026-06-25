@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/Badge';
 import { useTranslations, useLocale } from 'next-intl';
 import {
     Target, Zap, ArrowRight, ShieldCheck, Search, Layers,
-    Link2, Send, RefreshCw, FileText, X, PenLine, BarChart3, Sparkles,
+    Link2, Send, RefreshCw, FileText, X, PenLine, BarChart3, Sparkles, Loader2,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -14,6 +14,14 @@ import posthog from 'posthog-js';
 import { dismissCoachMove, startCoachMove } from '@/app/actions/coach';
 import type { GrowthHomeData } from '@/lib/coach/home';
 import { DeleteSiteButton } from '@/components/dashboard/DeleteSiteButton';
+import { GscPerformanceSummary } from '@/components/coach/GscPerformanceSummary';
+
+const COPY = {
+    syncingTitle: { zh: 'GSC 数据同步中', en: 'GSC data syncing' },
+    syncingDesc: { zh: 'Google Search Console 数据正在回填，通常需要几分钟到数小时。页面将自动更新。', en: 'Google Search Console data is backfilling — this usually takes a few minutes to a few hours. The page will update automatically.' },
+    syncingTimeout: { zh: '如果较长时间未出现数据，可访问搜索表现标签页手动同步。', en: 'If data does not appear after a while, visit the Performance tab to manually sync.' },
+    performanceTitle: { zh: '搜索表现', en: 'Search performance' },
+} as const;
 
 const MOVE_ICONS: Record<string, React.ReactNode> = {
     connect_gsc: <BarChart3 size={18} />,
@@ -37,7 +45,7 @@ export function GrowthHome({ site, data }: GrowthHomeProps) {
     const [, startTransition] = useTransition();
     const [dismissed, setDismissed] = useState<Set<string>>(new Set());
 
-    const { stage, insight, moves, pulse } = data;
+    const { stage, insight, moves, pulse, syncing } = data;
     const isFoundationStage = stage === '0' || stage === 'unmeasured';
 
     // Activation funnel: the coach moment is the first "what should I do" surface
@@ -95,7 +103,7 @@ export function GrowthHome({ site, data }: GrowthHomeProps) {
             {/* ── Aha insight: understands your business + an opening ── */}
             {insight && (
                 <div className="flex items-start gap-3 rounded-lg border border-brand-secondary/30 bg-brand-secondary/5 p-5">
-                    <span className="mt-0.5 text-brand-secondary shrink-0"><Sparkles size={20} /></span>
+                    <span className="mt-0.5 text-brand-secondary shrink-0"><Sparkles size={20} aria-hidden="true" /></span>
                     <div>
                         <p className="text-[11px] font-bold uppercase tracking-widest text-brand-secondary mb-1">
                             {t('insightLabel')}
@@ -170,13 +178,39 @@ export function GrowthHome({ site, data }: GrowthHomeProps) {
                 )}
             </section>
 
+            {/* ── Syncing middle state (GSC connected, data still backfilling) ── */}
+            {syncing && (
+                <div className="flex items-start gap-3 rounded-lg border border-brand-info/30 bg-brand-info-muted p-5">
+                    <Loader2 size={20} className="mt-0.5 text-brand-info animate-spin shrink-0" aria-hidden="true" />
+                    <div>
+                        <p className="text-[11px] font-bold uppercase tracking-widest text-brand-info mb-1">
+                            {COPY.syncingTitle[locale]}
+                        </p>
+                        <p className="text-sm text-brand-text-primary leading-relaxed">
+                            {COPY.syncingDesc[locale]}
+                        </p>
+                        <p className="text-xs text-brand-text-muted mt-1">{COPY.syncingTimeout[locale]}</p>
+                    </div>
+                </div>
+            )}
+
+            {/* ── GSC Performance card (compact) — only when data is available ── */}
+            {pulse.impressions30d.available && !syncing && (
+                <section className="space-y-3">
+                    <h2 className="text-sm font-display font-semibold text-brand-text-primary">
+                        {COPY.performanceTitle[locale]}
+                    </h2>
+                    <GscPerformanceSummary siteId={site.id} locale={locale} />
+                </section>
+            )}
+
             {/* ── Momentum (honest, read-only) ──────────────────────── */}
             <section className="space-y-4">
                 <h2 className="text-sm font-display font-semibold text-brand-text-primary">{t('pulseTitle')}</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <PulseCard label={t('pulse.published')} stat={pulse.publishedThisMonth} t={t} />
                     <PulseCard label={t('pulse.gaps')} stat={pulse.gapOpportunities} t={t} />
-                    <PulseCard label={t('pulse.impressions')} stat={pulse.impressions30d} t={t} />
+                    {!syncing && <PulseCard label={t('pulse.impressions')} stat={pulse.impressions30d} t={t} />}
                 </div>
             </section>
 

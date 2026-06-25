@@ -6,6 +6,8 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { ContentStatus } from '@prisma/client';
 import { PUBLIC_CONTENT_TAG } from '@/lib/content';
+import { captureServerEvent } from '@/lib/analytics/posthog-server';
+import { EVENTS, daysSinceSignup } from '@/lib/analytics/events';
 
 /**
  * Centrally manage revalidation for all paths affected by a content change.
@@ -171,6 +173,25 @@ export async function updateContentMetadata(id: string, data: {
         // 2.5. Content Flywheel ④→⑤：博客首次发布时自动注册引用追踪
         if (current.status !== 'PUBLISHED' && data.status === 'PUBLISHED' && updated.type === 'BLOG') {
             await upsertTrackedArticleFromContent(updated);
+        }
+
+        // Activation funnel: first publish event (de-dup via firstMeaningfulActionAt)
+        if (isPublishing) {
+            const sessionUser = await prisma.user.findUnique({
+                where: { id: session.user.id },
+                select: { firstMeaningfulActionAt: true, createdAt: true },
+            });
+            if (sessionUser && !sessionUser.firstMeaningfulActionAt) {
+                await prisma.user.update({
+                    where: { id: session.user.id },
+                    data: { firstMeaningfulActionAt: new Date() },
+                });
+                captureServerEvent(session.user.id, EVENTS.FIRST_MEANINGFUL_ACTION_COMPLETED, {
+                    action_type: 'published',
+                    days_since_signup: daysSinceSignup(sessionUser),
+                    credits_spent: 0,
+                });
+            }
         }
 
         // 3. Revalidate affected paths

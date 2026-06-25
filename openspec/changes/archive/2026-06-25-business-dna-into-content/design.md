@@ -48,6 +48,20 @@ generate-stream/route.ts            ─┴─→ IntelligenceContext/options
 
 写作入口已知 `siteId`（或可由执行上下文获得）。在 `executeInternal` / generate-stream 处用 `siteId` 查最新 `SiteOntology`（取 `version desc` 第一条，与 coach `buildMoveContext` 取法一致），整理为精简 DNA 对象后随 `options` 传入 `compose`。仅取写作需要的字段，避免把整条 ontology 塞进 prompt。
 
+### 决策 2b（2026-06-25 审查修订）：siteId 由登录写作 UI 的站点选择器显式提供
+
+**背景**：首版实现把 server 端接通了（`getBusinessDNA(siteId)` + 注入），但**没有任何调用方传 siteId**——主写作 UI `geo-writer` 是公开、无站点的工具，admin EditForm / library editor 也都不带 siteId。结果 `stellarInput.siteId` 恒为 `undefined`，DNA 永不注入（空接）。
+
+**根因**：写作面本身不是站点作用域的，proposal 假设了不成立的前提。
+
+**决策**：在**登录态的写作 UI**（geo-writer 登录态、library editor）加站点选择器，用户选定后把 `siteId` 放进发往 `skills/execute` 的 `input`，再经 stellar-writer 透传到 `compose`。匿名/无站点场景维持现状（无 DNA，决策 4 降级）。多站点用户由此得到精确控制。
+
+| 方案 | 结论 |
+|------|------|
+| 登录写作 UI 加站点选择器 | ✅ 选用：精确、支持多站点、显式可控 |
+| 服务端按用户单站点自动推断 | 快但多站点不准，作为后续可选增强 |
+| 仅 library/已归属站点文章注入 | 范围过窄，覆盖不到主写作流 |
+
 ### 决策 3：locale 对齐
 
 DNA 段的措辞语言须与产出内容 `locale` 一致（生成中文文章用中文描述 DNA，英文同理），避免中英混杂污染产出。ontology 字段本身可能是单语，必要时按 locale 简单处理（实现时定）。

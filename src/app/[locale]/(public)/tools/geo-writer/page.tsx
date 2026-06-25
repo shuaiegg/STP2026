@@ -104,12 +104,24 @@ function GEOWriterPageContent() {
         originalContent: '',
         url: '', // Target domain for internal linking
         autoVisuals: false, // Default to false: Auto-insert visuals into content
-        locale: 'en'
+        locale: 'en',
+        siteId: '',
     });
+    const [userSites, setUserSites] = useState<{ id: string; name: string; domain: string }[]>([]);
 
     useEffect(() => {
         posthog.capture('tool_page_viewed', { tool: 'geo-writer' });
     }, []);
+
+    useEffect(() => {
+        if (!session?.user) return;
+        fetch('/api/dashboard/sites')
+            .then(r => r.json())
+            .then(data => {
+                if (data.sites) setUserSites(data.sites.filter((s: any) => !s.isCompetitor));
+            })
+            .catch(() => {});
+    }, [session?.user]);
 
     // Initialize from URL parameters
     useEffect(() => {
@@ -855,6 +867,26 @@ function GEOWriterPageContent() {
                                         className="w-full bg-white border-2 border-brand-border p-4 outline-none focus:border-brand-primary transition-all text-sm rounded-xl shadow-sm"
                                     />
                                 </div>
+
+                                {userSites.length > 0 && (
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-bold text-brand-text-primary flex items-center gap-2">
+                                            <Globe size={16} className="text-brand-secondary" />
+                                            关联站点业务基因（可选）
+                                        </label>
+                                        <select
+                                            value={form.siteId}
+                                            onChange={(e) => setForm({ ...form, siteId: e.target.value })}
+                                            className="w-full bg-white border-2 border-brand-border p-4 outline-none focus:border-brand-primary transition-all text-sm rounded-xl shadow-sm"
+                                        >
+                                            <option value="">不关联（通用写作）</option>
+                                            {userSites.map(site => (
+                                                <option key={site.id} value={site.id}>{site.name || site.domain}</option>
+                                            ))}
+                                        </select>
+                                        <p className="text-[11px] text-brand-text-muted">选定后，AI 将以该站点的业务基因（受众 / 定位 / 痛点）确定写作视角</p>
+                                    </div>
+                                )}
 
                                 <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-xl border-2 border-slate-100 hover:border-brand-primary/50 transition-all cursor-pointer" onClick={() => setForm({ ...form, autoVisuals: !form.autoVisuals })}>
                                     <div className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${form.autoVisuals ? 'bg-brand-primary border-brand-primary text-white' : 'bg-white border-slate-300'}`}>

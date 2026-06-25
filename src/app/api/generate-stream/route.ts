@@ -4,6 +4,7 @@ import { getStreamingClient } from '@/lib/vps-proxy';
 import { resolveModelForContext } from '@/lib/skills/model-resolver';
 import { StrategyComposer } from '@/lib/skills/skills/stellar/StrategyComposer';
 import { IntelligenceContext } from '@/lib/skills/skills/stellar/types';
+import { getBusinessDNA } from '@/lib/skills/skills/stellar/business-dna';
 import { humanizePro } from '@/lib/utils/humanize';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
@@ -127,7 +128,8 @@ export async function POST(req: Request) {
             internalContent: []
         };
 
-        const strategy = StrategyComposer.compose(intelligenceContext, input);
+        const businessDna = input.siteId ? await getBusinessDNA(input.siteId) : null;
+        const strategy = StrategyComposer.compose(intelligenceContext, { ...input, businessDna });
 
         const customStream = new ReadableStream({
             async start(controller) {

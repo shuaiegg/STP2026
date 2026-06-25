@@ -40,6 +40,15 @@ export async function POST(
 
         revalidateSiteCache(siteId);
 
+        // Fire-and-forget: trigger initial GSC data sync so snapshots start populating
+        // without the user having to visit any other tab. Failure is logged, not surfaced.
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+        const cookieHeader = request.headers.get('cookie') || '';
+        fetch(`${appUrl}/api/dashboard/sites/${siteId}/gsc-sync`, {
+            method: 'POST',
+            headers: { cookie: cookieHeader },
+        }).catch((err: Error) => console.error('[gsc-auto-sync] initial sync failed:', err.message));
+
         return NextResponse.json({ success: true, connection: updated });
     } catch (error: any) {
         console.error("Failed to select GSC property:", error);

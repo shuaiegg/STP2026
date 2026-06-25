@@ -328,26 +328,31 @@ export default async function BlogPost({ params }: BlogPostProps) {
                             <ReactMarkdown
                                 remarkPlugins={[remarkGfm]}
                                 components={{
+                                    // ReactMarkdown wraps standalone images in <p>, so this renderer
+                                    // must emit phrasing content only — use <span> (display:block) instead
+                                    // of <figure>/<div> to avoid invalid <figure>-in-<p> hydration errors.
                                     img: ({ node, ...props }) => (
-                                        <figure className="my-12 not-prose">
-                                            <div className="border-2 border-brand-border overflow-hidden relative aspect-[16/9]">
-                                                <Image
+                                        <span className="block my-12 not-prose">
+                                            <span className="block border-2 border-brand-border overflow-hidden relative aspect-[16/9]">
+                                                {/* Markdown body images come from arbitrary hosts (incl. AI-generated
+                                                    placeholders); use a plain <img> so an unconfigured next/image host
+                                                    can never crash the whole article page. */}
+                                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                <img
                                                     src={(props.src as string) || ''}
                                                     alt={(props.alt as string) || ''}
-                                                    width={800}
-                                                    height={450}
-                                                    className="w-full h-auto"
+                                                    className="w-full h-full object-cover"
                                                     loading="lazy"
                                                 />
-                                            </div>
+                                            </span>
                                             {props.alt && (
-                                                <figcaption className="mt-4 text-center">
+                                                <span className="block mt-4 text-center">
                                                     <span className="inline-block font-mono text-xs text-brand-text-muted uppercase tracking-wider px-3 py-1 border border-brand-border bg-brand-surface">
                                                         {props.alt}
                                                     </span>
-                                                </figcaption>
+                                                </span>
                                             )}
-                                        </figure>
+                                        </span>
                                     ),
                                 }}
                             >
