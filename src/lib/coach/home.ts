@@ -5,6 +5,8 @@ import type { OnboardingStage } from './lifecycle';
 
 export const coachHomeTag = (siteId: string) => `coach-home-${siteId}`;
 
+/** 覆盖度 >= 此阈值视为"已建立"支柱 */
+const COVERAGE_THRESHOLD = 60;
 
 export interface PulseStat {
     value: number;
@@ -16,6 +18,41 @@ export interface CoachInsight {
     /** 一句"懂你的业务 + 一个机会"的啊哈洞察（双语） */
     zh: string;
     en: string;
+}
+
+/** 单条内容支柱（来自 idealTopicMap × SemanticDebt） */
+export interface BlueprintPillar {
+    topic: string;
+    subtopics: string[];
+    /** high / medium / low */
+    relevance: string;
+    /** 0–100，null 表示尚未分析 */
+    coverageScore: number | null;
+    /** 0–100，null 表示尚未分析 */
+    proofDensity: number | null;
+    /** GSC 曝光量（无 GSC 时为 null） */
+    gscImpressions: number | null;
+    /** coverageScore >= COVERAGE_THRESHOLD */
+    isCovered: boolean;
+    /** 已覆盖但证据密度低（proofDensity < 50） → 推荐"补证据"动作 */
+    hasProofGap: boolean;
+}
+
+/** GrowthHome 的内容资产蓝图 */
+export interface ContentBlueprint {
+    pillars: BlueprintPillar[];
+    /** 已覆盖支柱数 */
+    coveredCount: number;
+    /** 支柱总数 */
+    totalCount: number;
+    /** 本月已完成文章数（作为月增量代理指标） */
+    monthlyDelta: number;
+    /** 加冕支柱的 topic（最快下一步：覆盖低 × 需求高） */
+    crownedTopic: string | null;
+    /** 站点级 logicChains（Problem→Solution→Proof，非 per-pillar） */
+    logicChains: Array<{ problem: string; solution: string; proof: string }>;
+    /** stage 0/unmeasured → true（蓝图为主角），否则为常驻区 */
+    isPrimary: boolean;
 }
 
 export interface GrowthHomeData {
@@ -32,6 +69,8 @@ export interface GrowthHomeData {
      * backfilling. False once data arrives or the sync window has elapsed.
      */
     syncing: boolean;
+    /** 内容资产蓝图（DNA 支柱 × 覆盖/证据/需求） */
+    blueprint: ContentBlueprint | null;
 }
 
 /**
@@ -85,6 +124,81 @@ function buildInsight(ctx: MoveContext, nearFirstPage?: { keyword: string; posit
     return null;
 }
 
+/** 从 idealTopicMap + SemanticDebt 构建内容资产蓝图 */
+async function computeBlueprint(
+    siteId: string,
+    stage: OnboardingStage,
+    publishedThisMonth: number,
+): Promise<ContentBlueprint | null> {
+    const ontology = await prisma.siteOntology.findFirst({
+        where: { siteId },
+        orderBy: { version: 'desc' },
+        select: { id: true, idealTopicMap: true, logicChains: true },
+    });
+
+    if (!ontology) return null;
+
+    const idealTopics = (ontology.idealTopicMap as Array<{ topic: string; subtopics?: string[] }>) || [];
+    if (idealTopics.length === 0) return null;
+
+    const debts = await prisma.semanticDebt.findMany({
+        where: { ontologyId: ontology.id },
+        select: { topic: true, subtopics: true, relevance: true, coverageScore: true, proofDensity: true, gscImpressions: true },
+    });
+
+    // 归一化匹配（trim + 小写）容忍大小写/空格差异。注意：debt.topic 与 idealTopicMap
+    // 必须同语言才能匹配——locale 在 getSemanticGap 调用处保证（见 ontology.ts / save 路由）。
+    const norm = (s: string) => s.trim().toLowerCase();
+    const debtByTopic = new Map(debts.map((d) => [norm(d.topic), d]));
+
+    // 安全失败原则：无匹配 debt → 视为"未覆盖/未评估"（coverageScore=null），
+    // 绝不臆断为"已建立"——把缺口藏起来比多显示一项工作危险得多。
+    // 真·强项（getSemanticGap 的 ourStrengths）目前未持久化，准确计数见 backlog。
+    const pillars: BlueprintPillar[] = idealTopics.map((t) => {
+        const debt = debtByTopic.get(norm(t.topic));
+        const coverageScore = debt?.coverageScore ?? null;
+        const proofDensity = debt?.proofDensity ?? null;
+        const isCovered = coverageScore !== null && coverageScore >= COVERAGE_THRESHOLD;
+        return {
+            topic: t.topic,
+            subtopics: debt?.subtopics ?? t.subtopics ?? [],
+            relevance: debt?.relevance ?? 'medium',
+            coverageScore,
+            proofDensity,
+            gscImpressions: debt?.gscImpressions ?? null,
+            isCovered,
+            hasProofGap: isCovered && proofDensity !== null && proofDensity < 50,
+        };
+    });
+
+    const coveredCount = pillars.filter((p) => p.isCovered).length;
+
+    // 加冕：覆盖低 × 需求高 → top1
+    const uncovered = pillars.filter((p) => !p.isCovered);
+    const crowned = uncovered.sort((a, b) => {
+        const demandA = a.gscImpressions ?? 0;
+        const demandB = b.gscImpressions ?? 0;
+        const coverA = a.coverageScore ?? 0;
+        const coverB = b.coverageScore ?? 0;
+        // Higher demand wins; break ties by lower coverage
+        if (demandB !== demandA) return demandB - demandA;
+        return coverA - coverB;
+    })[0] ?? null;
+
+    const logicChains = (ontology.logicChains as Array<{ problem: string; solution: string; proof: string }>) ?? [];
+    const isPrimary = stage === '0' || stage === 'unmeasured';
+
+    return {
+        pillars,
+        coveredCount,
+        totalCount: pillars.length,
+        monthlyDelta: publishedThisMonth,
+        crownedTopic: crowned?.topic ?? null,
+        logicChains,
+        isPrimary,
+    };
+}
+
 async function computeGrowthHomeData(siteId: string): Promise<GrowthHomeData> {
     const monthStart = new Date();
     monthStart.setDate(1);
@@ -113,8 +227,11 @@ async function computeGrowthHomeData(siteId: string): Promise<GrowthHomeData> {
     // syncing = GSC property selected but initial sync hasn't completed yet (lastSyncAt is still null)
     const syncing = ctx.hasGsc && snapshotCount === 0 && gscConnection?.lastSyncAt === null;
 
+    const stage = ctx.stage;
+    const blueprint = await computeBlueprint(siteId, stage, publishedThisMonth);
+
     return {
-        stage: ctx.stage,
+        stage,
         insight: buildInsight(ctx, nearFirstPageKwd && nearFirstPageKwd.position !== null && nearFirstPageKwd.impressions !== null
             ? { keyword: nearFirstPageKwd.keyword, position: nearFirstPageKwd.position, impressions: nearFirstPageKwd.impressions }
             : null),
@@ -125,6 +242,7 @@ async function computeGrowthHomeData(siteId: string): Promise<GrowthHomeData> {
             impressions30d: { value: ctx.impressions30d, available: ctx.hasGsc },
         },
         syncing,
+        blueprint,
     };
 }
 

@@ -7,6 +7,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import {
     Target, Zap, ArrowRight, ShieldCheck, Search, Layers,
     Link2, Send, RefreshCw, FileText, X, PenLine, BarChart3, Sparkles, Loader2,
+    Map,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -15,12 +16,14 @@ import { dismissCoachMove, startCoachMove } from '@/app/actions/coach';
 import type { GrowthHomeData } from '@/lib/coach/home';
 import { DeleteSiteButton } from '@/components/dashboard/DeleteSiteButton';
 import { GscPerformanceSummary } from '@/components/coach/GscPerformanceSummary';
+import { ContentAssetBlueprint } from '@/components/coach/ContentAssetBlueprint';
 
 const COPY = {
     syncingTitle: { zh: 'GSC 数据同步中', en: 'GSC data syncing' },
     syncingDesc: { zh: 'Google Search Console 数据正在回填，通常需要几分钟到数小时。页面将自动更新。', en: 'Google Search Console data is backfilling — this usually takes a few minutes to a few hours. The page will update automatically.' },
     syncingTimeout: { zh: '如果较长时间未出现数据，可访问搜索表现标签页手动同步。', en: 'If data does not appear after a while, visit the Performance tab to manually sync.' },
     performanceTitle: { zh: '搜索表现', en: 'Search performance' },
+    blueprintTitle: { zh: '内容资产蓝图', en: 'Content Asset Blueprint' },
 } as const;
 
 const MOVE_ICONS: Record<string, React.ReactNode> = {
@@ -36,16 +39,17 @@ const MOVE_ICONS: Record<string, React.ReactNode> = {
 interface GrowthHomeProps {
     site: { id: string; domain: string };
     data: GrowthHomeData;
+    onStrategySwitch?: () => void;
 }
 
-export function GrowthHome({ site, data }: GrowthHomeProps) {
+export function GrowthHome({ site, data, onStrategySwitch }: GrowthHomeProps) {
     const t = useTranslations('dashboard.coach');
     const locale = useLocale() as 'zh' | 'en';
     const router = useRouter();
     const [, startTransition] = useTransition();
     const [dismissed, setDismissed] = useState<Set<string>>(new Set());
 
-    const { stage, insight, moves, pulse, syncing } = data;
+    const { stage, insight, moves, pulse, syncing, blueprint } = data;
     const isFoundationStage = stage === '0' || stage === 'unmeasured';
 
     // Activation funnel: the coach moment is the first "what should I do" surface
@@ -113,6 +117,22 @@ export function GrowthHome({ site, data }: GrowthHomeProps) {
                         </p>
                     </div>
                 </div>
+            )}
+
+            {/* ── Blueprint: primary position for stage 0 / unmeasured ── */}
+            {blueprint?.isPrimary && blueprint && (
+                <section className="space-y-4">
+                    <h2 className="text-sm font-display font-semibold text-brand-text-primary flex items-center gap-2">
+                        <Map size={16} className="text-brand-secondary" aria-hidden="true" />
+                        {COPY.blueprintTitle[locale]}
+                    </h2>
+                    <ContentAssetBlueprint
+                        siteId={site.id}
+                        blueprint={blueprint}
+                        locale={locale}
+                        onStrategySwitch={onStrategySwitch}
+                    />
+                </section>
             )}
 
             {/* ── This week's priorities ────────────────────────────── */}
@@ -201,6 +221,22 @@ export function GrowthHome({ site, data }: GrowthHomeProps) {
                         {COPY.performanceTitle[locale]}
                     </h2>
                     <GscPerformanceSummary siteId={site.id} locale={locale} />
+                </section>
+            )}
+
+            {/* ── Blueprint: persistent section when GSC data is available ── */}
+            {blueprint && !blueprint.isPrimary && (
+                <section className="space-y-4">
+                    <h2 className="text-sm font-display font-semibold text-brand-text-primary flex items-center gap-2">
+                        <Map size={16} className="text-brand-secondary" aria-hidden="true" />
+                        {COPY.blueprintTitle[locale]}
+                    </h2>
+                    <ContentAssetBlueprint
+                        siteId={site.id}
+                        blueprint={blueprint}
+                        locale={locale}
+                        onStrategySwitch={onStrategySwitch}
+                    />
                 </section>
             )}
 
