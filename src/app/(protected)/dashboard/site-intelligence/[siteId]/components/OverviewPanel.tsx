@@ -1,11 +1,11 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import Link from 'next/link';
 import { IntegrationGuidanceCard } from '@/components/dashboard/IntegrationGuidanceCard';
 import { KeywordTrendChart } from '@/components/dashboard/site-intelligence/KeywordTrendChart';
 import { OrganicTrafficChart } from '@/components/dashboard/site-intelligence/OrganicTrafficChart';
-import { Zap, ChevronRight, TrendingUp, Search, BarChart2, AlertCircle } from 'lucide-react';
+import { DnaEditor } from './DnaEditor';
+import { Zap, ChevronRight, TrendingUp, Search, BarChart2, Dna } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 
@@ -36,6 +36,8 @@ export function OverviewPanel({
     const [chartRefreshKey, setChartRefreshKey] = useState(0);
     const [siteData, setSiteData] = useState<any>(null);
 
+    const [ontologyFull, setOntologyFull] = useState<any | null>(null);
+    const [ontologyLoading, setOntologyLoading] = useState(true);
     const [selectedDebt, setSelectedDebt] = useState<any | null>(null);
 
     const handleDebtClick = useCallback((debt: any) => {
@@ -50,6 +52,19 @@ export function OverviewPanel({
         onSwitchTab?.('strategy');
         setSelectedDebt(null);
     }, [onSwitchTab]);
+
+    const fetchOntology = useCallback(async () => {
+        setOntologyLoading(true);
+        try {
+            const res = await fetch(`/api/dashboard/sites/${siteId}/ontology`);
+            const data = await res.json();
+            if (data.success) setOntologyFull(data.ontology);
+        } catch (e) {
+            console.error('Failed to load ontology:', e);
+        } finally {
+            setOntologyLoading(false);
+        }
+    }, [siteId]);
 
     const fetchData = useCallback(async () => {
         setLoading(true);
@@ -113,7 +128,7 @@ export function OverviewPanel({
             const res = await fetch(`/api/dashboard/sites/${siteId}/ontology`, { method: 'POST' });
             const data = await res.json();
             if (data.success) {
-                await fetchData();
+                await Promise.all([fetchData(), fetchOntology()]);
             } else {
                 toast.error(data.error || t('extractDnaError'));
             }
@@ -123,11 +138,12 @@ export function OverviewPanel({
         } finally {
             setIsExtractingDNA(false);
         }
-    }, [siteId, fetchData, t]);
+    }, [siteId, fetchData, fetchOntology, t]);
 
     useEffect(() => {
         fetchData();
-    }, [fetchData]);
+        fetchOntology();
+    }, [fetchData, fetchOntology]);
 
     if (loading) {
         return (
@@ -150,7 +166,7 @@ export function OverviewPanel({
     const isScoreWarn = techScore >= 50 && techScore < 80;
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-8" id="overview">
             {/* Top Row: Core Metrics & Status */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Health Score Card */}
@@ -208,6 +224,24 @@ export function OverviewPanel({
                 </Card>
             </div>
 
+            {/* Business DNA Editor */}
+            <div className="space-y-4">
+                <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                    <Dna size={16} className="text-brand-primary" /> {t('coreDna')}
+                </h3>
+                {ontologyLoading ? (
+                    <div className="h-24 bg-slate-100 rounded-lg animate-pulse" />
+                ) : (
+                    <DnaEditor
+                        siteId={siteId}
+                        ontology={ontologyFull}
+                        isExtracting={isExtractingDNA}
+                        onExtract={handleExtractDNA}
+                        onSaved={(updated) => setOntologyFull(updated)}
+                    />
+                )}
+            </div>
+
             {/* Adaptive Insights Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Left Column: Data Insights */}
@@ -263,30 +297,18 @@ export function OverviewPanel({
                             )}
                         </div>
                         {hasContentPlan ? (
-                            <div className="space-y-4">
-                                {semanticData?.ontology ? (
-                                    <Card className="p-6 bg-indigo-50/30 border-indigo-100 shadow-sm">
-                                        <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-3">{t('coreDna')}</h4>
-                                        <div className="space-y-3">
-                                            <p className="text-xs text-indigo-900 leading-relaxed font-bold">
-                                                {semanticData.ontology.coreOfferings?.slice(0, 3).join(" • ")}
-                                            </p>
-                                            <div className="flex flex-wrap gap-2">
-                                                {semanticData.ourStrengths?.slice(0, 5).map((topic: any, i: number) => (
-                                                    <Badge key={i} variant="default" className="bg-white border-indigo-200 text-indigo-700 shadow-sm">
-                                                        {topic.topic}
-                                                    </Badge>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </Card>
-                                ) : (
-                                    <Card className="p-6 border-dashed border-slate-200 flex flex-col items-center justify-center text-center space-y-3 py-12">
-                                        <p className="text-xs text-slate-500">{t('extractDna')}</p>
-                                        <button onClick={handleExtractDNA} disabled={isExtractingDNA} className="bg-slate-900 text-white rounded-xl px-4 py-2 text-[11px] font-black uppercase">{t('extractNow')}</button>
-                                    </Card>
-                                )}
-                            </div>
+                            semanticData?.ourStrengths?.length > 0 ? (
+                                <Card className="p-5 bg-indigo-50/30 border-indigo-100 shadow-sm">
+                                    <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-3">{t('coreDna')}</h4>
+                                    <div className="flex flex-wrap gap-2">
+                                        {semanticData.ourStrengths.slice(0, 6).map((topic: any, i: number) => (
+                                            <Badge key={i} variant="default" className="bg-white border-indigo-200 text-indigo-700 shadow-sm">
+                                                {topic.topic}
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                </Card>
+                            ) : null
                         ) : (
                             <IntegrationGuidanceCard type="content-plan" onClick={() => onSwitchTab?.('strategy')} />
                         )}

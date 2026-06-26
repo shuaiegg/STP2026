@@ -4,6 +4,14 @@ import { prisma } from '@/lib/prisma';
 import { withSiteContext } from '@/lib/api-utils';
 import { getDefaultProvider } from '@/lib/skills/providers';
 
+export const GET = withSiteContext<{ siteId: string }>(async (_request, { site }) => {
+    const ontology = await prisma.siteOntology.findFirst({
+        where: { siteId: site.id },
+        orderBy: { version: 'desc' },
+    });
+    return NextResponse.json({ success: true, ontology });
+});
+
 export const POST = withSiteContext<{ siteId: string }>(async (request, { site: baseSite, session }) => {
     try {
         const site = await prisma.site.findUnique({

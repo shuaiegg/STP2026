@@ -18,6 +18,8 @@ export interface MoveContext {
     stage: OnboardingStage;
     hasGsc: boolean;
     hasOntology: boolean;
+    /** 用户已显式确认过业务基因（confirmedAt != null） */
+    ontologyConfirmed: boolean;
     competitorCount: number;
     gapCount: number;
     publishedCount: number;
@@ -83,7 +85,11 @@ export const COACH_MOVES_REGISTRY: MoveDefinition[] = [
         }),
         humanCTA: { zh: '去确认', en: 'Review DNA' },
         deepLink: '/dashboard/site-intelligence/[siteId]#overview',
-        detect: (ctx) => ({ eligible: !ctx.hasOntology, evidence: {}, priority: 90 }),
+        detect: (ctx) => ({
+            eligible: !ctx.hasOntology || !ctx.ontologyConfirmed,
+            evidence: {},
+            priority: 90,
+        }),
     },
     {
         type: 'add_competitor',
@@ -207,7 +213,7 @@ export async function buildMoveContext(siteId: string): Promise<MoveContext> {
                     ontologies: {
                         take: 1,
                         orderBy: { version: 'desc' },
-                        select: { coreOfferings: true, targetAudience: true },
+                        select: { coreOfferings: true, targetAudience: true, confirmedAt: true },
                     },
                 },
             }),
@@ -241,6 +247,7 @@ export async function buildMoveContext(siteId: string): Promise<MoveContext> {
         stage: classifyStage(signals),
         hasGsc: signals.hasGsc,
         hasOntology: !!ontology,
+        ontologyConfirmed: !!(site?.ontologies?.[0]?.confirmedAt),
         competitorCount,
         gapCount,
         publishedCount,
