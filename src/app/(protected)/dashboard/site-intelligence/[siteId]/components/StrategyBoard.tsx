@@ -152,7 +152,7 @@ function SortableArticle({ article, index, isDragging: isOverlay }: { article: P
 
 
 // --- Kanban Column Component ---
-function KanbanColumn({ plan, articles }: { plan: ContentPlan, articles: PlannedArticle[] }) {
+function KanbanColumn({ plan, articles, displayIndex }: { plan: ContentPlan, articles: PlannedArticle[], displayIndex: number }) {
     const t = useTranslations('dashboard.strategyBoard');
     const { setNodeRef } = useSortable({
         id: plan.id,
@@ -169,7 +169,7 @@ function KanbanColumn({ plan, articles }: { plan: ContentPlan, articles: Planned
                 <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-brand-primary/10 to-transparent rounded-bl-3xl -mr-8 -mt-8 opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className="flex justify-between items-start">
                     <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-black tracking-widest transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-brand-primary/20 bg-brand-primary/5 text-brand-primary">
-                        {t('column.pillar')} {plan.priority + 1}
+                        {t('column.pillar')} {displayIndex + 1}
                     </span>
                     <Badge className="bg-white border text-xs text-slate-500 truncate max-w-[120px]">
                         {plan.theme || t('column.corePillar')}
@@ -438,8 +438,8 @@ export function StrategyBoard({ siteId }: { siteId: string }) {
                 onDragEnd={handleDragEnd}
             >
                 <div className="flex gap-6 items-start">
-                    {plans.map((plan) => (
-                        <KanbanColumn key={plan.id} plan={plan} articles={plan.articles} />
+                    {plans.map((plan, index) => (
+                        <KanbanColumn key={plan.id} plan={plan} articles={plan.articles} displayIndex={index} />
                     ))}
                 </div>
 

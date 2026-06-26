@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/prisma';
 import { localeDirective } from '@/lib/skills/locale-directive';
-import { getDefaultProvider } from '@/lib/skills/providers';
+import { getProvider } from '@/lib/skills/providers';
+import { resolveModelForContext } from '@/lib/skills/model-resolver';
+import type { AIProviderName } from '@/lib/skills/types';
 import { isBlacklistedTopic } from '@/lib/skills/site-intelligence/constants';
 
 export async function getSemanticGap(siteId: string, forceRefresh: boolean = false, locale?: string) {
@@ -72,9 +74,6 @@ export async function getSemanticGap(siteId: string, forceRefresh: boolean = fal
         // 2. Semantic Debt Analysis via LLM
         let semanticDebts: any[] = [];
 
-        const aiProvider = await getDefaultProvider();
-        const defaultModel = aiProvider.getDefaultModel();
-
         const prompt = `
 You are an expert SEO Strategist performing a 'Semantic Debt Analysis'.
 Compare the "Ideal Topic Map" (what a leader in this niche MUST cover) with "Our Existing Content Topics".
@@ -109,10 +108,26 @@ Return ONLY a JSON object with this exact structure:
 Do NOT wrap it in markdown code blocks like \`\`\`json.
         `.trim() + localeDirective(locale);
 
-        const response = await aiProvider.generateContent(prompt, {
-            model: defaultModel.id,
-            temperature: 0.1,
-        });
+        // 用 model-resolver 解析 + 多 provider 兜底（抗 429/配额），与 strategy/generate 一致
+        const resolved = await resolveModelForContext('skill_default');
+        const candidates: Array<{ provider: AIProviderName; model?: string }> = [
+            { provider: resolved.provider, model: resolved.modelId },
+        ];
+        for (const fb of ['vps', 'deepseek', 'claude'] as AIProviderName[]) {
+            if (!candidates.some((c) => c.provider === fb)) candidates.push({ provider: fb });
+        }
+        let response: { content?: string } | undefined;
+        let lastErr: unknown;
+        for (const c of candidates) {
+            try {
+                response = await getProvider(c.provider).generateContent(prompt, { model: c.model, temperature: 0.1 });
+                break;
+            } catch (e) {
+                lastErr = e;
+                console.warn(`[Semantic Gap Service] provider ${c.provider} failed, trying next:`, e instanceof Error ? e.message : e);
+            }
+        }
+        if (!response) throw lastErr instanceof Error ? lastErr : new Error('All providers failed for semantic gap');
 
         if (response.content) {
             const match = response.content.match(/\{[\s\S]*\}/);

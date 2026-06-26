@@ -33,6 +33,7 @@ const CONTEXTS = [
   { key: 'consultation', label: '咨询方案生成', description: 'AI 分析用户需求并生成方案草稿' },
   { key: 'embedding', label: '知识库 Embedding', description: 'RAG 向量化（Sprint 3）' },
   { key: 'content_generation', label: 'GEO 文章生成', description: 'GEO Writer 流式内容生成（/api/generate-stream）' },
+  { key: 'content_strategy', label: '内容策略生成', description: '内容资产蓝图"一键生成计划"（/strategy/generate），失败自动兜底其他模型' },
 ];
 
 const PROVIDERS = [

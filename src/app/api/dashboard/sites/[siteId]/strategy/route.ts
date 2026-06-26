@@ -30,7 +30,8 @@ async function handler(
 
         return NextResponse.json({ success: true, data: plans }, {
             headers: {
-                'Cache-Control': 'private, max-age=60, stale-while-revalidate=120'
+                // 仪表盘私有数据：实时性优先，避免生成计划后浏览器返回缓存的空响应
+                'Cache-Control': 'no-store'
             }
         });
 

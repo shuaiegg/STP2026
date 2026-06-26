@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { withSiteContext } from "@/lib/api-utils";
 import prisma from "@/lib/prisma";
 import { getProvider } from "@/lib/skills/providers";
+import { resolveModelForContext } from "@/lib/skills/model-resolver";
+import type { AIProviderName } from "@/lib/skills/types";
 import { localeDirective } from "@/lib/skills/locale-directive";
 
 async function handler(
@@ -119,12 +121,31 @@ async function handler(
         ${localeDirective((session?.user as { locale?: string })?.locale)}
         `;
 
-        // 4. Call LLM
-        const provider = getProvider('gemini');
-        const aiResponse = await provider.generateContent(prompt, {
-            model: 'gemini-2.0-flash',
-            temperature: 0.3
-        });
+        // 4. Call LLM — 用 model-resolver 解析（admin 可在 /admin/models 的
+        //    "content_strategy" 上下文配置），并按候选顺序兜底（抗 429/配额）。
+        const resolved = await resolveModelForContext('content_strategy');
+        const candidates: Array<{ provider: AIProviderName; model?: string }> = [
+            { provider: resolved.provider, model: resolved.modelId },
+        ];
+        for (const fb of ['vps', 'deepseek', 'claude'] as AIProviderName[]) {
+            if (!candidates.some((c) => c.provider === fb)) candidates.push({ provider: fb });
+        }
+
+        let aiResponse: { content?: string } | undefined;
+        let lastErr: unknown;
+        for (const c of candidates) {
+            try {
+                aiResponse = await getProvider(c.provider).generateContent(prompt, {
+                    model: c.model,
+                    temperature: 0.3,
+                });
+                break;
+            } catch (e) {
+                lastErr = e;
+                console.warn(`[strategy/generate] provider ${c.provider} failed, trying next:`, e instanceof Error ? e.message : e);
+            }
+        }
+        if (!aiResponse) throw lastErr instanceof Error ? lastErr : new Error('All model providers failed');
 
         // 5. Parse JSON Response
         let planData;
