@@ -229,6 +229,7 @@ model SiteOntology {
   painPointsSolved String[]
   logicChains      Json? // Problem→Solution→Proof 结构
   idealTopicMap    Json // { topic, subtopics }[]
+  confirmedAt      DateTime?      // 用户确认业务基因的时间戳
   createdAt        DateTime       @default(now())
   site             Site           @relation(fields: [siteId], references: [id], onDelete: Cascade)
   semanticDebts    SemanticDebt[]
