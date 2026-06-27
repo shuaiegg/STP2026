@@ -87,21 +87,12 @@ export async function POST(req: Request) {
         const chargeResult = await chargeUser(session.user.id, 'GEO_WRITER_FULL', `GEO Writer: ${input.keywords}`);
         if (!chargeResult.success) return new Response(JSON.stringify({ error: chargeResult.error }), { status: 402 });
 
-        // Resolve model from Admin DB config; fallback to deepseek/deepseek-chat
-        // Only override defaults when admin has explicitly set a modelId — the
-        // hardcoded model-resolver fallback returns vps/undefined, which doesn't
-        // map to a real model on the VPS proxy.
-        let resolvedProvider: string = 'deepseek';
-        let resolvedModelId: string = 'deepseek-chat';
-        try {
-            const resolved = await resolveModelForContext('content_generation');
-            if (resolved.modelId) {
-                resolvedProvider = resolved.provider;
-                resolvedModelId = resolved.modelId;
-            }
-        } catch {
-            // DB unavailable — use fallback
-        }
+        // Resolve model from Admin DB config ("content_generation" context).
+        // resolveModelForContext handles DB failures internally; fall back to deepseek-chat
+        // when no modelId is configured (VPS proxy requires a concrete model ID).
+        const genResolved = await resolveModelForContext('content_generation').catch(() => ({ provider: 'deepseek' as const, modelId: 'deepseek-chat' }));
+        const resolvedProvider = genResolved.modelId ? genResolved.provider : 'deepseek';
+        const resolvedModelId = genResolved.modelId ?? 'deepseek-chat';
 
         const executionId = providedId || `exec_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
         await prisma.skillExecution.create({

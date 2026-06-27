@@ -29,11 +29,13 @@ const KNOWN_MODELS: Record<string, Array<{ id: string; label: string }>> = {
 };
 
 const CONTEXTS = [
-  { key: 'skill_default', label: 'Skills 默认模型', description: '无 per-skill 覆盖时的兜底模型' },
-  { key: 'consultation', label: '咨询方案生成', description: 'AI 分析用户需求并生成方案草稿' },
-  { key: 'embedding', label: '知识库 Embedding', description: 'RAG 向量化（Sprint 3）' },
-  { key: 'content_generation', label: 'GEO 文章生成', description: 'GEO Writer 流式内容生成（/api/generate-stream）' },
-  { key: 'content_strategy', label: '内容策略生成', description: '内容资产蓝图"一键生成计划"（/strategy/generate），失败自动兜底其他模型' },
+  { key: 'skill_default', label: 'Skills 默认模型', description: '无 per-skill 覆盖时的全局兜底；首选模型失败后自动尝试 vps → deepseek → claude' },
+  { key: 'embedding', label: '知识库 Embedding', description: 'RAG 向量化，Gemini 专用，不参与兜底链' },
+  { key: 'content_generation', label: 'GEO 文章初稿', description: 'GEO Writer 流式生成 + StellarWriter 初稿（/api/generate-stream）；首选失败自动兜底' },
+  { key: 'content_refinement', label: '文章审校重写', description: 'StellarWriter 审校/Editor/RefiningStudio 段落重写；首选失败自动兜底。未配时与 content_generation 走同一兜底链，默认命中 deepseek' },
+  { key: 'content_strategy', label: '内容策略生成', description: '一键生成内容计划（/strategy/generate）；首选失败自动兜底 vps → deepseek → claude' },
+  { key: 'dna_extraction', label: '业务基因提取', description: '站点 DNA 提取 + 页面语义聚类（onboarding 核心流程）；首选失败自动兜底' },
+  { key: 'competitor_analysis', label: '竞品分析', description: '竞品 scan、suggest 及 inferCompetitors；首选失败自动兜底' },
 ];
 
 const PROVIDERS = [

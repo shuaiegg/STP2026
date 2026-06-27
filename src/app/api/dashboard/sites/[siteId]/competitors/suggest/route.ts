@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { withSiteContext } from '@/lib/api-utils';
-import { getDefaultProvider } from '@/lib/skills/providers';
+import { generateWithFallback } from '@/lib/skills/model-resolver';
 
 export const GET = withSiteContext<{ siteId: string }>(async (request, { site }) => {
     try {
@@ -15,9 +15,6 @@ export const GET = withSiteContext<{ siteId: string }>(async (request, { site })
         const pageTitles = auditData?.pages?.slice(0, 20).map((p: any) => p.title).filter(Boolean) || [];
 
         // 2. 准备 LLM Prompt
-        const aiProvider = await getDefaultProvider();
-        const defaultModel = aiProvider.getDefaultModel();
-
         const prompt = `
 You are a world-class Market Intelligence AI.
 Analyze the following website context and suggest 3-5 top industry competitors.
@@ -42,11 +39,8 @@ Return ONLY a JSON array of objects:
 Do NOT include markdown formatting or extra text.
         `.trim();
 
-        // 3. 调用 AI 生成建议
-        const response = await aiProvider.generateContent(prompt, {
-            model: defaultModel.id,
-            temperature: 0.3,
-        });
+        // 3. 调用 AI 生成建议；admin 可在 /admin/models 的 "competitor_analysis" 上下文配置；失败自动兜底。
+        const response = await generateWithFallback(prompt, { context: 'competitor_analysis', temperature: 0.3 });
 
         if (!response.content) {
             throw new Error('AI failed to generate suggestions');

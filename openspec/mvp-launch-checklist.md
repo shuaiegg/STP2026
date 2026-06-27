@@ -5,8 +5,10 @@
 
 ## 🔴 阻塞项(不完成不上线)
 
-- [ ] **DNA 提取质量** —— change `dna-extraction-quality`。脊柱:现在 onboarding 会把英文/双语站(含 scaletotop 自己)提取成错误 DNA(中文亚马逊),"懂你的业务"当场翻车。**头号阻塞**,先做。
-- [ ] **引用追踪诚实化** —— change `citation-tracking-honesty`。移除"追踪 AI 引用/AI citation tracking/实时监测 AI 引擎"的虚假宣称(实为 Google SERP),改"搜索可见度/收录排名追踪"。便宜但必做(虚假宣传风险)。
+- [x] **DNA 提取质量** —— change `dna-extraction-quality`（已归档 2026-06-27）。脊柱:语言隔离提取 + 业务页正文 + sanitizeProof 防编造,scaletotop 自测已正确。
+- [x] **引用追踪诚实化** —— change `citation-tracking-honesty`（已归档 2026-06-27）。已移除虚假"AI 引用追踪"宣称,改"搜索可见度/收录排名追踪",保留真 GEO 可引用度建议。
+
+> ✅ 两个 🔴 阻塞项已清。下面是 🟡 市场质量 + 🔍 上线走查。
 
 ## 🟡 市场质量(英文市场在 MVP 范围内则做)
 
@@ -17,9 +19,9 @@
 ## 🔍 上线走查(验证为主,非新建)
 
 ### 健壮性 / 边界
-- [ ] 关键路由有 `error.tsx` 边界(生成/审计/支付/GSC 失败不白屏)
+- [x] 关键路由有 `error.tsx` 边界(生成/审计/支付/GSC 失败不白屏)
 - [ ] 关键空状态友好(无站点/无内容/无 GSC 数据/薄站 DNA)
-- [ ] LLM/外部 API 失败有兜底与用户可读提示(Gemini 429 兜底已做;其余 DataForSEO/GSC 抽查)
+- [x] LLM/外部 API 失败有兜底与用户可读提示(全站 LLM 用点已接 `generateWithFallback`，候选链自动兜底;DataForSEO/GSC 抽查仍待)
 
 ### 真机冒烟(CLAUDE.md 部署清单)
 - [ ] Email OTP 登录 / Google OAuth 登录 / 设密码(新用户)

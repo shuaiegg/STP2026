@@ -2,6 +2,7 @@
 import { BaseSkill } from '../base-skill';
 import type { SkillInput, SkillOutput, SkillExecutionMetadata } from '../types';
 import { getProvider } from '../providers';
+import { resolveModelForContext, generateWithFallback } from '../model-resolver';
 import { IntelligenceEngine } from './stellar/IntelligenceEngine';
 import { StrategyComposer } from './stellar/StrategyComposer';
 import { ExecutionAgent } from './stellar/ExecutionAgent';
@@ -18,9 +19,6 @@ export class StellarWriterSkill extends BaseSkill {
     description = 'Universal SEO & GEO Content Engine - Modular v3';
     version = '3.1.0';
     category: 'seo' = 'seo';
-
-    protected preferredProvider: 'gemini' | 'claude' | 'deepseek' = 'deepseek';
-    protected preferredModel = 'deepseek-chat';
 
     protected getRequiredInputs(): string[] {
         return ['keywords'];
@@ -60,9 +58,6 @@ export class StellarWriterSkill extends BaseSkill {
                 const businessDna = stellarInput.siteId ? await getBusinessDNA(stellarInput.siteId) : null;
                 const strategy = StrategyComposer.compose(intelligence, { ...stellarInput, businessDna });
 
-                // Call LLM for outline only
-                const provider = getProvider(this.preferredProvider);
-
                 const competitorOutlines = intelligence.competitors
                     ?.slice(0, 3)
                     .map((c: any) => c.outline || c.headings || '')
@@ -91,10 +86,10 @@ OUTPUT FORMAT: Return ONLY markdown headings, one per line. No descriptions, no 
 ## Section Two
 ## Key Takeaways`;
 
-                const { response } = await this.generateWithAI(provider, outlinePrompt, {
-                    model: this.preferredModel,
+                const response = await generateWithFallback(outlinePrompt, {
+                    context: 'content_generation',
                     temperature: 0.7,
-                    systemPrompt: strategy.systemPrompt
+                    systemPrompt: strategy.systemPrompt,
                 });
 
                 let masterOutline: any[] = [];
@@ -194,7 +189,6 @@ OUTPUT FORMAT: Return ONLY markdown headings, one per line. No descriptions, no 
             // PHASE 3: SECTION REGENERATE (Single section rewrite)
             // ═══════════════════════════════════════════════════════════
             if (mode === 'section_regenerate') {
-                const provider = getProvider(this.preferredProvider);
                 const sectionPrompt = `You are an expert content editor.
 Rewrite the following section with these instructions: "${stellarInput.sectionInstruction || 'Improve clarity and depth'}"
 
@@ -209,10 +203,10 @@ RULES:
 - Return ONLY the rewritten section body (no heading, no JSON wrapper)
 - Be human, opinionated, and avoid AI clichés`;
 
-                const { response } = await this.generateWithAI(provider, sectionPrompt, {
-                    model: this.preferredModel,
+                const response = await generateWithFallback(sectionPrompt, {
+                    context: 'content_refinement',
                     temperature: 0.85,
-                    systemPrompt: 'You are a human editor rewriting a specific section of an article.'
+                    systemPrompt: 'You are a human editor rewriting a specific section of an article.',
                 });
 
                 return {
@@ -241,7 +235,8 @@ RULES:
 
             const businessDna = stellarInput.siteId ? await getBusinessDNA(stellarInput.siteId) : null;
             const strategy = StrategyComposer.compose(intelligence, { ...stellarInput, businessDna });
-            const provider = getProvider(this.preferredProvider);
+            const genResolved = await resolveModelForContext('content_generation');
+            const provider = getProvider(genResolved.provider);
 
             // Re-generate outline if missing (since Full Production might skip Deep Analysis if user doesn't pass one)
             let finalOutline = stellarInput.masterOutline;
@@ -371,8 +366,8 @@ RULES:
             return {
                 data: finalOutput,
                 metadata: {
-                    modelUsed: this.preferredModel,
-                    provider: this.preferredProvider,
+                    modelUsed: genResolved.modelId ?? '',
+                    provider: genResolved.provider,
                     executionTime: Date.now() - startTime
                 }
             };

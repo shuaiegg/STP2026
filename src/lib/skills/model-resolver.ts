@@ -8,8 +8,9 @@
  */
 
 import prisma from '@/lib/prisma';
-import type { AIProviderName } from './types';
+import type { AIProviderName, AIResponse } from './types';
 import { GeminiEmbeddingProvider } from './providers/gemini-embedding-provider';
+import { getProvider } from './providers';
 
 export interface ResolvedModel {
   provider: AIProviderName;
@@ -61,6 +62,42 @@ export async function resolveSkillModel(skillId: string): Promise<ResolvedModel>
     // fall through
   }
   return resolveModelForContext('skill_default');
+}
+
+const FALLBACK_CHAIN: AIProviderName[] = ['vps', 'deepseek', 'claude'];
+
+/**
+ * Resolve the primary model for `context`, then try the fixed fallback chain
+ * [primary, vps, deepseek, claude] (deduped) until one succeeds.
+ * Every failure is logged; the last error is re-thrown if all candidates fail.
+ */
+export async function generateWithFallback(
+  prompt: string,
+  opts: { context: string; temperature?: number; systemPrompt?: string },
+): Promise<AIResponse> {
+  const { context, temperature, systemPrompt } = opts;
+  const resolved = await resolveModelForContext(context);
+
+  const candidates: Array<{ provider: AIProviderName; modelId?: string }> = [
+    { provider: resolved.provider, modelId: resolved.modelId },
+  ];
+  for (const fb of FALLBACK_CHAIN) {
+    if (!candidates.some((c) => c.provider === fb)) candidates.push({ provider: fb });
+  }
+
+  let lastErr: unknown;
+  for (const c of candidates) {
+    try {
+      return await getProvider(c.provider).generateContent(prompt, { model: c.modelId, temperature, systemPrompt });
+    } catch (e) {
+      lastErr = e;
+      console.warn(
+        `[generateWithFallback] context=${context} provider=${c.provider} failed, trying next:`,
+        e instanceof Error ? e.message : e,
+      );
+    }
+  }
+  throw lastErr instanceof Error ? lastErr : new Error('All model providers failed');
 }
 
 /**
