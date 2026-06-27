@@ -1,8 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { localeDirective } from '@/lib/skills/locale-directive';
-import { getProvider } from '@/lib/skills/providers';
-import { resolveModelForContext } from '@/lib/skills/model-resolver';
-import type { AIProviderName } from '@/lib/skills/types';
+import { generateWithFallback } from '@/lib/skills/model-resolver';
 import { isBlacklistedTopic } from '@/lib/skills/site-intelligence/constants';
 
 export async function getSemanticGap(siteId: string, forceRefresh: boolean = false, locale?: string) {
@@ -112,26 +110,8 @@ Return ONLY a JSON object with this exact structure:
 Do NOT wrap it in markdown code blocks like \`\`\`json.
         `.trim() + localeDirective(effectiveLocale);
 
-        // 用 model-resolver 解析 + 多 provider 兜底（抗 429/配额），与 strategy/generate 一致
-        const resolved = await resolveModelForContext('skill_default');
-        const candidates: Array<{ provider: AIProviderName; model?: string }> = [
-            { provider: resolved.provider, model: resolved.modelId },
-        ];
-        for (const fb of ['vps', 'deepseek', 'claude'] as AIProviderName[]) {
-            if (!candidates.some((c) => c.provider === fb)) candidates.push({ provider: fb });
-        }
-        let response: { content?: string } | undefined;
-        let lastErr: unknown;
-        for (const c of candidates) {
-            try {
-                response = await getProvider(c.provider).generateContent(prompt, { model: c.model, temperature: 0.1 });
-                break;
-            } catch (e) {
-                lastErr = e;
-                console.warn(`[Semantic Gap Service] provider ${c.provider} failed, trying next:`, e instanceof Error ? e.message : e);
-            }
-        }
-        if (!response) throw lastErr instanceof Error ? lastErr : new Error('All providers failed for semantic gap');
+        // admin 可在 /admin/models 的 "skill_default" 上下文配置；失败自动兜底。
+        const response = await generateWithFallback(prompt, { context: 'skill_default', temperature: 0.1 });
 
         if (response.content) {
             const match = response.content.match(/\{[\s\S]*\}/);

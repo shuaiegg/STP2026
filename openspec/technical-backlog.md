@@ -117,7 +117,7 @@
 - **蓝图"难度列"**（砍出 P3a MVP）：需要可靠的逐话题竞争难度源（`SiteKeyword.difficulty` 常空 / 竞品逐话题覆盖需新管线 / DataForSEO keyword difficulty）。有可靠源后作为第 4 列加回。
 - **logicChains per-pillar 映射**：把站点级 Problem→Solution→Proof 对到具体支柱（需 LLM），用于蓝图更精准的"为什么重要" + 写作骨架。P3a MVP 用 `relevance` 替代。
 - **持久化 `ourStrengths` 以准确计"已覆盖"**（2026-06-26）：`getSemanticGap` 只持久化缺口、不存强项。蓝图无法可靠区分"真·强项"与"join 没匹配上"，故采安全失败（无匹配 = 未覆盖，宁可多显示工作也不藏缺口）→ 成熟站的强项会被低估为缺口。修向：持久化 ourStrengths（含 coverageScore），蓝图据此准确标"已建立"。
-- ⚠️ **Gemini 429 兜底（部分完成）**：`strategy/generate`（`content_strategy` context + 候选兜底）、`getSemanticGap`（`skill_default` + 兜底）已做。**仍缺：`CrawlerService.extractBusinessDna` 还用 `getDefaultProvider()` 无兜底**——DNA 提取(核心)有 429 隐患,需同样接 resolver+兜底。**待办**：candidate-fallback 现在 3 处会重复（strategy/generate、getSemanticGap、extractBusinessDna），抽成共享 `generateWithFallback(prompt, opts, context)` helper 一并接上。
+- ✅ **Gemini 429 兜底（已完成，change: unified-llm-model-routing）**：全站 LLM 用点统一接入 `generateWithFallback` helper（`model-resolver.ts`），候选链 `[首选, vps, deepseek, claude]` 自动兜底。覆盖：DNA 提取、页面聚类、竞品 scan/suggest、内容策略、语义缺口、StellarWriter 初稿+审校、generate-stream。candidate-fallback 3 处重复已抽共享 helper 消除。
 - **蓝图 join 语言一致性**（2026-06-26 已就近修）：`debt.topic` 必须与 `idealTopicMap` 同语言才能 join；已在 `ontology.ts` 给 `getSemanticGap` 传 locale。根治仍依赖 issue 1（站点内容语言）——存量错配数据需重新分析才会对齐。
 
 ### 🧬 业务基因提取质量（2026-06-26 explore 收敛 → 已起 proposal）

@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { CrawlerService } from '@/lib/skills/site-intelligence/crawler.service';
 import { withSiteContext } from '@/lib/api-utils';
 
-import { getDefaultProvider } from '@/lib/skills/providers';
+import { generateWithFallback } from '@/lib/skills/model-resolver';
 
 export const POST = withSiteContext<{ siteId: string; competitorId: string }>(async (
     request,
@@ -54,9 +54,6 @@ export const POST = withSiteContext<{ siteId: string; competitorId: string }>(as
             }));
 
             try {
-                const aiProvider = await getDefaultProvider();
-                const defaultModel = aiProvider.getDefaultModel();
-
                 const prompt = `
 You are an expert SEO analyst. Analyze the following pages from a competitor's website: ${competitor.domain}.
 Extract 5-10 core semantic topics/keywords that represent their primary focus.
@@ -73,10 +70,7 @@ Return ONLY a JSON array of objects with "topic" (string) and "urls" (array of s
 Do NOT include markdown formatting or extra text.
                 `.trim();
 
-                const response = await aiProvider.generateContent(prompt, {
-                    model: defaultModel.id,
-                    temperature: 0.1,
-                });
+                const response = await generateWithFallback(prompt, { context: 'competitor_analysis', temperature: 0.1 });
 
                 if (response.content) {
                     const match = response.content.match(/\[[\s\S]*\]/);

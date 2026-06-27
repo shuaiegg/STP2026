@@ -3,7 +3,7 @@ import { ScrapedPage, SiteAuditResult, AuditProgressEvent, GeoSiteSignals, BadPa
 import { fetchHtml, fetchSiteSignals } from './crawler/fetcher';
 import { CrawlerParser } from './crawler/parser';
 import { CrawlerStrategy } from './crawler/strategy';
-import { getDefaultProvider } from '@/lib/skills/providers';
+import { generateWithFallback } from '@/lib/skills/model-resolver';
 import { isBlacklistedTopic } from './constants';
 import { BusinessDna } from './types';
 
@@ -536,9 +536,6 @@ export class CrawlerService {
         .join('\n\n---\n\n');
 
       // 7. Single LLM call → full DNA
-      const aiProvider = await getDefaultProvider();
-      const defaultModel = aiProvider.getDefaultModel();
-
       const prompt = `You are an expert Business Strategist and SEO Architect.
 Analyze the provided website content and extract the complete "Business DNA" for this company.
 The content is from the company's main business pages (homepage, about, pricing, product, etc.) in their primary language.
@@ -570,10 +567,7 @@ Rules:
 Website Content:
 ${context}`.trim();
 
-      const response = await aiProvider.generateContent(prompt, {
-        model: defaultModel.id,
-        temperature: 0.1,
-      });
+      const response = await generateWithFallback(prompt, { context: 'dna_extraction', temperature: 0.1 });
 
       if (response.content) {
         const match = response.content.match(/\{[\s\S]*\}/);
@@ -632,9 +626,6 @@ ${context}`.trim();
     if (pages.length === 0) return pages;
 
     try {
-      const aiProvider = await getDefaultProvider();
-      const defaultModel = aiProvider.getDefaultModel();
-
       // 1. 预过滤：排除黑名单中的 boilerplate 页面（登录、法律条款等）
       const meaningfulPages = pages.filter(p => !isBlacklistedTopic(new URL(p.url).pathname));
       const boilerplatePages = pages.filter(p => isBlacklistedTopic(new URL(p.url).pathname));
@@ -670,10 +661,7 @@ Return ONLY a JSON object mapping the index (as a string) to a topic name:
 Do NOT include markdown formatting or extra text.
       `.trim();
 
-      const response = await aiProvider.generateContent(prompt, {
-        model: defaultModel.id,
-        temperature: 0.1,
-      });
+      const response = await generateWithFallback(prompt, { context: 'dna_extraction', temperature: 0.1 });
 
       let mapping: Record<string, string> = {};
       if (response.content) {
@@ -710,9 +698,6 @@ Do NOT include markdown formatting or extra text.
   static async inferCompetitors(dna: BusinessDna, userDomain: string, options?: { locale?: 'zh' | 'en' }): Promise<{ domain: string; reason: string }[]> {
     const locale = options?.locale || 'zh';
     try {
-      const aiProvider = await getDefaultProvider();
-      const defaultModel = aiProvider.getDefaultModel();
-
       // 1. Derive seed keywords from DNA
       const prompt = `
 You are an expert SEO and Market Intelligence strategist.
@@ -727,10 +712,7 @@ Business DNA:
 Return ONLY a JSON array of strings.
 `.trim();
 
-      const response = await aiProvider.generateContent(prompt, {
-        model: defaultModel.id,
-        temperature: 0.1,
-      });
+      const response = await generateWithFallback(prompt, { context: 'competitor_analysis', temperature: 0.1 });
 
       let keywords: string[] = [];
       if (response.content) {
@@ -781,10 +763,7 @@ Return ONLY a JSON array of objects:
 ]
 `.trim();
 
-      const selectRes = await aiProvider.generateContent(selectPrompt, {
-        model: defaultModel.id,
-        temperature: 0.1,
-      });
+      const selectRes = await generateWithFallback(selectPrompt, { context: 'competitor_analysis', temperature: 0.1 });
 
       if (selectRes.content) {
         const match = selectRes.content.match(/\[[\s\S]*\]/);
