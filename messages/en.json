@@ -1311,6 +1311,12 @@
       "site": {
         "title": "Failed to load",
         "description": "We hit a problem loading this site's data. Please refresh the page."
+      },
+      "title": "Something went wrong",
+      "description": "We ran into an unexpected problem. Please try again.",
+      "instantAudit": {
+        "title": "Audit failed to load",
+        "description": "We hit a problem starting the audit. Please try again."
       }
     },
     "billing": {
@@ -1533,5 +1539,13 @@
     }
   },
   "legal": {},
-  "notFound": {}
+  "notFound": {},
+  "public": {
+    "errors": {
+      "title": "Something went wrong",
+      "description": "We ran into an unexpected problem. Please try again or return to the homepage.",
+      "retry": "Try Again",
+      "backHome": "Back to Home"
+    }
+  }
 }

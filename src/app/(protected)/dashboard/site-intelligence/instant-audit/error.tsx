@@ -23,8 +23,8 @@ export default function Error({
         <AlertCircle size={32} aria-hidden="true" />
       </div>
       <div className="space-y-2">
-        <h2 className="text-xl font-bold text-brand-text-primary">{t('library.title')}</h2>
-        <p className="text-sm text-brand-text-secondary max-w-xs mx-auto">{t('library.description')}</p>
+        <h2 className="text-xl font-bold text-brand-text-primary">{t('instantAudit.title')}</h2>
+        <p className="text-sm text-brand-text-secondary max-w-xs mx-auto">{t('instantAudit.description')}</p>
       </div>
       <Button
         onClick={() => reset()}

@@ -1315,6 +1315,12 @@
       "site": {
         "title": "加载失败",
         "description": "我们在加载该站点数据时遇到了问题，请尝试刷新页面。"
+      },
+      "title": "出错了",
+      "description": "我们遇到了一个意外问题，请稍后重试。",
+      "instantAudit": {
+        "title": "审计加载失败",
+        "description": "我们在启动审计时遇到了问题，请稍后重试。"
       }
     },
     "billing": {
@@ -1538,5 +1544,13 @@
     }
   },
   "legal": {},
-  "notFound": {}
+  "notFound": {},
+  "public": {
+    "errors": {
+      "title": "出错了",
+      "description": "我们遇到了一个意外问题，请稍后重试，或返回首页。",
+      "retry": "重试",
+      "backHome": "返回首页"
+    }
+  }
 }
