@@ -14,7 +14,8 @@ async function handler(
         // Order articles by kanbanOrder (vertical order within the column)
         const plans = await prisma.contentPlan.findMany({
             where: {
-                siteId: siteId
+                siteId: siteId,
+                status: { not: 'ARCHIVED' } // 看板不显示已归档计划（如被新计划替换的旧版）
             },
             orderBy: {
                 priority: 'asc'
@@ -28,7 +29,18 @@ async function handler(
             }
         });
 
-        return NextResponse.json({ success: true, data: plans }, {
+        // 陈旧检测：当前最新业务基因版本 vs 计划生成时所基于的版本。
+        // 任一进行中的计划基于旧 DNA（或无来源记录）→ 提示用户刷新。
+        const latestOntology = await prisma.siteOntology.findFirst({
+            where: { siteId },
+            orderBy: { version: 'desc' },
+            select: { id: true },
+        });
+        const activePlans = plans.filter(p => p.status === 'IDEATION' || p.status === 'PLANNED');
+        const stale = !!latestOntology && activePlans.length > 0 &&
+            activePlans.some(p => p.sourceOntologyId !== latestOntology.id);
+
+        return NextResponse.json({ success: true, data: plans, stale }, {
             headers: {
                 // 仪表盘私有数据：实时性优先，避免生成计划后浏览器返回缓存的空响应
                 'Cache-Control': 'no-store'

@@ -80,8 +80,12 @@ export async function POST(request: Request) {
                     coreOfferings: businessDna.coreOfferings || [],
                     targetAudience: businessDna.targetAudience || [],
                     painPointsSolved: businessDna.painPoints || [],
-                    logicChains: businessDna.logicChains || [],
-                    idealTopicMap: businessDna.idealTopicMap || [],
+                    logicChains: (businessDna.logicChains || []) as any,
+                    idealTopicMap: (businessDna.idealTopicMap || []) as any,
+                    positioning: businessDna.positioning || [],
+                    brandTone: businessDna.brandTone || null,
+                    sourceLocale: businessDna.sourceLocale || null,
+                    pagesRead: businessDna.pagesRead || [],
                 }
             });
         }
@@ -115,8 +119,9 @@ export async function POST(request: Request) {
                 select: { email: true, name: true, locale: true },
             });
 
-            // Trigger Semantic Gap Analysis asynchronously (cold start)
-            getSemanticGap(site.id, true, auditUser?.locale || 'en').then(async () => {
+            // Trigger Semantic Gap Analysis — use DNA sourceLocale for language consistency
+            const gapLocale = businessDna?.sourceLocale || auditUser?.locale || 'en';
+            getSemanticGap(site.id, true, gapLocale).then(async () => {
                 // After gap analysis, sync stage as it might have moved to Stage 1
                 await syncSiteStage(site.id);
                 // Bust coach home cache so the fresh gaps/stage surface on next load

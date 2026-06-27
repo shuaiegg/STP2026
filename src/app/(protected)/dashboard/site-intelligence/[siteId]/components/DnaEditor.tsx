@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { useLocale } from 'next-intl';
-import { X, Plus, ChevronDown, ChevronUp, RefreshCw, CheckCircle2, Loader2 } from 'lucide-react';
+import { X, Plus, ChevronDown, ChevronUp, RefreshCw, CheckCircle2, Loader2, Globe, FileText, AlertTriangle } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { toast } from 'sonner';
 import { saveOntologyEdits } from '@/app/actions/ontology';
@@ -15,6 +15,8 @@ const COPY = {
     coreOfferings: { zh: '核心产品/服务', en: 'Core offerings' },
     targetAudience: { zh: '目标受众', en: 'Target audience' },
     painPointsSolved: { zh: '解决的痛点', en: 'Pain points solved' },
+    positioning: { zh: '差异化定位', en: 'Positioning / Differentiators' },
+    brandTone: { zh: '品牌语气', en: 'Brand tone' },
     idealTopicMap: { zh: '理想话题图谱', en: 'Ideal topic map' },
     logicChains: { zh: '逻辑链（Problem → Solution → Proof）', en: 'Logic chains (Problem → Solution → Proof)' },
     addItem: { zh: '+ 添加', en: '+ Add' },
@@ -41,6 +43,15 @@ const COPY = {
     problem: { zh: '问题', en: 'Problem' },
     solution: { zh: '方案', en: 'Solution' },
     proof: { zh: '证明', en: 'Proof' },
+    sourceLabel: { zh: '基于您的', en: 'Extracted from your' },
+    sourceSuffix: { zh: '站点提取', en: 'site' },
+    pagesReadLabel: { zh: '读取的页面', en: 'Pages read' },
+    pagesReadToggle: { zh: '查看读取的页面', en: 'View pages read' },
+    pagesReadCollapse: { zh: '收起', en: 'Collapse' },
+    aiNote: { zh: 'AI 初步判断，可修改', en: 'AI initial analysis — editable' },
+    reAnalyzeWarning: { zh: '⚠️ 您已确认/编辑过此业务基因。重新分析将替换当前内容（含您的修改），是否继续？', en: '⚠️ You have confirmed/edited this DNA. Re-analysis will replace all current content including your edits. Continue?' },
+    reAnalyzeConfirm: { zh: '继续重新分析', en: 'Yes, re-analyze' },
+    reAnalyzeCancel: { zh: '取消', en: 'Cancel' },
 } as const;
 
 const tr = (key: keyof typeof COPY, locale: Locale) => COPY[key][locale];
@@ -64,6 +75,10 @@ interface OntologyData {
     painPointsSolved: string[];
     idealTopicMap: TopicEntry[];
     logicChains?: LogicChain[];
+    positioning?: string[];
+    brandTone?: string | null;
+    sourceLocale?: string | null;
+    pagesRead?: string[];
     confirmedAt?: string | null;
 }
 
@@ -307,15 +322,80 @@ function LogicChainsView({ chains, locale }: { chains: LogicChain[]; locale: Loc
     );
 }
 
+function PagesReadGlassBox({ pages, locale }: { pages: string[]; locale: Locale }) {
+    const [open, setOpen] = useState(false);
+    if (!pages || pages.length === 0) return null;
+
+    return (
+        <div className="rounded-lg border border-slate-200 bg-slate-50/60 overflow-hidden">
+            <button
+                onClick={() => setOpen(v => !v)}
+                className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-slate-100/60 transition-colors"
+                aria-expanded={open}
+            >
+                <FileText size={12} className="text-slate-400 flex-shrink-0" />
+                <span className="text-[11px] text-slate-500 flex-1">
+                    {tr('pagesReadToggle', locale)} ({pages.length})
+                </span>
+                {open ? <ChevronUp size={12} className="text-slate-400" /> : <ChevronDown size={12} className="text-slate-400" />}
+            </button>
+            {open && (
+                <ul className="px-3 pb-2 space-y-1">
+                    {pages.map((url, i) => (
+                        <li key={i} className="text-[11px] text-slate-500 truncate font-mono">{url}</li>
+                    ))}
+                </ul>
+            )}
+        </div>
+    );
+}
+
+function ReAnalyzeWarningDialog({
+    locale,
+    onConfirm,
+    onCancel,
+}: {
+    locale: Locale;
+    onConfirm: () => void;
+    onCancel: () => void;
+}) {
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4">
+                <div className="flex items-start gap-3">
+                    <AlertTriangle size={20} className="text-amber-500 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-slate-700 leading-relaxed">{tr('reAnalyzeWarning', locale)}</p>
+                </div>
+                <div className="flex gap-2 justify-end">
+                    <button
+                        onClick={onCancel}
+                        className="px-4 py-2 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
+                    >
+                        {tr('reAnalyzeCancel', locale)}
+                    </button>
+                    <button
+                        onClick={onConfirm}
+                        className="px-4 py-2 rounded-lg bg-amber-500 text-white text-xs font-semibold hover:bg-amber-600 transition-colors"
+                    >
+                        {tr('reAnalyzeConfirm', locale)}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export function DnaEditor({ siteId, ontology, isExtracting, onExtract, onSaved }: DnaEditorProps) {
     const locale = useLocale() as Locale;
     const [coreOfferings, setCoreOfferings] = useState<string[]>(ontology?.coreOfferings ?? []);
     const [targetAudience, setTargetAudience] = useState<string[]>(ontology?.targetAudience ?? []);
     const [painPointsSolved, setPainPointsSolved] = useState<string[]>(ontology?.painPointsSolved ?? []);
+    const [positioning, setPositioning] = useState<string[]>(ontology?.positioning ?? []);
     const [idealTopicMap, setIdealTopicMap] = useState<TopicEntry[]>(
         (ontology?.idealTopicMap as TopicEntry[]) ?? [],
     );
     const [isSaving, setIsSaving] = useState(false);
+    const [showReAnalyzeWarning, setShowReAnalyzeWarning] = useState(false);
 
     const handleSave = useCallback(async () => {
         setIsSaving(true);
@@ -326,6 +406,7 @@ export function DnaEditor({ siteId, ontology, isExtracting, onExtract, onSaved }
                 targetAudience,
                 painPointsSolved,
                 idealTopicMap,
+                positioning,
             });
             if (result.success) {
                 toast.success(result.message);
@@ -337,6 +418,10 @@ export function DnaEditor({ siteId, ontology, isExtracting, onExtract, onSaved }
                     painPointsSolved,
                     idealTopicMap,
                     logicChains: ontology?.logicChains,
+                    positioning,
+                    brandTone: ontology?.brandTone,
+                    sourceLocale: ontology?.sourceLocale,
+                    pagesRead: ontology?.pagesRead,
                     confirmedAt: new Date().toISOString(),
                 });
             } else {
@@ -347,7 +432,15 @@ export function DnaEditor({ siteId, ontology, isExtracting, onExtract, onSaved }
         } finally {
             setIsSaving(false);
         }
-    }, [siteId, coreOfferings, targetAudience, painPointsSolved, idealTopicMap, ontology, onSaved, locale]);
+    }, [siteId, coreOfferings, targetAudience, painPointsSolved, idealTopicMap, positioning, ontology, onSaved, locale]);
+
+    const handleReExtract = useCallback(() => {
+        if (ontology?.confirmedAt) {
+            setShowReAnalyzeWarning(true);
+        } else {
+            onExtract();
+        }
+    }, [ontology, onExtract]);
 
     if (!ontology) {
         return (
@@ -372,95 +465,139 @@ export function DnaEditor({ siteId, ontology, isExtracting, onExtract, onSaved }
     const isConfirmed = !!ontology.confirmedAt;
 
     return (
-        <Card className="p-6 border-slate-200 shadow-sm space-y-6">
-            {/* Header */}
-            <div className="flex items-start justify-between gap-4">
-                <div>
-                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">{tr('title', locale)}</h3>
-                    <p className="text-xs text-slate-500 mt-0.5">{tr('subtitle', locale)}</p>
-                </div>
-                <span
-                    className={`flex-shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-black uppercase tracking-wide border ${
-                        isConfirmed
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                            : 'bg-amber-50 text-amber-700 border-amber-200'
-                    }`}
-                >
-                    {isConfirmed ? (
-                        <><CheckCircle2 size={11} />{tr('confirmed', locale)}</>
-                    ) : (
-                        tr('notConfirmed', locale)
-                    )}
-                </span>
-            </div>
-
-            {/* Core Offerings */}
-            <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    {tr('coreOfferings', locale)}
-                </label>
-                <ChipList items={coreOfferings} onChange={setCoreOfferings} locale={locale} />
-            </div>
-
-            {/* Target Audience */}
-            <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    {tr('targetAudience', locale)}
-                </label>
-                <ChipList items={targetAudience} onChange={setTargetAudience} locale={locale} />
-            </div>
-
-            {/* Pain Points */}
-            <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    {tr('painPointsSolved', locale)}
-                </label>
-                <ChipList items={painPointsSolved} onChange={setPainPointsSolved} locale={locale} />
-            </div>
-
-            {/* Ideal Topic Map */}
-            <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    {tr('idealTopicMap', locale)}
-                </label>
-                <TopicMapEditor topics={idealTopicMap} onChange={setIdealTopicMap} locale={locale} />
-            </div>
-
-            {/* Logic Chains — read-only */}
-            {ontology.logicChains && ontology.logicChains.length > 0 && (
-                <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                        {tr('logicChains', locale)}
-                    </label>
-                    <LogicChainsView chains={ontology.logicChains} locale={locale} />
-                </div>
+        <>
+            {showReAnalyzeWarning && (
+                <ReAnalyzeWarningDialog
+                    locale={locale}
+                    onConfirm={() => { setShowReAnalyzeWarning(false); onExtract(); }}
+                    onCancel={() => setShowReAnalyzeWarning(false)}
+                />
             )}
 
-            {/* Action Buttons */}
-            <div className="flex items-center gap-3 pt-2 border-t border-slate-100">
-                <button
-                    onClick={handleSave}
-                    disabled={isSaving}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-brand-secondary text-slate-900 rounded-lg text-xs font-black uppercase hover:opacity-90 disabled:opacity-50 transition-opacity"
-                >
-                    {isSaving ? (
-                        <><Loader2 size={14} className="animate-spin" />{tr('savingBtn', locale)}</>
-                    ) : (
-                        <><CheckCircle2 size={14} />{tr('confirmBtn', locale)}</>
-                    )}
-                </button>
-                <button
-                    onClick={onExtract}
-                    disabled={isExtracting || isSaving}
-                    className="flex items-center gap-2 px-4 py-2.5 border border-slate-200 rounded-lg text-xs font-black text-slate-600 uppercase hover:bg-slate-50 disabled:opacity-50 transition-colors"
-                >
-                    {isExtracting ? (
-                        <><Loader2 size={14} className="animate-spin" />{tr('extractingBtn', locale)}</>
-                    ) : (
-                        <><RefreshCw size={14} />{tr('reExtractBtn', locale)}</>
-                    )}
-                </button>
-            </div>
-        </Card>
+            <Card className="p-6 border-slate-200 shadow-sm space-y-6">
+                {/* Header */}
+                <div className="flex items-start justify-between gap-4">
+                    <div className="space-y-1">
+                        <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">{tr('title', locale)}</h3>
+                        <p className="text-xs text-slate-500">{tr('subtitle', locale)}</p>
+                        {/* Source locale annotation */}
+                        {ontology.sourceLocale && (
+                            <p className="flex items-center gap-1 text-[11px] text-slate-400">
+                                <Globe size={10} />
+                                {tr('sourceLabel', locale)} <span className="font-semibold text-slate-500 uppercase">{ontology.sourceLocale}</span> {tr('sourceSuffix', locale)}
+                                <span className="ml-1 text-slate-300">·</span>
+                                <span className="italic">{tr('aiNote', locale)}</span>
+                            </p>
+                        )}
+                    </div>
+                    <span
+                        className={`flex-shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-black uppercase tracking-wide border ${
+                            isConfirmed
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                : 'bg-amber-50 text-amber-700 border-amber-200'
+                        }`}
+                    >
+                        {isConfirmed ? (
+                            <><CheckCircle2 size={11} />{tr('confirmed', locale)}</>
+                        ) : (
+                            tr('notConfirmed', locale)
+                        )}
+                    </span>
+                </div>
+
+                {/* Core Offerings */}
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        {tr('coreOfferings', locale)}
+                    </label>
+                    <ChipList items={coreOfferings} onChange={setCoreOfferings} locale={locale} />
+                </div>
+
+                {/* Target Audience */}
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        {tr('targetAudience', locale)}
+                    </label>
+                    <ChipList items={targetAudience} onChange={setTargetAudience} locale={locale} />
+                </div>
+
+                {/* Pain Points */}
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        {tr('painPointsSolved', locale)}
+                    </label>
+                    <ChipList items={painPointsSolved} onChange={setPainPointsSolved} locale={locale} />
+                </div>
+
+                {/* Positioning / Differentiators */}
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        {tr('positioning', locale)}
+                    </label>
+                    <ChipList items={positioning} onChange={setPositioning} locale={locale} />
+                </div>
+
+                {/* Brand Tone — read-only display */}
+                {ontology.brandTone && (
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            {tr('brandTone', locale)}
+                        </label>
+                        <p className="text-xs text-slate-600 px-3 py-2 rounded-lg bg-slate-50 border border-slate-100 italic">
+                            {ontology.brandTone}
+                        </p>
+                    </div>
+                )}
+
+                {/* Ideal Topic Map */}
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        {tr('idealTopicMap', locale)}
+                    </label>
+                    <TopicMapEditor topics={idealTopicMap} onChange={setIdealTopicMap} locale={locale} />
+                </div>
+
+                {/* Logic Chains — read-only */}
+                {ontology.logicChains && ontology.logicChains.length > 0 && (
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            {tr('logicChains', locale)}
+                        </label>
+                        <LogicChainsView chains={ontology.logicChains} locale={locale} />
+                    </div>
+                )}
+
+                {/* Glass-box: pages read */}
+                {ontology.pagesRead && ontology.pagesRead.length > 0 && (
+                    <PagesReadGlassBox pages={ontology.pagesRead} locale={locale} />
+                )}
+
+                {/* Action Buttons */}
+                <div className="flex items-center gap-3 pt-2 border-t border-slate-100">
+                    <button
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        className="flex items-center gap-2 px-5 py-2.5 bg-brand-secondary text-slate-900 rounded-lg text-xs font-black uppercase hover:opacity-90 disabled:opacity-50 transition-opacity"
+                    >
+                        {isSaving ? (
+                            <><Loader2 size={14} className="animate-spin" />{tr('savingBtn', locale)}</>
+                        ) : (
+                            <><CheckCircle2 size={14} />{tr('confirmBtn', locale)}</>
+                        )}
+                    </button>
+                    <button
+                        onClick={handleReExtract}
+                        disabled={isExtracting || isSaving}
+                        className="flex items-center gap-2 px-4 py-2.5 border border-slate-200 rounded-lg text-xs font-black text-slate-600 uppercase hover:bg-slate-50 disabled:opacity-50 transition-colors"
+                    >
+                        {isExtracting ? (
+                            <><Loader2 size={14} className="animate-spin" />{tr('extractingBtn', locale)}</>
+                        ) : (
+                            <><RefreshCw size={14} />{tr('reExtractBtn', locale)}</>
+                        )}
+                    </button>
+                </div>
+            </Card>
+        </>
     );
 }

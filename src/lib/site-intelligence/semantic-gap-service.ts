@@ -27,6 +27,10 @@ export async function getSemanticGap(siteId: string, forceRefresh: boolean = fal
             orderBy: { version: 'desc' }
         });
 
+        // Use DNA's sourceLocale for language consistency (idealTopicMap and gap must match).
+        // Fall back to caller-supplied locale (e.g. user.locale) for legacy rows.
+        const effectiveLocale = (latestOntology as any)?.sourceLocale || locale;
+
         if (!latestOntology) {
             throw new Error('尚未提取业务本体数据 (Business Ontology)。请先执行业务提取。');
         }
@@ -106,7 +110,7 @@ Return ONLY a JSON object with this exact structure:
   ]
 }
 Do NOT wrap it in markdown code blocks like \`\`\`json.
-        `.trim() + localeDirective(locale);
+        `.trim() + localeDirective(effectiveLocale);
 
         // 用 model-resolver 解析 + 多 provider 兜底（抗 429/配额），与 strategy/generate 一致
         const resolved = await resolveModelForContext('skill_default');

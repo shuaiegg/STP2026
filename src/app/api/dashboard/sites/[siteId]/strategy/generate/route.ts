@@ -5,6 +5,7 @@ import { getProvider } from "@/lib/skills/providers";
 import { resolveModelForContext } from "@/lib/skills/model-resolver";
 import type { AIProviderName } from "@/lib/skills/types";
 import { localeDirective } from "@/lib/skills/locale-directive";
+import { getSemanticGap } from "@/lib/site-intelligence/semantic-gap-service";
 
 async function handler(
     req: Request,
@@ -68,11 +69,25 @@ async function handler(
         const targetAudience = latestOntology.targetAudience;
         
         // Need to fetch semantic debts from table
-        const semanticDebts = await prisma.semanticDebt.findMany({
+        let semanticDebts = await prisma.semanticDebt.findMany({
             where: { ontologyId: latestOntology.id },
             orderBy: { coverageScore: 'asc' }, // Prioritize low coverage
             take: 10
         });
+
+        // 自愈：该 ontology 版本还没缺口（如刚 re-extract）→ 即时算一遍，避免死给 400。
+        if (semanticDebts.length === 0) {
+            try {
+                await getSemanticGap(siteId, true, latestOntology.sourceLocale || undefined);
+            } catch (e) {
+                console.error('[strategy/generate] lazy semantic gap failed:', e);
+            }
+            semanticDebts = await prisma.semanticDebt.findMany({
+                where: { ontologyId: latestOntology.id },
+                orderBy: { coverageScore: 'asc' },
+                take: 10
+            });
+        }
 
         if (semanticDebts.length === 0) {
             return NextResponse.json(
@@ -85,13 +100,18 @@ async function handler(
         // For phase 1, we'll pick the top 3 semantic debts to generate pillars for.
         const topDebts = semanticDebts.slice(0, 3);
 
+        const positioning = (latestOntology as any).positioning ?? [];
+        const brandTone = (latestOntology as any).brandTone ?? '';
+
         const prompt = `
-        You are an elite SEO and Content Strategist. 
+        You are an elite SEO and Content Strategist.
         Your task is to create a highly structured "Pillar-Cluster" content strategy based on the identified "Semantic Debts" (topics the website is missing but competitors have).
-        
+
         Target Domain: ${siteData?.domain || ''}
         Business Offerings: ${JSON.stringify(coreOfferings)}
         Target Audience: ${JSON.stringify(targetAudience)}
+        Positioning / Differentiators: ${JSON.stringify(positioning)}
+        Brand Tone: ${brandTone}
         
         Semantic Debts to address (These must be your Pillars!):
         ${JSON.stringify(topDebts, null, 2)}
@@ -183,6 +203,7 @@ async function handler(
                         theme: plan.theme,
                         priority: priorityCounter++,
                         status: 'IDEATION',
+                        sourceOntologyId: latestOntology.id, // 记录基于哪版业务基因（陈旧检测）
                         articles: {
                             create: plan.articles.map((art: any) => ({
                                 title: art.title,

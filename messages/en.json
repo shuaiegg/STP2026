@@ -1138,8 +1138,14 @@
       "domainLabel": "Domain"
     },
     "strategyBoard": {
+      "stale": {
+        "banner": "Your Business DNA has been updated — these plans may be outdated.",
+        "refresh": "Regenerate plan",
+        "refreshing": "Regenerating..."
+      },
       "status": {
         "COMPLETED": "Done",
+        "ARCHIVED": "Archived",
         "IN_PROGRESS": "In Progress",
         "PLANNED": "To Do",
         "REFACTORING_NEEDED": "Refactor",

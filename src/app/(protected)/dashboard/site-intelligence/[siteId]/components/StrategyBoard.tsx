@@ -198,6 +198,7 @@ function KanbanColumn({ plan, articles, displayIndex }: { plan: ContentPlan, art
 export function StrategyBoard({ siteId }: { siteId: string }) {
     const t = useTranslations('dashboard.strategyBoard');
     const [plans, setPlans] = useState<ContentPlan[]>([]);
+    const [stale, setStale] = useState(false);
     const [loading, setLoading] = useState(true);
     const [generating, setGenerating] = useState(false);
     const [activeArticle, setActiveArticle] = useState<PlannedArticle | null>(null);
@@ -218,6 +219,7 @@ export function StrategyBoard({ siteId }: { siteId: string }) {
             const data = await res.json();
             if (data.success) {
                 setPlans(data.data);
+                setStale(!!data.stale);
             } else {
                 toast.error(data.error || t('toasts.fetchError'));
             }
@@ -415,6 +417,20 @@ export function StrategyBoard({ siteId }: { siteId: string }) {
 
     return (
         <div className="overflow-x-auto pb-8 -mx-6 px-6">
+            {stale && (
+                <div className="min-w-[800px] mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-brand-warning/30 bg-brand-warning/5 px-4 py-3">
+                    <span className="text-sm font-medium text-brand-text-secondary">{t('stale.banner')}</span>
+                    <button
+                        type="button"
+                        onClick={() => handleGenerate(true)}
+                        disabled={generating}
+                        className="shrink-0 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-brand-secondary text-white text-xs font-bold hover:opacity-90 disabled:opacity-50 transition-opacity"
+                    >
+                        <RefreshCw size={13} className={generating ? 'animate-spin' : ''} />
+                        {generating ? t('stale.refreshing') : t('stale.refresh')}
+                    </button>
+                </div>
+            )}
             <div className="flex justify-between items-center mb-6 min-w-[800px]">
                 <div>
                     <h2 className="text-xl font-black font-display text-slate-800 flex items-center gap-2">

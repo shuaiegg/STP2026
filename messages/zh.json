@@ -1142,8 +1142,14 @@
       "domainLabel": "域名 (Domain)"
     },
     "strategyBoard": {
+      "stale": {
+        "banner": "您的业务基因已更新 —— 当前内容计划可能已过时。",
+        "refresh": "重新生成计划",
+        "refreshing": "生成中..."
+      },
       "status": {
         "COMPLETED": "已完成",
+        "ARCHIVED": "已归档",
         "IN_PROGRESS": "编写中",
         "PLANNED": "待执行",
         "REFACTORING_NEEDED": "需要重构",
