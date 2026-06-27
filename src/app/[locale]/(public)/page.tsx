@@ -250,7 +250,7 @@ export default async function Home({
               learnMore={t('pillars.learnMore')}
               icon={LineChart}
               imageSrc="/assets/images/citation-tracker.png"
-              imageAlt="AI Citation and Search Visibility Tracker panel"
+              imageAlt="Search ranking and visibility tracker panel"
               color="bg-brand-info-muted text-brand-info-hover"
             />
           </div>
