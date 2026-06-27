@@ -207,6 +207,33 @@ export class CrawlerParser {
     }
 
     /**
+     * 提取 <html lang> 并规范化为 2 字母语言代码（如 'en'、'zh'）。
+     * 不依赖汉字比例等语言相关启发式。
+     */
+    static extractHtmlLang(html: string): string | undefined {
+        const $ = cheerio.load(html);
+        const raw = $('html').attr('lang') || '';
+        if (!raw.trim()) return undefined;
+        const lang = raw.split(/[-_]/)[0].toLowerCase().trim();
+        return lang.length >= 2 ? lang : undefined;
+    }
+
+    /**
+     * 从页面 HTML 提取纯文本摘要（去除脚本/样式后截断）。
+     * 用于 DNA 提取的 LLM 上下文，只在业务页面上调用。
+     */
+    static extractBodyText(html: string, maxChars: number = 2500): string {
+        const $ = cheerio.load(html);
+        $('script, style, noscript, nav, header, footer, [role="banner"], [role="navigation"]').remove();
+        const text = $('main, article, [role="main"], body')
+            .first()
+            .text()
+            .replace(/\s+/g, ' ')
+            .trim();
+        return text.slice(0, maxChars);
+    }
+
+    /**
      * 从 HTML 中提取 SEO 和内容指标（含 GEO 就绪度字段）
      */
     static extractPageData(html: string, url: string, loadTime: number, status: number): ScrapedPage {
@@ -242,6 +269,9 @@ export class CrawlerParser {
         const listCount = $('ul, ol').length;
         const tableCount = $('table').length;
 
+        // 提取 <html lang>
+        const lang = $('html').attr('lang')?.split(/[-_]/)[0]?.toLowerCase().trim() || undefined;
+
         // 计算词数（去除脚本/样式内容）
         $('script, style, noscript').remove();
         const bodyText = $('body').text().replace(/\s+/g, ' ').trim();
@@ -267,6 +297,7 @@ export class CrawlerParser {
             hasOgImage: !!$('meta[property="og:image"]').attr('content'),
             hasViewportMeta: !!$('meta[name="viewport"]').length,
             hasStructuredData: schemaTypes.length > 0 || !!$('script[type="application/ld+json"]').length,
+            lang,
             // GEO fields
             schemaTypes,
             listCount,

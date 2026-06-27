@@ -17,6 +17,7 @@ export interface ScrapedPage {
   hasViewportMeta: boolean;
   hasStructuredData: boolean;
   topic?: string;
+  lang?: string;                // <html lang> attribute (e.g. 'en', 'zh')
   // GEO readiness fields (Task 1.2.6)
   schemaTypes: string[];        // JSON-LD @type values (Task 1.2.1)
   listCount: number;            // <ul>+<ol> count (Task 1.2.2)
@@ -38,8 +39,12 @@ export interface BusinessDna {
   targetAudience: string[];
   painPoints: string[];
   brandTone: string;
-  logicChains?: string[];
-  idealTopicMap?: string[];
+  logicChains?: Array<{ problem: string; solution: string; proof: string }>;
+  idealTopicMap?: Array<{ topic: string; subtopics: string[] }>;
+  // New fields from unified extractor
+  positioning?: string[];
+  sourceLocale?: string;
+  pagesRead?: string[];
 }
 
 // GEO site-level signals (Task 1.1.4)

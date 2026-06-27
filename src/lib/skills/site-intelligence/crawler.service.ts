@@ -1,3 +1,4 @@
+import * as cheerio from 'cheerio';
 import { ScrapedPage, SiteAuditResult, AuditProgressEvent, GeoSiteSignals, BadPage } from './types';
 import { fetchHtml, fetchSiteSignals } from './crawler/fetcher';
 import { CrawlerParser } from './crawler/parser';
@@ -266,15 +267,13 @@ export class CrawlerService {
     // 立即通知已发现的所有链接（骨架图）
     onProgress({ type: 'discovery', urls, sitemapFound });
 
-    // Extract Business DNA in the background
+    // Extract Business DNA in the background (unified extractor — discovers pages itself)
     let businessDna: BusinessDna | undefined;
 
-    // We try to find the homepage and an about page
     const homeUrl = urls.find(u => u === normalized || u === `${normalized}/`) || urls[0];
-    const aboutUrl = urls.find(u => u.toLowerCase().includes('/about') || u.toLowerCase().includes('about-us'));
 
     // Fire off the DNA extraction asynchronously so it doesn't block the crawl startup
-    this.extractBusinessDna(homeUrl, aboutUrl, { locale }).then(async (dna) => {
+    this.extractBusinessDna(homeUrl).then(async (dna) => {
       if (dna) {
         businessDna = dna;
         onProgress({ type: 'dna_extracted', dna });
@@ -338,53 +337,238 @@ export class CrawlerService {
     };
   }
 
+  // ─── Business page heuristics ────────────────────────────────────────────
+  // 业务关键词仅用于"排序加分"，不再是收录硬条件（一级页面默认就收，见 identifyBusinessPages）。
+  // 注意：pricing/price 不在此处——它对内容/增长策略 DNA 是污染源，已移入排除列表。
+  private static readonly BUSINESS_URL_KEYWORDS = [
+    'about', 'product', 'products', 'service', 'services',
+    'solution', 'solutions', 'team', 'company', 'feature', 'features', 'platform',
+    'how-it-works', 'what-we-do', 'who-we-are', 'why-us', 'use-case', 'use-cases',
+    'industries', 'customers', 'case-stud',
+    '关于', '产品', '服务', '功能', '方案', '解决方案', '团队', '特性', '案例',
+  ];
+
+  private static readonly EXCLUDE_URL_KEYWORDS = [
+    'blog', 'news', 'press', 'legal', 'privacy', 'terms', 'cookie', 'sitemap',
+    'tag', 'category', 'author', 'login', 'signin', 'sign-in', 'register', 'signup', 'sign-up',
+    'search', 'support', 'help', 'doc', 'docs', 'documentation', 'api', 'cdn-cgi',
+    // 非业务/会污染内容策略 DNA 的页面
+    'pricing', 'price', 'plans', 'plan', 'contact', 'cart', 'checkout', 'account',
+    'refund', 'career', 'careers', 'job', 'jobs', 'affiliate', 'partner-program',
+    '博客', '新闻', '法律', '隐私', '条款', '价格', '定价', '联系', '登录', '注册', '购物车',
+  ];
+
+  private static readonly LOCALE_PATH_PREFIXES: Record<string, string[]> = {
+    zh: ['/zh', '/cn', '/hans', '/hant'],
+    ja: ['/ja', '/jp'],
+    ko: ['/ko', '/kr'],
+    de: ['/de'],
+    fr: ['/fr'],
+    es: ['/es'],
+    pt: ['/pt', '/br'],
+    ru: ['/ru'],
+  };
+
+  private static readonly TLD_LOCALE_MAP: Record<string, string> = {
+    cn: 'zh', tw: 'zh', hk: 'zh', jp: 'ja', kr: 'ko',
+    fr: 'fr', de: 'de', es: 'es', br: 'pt', ru: 'ru',
+  };
+
   /**
-   * Reads the homepage and about page to extract core business context using LLM
+   * 从首页 HTML + URL 检测主语言（语言无关，不使用汉字比例）。
+   * 优先级：<html lang> → TLD → 默认 'en'
    */
-  static async extractBusinessDna(homeUrl: string, aboutUrl?: string, options?: { locale?: 'zh' | 'en' }): Promise<BusinessDna | null> {
-    const locale = options?.locale || 'zh';
+  private static detectPrimaryLocale(homeHtml: string, siteUrl: string): string {
+    // 1. <html lang> — most reliable for modern sites
+    const htmlLang = CrawlerParser.extractHtmlLang(homeHtml);
+    if (htmlLang) return htmlLang;
+
+    // 2. TLD heuristic
     try {
-      const { page: homePage } = await this.scrapePage(homeUrl);
-      let aboutPage = null;
-      if (aboutUrl) {
-        const { page } = await this.scrapePage(aboutUrl);
-        aboutPage = page;
+      const tld = new URL(siteUrl).hostname.split('.').pop() || '';
+      if (this.TLD_LOCALE_MAP[tld]) return this.TLD_LOCALE_MAP[tld];
+    } catch { /* ignore */ }
+
+    return 'en';
+  }
+
+  /**
+   * 判断一个 URL 是否属于主语言（排除明确的其他语言前缀路径）。
+   */
+  private static isUrlPrimaryLocale(url: string, primaryLocale: string): boolean {
+    try {
+      const pathname = new URL(url).pathname;
+      for (const [locale, prefixes] of Object.entries(this.LOCALE_PATH_PREFIXES)) {
+        if (locale === primaryLocale) continue;
+        if (prefixes.some(p => pathname.startsWith(p + '/') || pathname === p)) {
+          return false;
+        }
+      }
+    } catch { /* ignore */ }
+    return true;
+  }
+
+  /**
+   * 从首页导航中识别业务页面 URL（首页 + about/pricing/product/services 等）。
+   * 排除 blog/news/legal/privacy/terms 等。
+   */
+  private static identifyBusinessPages(
+    homeHtml: string,
+    homeUrl: string,
+    primaryLocale: string,
+  ): string[] {
+    const home = homeUrl.split('#')[0].split('?')[0].replace(/\/+$/, ''); // 规范化首页 URL
+    const urls: string[] = [home];
+
+    try {
+      const $ = cheerio.load(homeHtml);
+      const domain = new URL(home).origin;
+
+      const candidates = new Map<string, number>(); // url → score
+
+      // 扫全部 <a>（含 footer / CTA 按钮，不止 nav）——再用"一级页面 + 黑名单"过滤，
+      // 确保 nav 之外（页脚/正文 CTA）的一级业务页（如 /consultation）也被发现。
+      $('a').each((_, el) => {
+        const href = $(el).attr('href');
+        const text = $(el).text().trim().toLowerCase();
+        if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) return;
+
+        let absoluteUrl: string;
+        try {
+          // 去掉查询/锚点 + 规范化尾部斜杠（避免 example.com 与 example.com/ 重复）
+          absoluteUrl = new URL(href, homeUrl).href.split('#')[0].split('?')[0].replace(/\/+$/, '');
+          // Must be same origin
+          if (!absoluteUrl.startsWith(domain)) return;
+        } catch { return; }
+
+        if (!this.isUrlPrimaryLocale(absoluteUrl, primaryLocale)) return;
+
+        const pathname = new URL(absoluteUrl).pathname.toLowerCase();
+        const pathSegments = pathname.split('/').filter(Boolean);
+        const lastSegment = pathSegments[pathSegments.length - 1] || '';
+
+        // Exclude patterns
+        const isExcluded = this.EXCLUDE_URL_KEYWORDS.some(
+          kw => lastSegment.includes(kw) || pathname.includes(`/${kw}`)
+        );
+        if (isExcluded) return;
+
+        // 一级页面（depth ≤ 1）默认收录——"抓一级页面，排除非业务的"。
+        // 业务关键词仅用于排序加分，让 about/product/solution 排在前面。
+        const isFirstLevel = pathSegments.length <= 1;
+        let score = 0;
+        if (isFirstLevel) score += 1; // 基础分：一级非排除页面即可入选
+        if (this.BUSINESS_URL_KEYWORDS.some(kw => lastSegment.includes(kw) || pathname.includes(`/${kw}`))) {
+          score += 2;
+        }
+        if (this.BUSINESS_URL_KEYWORDS.some(kw => text.includes(kw))) {
+          score += 1;
+        }
+
+        // 收录条件：一级页面（基础分），或更深但命中业务关键词的页面
+        if (score > 0) {
+          candidates.set(absoluteUrl, (candidates.get(absoluteUrl) ?? 0) + score);
+        }
+      });
+
+      // 按分排序，取前 8（business 关键词页排前面，其余一级页补充）
+      const sorted = [...candidates.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8);
+      for (const [url] of sorted) {
+        if (!urls.includes(url)) urls.push(url);
+      }
+    } catch (err) {
+      console.warn('[extractBusinessDna] Business page discovery failed:', err);
+    }
+
+    return urls;
+  }
+
+  /**
+   * Unified DNA extractor — language-isolated, business-page-driven, full field set.
+   * Replaces the old metadata-only approach with actual body text from business pages.
+   *
+   * The `aboutUrl` parameter is kept for backward compatibility but is ignored;
+   * the extractor now discovers business pages from the homepage nav links.
+   */
+  static async extractBusinessDna(homeUrl: string, _aboutUrl?: string, _options?: { locale?: 'zh' | 'en' }): Promise<BusinessDna | null> {
+    try {
+      // 1. Fetch homepage
+      const homeResult = await fetchHtml(homeUrl).catch(() => null);
+      if (!homeResult?.html) return null;
+      const homeHtml = homeResult.html;
+
+      // 2. Detect primary locale from homepage (language-agnostic)
+      const sourceLocale = this.detectPrimaryLocale(homeHtml, homeUrl);
+
+      // 3. Identify business pages from nav (primary locale only)
+      const businessPageUrls = this.identifyBusinessPages(homeHtml, homeUrl, sourceLocale);
+
+      // 4. Fetch body text from business pages (concurrent, up to 5)
+      const pageContents: Array<{ url: string; text: string }> = [];
+      const homeBodyText = CrawlerParser.extractBodyText(homeHtml, 2500);
+      if (homeBodyText) pageContents.push({ url: homeUrl, text: homeBodyText });
+
+      const otherUrls = businessPageUrls.filter(u => u !== homeUrl).slice(0, 8);
+      const fetched = await Promise.allSettled(
+        otherUrls.map(async (url) => {
+          const result = await fetchHtml(url);
+          return { url, text: CrawlerParser.extractBodyText(result.html, 2000) };
+        })
+      );
+      for (const result of fetched) {
+        if (result.status === 'fulfilled' && result.value.text.length > 50) {
+          pageContents.push(result.value);
+        }
       }
 
-      if (!homePage && !aboutPage) return null;
+      const pagesRead = pageContents.map(p => p.url);
 
+      // 5. Thin site fallback — total content too sparse
+      const totalWords = pageContents.reduce((acc, p) => acc + p.text.split(/\s+/).length, 0);
+      if (totalWords < 100) {
+        console.warn(`[extractBusinessDna] Thin site detected at ${homeUrl} (${totalWords} words)`);
+        return null;
+      }
+
+      // 6. Build LLM context (single-language, body text)
+      const context = pageContents
+        .map(p => `[Page: ${p.url}]\n${p.text}`)
+        .join('\n\n---\n\n');
+
+      // 7. Single LLM call → full DNA
       const aiProvider = await getDefaultProvider();
       const defaultModel = aiProvider.getDefaultModel();
 
-      const combinedText = `
-      Homepage Content:
-      Title: ${homePage?.title || ''}
-      Description: ${homePage?.description || ''}
-      H1: ${homePage?.h1 || ''}
-      H2s: ${homePage?.h2.slice(0, 5).join(', ') || ''}
+      const prompt = `You are an expert Business Strategist and SEO Architect.
+Analyze the provided website content and extract the complete "Business DNA" for this company.
+The content is from the company's main business pages (homepage, about, pricing, product, etc.) in their primary language.
 
-      About Page Content:
-      Title: ${aboutPage?.title || ''}
-      Description: ${aboutPage?.description || ''}
-      H1: ${aboutPage?.h1 || ''}
-      H2s: ${aboutPage?.h2.slice(0, 5).join(', ') || ''}
-      `;
+Return ONLY a valid JSON object with this exact structure — no markdown, no extra text:
+{
+  "coreOfferings": ["offering 1", "offering 2"],
+  "targetAudience": ["audience 1", "audience 2"],
+  "painPoints": ["pain point 1", "pain point 2"],
+  "positioning": ["differentiator 1", "differentiator 2"],
+  "brandTone": "3-5 word description of brand voice",
+  "logicChains": [
+    { "problem": "...", "solution": "...", "proof": "..." }
+  ],
+  "idealTopicMap": [
+    { "topic": "Broad SEO pillar", "subtopics": ["sub 1", "sub 2"] }
+  ]
+}
 
-      const prompt = `
-      You are an expert Business Strategist and Product Marketing Manager.
-      Analyze the provided website content (Homepage and About page) and extract the core "Business DNA" for this company.
+Rules:
+- coreOfferings: 2-4 main products/services
+- targetAudience: 2-4 specific customer types
+- painPoints: 2-4 customer problems solved
+- positioning: 2-3 unique differentiators that set this company apart from competitors
+- brandTone: short phrase (e.g. "Professional B2B SaaS", "Authoritative SEO platform")
+- logicChains: 2-4 Problem→Solution→Proof chains. CRITICAL: "proof" MUST be evidence ACTUALLY found in the provided content (a real case study, testimonial, named metric, or guarantee on the page). DO NOT invent or estimate statistics (no made-up numbers like "10,000 sites" or "98% success"). If no concrete proof exists on the page for a chain, set "proof" to an empty string "" — never fabricate.
+- idealTopicMap: 5-10 semantic pillars a leader in this niche MUST cover for topical authority
 
-      CRITICAL INSTRUCTIONS:
-      Return YOUR ANALYSIS as a strict JSON object with EXACTLY these four keys. Do not include markdown formatting or extra text.
-      ${locale === 'zh' ? 'IMPORTANT: Please provide the values in Chinese (Simplified).' : 'IMPORTANT: Please provide the values in English.'}
-      1. "coreOfferings": Array of strings (What are the 2-4 main products or services they sell?)
-      2. "targetAudience": Array of strings (Who are the 2-4 specific types of customers they are targeting?)
-      3. "painPoints": Array of strings (What are the 2-4 main customer problems they solve?)
-      4. "brandTone": String (A short 3-5 word description of their brand voice, e.g., "Professional B2B Software", "Playful Consumer E-commerce")
-
-      Website Content to analyze:
-      ${combinedText}
-      `.trim();
+Website Content:
+${context}`.trim();
 
       const response = await aiProvider.generateContent(prompt, {
         model: defaultModel.id,
@@ -395,11 +579,41 @@ export class CrawlerService {
         const match = response.content.match(/\{[\s\S]*\}/);
         if (match) {
           const parsed = JSON.parse(match[0]);
+
+          // 事实准确性兜底：proof 里出现、但源页面正文里不存在的数字 = LLM 编造 → 清空该 proof。
+          // 关键：按"带单位的整 token 逐字匹配"（如 "10,000+"、"2.4M"、"98%"），
+          // 不做裸数字子串匹配（"98" 会误命中正文里任意数字 → 放行假数据）。
+          const normNum = (s: string) => s.replace(/[\s,]/g, '');
+          const normContext = normNum(context);
+          const sanitizeProof = (proof: unknown): string => {
+            if (typeof proof !== 'string' || !proof) return '';
+            // 匹配带千分位/小数/单位(%、M/K/B、+)的数字 claim token
+            const tokens = proof.match(/\d[\d,.]*\s?(?:%|[MKB]\b|\+)?/gi) || [];
+            for (const tok of tokens) {
+              const t = tok.trim();
+              if (!t) continue;
+              if (!context.includes(t) && !normContext.includes(normNum(t))) return '';
+            }
+            return proof;
+          };
+          const logicChains = (Array.isArray(parsed.logicChains) ? parsed.logicChains : []).map(
+            (c: { problem?: string; solution?: string; proof?: unknown }) => ({
+              problem: c.problem || '',
+              solution: c.solution || '',
+              proof: sanitizeProof(c.proof),
+            }),
+          );
+
           return {
             coreOfferings: Array.isArray(parsed.coreOfferings) ? parsed.coreOfferings : [],
             targetAudience: Array.isArray(parsed.targetAudience) ? parsed.targetAudience : [],
             painPoints: Array.isArray(parsed.painPoints) ? parsed.painPoints : [],
             brandTone: parsed.brandTone || 'Professional',
+            logicChains,
+            idealTopicMap: Array.isArray(parsed.idealTopicMap) ? parsed.idealTopicMap : [],
+            positioning: Array.isArray(parsed.positioning) ? parsed.positioning : [],
+            sourceLocale,
+            pagesRead,
           };
         }
       }

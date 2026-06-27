@@ -4,9 +4,11 @@ export interface BusinessDNA {
     coreOfferings: string[];
     targetAudience: string[];
     painPointsSolved: string[];
+    positioning: string[];
+    brandTone: string | null;
 }
 
-/** 取站点最新 SiteOntology，提取写作所需三要素。无记录或字段全空返回 null。 */
+/** 取站点最新 SiteOntology，提取写作所需字段。无记录或字段全空返回 null。 */
 export async function getBusinessDNA(siteId: string): Promise<BusinessDNA | null> {
     try {
         const ontology = await prisma.siteOntology.findFirst({
@@ -16,6 +18,8 @@ export async function getBusinessDNA(siteId: string): Promise<BusinessDNA | null
                 coreOfferings: true,
                 targetAudience: true,
                 painPointsSolved: true,
+                positioning: true,
+                brandTone: true,
             },
         });
 
@@ -26,7 +30,13 @@ export async function getBusinessDNA(siteId: string): Promise<BusinessDNA | null
             return null;
         }
 
-        return { coreOfferings, targetAudience, painPointsSolved };
+        return {
+            coreOfferings,
+            targetAudience,
+            painPointsSolved,
+            positioning: ontology.positioning ?? [],
+            brandTone: ontology.brandTone ?? null,
+        };
     } catch {
         return null;
     }
