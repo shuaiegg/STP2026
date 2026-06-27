@@ -229,6 +229,10 @@ model SiteOntology {
   painPointsSolved String[]
   logicChains      Json? // Problem→Solution→Proof 结构
   idealTopicMap    Json // { topic, subtopics }[]
+  positioning      String[]
+  brandTone        String?
+  sourceLocale     String?        // 提取所用的规范语言（如 'en'、'zh'）
+  pagesRead        String[]       // glass-box：提取时读取的页面 URL 列表
   confirmedAt      DateTime?      // 用户确认业务基因的时间戳
   createdAt        DateTime       @default(now())
   site             Site           @relation(fields: [siteId], references: [id], onDelete: Cascade)
@@ -343,6 +347,7 @@ model ContentPlan {
   status      StrategyStatus   @default(IDEATION)
   theme       String?
   priority    Int              @default(0)
+  sourceOntologyId String?     // 基于哪版业务基因生成（用于陈旧检测：DNA 更新后提示刷新）
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
   site        Site             @relation(fields: [siteId], references: [id], onDelete: Cascade)
