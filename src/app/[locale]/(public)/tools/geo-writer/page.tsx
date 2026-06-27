@@ -1050,7 +1050,7 @@ function GEOWriterPageContent() {
                                     </div>
                                     <Link href="/dashboard" className="w-full">
                                         <Button variant="outline" className="w-full border-emerald-200 text-emerald-700 font-bold bg-white hover:bg-emerald-50 transition-colors text-xs">
-                                            前往控制台追踪引用
+                                            前往控制台追踪收录与排名
                                         </Button>
                                     </Link>
                                 </div>

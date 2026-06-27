@@ -45,7 +45,7 @@
   "home": {
     "meta": {
       "title": "精准诊断，工程化增长 — ScaletoTop SEO 智能星图",
-      "description": "输入网址即刻获取 14 维度全站 SEO+GEO 体检报告。专为高增长团队打造的 AI 内容生产与引用追踪引擎。"
+      "description": "输入网址即刻获取 14 维度全站 SEO+GEO 体检报告。专为高增长团队打造的 AI 内容生产与搜索可见度追踪引擎。"
     },
     "hero": {
       "title": "精准诊断，工程化增长",
@@ -65,7 +65,7 @@
       },
       "verification": {
         "title": "验证：可见度的实证",
-        "desc": "闭环引用追踪。实时监测您的内容在搜索引擎与 AI 答复中的可见度。"
+        "desc": "闭环表现追踪。通过 Google Search Console 持续监测您内容的搜索收录与排名可见度。"
       },
       "learnMore": "了解更多"
     },
@@ -420,7 +420,7 @@
       "站点健康度实时审计",
       "语义债自动化度量",
       "人机协同战略看板",
-      "GEO 内容被引用追踪"
+      "GEO 搜索可见度追踪"
     ],
     "ctaHeadline": "准备好让您的内容为您工作了吗？",
     "ctaDescription": "分析您的站点，找出被搜索引擎忽略的内容缺口。免费开始，无需信用卡。",
@@ -616,7 +616,7 @@
         "produce": "生产",
         "produceDesc": "策略看板 · 内容库",
         "measure": "衡量",
-        "measureDesc": "GSC · GA4 · 引用追踪"
+        "measureDesc": "GSC · GA4 · 收录排名追踪"
       },
       "insightLabel": "教练洞察"
     },
@@ -1347,9 +1347,9 @@
       "emptyTitle": "您的内容库目前空空如也",
       "emptyDesc": "立即启动 StellarWriter 智作优化器，让您的第一篇高权重文章在此“安家”。",
       "emptyCta": "立刻去智作",
-      "statusCited": "已引用",
+      "statusCited": "已收录",
       "statusChecking": "检查中",
-      "statusNotCited": "未检测到",
+      "statusNotCited": "未收录",
       "statusPending": "待检",
       "confirmDelete": "确定要删除这篇文章吗？此操作不可撤销。",
       "deleted": "文章已成功移除",
@@ -1371,7 +1371,7 @@
       "radarTitle": "实时内容健康度 (Radar)",
       "radarNote": "“杰克，目前的文本读起来非常像真人撰写。如果您继续增加案例研究，GEO 权重还会进一步提升。”",
       "coreKeywords": "核心关键词",
-      "editNote": "请注意：修改正文可能会影响到搜索引擎的引用检测。建议每次大幅修改后，在 24 小时后查看最新的流量轨迹。"
+      "editNote": "请注意：修改正文可能会影响搜索引擎对它的收录与排名。建议每次大幅修改后，在 24 小时后查看最新的流量轨迹。"
     },
     "tools": {
       "title": "营销工具箱",

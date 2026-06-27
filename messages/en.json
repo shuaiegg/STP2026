@@ -45,7 +45,7 @@
   "home": {
     "meta": {
       "title": "Secure Your Traffic Gaps — ScaletoTop Site Intelligence",
-      "description": "Enter your domain for an instant 14-dimension SEO+GEO audit. AI-driven content production and citation tracking built for high-growth teams."
+      "description": "Enter your domain for an instant 14-dimension SEO+GEO audit. AI-driven content production and search visibility tracking built for high-growth teams."
     },
     "hero": {
       "title": "Secure Your Traffic Gaps",
@@ -65,7 +65,7 @@
       },
       "verification": {
         "title": "Verification: Proof of Performance",
-        "desc": "Closed-loop citation tracking. Monitor your content’s visibility across search engines and AI response engines in real-time."
+        "desc": "Closed-loop performance tracking. Monitor your content’s search ranking and visibility via Google Search Console over time."
       },
       "learnMore": "Learn more"
     },
@@ -420,7 +420,7 @@
       "Real-time site health audits",
       "Automated semantic debt scoring",
       "Human-AI strategy board",
-      "GEO citation tracking"
+      "GEO search visibility tracking"
     ],
     "ctaHeadline": "Ready to make your content work for you?",
     "ctaDescription": "Analyze your site and find the content gaps search engines are ignoring. Free to start, no credit card required.",
@@ -616,7 +616,7 @@
         "produce": "Produce",
         "produceDesc": "Strategy board · library",
         "measure": "Measure",
-        "measureDesc": "GSC · GA4 · citation tracking"
+        "measureDesc": "GSC · GA4 · ranking tracking"
       },
       "insightLabel": "Coach insight"
     },
@@ -1343,9 +1343,9 @@
       "emptyTitle": "Your library is empty for now",
       "emptyDesc": "Launch the StellarWriter optimizer and give your first high-authority article a home here.",
       "emptyCta": "Write now",
-      "statusCited": "Cited",
+      "statusCited": "Indexed",
       "statusChecking": "Checking",
-      "statusNotCited": "Not detected",
+      "statusNotCited": "Not indexed",
       "statusPending": "Pending",
       "confirmDelete": "Delete this article? This cannot be undone.",
       "deleted": "Article removed",
@@ -1367,7 +1367,7 @@
       "radarTitle": "Live content health (Radar)",
       "radarNote": "Jack, the text currently reads very much like a human wrote it. Add more case studies and the GEO weight will climb further.",
       "coreKeywords": "Core keywords",
-      "editNote": "Note: editing the body may affect citation detection by search engines. After major edits, check the latest traffic trend 24 hours later."
+      "editNote": "Note: editing the body may affect how search engines index and rank it. After major edits, check the latest traffic trend 24 hours later."
     },
     "tools": {
       "title": "Marketing Toolbox",
