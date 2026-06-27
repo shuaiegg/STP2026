@@ -117,17 +117,24 @@
 - **蓝图"难度列"**（砍出 P3a MVP）：需要可靠的逐话题竞争难度源（`SiteKeyword.difficulty` 常空 / 竞品逐话题覆盖需新管线 / DataForSEO keyword difficulty）。有可靠源后作为第 4 列加回。
 - **logicChains per-pillar 映射**：把站点级 Problem→Solution→Proof 对到具体支柱（需 LLM），用于蓝图更精准的"为什么重要" + 写作骨架。P3a MVP 用 `relevance` 替代。
 - **持久化 `ourStrengths` 以准确计"已覆盖"**（2026-06-26）：`getSemanticGap` 只持久化缺口、不存强项。蓝图无法可靠区分"真·强项"与"join 没匹配上"，故采安全失败（无匹配 = 未覆盖，宁可多显示工作也不藏缺口）→ 成熟站的强项会被低估为缺口。修向：持久化 ourStrengths（含 coverageScore），蓝图据此准确标"已建立"。
-- ✅ **Gemini 429 兜底（2026-06-26 已做）**：`strategy/generate` 改用 `resolveModelForContext('content_strategy')`（admin 可在 /admin/models 选模型）+ 候选兜底循环（配置→vps→deepseek→claude）；`getSemanticGap` 同样接 `resolveModelForContext('skill_default')` + 兜底。**待办**：这段 candidate-fallback 在 strategy/generate 与 getSemanticGap 重复了，抽成共享 `generateWithFallback(prompt, opts, context)` helper 去重。
+- ⚠️ **Gemini 429 兜底（部分完成）**：`strategy/generate`（`content_strategy` context + 候选兜底）、`getSemanticGap`（`skill_default` + 兜底）已做。**仍缺：`CrawlerService.extractBusinessDna` 还用 `getDefaultProvider()` 无兜底**——DNA 提取(核心)有 429 隐患,需同样接 resolver+兜底。**待办**：candidate-fallback 现在 3 处会重复（strategy/generate、getSemanticGap、extractBusinessDna），抽成共享 `generateWithFallback(prompt, opts, context)` helper 一并接上。
 - **蓝图 join 语言一致性**（2026-06-26 已就近修）：`debt.topic` 必须与 `idealTopicMap` 同语言才能 join；已在 `ontology.ts` 给 `getSemanticGap` 传 locale。根治仍依赖 issue 1（站点内容语言）——存量错配数据需重新分析才会对齐。
 
-### 🧬 业务基因提取质量（2026-06-26 P-DNA 真机验证暴露）
+### 🧬 业务基因提取质量（2026-06-26 explore 收敛 → 已起 proposal）
 
-> P-DNA 让 DNA 可见可改后，暴露了上游**提取管线**的两个既有问题（非 P-DNA/P3a 引入）。短期靠 P-DNA 手动编辑兜底。
+> issue 1（语言错配）+ issue 2（上下文太薄误判成亚马逊）已收敛成 proposal **`dna-extraction-quality`**。
+> 核心理念：**DNA = 语言无关的业务本质 → 主语言干净提取一份"规范 DNA" → 输出按目标语言 LLM 桥接**（提取 O(1)，否定了"逐 locale 各提取一份"的重方案）。proposal 含：语言无关主语言检测、单语言隔离 + 业务页正文提取、统一提取器、schema 补 positioning/brandTone/sourceLocale、缺口用 sourceLocale（修蓝图 join）、glass-box、编辑保护、薄站降级。
+>
+> **以下为同次 explore 识别、proposal 留作扩展点 / 未来的项：**
 
-- **"AI 重新分析"上下文太薄 → 误判业务**：`ontology` 路由 re-extract 只取存档 `report.nodes` 的 title/h1/desc（薄），且被中文"出海营销"标题主导 → LLM 把 scaletotop（SEO/GEO SaaS）误判成出海电商、**推荐亚马逊话题**，offering 塌成单条泛词。对比 onboarding 的 `extractBusinessDna`（爬取时全文，上下文丰富）质量明显更好。
-  - **修向**：让"AI 重新分析"复用 onboarding 级提取（`extractBusinessDna` + 实时爬全文），而非薄 `report.nodes`。
-- **站点内容语言缺失 → 语言错配**：`localeDirective(session.user.locale)` 让 DNA/缺口/策略/洞察都跟**用户后台语言**（zh），无视站点内容语言。英文站/双语站（如 scaletotop = 英文根 + 中文出海博客）因此输出中文 DNA。Site 仅有 `targetMarkets`（且常空），无"内容语言"字段。
-  - **修向**：给 Site 加"内容语言"（或从 targetMarkets / 爬取语言推断）；DNA/缺口/策略/内容产出用**站点语言**，后台 chrome 仍用 User.locale。双语站需决定主语言或按 locale 分别产出（设计较重）。
+- **飞跃1 · SERP 接地 idealTopicMap**：提取话题图谱时并入竞品/SERP 真实排名话题（DataForSEO）→ 市场接地而非 LLM 凭空想。统一提取器已留"外部话题信号"入参。
+- **陈旧检测**：提取时记站点签名（关键页 hash/页数）；后续爬取显著变化 → 主动提示"刷新业务基因"。
+- **竞品推断共用干净管线**：`inferCompetitors` 复用同一单语言提取上下文 + 用 DNA 反向校验竞品（否则 DNA 错会沿竞品扩散）。
+- **飞跃2 · 活的 DNA（未来 epic）**：GSC 真实表现回流修正 idealTopicMap（你实际排名、图谱却没有的话题 → 补全/修正）→ DNA 从一次性快照变成被市场验证的活模型。接 [A 衡量环 + 文章→URL 原语]。
+- **onboarding DNA 确认一等步骤**（高优先，单独 change）：DNA 错 → 下游全错 → 第一天激活就死。应在 onboarding 把"这是我们对您业务的理解，确认/修正"做成显眼步骤，而非埋在 #overview / 仅靠 `define_ontology` 招式事后提示。
+- **展示层翻译**（决策 M 推迟）：蓝图/编辑器本期显示规范语言 + 来源标注；后续可加按后台语言的一次性缓存翻译。
+- **出海定位框架**（营销/文案）：把"单一规范 DNA + 输出桥接"作为卖点——"一次读懂您的业务，帮您用目标市场语言生产内容"，天然契合中国出海客户。
+- ~~完整 per-locale 多份 DNA~~：已被"单一规范 + 桥接"取代，除非将来出现"各语言真是不同业务"的客户再议。
 
 ### ✅ 已修复的既有 bug（2026-06-25 P1 真机验证时发现）
 - **settings security.tips 数组渲染崩溃**：`dashboard/settings/page.tsx` 用 `t.rich("security.tips")` 渲染一个**数组**消息，next-intl 不支持数组消息 → `INVALID_MESSAGE` 报错。与 P0/P1/P2 无关的既有 bug，已改为 `t.raw(...)` + `.map()` 渲染。留痕备查。
@@ -148,6 +155,52 @@
 ### 🧹 技术卫生（2026-06-25 记录）
 - ✅ **Prisma 迁移历史漂移（2026-06-26 已解决）**：自 `20260322131429` 起整套变更（i18n / 教练层 CoachMove / 咨询系统 / ModelConfig / SiteKeywordSnapshot / Author 等整表 + 大量列 + confirmedAt）只在生产库、不在 migrations。已用**本地临时 Postgres 当 shadow** 生成精确漂移 SQL → 建 `20260626120000_baseline_drift_catchup` → 在生产 `migrate resolve --applied`（仅记录不执行，生产零变更）。现 `migrate status` = up to date（6 迁移），全新环境可完整 `migrate deploy` 重建。**今后 schema 变更走 `migrate dev`，勿再用 `db push`。**
 - **`src/lib/auth.ts:107` 类型错**：`Property 'locale' does not exist`（better-auth additionalFields 的类型未声明）。`tsc --noEmit` 唯一报错，既有、不影响运行。待办：给 better-auth user 类型补 `locale` 声明。
+
+### 💵 商业化探索：订阅分层 + 质量门 + 退额度（2026-06-27 explore，**未决，待续探**）
+
+> 一次 explore 的完整调研,尚未拍板。以后接着挖时从这里继续。
+
+**现状(真实数据)**：
+- 积分成本：满篇文章 `GEO_WRITER_FULL=35`、审计 `5`（`src/lib/config/credit-costs.ts`）。
+- Creem 套餐（一次性,`src/lib/billing/products.ts`）：50c/$9、130c/$19(荐)、300c/$39 → **一篇 ≈ $4.5–6.3**。
+- 真实成本 ≈ LLM($0.005–0.1) + DataForSEO($0.05–0.2) ≈ **$0.1–0.4/篇** → **毛利 ~92–98%**(便宜模型时)。
+- `User.credits 默认=0` → **注册不送积分 = 核心价值前的"转化墙"**;免费的只有 instant-audit(不计费,亏损引流)。
+- 成本漏：`isRepeat=0`(同词免费重生)、`strategy/generate` 一键生成计划**免费却调 LLM**、gap/coach 的免费 LLM 操作。
+
+**核心洞察**：质量门让"credits = 有质量保证的产出单位" → 订阅可按 **"X 篇可发布文章/月"** 计价(而非"300 积分")。质量门 + 订阅互相成就：
+- 质量门是**免费层安全网**(便宜模型 + 重写救到够好 → 敢给免费、不砸招牌)→ 转化。
+- 质量门是**订阅留存引擎**(稳定达标才续费)→ MRR。
+- 退额度在订阅里退的是"额度单位"非现金 → 近零成本给"质量保证"+ 防薅(给重生非现金)。
+
+**拟定订阅模型(混合：月度积分额度 + 能力闸)**:
+
+| 层 | 价位(示意) | 站点 | 月积分(≈文章) | 能力闸 |
+|---|---|---|---|---|
+| 免费 | $0 | 1 | ~50(≈1篇) | 审计+蓝图只读 |
+| 初创 | $19–29 | 3 | ~300(≈8篇) | 策略板生成、竞品、蓝图全功能 |
+| 专业 | $49–99 | 10 | ~1000 | GSC/GA4、优质模型、批量 |
+| 机构 | $199+/定制 | 不限 | 大额 | 多席位、白标、**+咨询时长**、API/MCP |
+
+**质量门现状(Q2 调研)**：低分→重写**已部分具备**——`RefiningStudio.refine`(humanScore<60→拟人重写)+ `StellarAuditor.evaluate`(needsRevision+instructions)→`StellarEditor.revise`，覆盖 SEO/GEO/拟人三维。**缺**：信息密度/逻辑流/事实三维(需 LLM-judge)+ 统一 scorecard 80 总门 + 确认主路径重写循环。退额度机制(`CreditTransaction.REFUND` + admin)现成。
+
+**待对齐决策(未决)**：
+- A. 质量(模型)按层分?(倾向是:免费=够用、专业+=优质,质量作升级杠杆+控成本)
+- B. 质量门/退额度 普适 vs 分层?(倾向普适,产品对质量负责的底线)
+- C. 自动重写次数上限?(倾向 1 次,扁平订阅控成本;救不回明示分数+退额度)
+- D. 免费层质量底线(够好到能转化)
+- E. 对外计价用"X 篇可发布/月",内部仍 credits 记账
+
+**MVP 时机(未决)**：
+- A. MVP 先上"免费额度 + 现有积分包"(只破转化墙,最快上线),订阅作上线后第一大迭代。**(倾向)**
+- B. MVP 就上极简两层(免费+专业),其余后补(recurring 是上线硬目标时选)。
+
+**快赢(可独立先做)**：注册送 ~1 篇免费额度(改默认 credits + 一次性/邮箱验证防滥用)→ 破"0 积分转化墙",成本 ~$0.3/注册。
+
+### 🔌 GSC 集成健壮性（2026-06-27 真机发现）
+
+- **所有权验证不应依赖同意门控的 GTM**：GTM 现经 `CookieConsentBanner` 客户端、**仅同意 Cookie 后**注入 → 页面原始 HTML 无 GTM → Google 验证爬虫看不到 → 周期性重验时**掉所有权验证**（"之前正常突然要重验"的真因；curl 线上确认 HTML 无 GTM）。修向：提供**不受同意门控的验证**——layout `<head>` 服务端渲染 `google-site-verification` meta，或文档指引用 DNS TXT。GTM 同意门控保持不动。
+- **property www/子域 选择指引 + 错配检测**：`site.domain`(scaletotop.com) 与存的 `GscConnection.propertyId`(https://www.scaletotop.com/) 可能错配 → 查询"无权限"、数据哑火。且**域名资源会扫入子域**(cool/aladdin 等不想追的)。修向：property 选择器优先建议"**主站规范主机的 URL 前缀资源**"(host 精确、排除子域)+ 标注域名资源含所有子域 + 检测 www/非www 错配并提示。
+  - 业务事实(记录备查)：scaletotop **规范主机=www**(scaletotop.com 301→www);要排除 cool/aladdin 等子域 → 应选 `https://www.scaletotop.com/` 的 **URL 前缀资源**(非域名资源)。
 
 ### 📅 P4 · 站点详情 IA 重构（中长期）
 - 当前 `site-intelligence/[siteId]` 有 8 个 tab，认知负荷与教练层"少决策"初衷相悖。
