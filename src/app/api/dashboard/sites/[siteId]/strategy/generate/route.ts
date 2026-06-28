@@ -136,7 +136,7 @@ async function handler(
             }
           ]
         }
-        ${localeDirective((session?.user as { locale?: string })?.locale)}
+        ${localeDirective(latestOntology.sourceLocale ?? (session?.user as { locale?: string })?.locale)}
         `;
 
         // 4. Call LLM — admin 可在 /admin/models 的 "content_strategy" 上下文配置；失败自动兜底。
@@ -183,7 +183,7 @@ async function handler(
                             create: plan.articles.map((art: any) => ({
                                 title: art.title,
                                 keyword: art.keyword,
-                                language: art.language || (session?.user as { locale?: string })?.locale || 'zh',
+                                language: art.language || latestOntology.sourceLocale || (session?.user as { locale?: string })?.locale || 'en',
                                 kanbanOrder: art.kanbanOrder,
                                 status: 'IDEATION',
                                 targetChannel: 'SEO'

@@ -408,6 +408,8 @@ model Ga4Connection {
 model TrackedArticle {
   id               String    @id @default(uuid())
   userId           String
+  /// 关联站点（可空，旧有记录为 null）
+  siteId           String?
   title            String
   summary          String?
   url              String?
@@ -418,12 +420,15 @@ model TrackedArticle {
   lastCheckedAt    DateTime?
   citationSource   String?
   checkCount       Int       @default(0)
+  /// 来源支柱话题（从蓝图"开始写作"写入，用于支柱↔草稿匹配）
+  sourcePillar     String?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
   user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([status])
+  @@index([siteId])
   @@index([createdAt(sort: Desc)])
 }
 

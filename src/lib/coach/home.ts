@@ -20,6 +20,13 @@ export interface CoachInsight {
     en: string;
 }
 
+/** 支柱三态（排除加冠状态，单纯内容状态） */
+export type PillarStatus =
+    | 'uncovered'        // 未覆盖且无草稿 → 加冠候选
+    | 'drafted'          // 有草稿但 url 未回填
+    | 'pending_verify'   // url 已回填，SERP 验证 PENDING/CHECKING
+    | 'verified';        // GSC 覆盖达标 或 SERP 命中（CITED）
+
 /** 单条内容支柱（来自 idealTopicMap × SemanticDebt） */
 export interface BlueprintPillar {
     topic: string;
@@ -36,6 +43,10 @@ export interface BlueprintPillar {
     isCovered: boolean;
     /** 已覆盖但证据密度低（proofDensity < 50） → 推荐"补证据"动作 */
     hasProofGap: boolean;
+    /** 支柱三态 */
+    pillarStatus: PillarStatus;
+    /** 已关联的草稿 TrackedArticle ID（仅 drafted/pending_verify 状态有值） */
+    draftArticleId?: string;
 }
 
 /** GrowthHome 的内容资产蓝图 */
@@ -141,24 +152,64 @@ async function computeBlueprint(
     const idealTopics = (ontology.idealTopicMap as Array<{ topic: string; subtopics?: string[] }>) || [];
     if (idealTopics.length === 0) return null;
 
-    const debts = await prisma.semanticDebt.findMany({
-        where: { ontologyId: ontology.id },
-        select: { topic: true, subtopics: true, relevance: true, coverageScore: true, proofDensity: true, gscImpressions: true },
-    });
+    const [debts, draftArticles] = await Promise.all([
+        prisma.semanticDebt.findMany({
+            where: { ontologyId: ontology.id },
+            select: { topic: true, subtopics: true, relevance: true, coverageScore: true, proofDensity: true, gscImpressions: true },
+        }),
+        // 只取属于该站点的 TrackedArticle（siteId 精确匹配）
+        prisma.trackedArticle.findMany({
+            where: { siteId },
+            select: { id: true, sourcePillar: true, keywords: true, title: true, url: true, status: true },
+        }),
+    ]);
 
     // 归一化匹配（trim + 小写）容忍大小写/空格差异。注意：debt.topic 与 idealTopicMap
     // 必须同语言才能匹配——locale 在 getSemanticGap 调用处保证（见 ontology.ts / save 路由）。
-    const norm = (s: string) => s.trim().toLowerCase();
-    const debtByTopic = new Map(debts.map((d) => [norm(d.topic), d]));
+    const normFn = (s: string) => s.trim().toLowerCase();
+    const debtByTopic = new Map(debts.map((d) => [normFn(d.topic), d]));
+
+    /**
+     * 判断某个 TrackedArticle 是否属于该支柱：
+     * 1. 精确：sourcePillar === topic（归一化）
+     * 2. 模糊兼底：keywords 或 title 归一化包含 topic
+     */
+    const matchesPillar = (article: { sourcePillar: string | null; keywords: string[]; title: string }, topic: string) => {
+        const nt = normFn(topic);
+        if (article.sourcePillar && normFn(article.sourcePillar) === nt) return true;
+        if (article.keywords.some((k) => normFn(k).includes(nt) || nt.includes(normFn(k)))) return true;
+        if (normFn(article.title).includes(nt)) return true;
+        return false;
+    };
 
     // 安全失败原则：无匹配 debt → 视为"未覆盖/未评估"（coverageScore=null），
     // 绝不臆断为"已建立"——把缺口藏起来比多显示一项工作危险得多。
     // 真·强项（getSemanticGap 的 ourStrengths）目前未持久化，准确计数见 backlog。
     const pillars: BlueprintPillar[] = idealTopics.map((t) => {
-        const debt = debtByTopic.get(norm(t.topic));
+        const debt = debtByTopic.get(normFn(t.topic));
         const coverageScore = debt?.coverageScore ?? null;
         const proofDensity = debt?.proofDensity ?? null;
         const isCovered = coverageScore !== null && coverageScore >= COVERAGE_THRESHOLD;
+
+        // 查找匹配的草稿
+        const matchedDraft = draftArticles.find((a) => matchesPillar(a, t.topic)) ?? null;
+
+        // 计算支柱三态
+        let pillarStatus: PillarStatus;
+        let draftArticleId: string | undefined;
+        if (isCovered) {
+            pillarStatus = 'verified';
+        } else if (matchedDraft) {
+            draftArticleId = matchedDraft.id;
+            if (matchedDraft.url) {
+                pillarStatus = 'pending_verify';
+            } else {
+                pillarStatus = 'drafted';
+            }
+        } else {
+            pillarStatus = 'uncovered';
+        }
+
         return {
             topic: t.topic,
             subtopics: debt?.subtopics ?? t.subtopics ?? [],
@@ -168,13 +219,16 @@ async function computeBlueprint(
             gscImpressions: debt?.gscImpressions ?? null,
             isCovered,
             hasProofGap: isCovered && proofDensity !== null && proofDensity < 50,
+            pillarStatus,
+            draftArticleId,
         };
     });
 
     const coveredCount = pillars.filter((p) => p.isCovered).length;
 
-    // 加冕：覆盖低 × 需求高 → top1
-    const uncovered = pillars.filter((p) => !p.isCovered);
+    // 加冕：仅从「未覆盖且无草稿」支柱中选（已起草支柱排除出加冕池，保证推进前进）
+    // 安全失败：若无 uncovered 支柱 → crownedTopic = null（不强行加冕已起草项）
+    const uncovered = pillars.filter((p) => p.pillarStatus === 'uncovered');
     const crowned = uncovered.sort((a, b) => {
         const demandA = a.gscImpressions ?? 0;
         const demandB = b.gscImpressions ?? 0;
