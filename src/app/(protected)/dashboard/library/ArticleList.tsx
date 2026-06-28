@@ -3,8 +3,8 @@
 import React, { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import {
-    FileText, Calendar, Trash2, Edit3,
-    ChevronRight, CheckCircle2, Clock, AlertCircle,
+    Calendar, Trash2, Edit3,
+    CheckCircle2, Clock, AlertCircle,
     Loader2, MousePointerClick, Eye, Trophy, Link2, ExternalLink,
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
@@ -221,29 +221,26 @@ export function ArticleList({ initialArticles }: { initialArticles: any[] }) {
                             )}
                         </div>
 
-                        <div className="flex items-center gap-2 self-end md:self-center">
-                            <div className="p-1 bg-brand-surface rounded-lg opacity-0 group-hover:opacity-100 transition-all flex items-center gap-1 border border-brand-border">
-                                <Link href={`/dashboard/library/edit/${article.id}`}>
-                                    <button className="p-2 hover:bg-white hover:text-brand-secondary hover:shadow-sm rounded-md transition-all text-brand-text-muted" title={t('editTitle')}>
-                                        <Edit3 size={16} />
-                                    </button>
-                                </Link>
-                                <div className="w-px h-4 bg-brand-border mx-1" />
-                                <button 
-                                    onClick={() => handleDelete(article.id)}
-                                    disabled={isDeleting === article.id}
-                                    className="p-2 hover:bg-white hover:text-red-500 hover:shadow-sm rounded-md transition-all text-brand-text-muted" 
-                                    title={t('deleteTitle')}
+                        <div className="flex items-center gap-2 self-end md:self-center shrink-0">
+                            {/* 编辑：常驻主操作（带文字，明确可编辑） */}
+                            <Link href={`/dashboard/library/edit/${article.id}`}>
+                                <Button
+                                    variant="outline"
+                                    className="border border-brand-secondary/40 rounded-lg bg-brand-secondary/10 text-brand-secondary hover:bg-brand-secondary hover:text-white font-bold text-xs h-10 px-4 flex items-center gap-1.5 transition-colors"
                                 >
-                                    {isDeleting === article.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
-                                </button>
-                            </div>
-                            
-                            <Link href={`/dashboard/library/edit/${article.id}`} aria-label={t('editTitle')}>
-                                <Button variant="outline" className="ml-2 border border-brand-secondary/40 rounded-lg px-0 bg-brand-secondary/10 hover:bg-brand-secondary h-10 w-10 flex items-center justify-center transition-colors shrink-0">
-                                    <ChevronRight size={18} className="text-brand-secondary group-hover:text-white transition-colors" />
+                                    <Edit3 size={15} aria-hidden="true" /> {t('editTitle')}
                                 </Button>
                             </Link>
+                            {/* 删除：次操作，图标 + aria/title 说明 */}
+                            <button
+                                onClick={() => handleDelete(article.id)}
+                                disabled={isDeleting === article.id}
+                                aria-label={t('deleteTitle')}
+                                title={t('deleteTitle')}
+                                className="h-10 w-10 flex items-center justify-center rounded-lg border border-brand-border text-brand-text-muted hover:border-brand-error/40 hover:text-brand-error hover:bg-brand-error/10 transition-colors shrink-0 disabled:opacity-50"
+                            >
+                                {isDeleting === article.id ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} aria-hidden="true" />}
+                            </button>
                         </div>
                     </div>
                 </Card>
