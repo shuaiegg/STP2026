@@ -23,7 +23,7 @@ export default function Error({
         <AlertCircle size={32} aria-hidden="true" />
       </div>
       <div className="space-y-2">
-        <h2 className="text-xl font-bold text-brand-text-primary">{t('billing.title')}</h2>
+        <h2 className="text-xl font-bold font-display text-brand-text-primary">{t('billing.title')}</h2>
         <p className="text-sm text-brand-text-secondary max-w-xs mx-auto">{t('billing.description')}</p>
       </div>
       <Button
