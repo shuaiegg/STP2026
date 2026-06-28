@@ -4,12 +4,13 @@ import React, { useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import {
     Trophy, ChevronDown, ChevronRight, ArrowRight, PenLine,
-    Zap, BookOpen, AlertCircle, CheckCircle2, Loader2,
+    Zap, BookOpen, AlertCircle, CheckCircle2, Loader2, Clock, Link2,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import type { ContentBlueprint, BlueprintPillar } from '@/lib/coach/home';
+import { backfillArticleUrl } from '@/app/actions/tracked-articles';
 
 const COPY = {
     panelTitle: { zh: '内容资产蓝图', en: 'Content Asset Blueprint' },
@@ -55,6 +56,18 @@ const COPY = {
     problem: { zh: '问题', en: 'Problem' },
     solution: { zh: '解法', en: 'Solution' },
     proof: { zh: '证明', en: 'Proof' },
+    // 三态标签
+    statusDrafted: { zh: '已起草·待发布', en: 'Drafted · Pending publish' },
+    statusPendingVerify: { zh: '验证中·待收录', en: 'Pending SERP verify' },
+    statusVerified: { zh: '已建立', en: 'Established' },
+    // 回填 CTA
+    backfillCta: { zh: '去发布并回填 URL', en: 'Publish & backfill URL' },
+    backfillPlaceholder: { zh: '粘贴已发布的文章 URL…', en: 'Paste the published article URL…' },
+    backfillSubmit: { zh: '提交', en: 'Submit' },
+    backfillCancel: { zh: '取消', en: 'Cancel' },
+    backfillSuccess: { zh: 'URL 已回填，将验证 Google 搜索收录与排名。', en: 'URL saved. We\'ll verify Google search indexing & ranking.' },
+    backfillError: { zh: '回填失败，请检查 URL 格式。', en: 'Backfill failed. Check URL format.' },
+    backfillHint: { zh: '发布后把文章 URL 贴这里，我们会验证它在 Google 搜索的收录与排名。', en: 'After publishing, paste your article URL here — we\'ll verify its Google search indexing and ranking.' },
 } as const;
 
 const RELEVANCE_LABEL: Record<string, { zh: string; en: string }> = {
@@ -223,7 +236,7 @@ export function ContentAssetBlueprint({ siteId, blueprint, locale, onStrategySwi
                             </div>
                         </div>
                         <Link
-                            href={`${locale === 'zh' ? '/zh' : ''}/tools/geo-writer?keyword=${encodeURIComponent(crownedPillar.topic)}`}
+                            href={`${locale === 'zh' ? '/zh' : ''}/tools/geo-writer?keyword=${encodeURIComponent(crownedPillar.topic)}&siteId=${encodeURIComponent(siteId)}`}
                             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-secondary text-white text-xs font-bold hover:opacity-90 transition-opacity shrink-0"
                             aria-label={`${t('writeCta')}: ${crownedPillar.topic}`}
                         >
@@ -302,7 +315,10 @@ interface PillarRowProps {
 }
 
 function PillarRow({ pillar, siteId, locale, isExpanded, isCrewned, onToggle, t }: PillarRowProps) {
-    const { topic, subtopics, relevance, coverageScore, proofDensity, gscImpressions, isCovered, hasProofGap } = pillar;
+    const { topic, subtopics, relevance, coverageScore, proofDensity, gscImpressions, isCovered, hasProofGap, pillarStatus, draftArticleId } = pillar;
+    const [showBackfill, setShowBackfill] = useState(false);
+    const [backfillUrl, setBackfillUrl] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const demandLabel = gscImpressions === null
         ? t('noGsc')
@@ -314,6 +330,89 @@ function PillarRow({ pillar, siteId, locale, isExpanded, isCrewned, onToggle, t 
         : gscImpressions > 1000 ? 'text-brand-success'
         : gscImpressions > 200 ? 'text-brand-warning'
         : 'text-brand-text-muted';
+
+    const handleBackfill = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!draftArticleId || !backfillUrl.trim()) return;
+        setIsSubmitting(true);
+        try {
+            const result = await backfillArticleUrl({ articleId: draftArticleId, url: backfillUrl.trim() });
+            if (result.success) {
+                toast.success(t('backfillSuccess'));
+                setShowBackfill(false);
+                setBackfillUrl('');
+            } else {
+                toast.error(result.message || t('backfillError'));
+            }
+        } catch {
+            toast.error(t('backfillError'));
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    /** 渲染状态图标（Topic 列左侧）*/
+    const StatusIcon = () => {
+        switch (pillarStatus) {
+            case 'verified':
+                return <CheckCircle2 size={14} className="text-brand-success shrink-0" aria-label={locale === 'zh' ? '已建立' : 'Verified'} />;
+            case 'drafted':
+                return <PenLine size={14} className="text-brand-warning shrink-0" aria-label={locale === 'zh' ? '已起草' : 'Drafted'} />;
+            case 'pending_verify':
+                return <Clock size={14} className="text-brand-secondary shrink-0" aria-label={locale === 'zh' ? '验证中' : 'Pending verify'} />;
+            default:
+                return <AlertCircle size={14} className="text-brand-text-muted shrink-0" aria-label={locale === 'zh' ? '未覆盖' : 'Uncovered'} />;
+        }
+    };
+
+    /** 渲染 Action 列 */
+    const ActionCell = ({ isMobile = false }: { isMobile?: boolean }) => {
+        const cls = isMobile
+            ? 'text-[10px] font-bold border px-2 py-0.5 rounded-lg transition-colors'
+            : 'text-[10px] font-bold border px-2 py-1 rounded-lg transition-colors whitespace-nowrap';
+
+        if (pillarStatus === 'verified' && !hasProofGap) {
+            return <span className="text-[10px] font-bold text-brand-success">{t('statusVerified')}</span>;
+        }
+        if (hasProofGap) {
+            return (
+                <Link
+                    href={`${locale === 'zh' ? '/zh' : ''}/tools/geo-writer?keyword=${encodeURIComponent(topic)}&siteId=${encodeURIComponent(siteId)}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className={`${cls} text-brand-warning border-brand-warning/30 hover:bg-brand-warning/10`}
+                    aria-label={`${t('proofGapAction')}: ${topic}`}
+                >
+                    {t('proofGapAction')}
+                </Link>
+            );
+        }
+        if (pillarStatus === 'drafted') {
+            return (
+                <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); setShowBackfill(true); }}
+                    className={`${cls} text-brand-warning border-brand-warning/30 hover:bg-brand-warning/10`}
+                    aria-label={`${t('backfillCta')}: ${topic}`}
+                >
+                    <Link2 size={10} className="inline mr-1" aria-hidden="true" />{t('backfillCta')}
+                </button>
+            );
+        }
+        if (pillarStatus === 'pending_verify') {
+            return <span className="text-[10px] font-bold text-brand-secondary">{t('statusPendingVerify')}</span>;
+        }
+        // uncovered → write
+        return (
+            <Link
+                href={`${locale === 'zh' ? '/zh' : ''}/tools/geo-writer?keyword=${encodeURIComponent(topic)}&siteId=${encodeURIComponent(siteId)}`}
+                onClick={(e) => e.stopPropagation()}
+                className={`${cls} text-brand-secondary border-brand-secondary/30 hover:bg-brand-secondary/10`}
+                aria-label={`${t('writeAction')}: ${topic}`}
+            >
+                {t('writeAction')}
+            </Link>
+        );
+    };
 
     return (
         <>
@@ -328,46 +427,22 @@ function PillarRow({ pillar, siteId, locale, isExpanded, isCrewned, onToggle, t 
                 <div className="sm:hidden space-y-2">
                     <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 min-w-0">
-                            {isCovered
-                                ? <CheckCircle2 size={14} className="text-brand-success shrink-0" aria-label={locale === 'zh' ? '已覆盖' : 'Covered'} />
-                                : <AlertCircle size={14} className="text-brand-text-muted shrink-0" aria-label={locale === 'zh' ? '未覆盖' : 'Uncovered'} />
-                            }
+                            <StatusIcon />
                             <span className="text-sm font-medium text-brand-text-primary truncate">{topic}</span>
                         </div>
                         <ChevronDown size={14} className={`text-brand-text-muted shrink-0 transition-transform ${isExpanded ? 'rotate-180' : ''}`} aria-hidden="true" />
                     </div>
                     <div className="flex items-center gap-3 flex-wrap">
                         <DualBar coverageScore={coverageScore} proofDensity={proofDensity} locale={locale} />
-                        {hasProofGap ? (
-                            <Link
-                                href={`${locale === 'zh' ? '/zh' : ''}/tools/geo-writer?keyword=${encodeURIComponent(topic)}`}
-                                onClick={(e) => e.stopPropagation()}
-                                className="text-[10px] font-bold text-brand-warning border border-brand-warning/30 px-2 py-0.5 rounded-lg hover:bg-brand-warning/10 transition-colors"
-                                aria-label={`${t('proofGapAction')}: ${topic}`}
-                            >
-                                {t('proofGapAction')}
-                            </Link>
-                        ) : !isCovered ? (
-                            <Link
-                                href={`${locale === 'zh' ? '/zh' : ''}/tools/geo-writer?keyword=${encodeURIComponent(topic)}`}
-                                onClick={(e) => e.stopPropagation()}
-                                className="text-[10px] font-bold text-brand-secondary border border-brand-secondary/30 px-2 py-0.5 rounded-lg hover:bg-brand-secondary/10 transition-colors"
-                                aria-label={`${t('writeAction')}: ${topic}`}
-                            >
-                                {t('writeAction')}
-                            </Link>
-                        ) : null}
+                        <ActionCell isMobile />
                     </div>
                 </div>
 
                 {/* Desktop layout */}
-                <div className="hidden sm:grid grid-cols-[1fr_100px_100px_80px_90px] gap-3 items-center">
+                <div className="hidden sm:grid grid-cols-[1fr_100px_100px_80px_110px] gap-3 items-center">
                     {/* Topic */}
                     <div className="flex items-center gap-2 min-w-0">
-                        {isCovered
-                            ? <CheckCircle2 size={14} className="text-brand-success shrink-0" aria-label={locale === 'zh' ? '已覆盖' : 'Covered'} />
-                            : <AlertCircle size={14} className="text-brand-text-muted shrink-0" aria-label={locale === 'zh' ? '未覆盖' : 'Uncovered'} />
-                        }
+                        <StatusIcon />
                         <span className="text-sm font-medium text-brand-text-primary truncate">{topic}</span>
                         <ChevronDown size={13} className={`text-brand-text-muted shrink-0 transition-transform ${isExpanded ? 'rotate-180' : ''}`} aria-hidden="true" />
                     </div>
@@ -384,29 +459,42 @@ function PillarRow({ pillar, siteId, locale, isExpanded, isCrewned, onToggle, t 
                     </span>
 
                     {/* Action */}
-                    {isCovered && !hasProofGap ? (
-                        <span className="text-[10px] font-bold text-brand-success">{t('covered')}</span>
-                    ) : hasProofGap ? (
-                        <Link
-                            href={`${locale === 'zh' ? '/zh' : ''}/tools/geo-writer?keyword=${encodeURIComponent(topic)}`}
-                            onClick={(e) => e.stopPropagation()}
-                            className="text-[10px] font-bold text-brand-warning border border-brand-warning/30 px-2 py-1 rounded-lg hover:bg-brand-warning/10 transition-colors whitespace-nowrap"
-                            aria-label={`${t('proofGapAction')}: ${topic}`}
-                        >
-                            {t('proofGapAction')}
-                        </Link>
-                    ) : (
-                        <Link
-                            href={`${locale === 'zh' ? '/zh' : ''}/tools/geo-writer?keyword=${encodeURIComponent(topic)}`}
-                            onClick={(e) => e.stopPropagation()}
-                            className="text-[10px] font-bold text-brand-secondary border border-brand-secondary/30 px-2 py-1 rounded-lg hover:bg-brand-secondary/10 transition-colors whitespace-nowrap"
-                            aria-label={`${t('writeAction')}: ${topic}`}
-                        >
-                            {t('writeAction')}
-                        </Link>
-                    )}
+                    <ActionCell />
                 </div>
             </button>
+
+            {/* Backfill URL inline form — shown when drafted pillar "去发布并回填URL" clicked */}
+            {showBackfill && (
+                <div className="px-5 py-3 bg-brand-warning/5 border-t border-brand-warning/20" role="form" aria-label={locale === 'zh' ? 'URL 回填' : 'URL backfill'}>
+                    <p className="text-xs text-brand-text-secondary mb-2">{t('backfillHint')}</p>
+                    <form onSubmit={handleBackfill} className="flex items-center gap-2">
+                        <input
+                            type="url"
+                            value={backfillUrl}
+                            onChange={(e) => setBackfillUrl(e.target.value)}
+                            placeholder={t('backfillPlaceholder')}
+                            className="flex-1 text-xs px-3 py-1.5 rounded-lg border border-brand-border bg-brand-surface focus:outline-none focus:border-brand-secondary transition-colors"
+                            required
+                        />
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-brand-secondary text-white text-xs font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
+                        >
+                            {isSubmitting ? <Loader2 size={12} className="animate-spin" /> : null}
+                            {t('backfillSubmit')}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setShowBackfill(false)}
+                            className="px-3 py-1.5 rounded-lg border border-brand-border text-brand-text-secondary text-xs font-bold hover:bg-brand-surface transition-colors"
+                        >
+                            {t('backfillCancel')}
+                        </button>
+                    </form>
+                </div>
+            )}
+
 
             {/* Expanded detail */}
             {isExpanded && (

@@ -84,6 +84,7 @@ function GEOWriterPageContent() {
     const [showHistory, setShowHistory] = useState(false);
     const [isLoadingMetadata, setIsLoadingMetadata] = useState(false);
     const [plannedArticleId, setPlannedArticleId] = useState<string | null>(null);
+    const [fromBlueprintSiteId, setFromBlueprintSiteId] = useState<string | null>(null);
 
     // NEW Phase 2 states
     const [viewMode, setViewMode] = useState<'preview' | 'markdown' | 'schema' | 'article' | 'distribution'>('preview');
@@ -129,8 +130,9 @@ function GEOWriterPageContent() {
         const titleParam = searchParams.get('title');
         const languageParam = searchParams.get('language');
         const plannedIdParam = searchParams.get('plannedArticleId');
+        const siteIdParam = searchParams.get('siteId');
 
-        if (keywordParam || languageParam || plannedIdParam) {
+        if (keywordParam || languageParam || plannedIdParam || siteIdParam) {
             setForm(prev => ({
                 ...prev,
                 keywords: keywordParam || prev.keywords,
@@ -138,6 +140,7 @@ function GEOWriterPageContent() {
             }));
             if (keywordParam) setSelectedKeyword(keywordParam);
             if (plannedIdParam) setPlannedArticleId(plannedIdParam);
+            if (siteIdParam) setFromBlueprintSiteId(siteIdParam);
         }
     }, [searchParams]);
 
@@ -235,7 +238,10 @@ function GEOWriterPageContent() {
                 // We don't have a markdown-to-html converter easily available here, 
                 // but we can pass undefined or the raw markdown if needed
                 contentHtml: undefined,
-                plannedArticleId: plannedArticleId || undefined
+                plannedArticleId: plannedArticleId || undefined,
+                // 蓝图来源：透传 siteId 和 sourcePillar（keyword=pillar topic）
+                siteId: fromBlueprintSiteId || undefined,
+                sourcePillar: fromBlueprintSiteId ? (selectedKeyword || form.keywords || undefined) : undefined,
             });
 
             if (result.success) {
@@ -245,6 +251,12 @@ function GEOWriterPageContent() {
                     article_id: result.data?.id,
                     keyword: selectedKeyword
                 });
+                // 提示用户发布后回填 URL（接通 Google 搜索收录/排名验证）
+                setTimeout(() => {
+                    toast.info('发布文章后，请到「内容库」回填文章 URL，我们将验证 Google 搜索收录与排名。', {
+                        duration: 6000,
+                    });
+                }, 1500);
             } else {
                 toast.error(result.message);
             }

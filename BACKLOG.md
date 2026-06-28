@@ -25,3 +25,18 @@
 
 ---
 *Maintained by PM-Aladdin.*
+
+## ✅ Closed (activation-loop-closure — 2026-06-28)
+
+- Schema: `TrackedArticle += siteId + sourcePillar` (nullable, backward safe)
+- Blueprint: 三态支柱状态 (uncovered/drafted/pending_verify/verified)
+- crownedTopic: 仅从 uncovered 支柱中选（已起草排除）
+- backfillArticleUrl action + library inline URL form
+- strategy/generate 语言偏置修正（sourceLocale > session.locale > 'en'）
+
+## 🔜 Next Backlog
+
+- [ ] TrackedArticle 精准计数：持久化 ourStrengths，避免 isCovered 计数误差
+- [ ] Blueprint: 已验证支柱的 GSC 归因数据在行内展示（clicks/impressions）
+- [ ] Library: 批量回填 URL 入口（多篇同时回填）
+
