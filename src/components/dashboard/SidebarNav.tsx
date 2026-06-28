@@ -144,7 +144,8 @@ export function SidebarNav({ sites, currentSiteId, user }: SidebarNavProps) {
       name: t('produce'),
       href: '/dashboard/tools',
       icon: Zap,
-      isActive: pathname.startsWith('/dashboard/tools') || pathname.startsWith('/dashboard/library'),
+      // 仅工具页高亮"生产"；内容库是独立次级项，由其自身高亮（避免双高亮）
+      isActive: pathname.startsWith('/dashboard/tools'),
     },
     {
       name: t('measure'),

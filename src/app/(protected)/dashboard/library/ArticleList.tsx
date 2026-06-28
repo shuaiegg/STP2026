@@ -239,9 +239,9 @@ export function ArticleList({ initialArticles }: { initialArticles: any[] }) {
                                 </button>
                             </div>
                             
-                            <Link href={`/dashboard/library/edit/${article.id}`}>
-                                <Button variant="outline" className="ml-2 border-2 border-brand-border rounded-xl px-0 bg-white hover:bg-brand-secondary/5 hover:border-brand-secondary h-11 w-11 flex items-center justify-center">
-                                    <ChevronRight size={20} className="text-brand-text-muted group-hover:text-brand-secondary transition-all" />
+                            <Link href={`/dashboard/library/edit/${article.id}`} aria-label={t('editTitle')}>
+                                <Button variant="outline" className="ml-2 border border-brand-secondary/40 rounded-lg px-0 bg-brand-secondary/10 hover:bg-brand-secondary h-10 w-10 flex items-center justify-center transition-colors shrink-0">
+                                    <ChevronRight size={18} className="text-brand-secondary group-hover:text-white transition-colors" />
                                 </Button>
                             </Link>
                         </div>
