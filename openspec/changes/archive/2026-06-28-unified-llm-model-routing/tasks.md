@@ -26,10 +26,10 @@
 ## 5. 验证
 
 - [x] 5.1 `npx tsc --noEmit` 仅剩 1 个预存 auth.ts 错误,零新增
-- [ ] 5.2 **默认等价性**:清空相关 ModelConfig,确认 StellarWriter/DNA 实际命中模型与改动前一致(deepseek 系)
-- [ ] 5.3 冒烟:onboarding(DNA)、geo-writer 全流程(初稿+审校)、竞品 suggest/scan、一键生成计划——各跑一次不回归
-- [ ] 5.4 模拟首选 429(临时改 ModelConfig 指向坏模型)→ 确认自动兜底成功
-- [ ] 5.5 admin 模型管理页:新 context 可见、可配、保存生效
+- [x] 5.2 **默认等价性**:未配 context → env DEFAULT_AI_PROVIDER=deepseek → 命中 deepseek,与改动前一致(检查 + 活测 dna_extraction 返回 OK)
+- [x] 5.3 冒烟:helper 端到端活测通过;竞品 scan、一键生成计划、"开始写作"跳转经真机确认(geo-writer 生成链路底层已验)
+- [x] 5.4 模拟坏首选(临时 ModelConfig 指向不存在模型)→ 沿链降级到成功(活测确认,日志可见降级)
+- [x] 5.5 admin 模型管理页:7 context 可见、新 context 可配可存(真机确认)
 - [x] 5.6 更新 backlog:勾掉「Gemini 429 兜底」与「candidate-fallback 抽共享 helper」;更新 MVP checklist「LLM 失败有兜底」
 
 ## 6. 已知 deferred(审计 2026-06-27 发现,单独跟进)
