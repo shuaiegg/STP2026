@@ -245,7 +245,7 @@ function GEOWriterPageContent() {
             });
 
             if (result.success) {
-                toast.success('已存入你的内容库！');
+                toast.success('已存入您的内容库！');
                 setIsSaved(true);
                 posthog.capture('stellar_writer_saved_to_library', {
                     article_id: result.data?.id,
