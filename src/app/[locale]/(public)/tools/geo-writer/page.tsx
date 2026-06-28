@@ -290,6 +290,18 @@ function GEOWriterPageContent() {
 
             if (result.success) {
                 toast.success('已作为博客草稿保存！');
+                // 从蓝图进入时，同时登记到闭环账本（带 siteId/支柱），让加冕推进——与"保存到内容库"一致。
+                // best-effort：失败不阻断博客草稿保存。
+                if (fromBlueprintSiteId) {
+                    await saveTrackedArticle({
+                        title: finalResult?.seoMetadata?.title || selectedKeyword || '未命名文章',
+                        summary: finalResult?.seoMetadata?.description || '',
+                        keywords: finalResult?.seoMetadata?.keywords || (selectedKeyword ? [selectedKeyword] : []),
+                        optimizedContent: fullContent,
+                        siteId: fromBlueprintSiteId,
+                        sourcePillar: selectedKeyword || form.keywords || undefined,
+                    }).catch((e) => console.error('[blog-draft tracking]', e));
+                }
                 router.push(`/dashboard/admin/content/${result.id}`);
             } else {
                 toast.error(result.message || '保存失败');
