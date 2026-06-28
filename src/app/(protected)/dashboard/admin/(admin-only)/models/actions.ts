@@ -324,6 +324,89 @@ export async function fetchVpsModels(): Promise<{ ok: boolean; models?: VpsModel
   }
 }
 
+export async function fetchProviderModels(provider: string): Promise<{ ok: boolean; models?: { id: string; label: string }[]; error?: string }> {
+  try {
+    await requireAdmin();
+
+    if (provider === 'vps') {
+      const res = await fetchVpsModels();
+      if (!res.ok) return { ok: false, error: res.error };
+      return { ok: true, models: res.models?.map(m => ({ id: m.id, label: m.id })) };
+    }
+
+    const key = await getProviderApiKey(provider);
+    if (!key) return { ok: false, error: 'API Key 未配置' };
+
+    if (provider === 'gemini') {
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models?key=${key}`,
+        { cache: 'no-store', signal: AbortSignal.timeout(10000) },
+      );
+      if (!res.ok) {
+        const body = await res.text();
+        return { ok: false, error: `${res.status}: ${body.slice(0, 120)}` };
+      }
+      const data = await res.json();
+      const models = (data.models || [])
+        // Optionally filter for generation models, but keeping it simple for now
+        .map((m: any) => {
+          const id = m.name.replace(/^models\//, '');
+          return { id, label: m.displayName || id };
+        });
+      return { ok: true, models };
+    }
+
+    if (provider === 'claude') {
+      const res = await fetch('https://api.anthropic.com/v1/models', {
+        headers: {
+          'x-api-key': key,
+          'anthropic-version': '2023-06-01',
+        },
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!res.ok) {
+        const body = await res.text();
+        return { ok: false, error: `${res.status}: ${body.slice(0, 120)}` };
+      }
+      const data = await res.json();
+      const models = (data.data || []).map((m: any) => ({ id: m.id, label: m.id }));
+      return { ok: true, models };
+    }
+
+    if (provider === 'deepseek') {
+      const res = await fetch('https://api.deepseek.com/models', {
+        headers: { Authorization: `Bearer ${key}` },
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!res.ok) {
+        const body = await res.text();
+        return { ok: false, error: `${res.status}: ${body.slice(0, 120)}` };
+      }
+      const data = await res.json();
+      const models = (data.data || []).map((m: any) => ({ id: m.id, label: m.id }));
+      return { ok: true, models };
+    }
+
+    if (provider === 'openai') {
+      const res = await fetch('https://api.openai.com/v1/models', {
+        headers: { Authorization: `Bearer ${key}` },
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!res.ok) {
+        const body = await res.text();
+        return { ok: false, error: `${res.status}: ${body.slice(0, 120)}` };
+      }
+      const data = await res.json();
+      const models = (data.data || []).map((m: any) => ({ id: m.id, label: m.id }));
+      return { ok: true, models };
+    }
+
+    return { ok: false, error: '不支持的 Provider' };
+  } catch (e: any) {
+    return { ok: false, error: e?.message ?? '网络错误' };
+  }
+}
+
 // ─── ModelConfig CRUD ─────────────────────────────────────────────────────────
 
 export interface ModelConfigRow {

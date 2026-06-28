@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Loader2, Check, Trash2, ChevronDown, RefreshCw } from 'lucide-react';
-import { saveModelConfig, deleteModelConfig, fetchVpsModels, verifyModelAccess, type ModelConfigRow, type VpsModel, type TestResult } from './actions';
+import { saveModelConfig, deleteModelConfig, fetchProviderModels, verifyModelAccess, type ModelConfigRow, type TestResult } from './actions';
 
-// ─── Known models for non-VPS providers ───────────────────────────────────────
-
+// ─── Known models for non-VPS providers (兜底来源) ────────────────────────────
+// 注：这已降级为备选清单。各 Provider 现按需动态拉取真实列表；失败或无 key 时回退到此清单。
 const KNOWN_MODELS: Record<string, Array<{ id: string; label: string }>> = {
   claude: [
     { id: 'claude-sonnet-4-6', label: 'Claude Sonnet 4.6' },
@@ -55,17 +55,19 @@ interface RowState {
   modelId: string;
 }
 
-// ─── VPS model combobox ───────────────────────────────────────────────────────
+// ─── Provider model combobox ────────────────────────────────────────────────────
 
-interface VpsModelInputProps {
+interface ProviderModelInputProps {
   value: string;
   onChange: (v: string) => void;
-  vpsModels: VpsModel[];
-  vpsLoading: boolean;
+  models: { id: string; label: string }[];
+  loading: boolean;
   onRefresh: () => void;
+  isFallback: boolean;
+  error?: string | null;
 }
 
-function VpsModelInput({ value, onChange, vpsModels, vpsLoading, onRefresh }: VpsModelInputProps) {
+function ProviderModelInput({ value, onChange, models, loading, onRefresh, isFallback, error }: ProviderModelInputProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState(value);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -85,8 +87,8 @@ function VpsModelInput({ value, onChange, vpsModels, vpsLoading, onRefresh }: Vp
   }, []);
 
   const filtered = query
-    ? vpsModels.filter((m) => m.id.toLowerCase().includes(query.toLowerCase()))
-    : vpsModels;
+    ? models.filter((m) => m.id.toLowerCase().includes(query.toLowerCase()) || m.label.toLowerCase().includes(query.toLowerCase()))
+    : models;
 
   function handleSelect(id: string) {
     setQuery(id);
@@ -103,28 +105,33 @@ function VpsModelInput({ value, onChange, vpsModels, vpsLoading, onRefresh }: Vp
 
   return (
     <div ref={wrapRef} className="relative flex-1 min-w-[220px]">
-      <div className="flex items-center gap-1">
-        <input
-          type="text"
-          value={query}
-          onChange={handleInputChange}
-          onFocus={() => setOpen(true)}
-          placeholder={vpsLoading ? '正在加载模型列表…' : '输入或选择模型 ID'}
-          className="w-full text-xs bg-brand-surface-alt border border-brand-border rounded-lg px-3 py-1.5 text-brand-text-primary placeholder:text-brand-text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
-        />
-        <button
-          type="button"
-          onClick={onRefresh}
-          title="刷新模型列表"
-          className="flex-shrink-0 p-1.5 rounded-lg text-brand-text-muted hover:text-brand-primary hover:bg-brand-primary/10 transition-colors"
-        >
-          {vpsLoading ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
-        </button>
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center gap-1">
+          <input
+            type="text"
+            value={query}
+            onChange={handleInputChange}
+            onFocus={() => setOpen(true)}
+            placeholder={loading ? '正在加载模型列表…' : '输入或选择模型 ID'}
+            className="w-full text-xs bg-brand-surface-alt border border-brand-border rounded-lg px-3 py-1.5 text-brand-text-primary placeholder:text-brand-text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
+          />
+          <button
+            type="button"
+            onClick={onRefresh}
+            title="刷新模型列表"
+            className="flex-shrink-0 p-1.5 rounded-lg text-brand-text-muted hover:text-brand-primary hover:bg-brand-primary/10 transition-colors"
+          >
+            {loading ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+          </button>
+        </div>
       </div>
 
-      {open && filtered.length > 0 && (
-        <ul className="absolute z-50 mt-1 w-full max-h-52 overflow-y-auto rounded-lg border border-brand-border bg-brand-surface shadow-lg">
-          {filtered.map((m) => (
+      {open && (
+        <ul className="absolute z-50 mt-1 w-full max-h-52 overflow-y-auto rounded-lg border border-brand-border bg-brand-surface shadow-lg py-1">
+          <li className="px-3 py-1.5 text-[10px] text-brand-text-muted border-b border-brand-border mb-1">
+            {loading ? '加载中...' : isFallback ? `内置清单 (${error || '未拉取到实时列表'})` : `实时 · ${models.length} 个`}
+          </li>
+          {filtered.length > 0 ? filtered.map((m) => (
             <li key={m.id}>
               <button
                 type="button"
@@ -133,10 +140,12 @@ function VpsModelInput({ value, onChange, vpsModels, vpsLoading, onRefresh }: Vp
                   m.id === value ? 'text-brand-primary bg-brand-primary/5' : 'text-brand-text-primary'
                 }`}
               >
-                {m.id}
+                {m.label !== m.id ? `${m.label} (${m.id})` : m.id}
               </button>
             </li>
-          ))}
+          )) : (
+            <li className="px-3 py-1.5 text-xs text-brand-text-muted text-center">无匹配项，可直接回车保存手输值</li>
+          )}
         </ul>
       )}
     </div>
@@ -167,21 +176,57 @@ export function ContextModelAssignment({ initialConfigs }: Props) {
   const [verifyingKey, setVerifyingKey] = useState<string | null>(null);
   const [verifyResults, setVerifyResults] = useState<Record<string, TestResult>>({});
 
-  // VPS models — loaded once and shared across all rows
-  const [vpsModels, setVpsModels] = useState<VpsModel[]>([]);
-  const [vpsLoading, setVpsLoading] = useState(false);
+  // ─── Provider models cache ────────────────────────────────────────────────────
+  type ProviderCache = {
+    models: { id: string; label: string }[];
+    loading: boolean;
+    error: string | null;
+    isFallback: boolean;
+  };
+  const [providerCache, setProviderCache] = useState<Record<string, ProviderCache>>({});
 
-  async function loadVpsModels() {
-    setVpsLoading(true);
-    const res = await fetchVpsModels();
-    if (res.ok && res.models) setVpsModels(res.models);
-    setVpsLoading(false);
+  async function loadProviderModels(provider: string, force = false) {
+    if (!force && providerCache[provider]?.loading) return;
+    if (!force && providerCache[provider]?.models?.length && !providerCache[provider]?.isFallback) return; // already loaded real data
+
+    setProviderCache((prev) => ({
+      ...prev,
+      [provider]: { models: prev[provider]?.models || KNOWN_MODELS[provider] || [], loading: true, error: null, isFallback: prev[provider]?.isFallback ?? true },
+    }));
+
+    const res = await fetchProviderModels(provider);
+
+    if (res.ok && res.models && res.models.length > 0) {
+      setProviderCache((prev) => ({
+        ...prev,
+        [provider]: { models: res.models!, loading: false, error: null, isFallback: false },
+      }));
+    } else {
+      setProviderCache((prev) => ({
+        ...prev,
+        [provider]: {
+          models: KNOWN_MODELS[provider] || [],
+          loading: false,
+          error: res.error || '未获取到实时列表',
+          isFallback: true,
+        },
+      }));
+    }
   }
 
-  // Auto-load when any row uses vps provider
+  // Auto-load for all providers currently in use
   useEffect(() => {
-    const hasVps = Object.values(rows).some((r) => r.provider === 'vps');
-    if (hasVps && vpsModels.length === 0 && !vpsLoading) loadVpsModels();
+    const usedProviders = new Set(Object.values(rows).map((r) => r.provider));
+    usedProviders.forEach((p) => {
+      if (!providerCache[p]) {
+        // Initialize with fallback to prevent UI jump before load
+        setProviderCache((prev) => ({
+          ...prev,
+          [p]: { models: KNOWN_MODELS[p] || [], loading: false, error: null, isFallback: true },
+        }));
+        loadProviderModels(p);
+      }
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rows]);
 
@@ -270,38 +315,16 @@ export function ContextModelAssignment({ initialConfigs }: Props) {
                 <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-brand-text-muted pointer-events-none" />
               </div>
 
-              {/* Model input — VPS gets searchable combobox, others get static select */}
-              {row.provider === 'vps' ? (
-                <VpsModelInput
-                  value={row.modelId}
-                  onChange={(v) => updateRow(ctx.key, 'modelId', v)}
-                  vpsModels={vpsModels}
-                  vpsLoading={vpsLoading}
-                  onRefresh={loadVpsModels}
-                />
-              ) : modelOptions.length > 0 ? (
-                <div className="relative flex-1 min-w-[180px]">
-                  <select
-                    value={row.modelId}
-                    onChange={(e) => updateRow(ctx.key, 'modelId', e.target.value)}
-                    className="w-full appearance-none text-xs bg-brand-surface-alt border border-brand-border rounded-lg px-3 py-1.5 pr-7 text-brand-text-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
-                  >
-                    <option value="">— 选择模型 —</option>
-                    {modelOptions.map((m) => (
-                      <option key={m.id} value={m.id}>{m.label}</option>
-                    ))}
-                  </select>
-                  <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-brand-text-muted pointer-events-none" />
-                </div>
-              ) : (
-                <input
-                  type="text"
-                  placeholder="输入模型 ID"
-                  value={row.modelId}
-                  onChange={(e) => updateRow(ctx.key, 'modelId', e.target.value)}
-                  className="flex-1 min-w-[180px] text-xs bg-brand-surface-alt border border-brand-border rounded-lg px-3 py-1.5 text-brand-text-primary placeholder:text-brand-text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
-                />
-              )}
+              {/* Model input — all providers get searchable combobox */}
+              <ProviderModelInput
+                value={row.modelId}
+                onChange={(v) => updateRow(ctx.key, 'modelId', v)}
+                models={providerCache[row.provider]?.models || []}
+                loading={providerCache[row.provider]?.loading ?? false}
+                onRefresh={() => loadProviderModels(row.provider, true)}
+                isFallback={providerCache[row.provider]?.isFallback ?? true}
+                error={providerCache[row.provider]?.error}
+              />
 
               {/* Save */}
               <button
