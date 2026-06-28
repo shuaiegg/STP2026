@@ -223,7 +223,7 @@ export function ContentAssetBlueprint({ siteId, blueprint, locale, onStrategySwi
                             </div>
                         </div>
                         <Link
-                            href={`/dashboard/tools/geo-writer?siteId=${siteId}`}
+                            href={`${locale === 'zh' ? '/zh' : ''}/tools/geo-writer?keyword=${encodeURIComponent(crownedPillar.topic)}`}
                             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-secondary text-white text-xs font-bold hover:opacity-90 transition-opacity shrink-0"
                             aria-label={`${t('writeCta')}: ${crownedPillar.topic}`}
                         >
@@ -340,7 +340,7 @@ function PillarRow({ pillar, siteId, locale, isExpanded, isCrewned, onToggle, t 
                         <DualBar coverageScore={coverageScore} proofDensity={proofDensity} locale={locale} />
                         {hasProofGap ? (
                             <Link
-                                href={`/dashboard/tools/geo-writer?siteId=${siteId}`}
+                                href={`${locale === 'zh' ? '/zh' : ''}/tools/geo-writer?keyword=${encodeURIComponent(topic)}`}
                                 onClick={(e) => e.stopPropagation()}
                                 className="text-[10px] font-bold text-brand-warning border border-brand-warning/30 px-2 py-0.5 rounded-lg hover:bg-brand-warning/10 transition-colors"
                                 aria-label={`${t('proofGapAction')}: ${topic}`}
@@ -349,7 +349,7 @@ function PillarRow({ pillar, siteId, locale, isExpanded, isCrewned, onToggle, t 
                             </Link>
                         ) : !isCovered ? (
                             <Link
-                                href={`/dashboard/tools/geo-writer?siteId=${siteId}`}
+                                href={`${locale === 'zh' ? '/zh' : ''}/tools/geo-writer?keyword=${encodeURIComponent(topic)}`}
                                 onClick={(e) => e.stopPropagation()}
                                 className="text-[10px] font-bold text-brand-secondary border border-brand-secondary/30 px-2 py-0.5 rounded-lg hover:bg-brand-secondary/10 transition-colors"
                                 aria-label={`${t('writeAction')}: ${topic}`}
@@ -388,7 +388,7 @@ function PillarRow({ pillar, siteId, locale, isExpanded, isCrewned, onToggle, t 
                         <span className="text-[10px] font-bold text-brand-success">{t('covered')}</span>
                     ) : hasProofGap ? (
                         <Link
-                            href={`/dashboard/tools/geo-writer?siteId=${siteId}`}
+                            href={`${locale === 'zh' ? '/zh' : ''}/tools/geo-writer?keyword=${encodeURIComponent(topic)}`}
                             onClick={(e) => e.stopPropagation()}
                             className="text-[10px] font-bold text-brand-warning border border-brand-warning/30 px-2 py-1 rounded-lg hover:bg-brand-warning/10 transition-colors whitespace-nowrap"
                             aria-label={`${t('proofGapAction')}: ${topic}`}
@@ -397,7 +397,7 @@ function PillarRow({ pillar, siteId, locale, isExpanded, isCrewned, onToggle, t 
                         </Link>
                     ) : (
                         <Link
-                            href={`/dashboard/tools/geo-writer?siteId=${siteId}`}
+                            href={`${locale === 'zh' ? '/zh' : ''}/tools/geo-writer?keyword=${encodeURIComponent(topic)}`}
                             onClick={(e) => e.stopPropagation()}
                             className="text-[10px] font-bold text-brand-secondary border border-brand-secondary/30 px-2 py-1 rounded-lg hover:bg-brand-secondary/10 transition-colors whitespace-nowrap"
                             aria-label={`${t('writeAction')}: ${topic}`}
