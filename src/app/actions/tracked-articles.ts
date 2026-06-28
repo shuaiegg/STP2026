@@ -71,10 +71,16 @@ export async function saveTrackedArticle(input: SaveArticleInput) {
 
     console.log(`[SaveArticle] Saved article ${article.id} for user ${session.user.id}`);
 
-    return { 
-      success: true, 
-      message: "Article saved to your library successfully!", 
-      data: article 
+    // 失效缓存：内容库列表 + 该站点教练主页（支柱 uncovered → drafted，加冕推进）
+    revalidatePath('/dashboard/library');
+    if (validated.siteId) {
+      revalidateTag(coachHomeTag(validated.siteId), 'max');
+    }
+
+    return {
+      success: true,
+      message: "Article saved to your library successfully!",
+      data: article
     };
   } catch (error) {
     console.error("[SaveArticle] Error saving article:", error);
