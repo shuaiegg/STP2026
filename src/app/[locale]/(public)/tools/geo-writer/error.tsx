@@ -24,7 +24,7 @@ export default function Error({
         <AlertCircle size={32} aria-hidden="true" />
       </div>
       <div className="space-y-2">
-        <h2 className="text-xl font-bold text-brand-text-primary">{t('title')}</h2>
+        <h2 className="text-xl font-bold font-display text-brand-text-primary">{t('title')}</h2>
         <p className="text-sm text-brand-text-secondary max-w-xs mx-auto">{t('description')}</p>
       </div>
       <div className="flex flex-col sm:flex-row gap-3 items-center">
@@ -36,7 +36,7 @@ export default function Error({
           {t('retry')}
         </Button>
         <Link
-          href="/tools"
+          href="/"
           className="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-lg border border-brand-border text-brand-text-secondary hover:bg-brand-surface hover:text-brand-text-primary hover:border-brand-text-muted transition-all duration-300"
         >
           <Home size={18} aria-hidden="true" />

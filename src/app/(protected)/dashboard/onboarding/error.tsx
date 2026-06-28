@@ -30,7 +30,7 @@ export default function OnboardingError({
           <AlertCircle size={40} aria-hidden="true" />
         </div>
         <div className="space-y-2">
-          <h2 className="text-2xl font-black text-brand-text-primary">{t('onboarding.title')}</h2>
+          <h2 className="text-2xl font-black font-display text-brand-text-primary">{t('onboarding.title')}</h2>
           <p className="text-brand-text-secondary font-medium">{t('onboarding.description')}</p>
           <p className="text-xs text-brand-text-muted font-mono bg-brand-surface p-2 rounded-lg break-all">
             {error.message || t('unknownError')}
