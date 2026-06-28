@@ -72,7 +72,7 @@ export default async function RootLayout({
   };
 
   return (
-    <html lang={htmlLang} className={`${plusJakartaSans.variable} ${instrumentSans.variable} ${jetBrainsMono.variable}`}>
+    <html lang={htmlLang} suppressHydrationWarning className={`${plusJakartaSans.variable} ${instrumentSans.variable} ${jetBrainsMono.variable}`}>
       <head>
         <JsonLd data={organizationSchema} />
         <JsonLd data={websiteSchema} />
