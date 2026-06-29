@@ -85,6 +85,8 @@ function GEOWriterPageContent() {
     const [isLoadingMetadata, setIsLoadingMetadata] = useState(false);
     const [plannedArticleId, setPlannedArticleId] = useState<string | null>(null);
     const [fromBlueprintSiteId, setFromBlueprintSiteId] = useState<string | null>(null);
+    // 蓝图传入的规范支柱身份（不可编辑），独立于用户可编辑的 selectedKeyword
+    const [sourcePillarId, setSourcePillarId] = useState<string | null>(null);
 
     // NEW Phase 2 states
     const [viewMode, setViewMode] = useState<'preview' | 'markdown' | 'schema' | 'article' | 'distribution'>('preview');
@@ -127,18 +129,20 @@ function GEOWriterPageContent() {
     // Initialize from URL parameters
     useEffect(() => {
         const keywordParam = searchParams.get('keyword');
+        const pillarParam = searchParams.get('pillar'); // 规范支柱身份（不可编辑）
         const titleParam = searchParams.get('title');
         const languageParam = searchParams.get('language');
         const plannedIdParam = searchParams.get('plannedArticleId');
         const siteIdParam = searchParams.get('siteId');
 
-        if (keywordParam || languageParam || plannedIdParam || siteIdParam) {
+        if (keywordParam || pillarParam || languageParam || plannedIdParam || siteIdParam) {
             setForm(prev => ({
                 ...prev,
                 keywords: keywordParam || prev.keywords,
                 locale: languageParam || prev.locale,
             }));
             if (keywordParam) setSelectedKeyword(keywordParam);
+            if (pillarParam) setSourcePillarId(pillarParam); // 存规范身份，不随关键词编辑漂移
             if (plannedIdParam) setPlannedArticleId(plannedIdParam);
             if (siteIdParam) setFromBlueprintSiteId(siteIdParam);
         }
@@ -161,7 +165,8 @@ function GEOWriterPageContent() {
                     keyword: selectedKeyword || form.keywords,
                     entities: cachedIntelligence?.entities || [],
                     relatedTopics: researchData?.map((t: any) => t.keyword) || [],
-                    autoVisuals: form.autoVisuals
+                    autoVisuals: form.autoVisuals,
+                    siteId: fromBlueprintSiteId || undefined,
                 })
             });
 
@@ -172,6 +177,8 @@ function GEOWriterPageContent() {
                     content: data.content || prev?.content,
                     schema: data.schema || prev?.schema,
                     internalLinks: data.internalLinks || prev?.internalLinks,
+                    realLinks: data.realLinks || prev?.realLinks,
+                    clusterSuggestions: data.clusterSuggestions || prev?.clusterSuggestions,
                     social: data.social,
                     detailedSEOScore: data.breakdown,
                     scores: {
@@ -239,9 +246,9 @@ function GEOWriterPageContent() {
                 // but we can pass undefined or the raw markdown if needed
                 contentHtml: undefined,
                 plannedArticleId: plannedArticleId || undefined,
-                // 蓝图来源：透传 siteId 和 sourcePillar（keyword=pillar topic）
+                // 蓝图来源：透传 siteId 和规范 sourcePillar（pillar 参数 > 用户可编辑 keyword）
                 siteId: fromBlueprintSiteId || undefined,
-                sourcePillar: fromBlueprintSiteId ? (selectedKeyword || form.keywords || undefined) : undefined,
+                sourcePillar: fromBlueprintSiteId ? (sourcePillarId || selectedKeyword || form.keywords || undefined) : undefined,
             });
 
             if (result.success) {
@@ -299,7 +306,8 @@ function GEOWriterPageContent() {
                         keywords: finalResult?.seoMetadata?.keywords || (selectedKeyword ? [selectedKeyword] : []),
                         optimizedContent: fullContent,
                         siteId: fromBlueprintSiteId,
-                        sourcePillar: selectedKeyword || form.keywords || undefined,
+                        // 规范身份优先，不用可编辑的 selectedKeyword
+                        sourcePillar: sourcePillarId || selectedKeyword || form.keywords || undefined,
                     }).catch((e) => console.error('[blog-draft tracking]', e));
                 }
                 router.push(`/dashboard/admin/content/${result.id}`);
@@ -1819,44 +1827,87 @@ function GEOWriterPageContent() {
                                     </div>
                                 </Card>
                                 <Card className="p-10 border-2 border-brand-border bg-white rounded-3xl relative overflow-hidden shadow-sm">
-                                    <h3 className="text-xs font-black text-brand-text-muted uppercase tracking-widest mb-8 flex items-center gap-3">
-                                        <LinkIcon className="text-brand-primary" size={20} /> 建议内部链接
-                                        {isLoadingMetadata && <RefreshCw size={14} className="animate-spin text-brand-primary ml-auto" />}
+                                    <h3 className="text-xs font-black text-brand-text-muted uppercase tracking-widest mb-6 flex items-center gap-3">
+                                        <LinkIcon className="text-brand-secondary" size={20} /> 内部链接
+                                        {isLoadingMetadata && <RefreshCw size={14} className="animate-spin text-brand-secondary ml-auto" />}
                                     </h3>
-                                    <div className="space-y-4 relative min-h-[100px]">
-                                        {isLoadingMetadata && (
-                                            <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex items-center justify-center z-10 rounded-xl">
-                                                <div className="flex items-center gap-2">
-                                                    <Loader2 className="animate-spin text-brand-primary" size={16} />
-                                                    <span className="text-[10px] font-black text-brand-primary uppercase">主编 Agent 正在深度重写优化...</span>
-                                                </div>
-                                            </div>
-                                        )}
-                                        {finalResult?.internalLinks?.filter(Boolean).map((link: any, i: number) => {
-                                            const topic = typeof link === 'string' ? link : link.topic;
-                                            const anchor = typeof link === 'string' ? link : link.anchor;
-                                            const reason = typeof link === 'string' ? null : link.reason;
-                                            return (
-                                                <div key={i} className="p-4 bg-slate-50 border border-slate-100 rounded-2xl hover:border-brand-primary transition-all group">
-                                                    <div className="flex items-start gap-3">
-                                                        <div className="w-6 h-6 rounded-full bg-brand-primary text-white flex items-center justify-center shrink-0 text-[10px] font-black mt-0.5">{i + 1}</div>
-                                                        <div className="flex-1 min-w-0">
-                                                            <p className="text-sm font-bold text-slate-800 leading-snug">{topic}</p>
-                                                            {reason && <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">{reason}</p>}
-                                                            {anchor && (
-                                                                <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 bg-brand-primary/10 rounded-md">
-                                                                    <LinkIcon size={10} className="text-brand-primary" />
-                                                                    <span className="text-[10px] font-mono font-bold text-brand-primary">{anchor}</span>
+
+                                    {/* Panel 1: Real links from site */}
+                                    <div className="mb-6">
+                                        <p className="text-[10px] font-black text-brand-secondary uppercase tracking-widest mb-3">
+                                            {fromBlueprintSiteId ? '真实内链（可插入正文）' : '真实内链'}
+                                        </p>
+                                        {finalResult?.realLinks?.length > 0 ? (
+                                            <div className="space-y-3">
+                                                {finalResult.realLinks.map((link: any, i: number) => (
+                                                    <div key={i} className="p-4 bg-brand-surface border border-brand-border rounded-xl hover:border-brand-secondary/40 transition-all group">
+                                                        <div className="flex items-start gap-3">
+                                                            <div className="w-5 h-5 rounded-full bg-brand-secondary text-white flex items-center justify-center shrink-0 text-[9px] font-black mt-0.5">{i + 1}</div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-xs font-bold text-brand-text-primary leading-snug truncate">{link.title}</p>
+                                                                {link.reason && <p className="text-[10px] text-brand-text-muted mt-0.5">{link.reason}</p>}
+                                                                <div className="mt-2 flex items-center gap-2 flex-wrap">
+                                                                    <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-brand-secondary/10 rounded-md">
+                                                                        <LinkIcon size={9} className="text-brand-secondary" />
+                                                                        <span className="text-[9px] font-mono font-bold text-brand-secondary truncate max-w-[160px]">{link.anchor}</span>
+                                                                    </div>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            navigator.clipboard.writeText(`[${link.anchor}](${link.url})`);
+                                                                        }}
+                                                                        className="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-bold text-brand-text-muted border border-brand-border rounded-md hover:border-brand-secondary/40 hover:text-brand-secondary transition-colors"
+                                                                        title="复制 Markdown 内链"
+                                                                    >
+                                                                        📋 复制
+                                                                    </button>
                                                                 </div>
-                                                            )}
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            );
-                                        })}
-                                        {!finalResult?.internalLinks?.length && (
-                                            <div className="text-slate-400 text-xs italic">智作完成后显示内链建议...</div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <p className="text-[11px] text-brand-text-muted italic">
+                                                {fromBlueprintSiteId ? '该站点暂无已发布文章可作内链。' : '从蓝图进入时自动匹配站点真实内链。'}
+                                            </p>
                                         )}
+                                    </div>
+
+                                    {/* Panel 2: Cluster suggestions (write new content) */}
+                                    <div>
+                                        <p className="text-[10px] font-black text-brand-text-muted uppercase tracking-widest mb-3">集群建议（去写并回链）</p>
+                                        <div className="space-y-3 relative min-h-[60px]">
+                                            {isLoadingMetadata && (
+                                                <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex items-center justify-center z-10 rounded-xl">
+                                                    <Loader2 className="animate-spin text-brand-secondary" size={14} />
+                                                </div>
+                                            )}
+                                            {finalResult?.clusterSuggestions?.filter(Boolean).map((link: any, i: number) => {
+                                                const topic = typeof link === 'string' ? link : link.topic;
+                                                const anchor = typeof link === 'string' ? link : link.anchor;
+                                                const reason = typeof link === 'string' ? null : link.reason;
+                                                return (
+                                                    <div key={i} className="p-3 bg-brand-surface/50 border border-brand-border rounded-xl hover:border-brand-secondary/20 transition-all">
+                                                        <div className="flex items-start gap-2.5">
+                                                            <div className="w-4 h-4 rounded-full bg-brand-text-muted/20 text-brand-text-muted flex items-center justify-center shrink-0 text-[8px] font-black mt-0.5">{i + 1}</div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-[11px] font-bold text-brand-text-secondary leading-snug">{topic}</p>
+                                                                {reason && <p className="text-[10px] text-brand-text-muted mt-0.5 leading-relaxed">{reason}</p>}
+                                                                {anchor && (
+                                                                    <div className="mt-1.5 inline-flex items-center gap-1 px-1.5 py-0.5 bg-brand-text-muted/10 rounded">
+                                                                        <span className="text-[9px] font-mono text-brand-text-muted">{anchor}</span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                            {!finalResult?.clusterSuggestions?.length && !isLoadingMetadata && (
+                                                <div className="text-brand-text-muted text-[11px] italic">智作完成后显示集群建议...</div>
+                                            )}
+                                        </div>
                                     </div>
                                 </Card>
                             </div>

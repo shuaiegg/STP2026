@@ -171,16 +171,16 @@ async function computeBlueprint(
 
     /**
      * 判断某个 TrackedArticle 是否属于该支柱：
-     * 1. 精确：sourcePillar === topic（归一化）
-     * 2. 模糊兼底：keywords 或 title 归一化包含 topic
+     * 1. 有 sourcePillar → 精确相等（规范身份，不再双向子串，避免 "SEO" 词根过配）
+     * 2. 无 sourcePillar → 旧数据兜底：keywords / title 模糊匹配
      */
     const matchesPillar = (article: { sourcePillar: string | null; keywords: string[]; title: string }, topic: string) => {
         const nt = normFn(topic);
-        // sourcePillar 双向子串匹配（容忍 "how to <topic>" 等前后缀变体，由 geo-writer 关键词带入）
         if (article.sourcePillar) {
-            const sp = normFn(article.sourcePillar);
-            if (sp === nt || sp.includes(nt) || nt.includes(sp)) return true;
+            // 规范身份精确匹配，消除漏配/过配
+            return normFn(article.sourcePillar) === nt;
         }
+        // legacy 兜底（无 sourcePillar 的历史数据）
         if (article.keywords.some((k) => normFn(k).includes(nt) || nt.includes(normFn(k)))) return true;
         if (normFn(article.title).includes(nt)) return true;
         return false;

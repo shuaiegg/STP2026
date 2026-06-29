@@ -2,17 +2,28 @@
 import { StellarEnricher } from '@/lib/skills/skills/stellar/StellarEnricher';
 import { StellarAuditor } from '@/lib/skills/skills/stellar/StellarAuditor';
 import { StellarEditor } from '@/lib/skills/skills/stellar/StellarEditor';
+import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
     try {
-        const { content, title, description, keyword, entities, relatedTopics, autoVisuals } = await req.json();
+        const { content, title, description, keyword, entities, relatedTopics, autoVisuals, siteId } = await req.json();
 
         if (!content) {
             return NextResponse.json({ error: 'Missing content' }, { status: 400 });
         }
 
-        const enrichArgs: [string, string, string, string, string[], string[], string, boolean] = [
+        // Fetch real site articles for internal link recommendations (only when siteId provided)
+        let existingArticles: { id: string; title: string; url: string; keywords: string[] }[] = [];
+        if (siteId) {
+            existingArticles = await prisma.trackedArticle.findMany({
+                where: { siteId, url: { not: null } },
+                select: { id: true, title: true, url: true, keywords: true },
+                take: 50,
+            }) as { id: string; title: string; url: string; keywords: string[] }[];
+        }
+
+        const enrichArgs: [string, string, string, string, string[], string[], string, boolean, typeof existingArticles] = [
             content,
             title || 'Untitled',
             description || '',
@@ -21,6 +32,7 @@ export async function POST(req: Request) {
             relatedTopics || [],
             'ScaleToTop',
             autoVisuals !== undefined ? autoVisuals : true,
+            existingArticles,
         ];
 
         // Step 1: Initial enrichment (SEO Score + Schema + Links + Images)
@@ -76,6 +88,7 @@ export async function POST(req: Request) {
                     relatedTopics || [],
                     'ScaleToTop',
                     autoVisuals !== undefined ? autoVisuals : true,
+                    existingArticles,
                 );
                 console.log(`✅ [generate-enrich] Re-score complete. Final SEO=${enrichment.scores.seo}, GEO=${enrichment.scores.geo}`);
             }

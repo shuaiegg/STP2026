@@ -58,16 +58,19 @@ const COPY = {
     proof: { zh: '证明', en: 'Proof' },
     // 三态标签
     statusDrafted: { zh: '已起草·待发布', en: 'Drafted · Pending publish' },
-    statusPendingVerify: { zh: '验证中·待收录', en: 'Pending SERP verify' },
+    statusPendingVerify: { zh: '表现采集中', en: 'Collecting performance' },
     statusVerified: { zh: '已建立', en: 'Established' },
-    // 回填 CTA
-    backfillCta: { zh: '去发布并回填 URL', en: 'Publish & backfill URL' },
+    // 回填 CTA（5.1: 强化为"发布并连接"）
+    backfillCta: { zh: '发布并连接', en: 'Publish & connect' },
     backfillPlaceholder: { zh: '粘贴已发布的文章 URL…', en: 'Paste the published article URL…' },
     backfillSubmit: { zh: '提交', en: 'Submit' },
     backfillCancel: { zh: '取消', en: 'Cancel' },
-    backfillSuccess: { zh: 'URL 已回填，将验证 Google 搜索收录与排名。', en: 'URL saved. We\'ll verify Google search indexing & ranking.' },
+    backfillSuccess: { zh: 'URL 已回填，将进入 GSC 真实表现归因。', en: 'URL saved — article now enters GSC performance attribution.' },
     backfillError: { zh: '回填失败，请检查 URL 格式。', en: 'Backfill failed. Check URL format.' },
-    backfillHint: { zh: '发布后把文章 URL 贴这里，我们会验证它在 Google 搜索的收录与排名。', en: 'After publishing, paste your article URL here — we\'ll verify its Google search indexing and ranking.' },
+    backfillHint: { zh: '发布后把文章 URL 贴这里，我们将用 GSC 追踪其真实点击与排名。', en: 'After publishing, paste your article URL here — we\'ll track real clicks and rankings via GSC.' },
+    // 5.2 流水线感知 banner
+    draftedFirstBanner: { zh: '您有 {n} 篇已起草内容待发布——先发布并连接，再开写新缺口。', en: 'You have {n} drafted article(s) ready to publish — connect them before starting new gaps.' },
+    draftedFirstTitle: { zh: '优先：发布已起草内容', en: 'Priority: Publish drafted content' },
 } as const;
 
 const RELEVANCE_LABEL: Record<string, { zh: string; en: string }> = {
@@ -95,6 +98,8 @@ export function ContentAssetBlueprint({ siteId, blueprint, locale, onStrategySwi
 
     const crownedPillar = pillars.find((p) => p.topic === crownedTopic) ?? null;
     const remainingPillars = pillars.filter((p) => p.topic !== crownedTopic);
+    // 5.2: 有待发布草稿时，优先提示收口
+    const draftedPillars = pillars.filter((p) => p.pillarStatus === 'drafted');
 
     const handleGeneratePlan = async (override = false) => {
         setGeneratingState('generating');
@@ -211,6 +216,21 @@ export function ContentAssetBlueprint({ siteId, blueprint, locale, onStrategySwi
                 </Link>
             </div>
 
+            {/* ── 5.2 Pipeline banner: 有草稿时优先收口 ───────────────── */}
+            {draftedPillars.length > 0 && (
+                <Card className="p-4 border border-brand-warning/30 bg-brand-warning/5">
+                    <div className="flex items-start gap-3">
+                        <PenLine size={16} className="text-brand-warning shrink-0 mt-0.5" aria-hidden="true" />
+                        <div className="space-y-0.5">
+                            <p className="text-xs font-bold text-brand-warning">{t('draftedFirstTitle')}</p>
+                            <p className="text-xs text-brand-text-secondary">
+                                {(COPY.draftedFirstBanner as { zh: string; en: string })[locale].replace('{n}', String(draftedPillars.length))}
+                            </p>
+                        </div>
+                    </div>
+                </Card>
+            )}
+
             {/* ── Crowned card: fastest next step ─────────────────────── */}
             {crownedPillar && (
                 <Card className="p-5 border border-brand-secondary/30 bg-brand-secondary/5 hover:shadow-md transition-shadow">
@@ -236,7 +256,7 @@ export function ContentAssetBlueprint({ siteId, blueprint, locale, onStrategySwi
                             </div>
                         </div>
                         <Link
-                            href={`${locale === 'zh' ? '/zh' : ''}/tools/geo-writer?keyword=${encodeURIComponent(crownedPillar.topic)}&siteId=${encodeURIComponent(siteId)}`}
+                            href={`${locale === 'zh' ? '/zh' : ''}/tools/geo-writer?keyword=${encodeURIComponent(crownedPillar.topic)}&pillar=${encodeURIComponent(crownedPillar.topic)}&siteId=${encodeURIComponent(siteId)}`}
                             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-secondary text-white text-xs font-bold hover:opacity-90 transition-opacity shrink-0"
                             aria-label={`${t('writeCta')}: ${crownedPillar.topic}`}
                         >
@@ -377,7 +397,7 @@ function PillarRow({ pillar, siteId, locale, isExpanded, isCrewned, onToggle, t 
         if (hasProofGap) {
             return (
                 <Link
-                    href={`${locale === 'zh' ? '/zh' : ''}/tools/geo-writer?keyword=${encodeURIComponent(topic)}&siteId=${encodeURIComponent(siteId)}`}
+                    href={`${locale === 'zh' ? '/zh' : ''}/tools/geo-writer?keyword=${encodeURIComponent(topic)}&pillar=${encodeURIComponent(topic)}&siteId=${encodeURIComponent(siteId)}`}
                     onClick={(e) => e.stopPropagation()}
                     className={`${cls} text-brand-warning border-brand-warning/30 hover:bg-brand-warning/10`}
                     aria-label={`${t('proofGapAction')}: ${topic}`}
@@ -404,7 +424,7 @@ function PillarRow({ pillar, siteId, locale, isExpanded, isCrewned, onToggle, t 
         // uncovered → write
         return (
             <Link
-                href={`${locale === 'zh' ? '/zh' : ''}/tools/geo-writer?keyword=${encodeURIComponent(topic)}&siteId=${encodeURIComponent(siteId)}`}
+                href={`${locale === 'zh' ? '/zh' : ''}/tools/geo-writer?keyword=${encodeURIComponent(topic)}&pillar=${encodeURIComponent(topic)}&siteId=${encodeURIComponent(siteId)}`}
                 onClick={(e) => e.stopPropagation()}
                 className={`${cls} text-brand-secondary border-brand-secondary/30 hover:bg-brand-secondary/10`}
                 aria-label={`${t('writeAction')}: ${topic}`}
