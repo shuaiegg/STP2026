@@ -912,15 +912,10 @@ function GEOWriterPageContent() {
                                     </div>
                                 )}
 
-                                <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-xl border-2 border-slate-100 hover:border-brand-primary/50 transition-all cursor-pointer" onClick={() => setForm({ ...form, autoVisuals: !form.autoVisuals })}>
-                                    <div className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${form.autoVisuals ? 'bg-brand-primary border-brand-primary text-white' : 'bg-white border-slate-300'}`}>
-                                        {form.autoVisuals && <Check size={14} strokeWidth={4} />}
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-xs font-bold text-slate-700">自动插入配图与图表</span>
-                                        <span className="text-[10px] text-slate-400">若关闭，仅在文末提供配图与内链建议</span>
-                                    </div>
-                                </div>
+                                {/* 自动插入配图已隐藏（MVP）：当前配图源为 loremflickr 随机占位图，
+                                    与内容无关且常加载失败，会损害专业度并可能令发布页崩溃。
+                                    真·配图（AI 生图 → MinIO）作为 post-MVP 增强，见 technical-backlog。
+                                    autoVisuals 默认 false（见 form 初始值），故正文不再插入占位图。 */}
 
                                 <Button
                                     disabled={loading}

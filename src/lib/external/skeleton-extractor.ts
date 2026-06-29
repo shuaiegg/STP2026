@@ -37,6 +37,14 @@ export class SkeletonExtractor {
             const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
             const title = titleMatch ? titleMatch[1].trim() : 'No Title';
 
+            // 1b. Skip anti-bot / challenge pages (e.g. Reddit "Please wait for verification",
+            //     Cloudflare "Just a moment") — their title/headings would pollute competitor outlines.
+            const BLOCKED_PAGE = /please wait|just a moment|verifying you|verification required|attention required|access denied|enable javascript|are you a (human|robot)|captcha|cloudflare|security check|checking your browser/i;
+            if (BLOCKED_PAGE.test(title)) {
+                console.warn(`[Skeleton] Skipped anti-bot/challenge page: ${url} (title: "${title}")`);
+                return null;
+            }
+
             // 2. Extract Headings (H1, H2, H3, H4)
             const headings: { level: number, text: string }[] = [];
             const headingRegex = /<h([1-4])[^>]*>([\s\S]*?)<\/h\1>/gi;
