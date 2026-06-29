@@ -58,8 +58,9 @@ function StatusBadge({ status, url, t }: { status: string; url: string | null; t
 /**
  * 回填 URL 的行内表单（仅 PENDING 且无 url 的文章显示）
  */
-function BackfillForm({ articleId, t, onSuccess }: { articleId: string; t: (k: string) => string; onSuccess: (url: string) => void }) {
-    const [url, setUrl] = useState('');
+function BackfillForm({ articleId, t, onSuccess, initialUrl }: { articleId: string; t: (k: string) => string; onSuccess: (url: string) => void; initialUrl?: string }) {
+    const isEdit = !!initialUrl;
+    const [url, setUrl] = useState(initialUrl ?? '');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [show, setShow] = useState(false);
 
@@ -84,14 +85,25 @@ function BackfillForm({ articleId, t, onSuccess }: { articleId: string; t: (k: s
     };
 
     if (!show) {
-        return (
+        // 编辑模式：URL 链接旁的小铅笔；新增模式：醒目的"去发布并回填 URL"按钮
+        return isEdit ? (
+            <button
+                type="button"
+                onClick={() => setShow(true)}
+                className="inline-flex items-center gap-0.5 text-[10px] text-brand-text-muted hover:text-brand-secondary transition-colors"
+                title={t('editUrlTitle')}
+                aria-label={t('editUrlTitle')}
+            >
+                <Edit3 size={10} aria-hidden="true" /> {t('editUrlCta')}
+            </button>
+        ) : (
             <button
                 type="button"
                 onClick={() => setShow(true)}
                 className="inline-flex items-center gap-1 text-[10px] font-bold text-brand-secondary border border-brand-secondary/30 px-2.5 py-1 rounded-lg hover:bg-brand-secondary/5 transition-colors"
                 title={t('backfillHint')}
             >
-                <Link2 size={11} /> {t('backfillCta')}
+                <Link2 size={11} aria-hidden="true" /> {t('backfillCta')}
             </button>
         );
     }
@@ -168,16 +180,24 @@ export function ArticleList({ initialArticles }: { initialArticles: any[] }) {
                                     <Calendar size={12} />
                                     {new Date(article.createdAt).toLocaleDateString('zh-CN')}
                                 </div>
-                                {/* 已有 URL → 显示为链接 */}
+                                {/* 已有 URL → 显示为链接 + 编辑入口 */}
                                 {article.url && (
-                                    <a
-                                        href={article.url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-1 text-[10px] text-brand-secondary hover:underline"
-                                    >
-                                        <ExternalLink size={10} /> {article.url.replace(/^https?:\/\//, '').slice(0, 40)}
-                                    </a>
+                                    <>
+                                        <a
+                                            href={article.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center gap-1 text-[10px] text-brand-secondary hover:underline"
+                                        >
+                                            <ExternalLink size={10} /> {article.url.replace(/^https?:\/\//, '').slice(0, 40)}
+                                        </a>
+                                        <BackfillForm
+                                            articleId={article.id}
+                                            t={t}
+                                            initialUrl={article.url}
+                                            onSuccess={(url) => handleBackfillSuccess(article.id, url)}
+                                        />
+                                    </>
                                 )}
                             </div>
                             
