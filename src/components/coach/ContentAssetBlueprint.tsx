@@ -416,10 +416,12 @@ function PillarRow({ pillar, siteId, locale, isExpanded, isCrewned, onToggle, t 
 
     return (
         <>
-            <button
-                type="button"
-                className={`w-full text-left px-5 py-4 hover:bg-brand-surface/60 transition-colors ${isCrewned ? 'bg-brand-secondary/3' : ''}`}
+            <div
+                role="button"
+                tabIndex={0}
+                className={`w-full text-left px-5 py-4 hover:bg-brand-surface/60 transition-colors cursor-pointer ${isCrewned ? 'bg-brand-secondary/3' : ''}`}
                 onClick={onToggle}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle(); } }}
                 aria-expanded={isExpanded}
                 aria-label={`${topic} — ${isExpanded ? (locale === 'zh' ? '收起' : 'collapse') : (locale === 'zh' ? '展开' : 'expand')}`}
             >
@@ -461,7 +463,7 @@ function PillarRow({ pillar, siteId, locale, isExpanded, isCrewned, onToggle, t 
                     {/* Action */}
                     <ActionCell />
                 </div>
-            </button>
+            </div>
 
             {/* Backfill URL inline form — shown when drafted pillar "去发布并回填URL" clicked */}
             {showBackfill && (

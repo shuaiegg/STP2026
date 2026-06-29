@@ -176,7 +176,11 @@ async function computeBlueprint(
      */
     const matchesPillar = (article: { sourcePillar: string | null; keywords: string[]; title: string }, topic: string) => {
         const nt = normFn(topic);
-        if (article.sourcePillar && normFn(article.sourcePillar) === nt) return true;
+        // sourcePillar 双向子串匹配（容忍 "how to <topic>" 等前后缀变体，由 geo-writer 关键词带入）
+        if (article.sourcePillar) {
+            const sp = normFn(article.sourcePillar);
+            if (sp === nt || sp.includes(nt) || nt.includes(sp)) return true;
+        }
         if (article.keywords.some((k) => normFn(k).includes(nt) || nt.includes(normFn(k)))) return true;
         if (normFn(article.title).includes(nt)) return true;
         return false;
