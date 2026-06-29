@@ -794,6 +794,9 @@ function GEOWriterPageContent() {
                     input: {
                         ...form,
                         keywords: selectedKeyword || form.keywords,
+                        // 真实站点 UUID（来自蓝图"开始写作"），用于注入业务 DNA。
+                        // 注意：form.siteId 是"目标网站域名"文本框（域名字符串），不能喂给 getBusinessDNA。
+                        siteId: fromBlueprintSiteId || undefined,
                         auditOnly: false
                     },
                     cachedIntelligence: {
