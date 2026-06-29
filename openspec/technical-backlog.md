@@ -206,3 +206,11 @@
 - 当前 `site-intelligence/[siteId]` 有 8 个 tab，认知负荷与教练层"少决策"初衷相悖。
 - 重新分组，并与 GrowthHome 的 overview 去重（可能合并）。
 - 触发条件：P1 把"主页 vs 详情"的分工先定下来之后。
+
+### 🌐 成熟站内容覆盖盲区 + 配图/抓取治理（2026-06-29 写作流程体验发现）
+
+- **#4 成熟站主题冲突风险（需起 proposal）**：`getSemanticGap` 的"自有内容话题"只来自 `seedKeywords + GSC 关键词 + 审计实体`,**不读站点完整既有内容**。成熟站若有大量内容未进这三个信号(尚未排名/GSC 无展示)→ 蓝图可能把**已写过的主题当缺口推荐**,产生重复/冲突。
+  - 缓解(现状):连 GSC 后已排名内容会以关键词计为"已覆盖"。
+  - 根治:抓取站点实际内容(sitemap / 已发布文章)纳入覆盖判定 + 持久化 `ourStrengths`(与既有 ourStrengths backlog 项合并)。作为成熟站友好度的独立 proposal。
+- **autoVisuals 真·配图（post-MVP)**:占位图勾选项已隐藏(`ImageFinder` 用 loremflickr 随机图,乱码且发布页有崩溃风险)。未来做真配图:AI 生图 → 上传 MinIO → 插入正文;或对接正版图库。隐藏处见 geo-writer `autoVisuals`(默认 false)。
+- **Reddit/反爬页抓取（已就近修)**:`SkeletonExtractor.extract` 现已过滤反爬/验证页(标题含 please wait / just a moment / cloudflare 等 → 丢弃),不再污染竞品大纲。可选增强:Reddit 改用 `r/X.json` 公共接口替代 HTML 抓取。
