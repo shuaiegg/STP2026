@@ -55,10 +55,12 @@ export async function saveToBlogDraft(params: {
         const { title, content, summary, locale = 'en', authorId, seoMeta, plannedArticleId } = params;
 
         // 7.3 Implement Content creation logic
-        // Generate slug with random suffix to ensure uniqueness
+        // 干净 slug：仅在同 locale 下已存在时才加随机后缀（避免每篇 URL 都带额外字符）
         const baseSlug = slugify(title) || 'untitled';
-        const randomSuffix = Math.random().toString(36).substring(2, 7);
-        const slug = `${baseSlug}-${randomSuffix}`;
+        let slug = baseSlug;
+        if (await prisma.content.findFirst({ where: { slug, locale }, select: { id: true } })) {
+            slug = `${baseSlug}-${Math.random().toString(36).slice(2, 7)}`;
+        }
 
         const readingTime = calculateReadingTime(content);
 

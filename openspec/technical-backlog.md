@@ -71,28 +71,20 @@
 
 > 来源：`/openspec:explore` 对"onboarding 后主页体验"的排查。已拆出三个 active change（`activation-funnel-instrumentation` / `growth-home-data-pipeline` / `business-dna-into-content`）。以下为同次探索中**确认存在但暂不启动**的项。
 
-### ⚠️ 待修复后处理：GEO 引用检测名实不符
-- `/api/cron/verify` 的 "Citation Verification" 实际只用 DataForSEO 查 **Google SERP**，文章 URL 进前 100 即标 `status: 'CITED'`、`citationSource: 'Google SERP'`——并未查询任何大模型（ChatGPT/Perplexity/Claude）。
-- **对外风险**：不可宣传成"AI 引用追踪"，否则构成虚假宣传。
-- **两条路**：
-  1. 诚实化文案：UI 改为"收录/排名追踪"，承认是 Google SERP 检查；
-  2. 真做 GEO：接入大模型查询管线，验证内容是否被 AI 实际引用（工作量大，非 MVP）。
-- **2026-06-25 explore 补充**：`SemanticDebt.proofDensity`（内容证据密度）其实是更靠谱、零新建数据的**真·GEO 信号**（"内容够不够格被 AI 引用"），`content-asset-blueprint`（P3a）已把它做成"证据轴 + 补证据动作"。GEO 差异化优先靠它兑现，再决定上面两条路。
+### ✅ GEO 引用检测名实不符 → 文案已诚实化（change: closed-content-loop，2026-06-29）
+- `/api/cron/verify` 的 "Citation Verification" 实际只用 DataForSEO 查 **Google SERP**，文章 URL 进前 100 即标 `status: 'CITED'`——并未查询任何大模型。
+- **已做**：library/蓝图 UI 文案全面诚实化（`citation-tracking-honesty` + `closed-content-loop`）：`PENDING(有URL)` → "表现采集中"、无 GSC 数据 → "连接 GSC 后查看真实表现"、messages 同步 en/zh。二元伪状态已退居次要。
+- **仍待办（deferred）**：真做 GEO（接入大模型查询管线验证 AI 实际引用，工作量大，非 MVP）；`proofDensity` 作为真·GEO 信号已在蓝图展示。
 
-### 🔗 文章→URL 映射原语（A 闭环衡量 + GEO 的共同前置，2026-06-25 explore）
+### ✅ 文章→URL 映射原语（change: closed-content-loop，2026-06-29 部分落地）
 
-**根本障碍**：平台生成内容但**不负责发布**（用户自行发到 WordPress/Webflow/自建站），因此**不知道文章最终落在哪个 URL**。GSC 是按 URL 记数据的（平台有 GSC 授权、能看全站 URL），缺的就是"这篇生成的文章 ↔ 用户站点上的哪个 URL"。`TrackedArticle.url` 字段已存在但基本为空 → cron 的引用检查被跳过、无法做逐文章表现归因。
+**背景**：`TrackedArticle.url` 字段已存在，user backfill（手动回填）已上线。
 
-**这一个原语同时卡住两件事**：
-- **A · 闭环衡量（产出→衡量→学习）**：没有 URL，就无法回答"这篇文章成了吗"（它对应的 GSC URL 涨没涨）。
-- **GEO/引用追踪**：连"查 SERP/查大模型引用"都需要 URL。
-
-**重要澄清**：`content-asset-blueprint`（P3a）的**领先指标**（已覆盖支柱数/本月增量）只基于"平台自己记录的产出/发布"，**不需要 URL** → 不影响 MVP。需要 URL 的只是**滞后的真实回报**（排名/引用/逐文章流量）。
-
-**三段式解法**（做 A/GEO 时按序）：
-1. **用户回填 URL**（先做，小）：发布后让用户粘贴链接 → 写入 `TrackedArticle.url` → 解锁诚实的 GSC 逐 URL 排名追踪。
-2. **GSC 关键词→页面 自动匹配**（中）：目标词在某 URL 冒头时模糊推断，降低回填摩擦。
-3. **直连 CMS 发布**（大、远期）：WordPress/Webflow API 直发，平台天然知道 URL，彻底闭环。
+**三段式解法**（进展）：
+1. ✅ **用户手动回填 URL**：library 回填入口已上线（`backfillArticleUrl`）。
+2. ✅ **平台博客自动回填**（`closed-content-loop`）：蓝图 → geo-writer → "保存为博客草稿" → admin 发布 → `upsertTrackedArticleFromContent` 自动找同标题孤立 TrackedArticle 回填 URL，进入 GSC 真实归因。
+3. 📅 **GSC 关键词→页面 自动匹配**（deferred）：目标词在某 URL 冒头时模糊推断，降低外部发布用户的回填摩擦。
+4. 📅 **直连 CMS 发布**（deferred，大、远期）：WordPress/Webflow API 直发，彻底闭环。
 
 **避坑**：不要用"ScaletoTop 子域托管"偷 URL——内容必须在用户自有域名上才能积累其域名权重，托管在我方会伤用户 SEO。
 
@@ -119,6 +111,8 @@
 - **持久化 `ourStrengths` 以准确计"已覆盖"**（2026-06-26）：`getSemanticGap` 只持久化缺口、不存强项。蓝图无法可靠区分"真·强项"与"join 没匹配上"，故采安全失败（无匹配 = 未覆盖，宁可多显示工作也不藏缺口）→ 成熟站的强项会被低估为缺口。修向：持久化 ourStrengths（含 coverageScore），蓝图据此准确标"已建立"。
 - ✅ **Gemini 429 兜底（已完成，change: unified-llm-model-routing）**：全站 LLM 用点统一接入 `generateWithFallback` helper（`model-resolver.ts`），候选链 `[首选, vps, deepseek, claude]` 自动兜底。覆盖：DNA 提取、页面聚类、竞品 scan/suggest、内容策略、语义缺口、StellarWriter 初稿+审校、generate-stream。candidate-fallback 3 处重复已抽共享 helper 消除。
 - **蓝图 join 语言一致性**（2026-06-26 已就近修）：`debt.topic` 必须与 `idealTopicMap` 同语言才能 join；已在 `ontology.ts` 给 `getSemanticGap` 传 locale。根治仍依赖 issue 1（站点内容语言）——存量错配数据需重新分析才会对齐。
+- ✅ **支柱精确身份（closed-content-loop，2026-06-29）**：蓝图 geo-writer 链接新增 `pillar=<topic>`（不可编辑身份）；geo-writer 独立 `sourcePillarId` state 不随关键词漂移；`matchesPillar` 改为 sourcePillar 精确相等优先，消除多含"SEO/AI"词根支柱的过配问题。
+- ✅ **真实内链双模面板（closed-content-loop，2026-06-29）**：`StellarEnricher` 新增 `realLinks`（真实 TrackedArticle URL，可一键复制 Markdown 插入）+ `clusterSuggestions`（模板话题，仅建议去写，不插正文）；`generate-enrich` 路由接受 `siteId` → 按话题相关度返回真实链接；新站无内容时仅集群建议。📅 deferred：调度器（P3b 简报）/ proofDensity 回流 / 分发闭环 / GSC 自动匹配 / 直连 CMS / 成熟站内容盘点 / 流水线看板。
 
 ### 🧬 业务基因提取质量（2026-06-26 explore 收敛 → 已起 proposal）
 
@@ -214,3 +208,8 @@
   - 根治:抓取站点实际内容(sitemap / 已发布文章)纳入覆盖判定 + 持久化 `ourStrengths`(与既有 ourStrengths backlog 项合并)。作为成熟站友好度的独立 proposal。
 - **autoVisuals 真·配图（post-MVP)**:占位图勾选项已隐藏(`ImageFinder` 用 loremflickr 随机图,乱码且发布页有崩溃风险)。未来做真配图:AI 生图 → 上传 MinIO → 插入正文;或对接正版图库。隐藏处见 geo-writer `autoVisuals`(默认 false)。
 - **Reddit/反爬页抓取（已就近修)**:`SkeletonExtractor.extract` 现已过滤反爬/验证页(标题含 please wait / just a moment / cloudflare 等 → 丢弃),不再污染竞品大纲。可选增强:Reddit 改用 `r/X.json` 公共接口替代 HTML 抓取。
+
+### 📌 closed-content-loop 审计衍生（2026-06-29）
+- **"我们博客发布免回填"正经做法(deferred)**:需存 Content↔TrackedArticle 的可靠关联(如 TrackedArticle.sourceContentId),发布时按 id 精确回填 + 仅对"确为我们博客发布"的内容生效。已移除按全局标题的孤儿匹配(跨用户写入风险)。
+- **geo-writer "保存为博客草稿" 对普通用户应隐藏**:`saveToBlogDraft` 是 ADMIN-only,普通用户点了只会 Unauthorized。公开工具页该按角色隐藏此按钮,或明确仅 admin 可见。
+- **slug 已就近修**:blog-draft 原来每篇无条件加 5 位随机后缀 → 改为"同 locale 冲突才加后缀",URL 干净。
