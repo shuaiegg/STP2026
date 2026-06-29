@@ -214,7 +214,7 @@ export function ArticleList({ initialArticles }: { initialArticles: any[] }) {
                             </div>
 
                             {/* GSC 归因数据（有 url + GSC 已连接时） */}
-                            {article.attribution && (
+                            {article.attribution ? (
                                 <div className="flex items-center gap-4 mt-2 bg-brand-surface/50 p-2.5 rounded-xl border border-brand-border max-w-fit">
                                     <div className="flex items-center gap-1.5 text-[10px] font-bold text-brand-text-muted">
                                         <MousePointerClick size={12} className="text-brand-secondary" />
@@ -229,7 +229,9 @@ export function ArticleList({ initialArticles }: { initialArticles: any[] }) {
                                         {t('avgPos', { n: article.attribution.position?.toFixed(1) || '0.0' })}
                                     </div>
                                 </div>
-                            )}
+                            ) : article.url ? (
+                                <p className="text-[10px] text-brand-text-muted mt-1">{t('noGscHint')}</p>
+                            ) : null}
 
                             {/* 回填 URL 入口：仅 PENDING 且无 url 的文章 */}
                             {article.status === 'PENDING' && !article.url && (

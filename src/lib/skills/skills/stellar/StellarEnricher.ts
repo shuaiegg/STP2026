@@ -19,7 +19,12 @@ export interface EnrichmentOutput {
         linkedin: string;
         meta: string;
     };
+    /** @deprecated kept for backward compat — cluster suggestions only */
     internalLinks: { anchor: string; topic: string; reason: string }[];
+    /** Real articles from the site with actual URLs — safe to insert as internal links */
+    realLinks: { anchor: string; url: string; title: string; reason: string }[];
+    /** Topics not yet covered — "go write" suggestions, do NOT insert into body */
+    clusterSuggestions: { anchor: string; topic: string; reason: string }[];
     imageSuggestions: UnsplashImage[];
 }
 
@@ -35,7 +40,8 @@ export class StellarEnricher {
         entities: string[] = [],
         relatedTopics: string[] = [],
         authorName: string = 'ScaleToTop',
-        autoVisuals: boolean = true
+        autoVisuals: boolean = true,
+        existingArticles: { id: string; title: string; url: string; keywords: string[] }[] = []
     ): Promise<EnrichmentOutput> {
         console.log("💎 [StellarEnricher] Starting post-generation enrichment...");
 
@@ -127,7 +133,18 @@ export class StellarEnricher {
         };
 
         // 5. SMART INTERNAL LINK RECOMMENDATIONS (Topic Clusters)
-        const internalLinks = this.generateLinkRecommendations(content, keyword, entities, relatedTopics);
+        const realLinks = this.buildRealLinks(existingArticles, keyword, relatedTopics);
+        const coveredUrls = new Set(realLinks.map((l) => l.url));
+        // Filter out relatedTopics that already have a real article so cluster suggestions don't duplicate
+        const coveredTopicNorms = new Set(
+            existingArticles.map((a) => a.title.toLowerCase().trim())
+        );
+        const filteredRelatedTopics = relatedTopics.filter(
+            (t) => !coveredTopicNorms.has(t.toLowerCase().trim())
+        );
+        const clusterSuggestions = this.generateLinkRecommendations(content, keyword, entities, filteredRelatedTopics);
+        // Legacy compat: keep internalLinks as alias for clusterSuggestions
+        const internalLinks = clusterSuggestions;
 
         // 6. REAL IMAGE SUGGESTIONS & INSERTION (Zero-latency Unsplash URLs)
         const imageSuggestions = ImageFinder.getSuggestedImages(keyword, 3);
@@ -145,6 +162,8 @@ export class StellarEnricher {
             schema,
             social,
             internalLinks,
+            realLinks,
+            clusterSuggestions,
             imageSuggestions
         };
     }
@@ -199,6 +218,43 @@ export class StellarEnricher {
 
         return faqs.slice(0, 8); // Cap at 8 to keep schema reasonable
     }
+    /**
+     * Builds real internal link recommendations from existing site articles.
+     * Only includes articles with a published URL — safe to insert into body.
+     */
+    private static buildRealLinks(
+        existingArticles: { id: string; title: string; url: string; keywords: string[] }[],
+        keyword: string,
+        relatedTopics: string[]
+    ): { anchor: string; url: string; title: string; reason: string }[] {
+        if (!existingArticles.length) return [];
+        const norm = (s: string) => s.toLowerCase().trim();
+        const targetTerms = [keyword, ...relatedTopics].map(norm).filter(Boolean);
+        const isChinese = /[一-龥]/.test(keyword);
+
+        const scored = existingArticles
+            .filter((a) => !!a.url)
+            .map((a) => {
+                const articleTerms = [...a.keywords, a.title].map(norm);
+                const score = targetTerms.reduce((acc, target) => {
+                    return acc + articleTerms.filter((term) => term.includes(target) || target.includes(term)).length;
+                }, 0);
+                return { article: a, score };
+            })
+            .filter(({ score }) => score > 0)
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 5);
+
+        return scored.map(({ article }) => ({
+            anchor: article.keywords[0] || article.title.slice(0, 40),
+            url: article.url,
+            title: article.title,
+            reason: isChinese
+                ? '您网站上的相关文章，可作为内链增强话题权威性。'
+                : 'Related article on your site — add as internal link to boost topical authority.',
+        }));
+    }
+
     /**
      * Generates semantic internal link recommendations (topic cluster strategy).
      * Produces 3–5 reliable article suggestions regardless of input language.
