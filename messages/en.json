@@ -1381,7 +1381,9 @@
       "radarTitle": "Live content health (Radar)",
       "radarNote": "Jack, the text currently reads very much like a human wrote it. Add more case studies and the GEO weight will climb further.",
       "coreKeywords": "Core keywords",
-      "editNote": "Note: editing the body may affect how search engines index and rank it. After major edits, check the latest traffic trend 24 hours later."
+      "editNote": "Note: editing the body may affect how search engines index and rank it. After major edits, check the latest traffic trend 24 hours later.",
+      "editUrlCta": "Edit URL",
+      "editUrlTitle": "Edit the published URL"
     },
     "tools": {
       "title": "Marketing Toolbox",

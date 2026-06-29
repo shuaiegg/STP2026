@@ -1354,12 +1354,12 @@
       "emptyDesc": "立即启动 StellarWriter 智作优化器，让您的第一篇高权重文章在此“安家”。",
       "emptyCta": "立刻去智作",
       "statusCited": "已收录并排名",
-      "statusChecking": "SERP 验证中\u2026",
+      "statusChecking": "SERP 验证中…",
       "statusNotCited": "暂未收录",
       "statusPending": "待检",
       "statusPendingVerify": "等待 SERP 验证",
       "backfillCta": "回填发布 URL",
-      "backfillPlaceholder": "粘贴已发布的文章 URL\u2026",
+      "backfillPlaceholder": "粘贴已发布的文章 URL…",
       "backfillSubmit": "提交",
       "backfillCancel": "取消",
       "backfillSuccess": "URL 已回填，将验证 Google 搜索收录与排名。",
@@ -1385,7 +1385,9 @@
       "radarTitle": "实时内容健康度 (Radar)",
       "radarNote": "“杰克，目前的文本读起来非常像真人撰写。如果您继续增加案例研究，GEO 权重还会进一步提升。”",
       "coreKeywords": "核心关键词",
-      "editNote": "请注意：修改正文可能会影响搜索引擎对它的收录与排名。建议每次大幅修改后，在 24 小时后查看最新的流量轨迹。"
+      "editNote": "请注意：修改正文可能会影响搜索引擎对它的收录与排名。建议每次大幅修改后，在 24 小时后查看最新的流量轨迹。",
+      "editUrlCta": "编辑 URL",
+      "editUrlTitle": "修改已发布的 URL"
     },
     "tools": {
       "title": "营销工具箱",
