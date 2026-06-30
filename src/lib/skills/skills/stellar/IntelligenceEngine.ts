@@ -59,17 +59,29 @@ export class IntelligenceEngine {
                 context.serpAnalysis = analyzer.analyzeRawData({ items: serpResults }, keywords);
 
                 console.log(`🧠 [IntelligenceEngine] DEEP MODE: Extracting competitor skeletons...`);
-                // 多取候选(top 8)并跳过 PDF（提不出 HTML 大纲）。反爬页由 SkeletonExtractor 过滤为 null，
-                // 这里再剔除无大纲的页面，最终保留 4 篇真正有结构的竞品 —— 避免过滤后只剩 1 篇。
-                const urls = serpResults
-                    .filter((i: any) => i.type === 'organic')
-                    .map((i: any) => i.url as string)
-                    .filter((url: string) => url && !/\.pdf($|\?)|\/pdf\//i.test(url))
+                // 多取候选(top 8)、跳过 PDF。逐个尝试抓真实大纲；抓不到/被反爬拦截的页面，
+                // 用 SERP 自带的真实标题 + 摘要兜底（来自 Google 索引，反映真实内容，不丢竞品也不进垃圾）。
+                // 最终保留最多 4 篇。
+                const organic = serpResults
+                    .filter((i: any) => i.type === 'organic' && i.url && !/\.pdf($|\?)|\/pdf\//i.test(i.url))
                     .slice(0, 8);
 
-                const skeletons = await SkeletonExtractor.batchExtract(urls);
+                const clean = (s: string) => (s || '').replace(/\s+/g, ' ').trim().slice(0, 200);
+                const skeletons = await Promise.all(
+                    organic.map(async (item: any) => {
+                        const full = await SkeletonExtractor.extract(item.url);
+                        if (full && full.headings.length > 0) return full;
+                        // 兜底：SERP 标题 + 摘要（反爬页/无大纲页也能贡献真实信息）
+                        const title = clean(item.title);
+                        if (!title) return null;
+                        const headings = [{ level: 1, text: title }];
+                        const desc = clean(item.description || item.snippet || '');
+                        if (desc) headings.push({ level: 2, text: desc });
+                        return { url: item.url, title, headings };
+                    })
+                );
                 context.competitors = skeletons
-                    .filter((s) => s.headings && s.headings.length > 0)
+                    .filter((s): s is NonNullable<typeof s> => s !== null)
                     .slice(0, 4);
             }
         } catch (error) {
