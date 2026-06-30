@@ -207,7 +207,7 @@
   - 缓解(现状):连 GSC 后已排名内容会以关键词计为"已覆盖"。
   - 根治:抓取站点实际内容(sitemap / 已发布文章)纳入覆盖判定 + 持久化 `ourStrengths`(与既有 ourStrengths backlog 项合并)。作为成熟站友好度的独立 proposal。
 - **autoVisuals 真·配图（post-MVP)**:占位图勾选项已隐藏(`ImageFinder` 用 loremflickr 随机图,乱码且发布页有崩溃风险)。未来做真配图:AI 生图 → 上传 MinIO → 插入正文;或对接正版图库。隐藏处见 geo-writer `autoVisuals`(默认 false)。
-- **Reddit/反爬页抓取（已就近修)**:`SkeletonExtractor.extract` 现已过滤反爬/验证页(标题含 please wait / just a moment / cloudflare 等 → 丢弃),不再污染竞品大纲。可选增强:Reddit 改用 `r/X.json` 公共接口替代 HTML 抓取。
+- **Reddit/反爬页抓取（已就近修)**:`SkeletonExtractor.extract` 现已过滤反爬/验证页(标题含 please wait / just a moment / cloudflare 等 → 丢弃),不再污染竞品大纲。Reddit 深度内容(评论/讨论)需 **Reddit OAuth**——其公共 `.json` 已全面 403(2023 封禁未授权访问),HTML 是反爬页。当前已用 **SERP 标题+摘要兜底**(被拦页不丢弃、用 Google 索引的真实标题摘要);要真正榨取 Reddit 讨论价值,需注册 Reddit app + client-credentials token 走 oauth.reddit.com,单独排期。
 
 ### 📌 closed-content-loop 审计衍生（2026-06-29）
 - **"我们博客发布免回填"正经做法(deferred)**:需存 Content↔TrackedArticle 的可靠关联(如 TrackedArticle.sourceContentId),发布时按 id 精确回填 + 仅对"确为我们博客发布"的内容生效。已移除按全局标题的孤儿匹配(跨用户写入风险)。
