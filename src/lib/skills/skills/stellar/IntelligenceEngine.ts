@@ -59,12 +59,18 @@ export class IntelligenceEngine {
                 context.serpAnalysis = analyzer.analyzeRawData({ items: serpResults }, keywords);
 
                 console.log(`🧠 [IntelligenceEngine] DEEP MODE: Extracting competitor skeletons...`);
+                // 多取候选(top 8)并跳过 PDF（提不出 HTML 大纲）。反爬页由 SkeletonExtractor 过滤为 null，
+                // 这里再剔除无大纲的页面，最终保留 4 篇真正有结构的竞品 —— 避免过滤后只剩 1 篇。
                 const urls = serpResults
                     .filter((i: any) => i.type === 'organic')
-                    .slice(0, 3)
-                    .map((i: any) => i.url);
+                    .map((i: any) => i.url as string)
+                    .filter((url: string) => url && !/\.pdf($|\?)|\/pdf\//i.test(url))
+                    .slice(0, 8);
 
-                context.competitors = await SkeletonExtractor.batchExtract(urls);
+                const skeletons = await SkeletonExtractor.batchExtract(urls);
+                context.competitors = skeletons
+                    .filter((s) => s.headings && s.headings.length > 0)
+                    .slice(0, 4);
             }
         } catch (error) {
             console.error("❌ IntelligenceEngine Failure:", error);
