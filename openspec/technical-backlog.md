@@ -67,6 +67,20 @@
 
 ---
 
+## ✅ PLG 首页 + 公共免费审计（2026-06-30，change: plg-homepage-and-free-audit）
+
+- **已做**：公共审计端点 `POST /api/public-audit`（爬取+规则，无 LLM/DataForSEO，SSE 流式，IP 限流+域名缓存+20页上限）；公共审计结果页 `[locale]/(public)/audit`（含进度/评分/GEO 就绪/逐问题注册 CTA）；首页完整 PLG 重排（Hero→证明→痛点→SEO+GEO 品类教育→无注册三步骤→对比→FAQ→单一 CTA）；`HomePageCTA` 域名直入公共审计（无登录墙）；`messages` en/zh 全量更新（`home` + `publicAudit` namespace）；反订阅文案已移除；措辞诚实（"搜索排名与可见度 / GEO 就绪"）。
+
+- **Deferred（保留）**：
+  - 邮箱留资门（partial→full report）：首次诊断免费，深度报告需留邮
+  - 个性化 hero（输域名后 CTA 动态化）
+  - 动态社会证明（真实用户/站点计数）
+  - 真证言（有了再加）
+  - 深度审计的公共预览（DNA/竞品缺口）
+  - 可选 Google PSI 已预留（`GOOGLE_PAGESPEED_API_KEY` env），无 key 跳过
+
+---
+
 ## 🔭 增长主页探索收敛（2026-06-24）
 
 > 来源：`/openspec:explore` 对"onboarding 后主页体验"的排查。已拆出三个 active change（`activation-funnel-instrumentation` / `growth-home-data-pipeline` / `business-dna-into-content`）。以下为同次探索中**确认存在但暂不启动**的项。

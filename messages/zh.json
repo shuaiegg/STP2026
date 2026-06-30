@@ -44,61 +44,123 @@
   },
   "home": {
     "meta": {
-      "title": "精准诊断，工程化增长 — ScaletoTop SEO 智能星图",
-      "description": "输入网址即刻获取 14 维度全站 SEO+GEO 体检报告。专为高增长团队打造的 AI 内容生产与搜索可见度追踪引擎。"
+      "title": "免费 SEO + GEO 站点体检 — ScaletoTop",
+      "description": "输入网址，即刻获取免费站点诊断报告。精准定位阻碍您搜索排名的根本原因，以及 AI 搜索引擎能否找到并引用您的内容。"
     },
     "hero": {
-      "title": "精准诊断，工程化增长",
-      "subtitle": "一眼看穿流量空洞。通过 14 维度语义体检与 AI 生产闭环，让您的出海业务建立可预测的增长引擎。",
-      "inputPlaceholder": "输入您的网址 (e.g. example.com)",
-      "cta": "免费获取体检报告",
-      "microcopy": "60 秒即出 · 零成本 · 无需信用卡"
+      "title": "让 Google 找到您，让 AI 引用您。",
+      "subtitle": "免费站点体检，揭示阻碍您搜索排名的根本原因——竞争对手正在利用的 SEO 漏洞，以及 AI 搜索引擎能否读取您的内容。",
+      "inputPlaceholder": "您的网址 (e.g. example.com)",
+      "cta": "免费体检我的网站",
+      "microcopy": "无需注册 · 约 2 分钟出结果 · 零成本"
     },
-    "pillars": {
-      "diagnosis": {
-        "title": "诊断：测绘您的流量星图",
-        "desc": "智能星图深度扫描。不再盲目猜测，精准定位您的语义覆盖率与技术健康度。"
-      },
-      "production": {
-        "title": "生产：能上榜的内容",
-        "desc": "AI 驱动的高性能内容生成。针对 CJK/EN 市场深度优化的 geo-writer 生产线。"
-      },
-      "verification": {
-        "title": "验证：可见度的实证",
-        "desc": "闭环表现追踪。通过 Google Search Console 持续监测您内容的搜索收录与排名可见度。"
-      },
-      "learnMore": "了解更多"
+    "proof": {
+      "label": "您将看到什么",
+      "title": "真实诊断，即刻获取",
+      "desc": "输入域名，几分钟内获得完整的技术 SEO + GEO 就绪检测报告——无需账号。",
+      "items": [
+        "技术健康评分（0–100）",
+        "按严重程度排列的排名障碍问题清单",
+        "AI 爬虫（GPTBot、Google-Extended、Claude）能否读取您的网站",
+        "需要立即处理的问题页面"
+      ]
     },
-    "process": {
-      "title": "三步开启 PLG 增长旅程",
-      "steps": [
+    "pain": {
+      "label": "问题所在",
+      "title": "AI 正在重塑谁能被找到",
+      "items": [
         {
-          "title": "输入域名",
-          "desc": "输入您想要优化的网址，我们的探针将立即启动全量扫描。"
+          "title": "AI 引擎直接回答，不再链接来源",
+          "desc": "ChatGPT、Gemini、Perplexity 现在直接回答用户问题——往往不引用任何来源。若您的内容未针对 AI 构建，您将不在结果之列。"
         },
         {
-          "title": "一键注册",
-          "desc": "注册您的账户，体检结果将自动保存至您的个人控制台。"
+          "title": "您的竞争对手正在抢占 AI 引用位",
+          "desc": "现在优化 GEO 信号的企业，将锁定 AI 引用席位。每拖一周，竞争对手就多占一分。"
         },
         {
-          "title": "获取报告",
-          "desc": "在 60 秒内获得深度审计报告与针对性的 AI 优化建议。"
+          "title": "传统 SEO 工具不覆盖 GEO",
+          "desc": "Ahrefs 和 SEMrush 擅长关键词分析，但无法告诉您 AI 爬虫能否索引您的站点，也无法判断您的内容结构是否值得被引用。"
         }
       ]
     },
-    "pricing": {
-      "title": "按需付费，透明增长",
-      "subtitle": "无需高昂订阅。免费起步，仅为您真正使用的工具支付积分。",
-      "cta": "查看定价方案",
-      "features": [
-        "零预付",
-        "即时开通",
-        "积分永不过期"
+    "method": {
+      "label": "新的增长方法",
+      "title": "SEO 让 Google 找到您，GEO 让 AI 引用您。",
+      "desc": "搜索不再只是 Google。ChatGPT、Gemini、Perplexity 合计处理数十亿次查询。在 2026 年赢得搜索，意味着同时在两个维度胜出。",
+      "seo": {
+        "title": "搜索引擎优化 (SEO)",
+        "desc": "技术健康度、内容深度与排名信号，让您登上 Google 首页。"
+      },
+      "geo": {
+        "title": "生成式引擎优化 (GEO)",
+        "desc": "内容结构、结构化数据与 AI 爬虫可达性，让 AI 引擎回答问题时引用您。"
+      }
+    },
+    "steps": {
+      "label": "运作方式",
+      "title": "三步，可量化的增长",
+      "steps": [
+        {
+          "title": "免费体检",
+          "desc": "输入域名，获取完整技术 SEO + GEO 就绪报告——无需账号，无需信用卡。"
+        },
+        {
+          "title": "修复与生产",
+          "desc": "使用 AI 工具修复问题，创作能在 Google 和 AI 搜索中同时排名的内容。"
+        },
+        {
+          "title": "追踪真实数据",
+          "desc": "接入 Google Search Console，追踪真实排名变化——不是虚荣指标。"
+        }
       ]
     },
+    "compare": {
+      "label": "为什么选择 ScaletoTop",
+      "title": "唯一同时覆盖 SEO 与 GEO 的工具",
+      "cols": ["功能", "ScaletoTop", "Ahrefs / SEMrush", "Jasper / Copy.ai"],
+      "rows": [
+        { "feature": "技术 SEO 审计", "us": true, "seoOnly": true, "writingOnly": false },
+        { "feature": "GEO 就绪检测", "us": true, "seoOnly": false, "writingOnly": false },
+        { "feature": "AI 内容生产", "us": true, "seoOnly": false, "writingOnly": true },
+        { "feature": "双语内容（中英文）", "us": true, "seoOnly": false, "writingOnly": false },
+        { "feature": "Google Search Console 追踪", "us": true, "seoOnly": true, "writingOnly": false }
+      ]
+    },
+    "faq": {
+      "label": "常见问题",
+      "title": "您最关心的问题",
+      "items": [
+        {
+          "q": "我已经在做 SEO 了，为什么还要关注 GEO？",
+          "a": "SEO 针对 Google 的排名算法优化。GEO（生成式引擎优化）确保 AI 搜索引擎——ChatGPT、Gemini、Perplexity——在用户提问时能够读取并引用您的内容。两者在 2026 年都不可或缺。"
+        },
+        {
+          "q": "AI 生成的内容会影响我的排名吗？",
+          "a": "Google 奖励真正有帮助、有深度的内容——无论是人工撰写还是 AI 辅助。我们专注于能真实解答问题的内容，正是 Google 和 AI 引擎共同奖励的类型。质量永远优先于数量。"
+        },
+        {
+          "q": "和 Ahrefs 或 Jasper 有什么区别？",
+          "a": "Ahrefs 擅长关键词研究，但不帮您生产内容，也不检测 GEO 就绪度。Jasper 能写内容，但不做站点审计，也不追踪排名。ScaletoTop 将技术审计、AI 内容生产、GEO 信号与 GSC 追踪整合在一起，并支持面向全球市场的中英双语输出。"
+        },
+        {
+          "q": "免费体检是真的免费吗？有什么限制？",
+          "a": "是的，真正免费。我们爬取最多 20 个页面，执行完整的技术 + GEO 检测，并给您完整报告。无需填写邮箱。只有当您需要采取行动时——修复问题、生成内容或追踪排名——才需要创建账号。"
+        }
+      ]
+    },
+    "cta": {
+      "label": "立即开始",
+      "title": "看看什么在阻碍您的增长",
+      "primary": "免费体检我的网站",
+      "secondary": "预约业务咨询"
+    },
     "consultation": {
-      "text": "需要专家为您量身打造方案？",
+      "text": "需要专家为您量身打造增长方案？",
       "cta": "预约业务咨询"
+    },
+    "insights": {
+      "label": "增长洞察",
+      "title": "实战指南与案例"
     }
   },
   "blog": {
@@ -1552,6 +1614,63 @@
       "avgCtr": "平均 CTR",
       "clicksLabel": "点击数",
       "noTrendData": "日均流量较低，GSC 暂不提供按天展示的趋势数据。上方数据为近 30 天汇总。"
+    }
+  },
+  "publicAudit": {
+    "meta": {
+      "title": "免费站点体检 — SEO + GEO 就绪检测 | ScaletoTop",
+      "description": "即刻获取任意网站的免费 SEO 健康评分与 GEO 就绪检测。几分钟内精准定位阻碍搜索排名的问题，无需注册。"
+    },
+    "form": {
+      "label": "输入域名，立即开始",
+      "inputPlaceholder": "您的网址 (e.g. example.com)",
+      "cta": "免费体检我的网站",
+      "microcopy": "无需注册 · 最多 20 个页面 · 零成本"
+    },
+    "scanning": {
+      "discovery": "正在探测站点结构…",
+      "progress": "正在扫描页面…",
+      "geoCheck": "正在检测 AI 爬虫可达性…",
+      "analyzing": "正在分析结果…"
+    },
+    "results": {
+      "title": "{domain} 的体检报告",
+      "pagesScanned": "已扫描 {count} 个页面",
+      "scoreLabel": "SEO 健康评分",
+      "geoLabel": "GEO 就绪度",
+      "geoScore": "GEO 评分",
+      "geoReadyLabel": "AI 爬虫可正常访问您的网站",
+      "geoBlockedLabel": "部分 AI 爬虫被屏蔽",
+      "geoUnknownLabel": "AI 爬虫可达性未知",
+      "issuesTitle": "影响您排名的问题",
+      "noIssuesTitle": "未发现关键问题",
+      "noIssuesDesc": "您的网站通过了核心检测。注册账号后可解锁更深入的分析与内容建议。",
+      "issueCount": "{critical} 个严重 · {warning} 个警告 · {info} 条提示",
+      "aiCrawlersTitle": "AI 爬虫访问状态",
+      "cached": "结果来自缓存（每 5 分钟刷新）",
+      "severity": {
+        "critical": "严重",
+        "warning": "警告",
+        "info": "提示"
+      },
+      "affectsPages": "影响 {count} 个页面",
+      "explanation": "问题说明",
+      "howToFix": "修复方法"
+    },
+    "action": {
+      "title": "准备好修复了吗？",
+      "desc": "诊断永远免费、完全公开。创建免费账号，开始修复问题、生成优化内容，并追踪您的排名变化。",
+      "primary": "注册账号，开始行动",
+      "secondary": "了解工作原理",
+      "fixCta": "注册以修复 →",
+      "generateCta": "注册以生成内容 →",
+      "trackCta": "注册以追踪排名 →"
+    },
+    "error": {
+      "unreachable": "无法访问该网站，请检查域名后重试。",
+      "generic": "体检过程中出现错误，请重试。",
+      "rateLimited": "请求过于频繁，请稍等片刻后重试。",
+      "invalidDomain": "请输入有效的域名（如 example.com）"
     }
   },
   "legal": {},

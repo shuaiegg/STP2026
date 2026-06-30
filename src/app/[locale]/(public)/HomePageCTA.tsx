@@ -5,7 +5,6 @@ import { Link, useRouter } from '@/i18n/navigation';
 import posthog from 'posthog-js';
 import { Button } from '@/components/ui/Button';
 import { Globe, ArrowRight } from 'lucide-react';
-import { useSessionContext } from "@/components/providers/SessionProvider";
 
 export function HeroAuditInput({ 
   placeholder, 
@@ -20,7 +19,6 @@ export function HeroAuditInput({
 }) {
   const [domain, setDomain] = useState('');
   const router = useRouter();
-  const { session } = useSessionContext();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,22 +37,16 @@ export function HeroAuditInput({
     posthog.capture('hero_domain_submitted', {
       domain: cleaned,
       locale: locale,
-      is_logged_in: !!session
     });
 
-    // Save to session storage as secondary backup
+    // Save to session storage so audit result can suggest saving it
     if (typeof window !== 'undefined') {
       window.sessionStorage.setItem('pending_audit_domain', cleaned);
     }
 
-    if (session) {
-      // /dashboard/* 不是 locale 路由——用 window.location 绕过 i18n router 的前缀，
-      // 否则在 /zh 上会变成 /zh/dashboard/onboarding → 404。
-      window.location.href = `/dashboard/onboarding?domain=${encodeURIComponent(cleaned)}`;
-    } else {
-      // /login 是 locale 路由——保留 i18n router，让 zh 用户落到 /zh/login。
-      router.push(`/login?domain=${encodeURIComponent(cleaned)}`);
-    }
+    // Always send to public audit first — no login wall before seeing results.
+    // /audit is locale-routed so i18n router preserves /zh prefix automatically.
+    router.push(`/audit?domain=${encodeURIComponent(cleaned)}`);
   };
 
   return (

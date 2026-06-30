@@ -44,61 +44,123 @@
   },
   "home": {
     "meta": {
-      "title": "Secure Your Traffic Gaps — ScaletoTop Site Intelligence",
-      "description": "Enter your domain for an instant 14-dimension SEO+GEO audit. AI-driven content production and search visibility tracking built for high-growth teams."
+      "title": "Free SEO + GEO Site Audit — ScaletoTop",
+      "description": "Enter your domain for a free, instant site audit. See exactly what’s blocking your search rankings and whether AI engines can find and cite your content."
     },
     "hero": {
-      "title": "Secure Your Traffic Gaps",
-      "subtitle": "Stop guessing. Map your traffic galaxy with 14-dimension semantic audits and close performance gaps with automated AI production.",
-      "inputPlaceholder": "Enter your domain (e.g. example.com)",
-      "cta": "Get Free Audit Report",
-      "microcopy": "60 Seconds · $0 Cost · No Credit Card Required"
+      "title": "Rank in Search. Get Cited by AI.",
+      "subtitle": "Free site audit reveals what’s holding back your rankings — SEO gaps your competitors are exploiting, and whether AI engines can read your content.",
+      "inputPlaceholder": "your-domain.com",
+      "cta": "Audit My Site — Free",
+      "microcopy": "No signup required · Results in ~2 minutes · Zero cost"
     },
-    "pillars": {
-      "diagnosis": {
-        "title": "Diagnosis: Map Your Traffic Galaxy",
-        "desc": "Deep semantic scanning. Identify precisely where your authority is missing and which topics need immediate reinforcement."
-      },
-      "production": {
-        "title": "Production: Content that Ranks",
-        "desc": "AI-powered high-performance content. A purpose-built geo-writer pipeline optimized for global CJK and English markets."
-      },
-      "verification": {
-        "title": "Verification: Proof of Performance",
-        "desc": "Closed-loop performance tracking. Monitor your content’s search ranking and visibility via Google Search Console over time."
-      },
-      "learnMore": "Learn more"
+    "proof": {
+      "label": "What you’ll see",
+      "title": "A real diagnosis, instantly",
+      "desc": "Enter your domain and get a full technical SEO + GEO readiness check in minutes — no account needed.",
+      "items": [
+        "Technical health score (0–100)",
+        "Issues blocking your rankings, ranked by severity",
+        "Whether AI crawlers (GPTBot, Google-Extended, Claude) can read your site",
+        "Pages that need immediate attention"
+      ]
     },
-    "process": {
-      "title": "Three Steps to Growth",
-      "steps": [
+    "pain": {
+      "label": "The problem",
+      "title": "AI is changing who gets found",
+      "items": [
         {
-          "title": "Enter Domain",
-          "desc": "Provide the URL you want to optimize. Our probes start scanning your site structure immediately."
+          "title": "AI engines answer instead of linking",
+          "desc": "ChatGPT, Gemini, and Perplexity now answer your customers’ questions directly — often without citing any source. If your content isn’t structured for AI, you simply don’t appear."
         },
         {
-          "title": "Quick Register",
-          "desc": "Create your account. Your audit results will be automatically saved to your private workbench."
+          "title": "Your competitors are adapting",
+          "desc": "Businesses fixing their GEO signals now will own those AI citation positions. Every week you wait, competitors fill those spots."
         },
         {
-          "title": "Get Report",
-          "desc": "Receive a comprehensive audit report and targeted AI optimization suggestions within 60 seconds."
+          "title": "Standard SEO tools don’t cover GEO",
+          "desc": "Ahrefs and SEMrush are great for keywords. They don’t tell you if AI crawlers can index your site, or if your content structure earns citations."
         }
       ]
     },
-    "pricing": {
-      "title": "Pay-as-you-grow Pricing",
-      "subtitle": "No expensive subscriptions. Start for free and only pay for the tools you actually use.",
-      "cta": "View Pricing",
-      "features": [
-        "$0 Upfront",
-        "Instant Activation",
-        "Credits Never Expire"
+    "method": {
+      "label": "The new playbook",
+      "title": "SEO gets you found in Google. GEO gets you cited by AI.",
+      "desc": "Search is no longer just Google. ChatGPT, Gemini, and Perplexity collectively handle billions of queries. Winning now means being visible in both.",
+      "seo": {
+        "title": "Search Engine Optimization",
+        "desc": "Technical health, content depth, and ranking signals that put you on Google’s first page."
+      },
+      "geo": {
+        "title": "Generative Engine Optimization",
+        "desc": "Content structure, schema markup, and AI crawler access that make you citable when AI engines answer questions in your space."
+      }
+    },
+    "steps": {
+      "label": "How it works",
+      "title": "Three steps to measurable growth",
+      "steps": [
+        {
+          "title": "Audit free",
+          "desc": "Enter your domain. Get a full technical SEO + GEO readiness report — no account, no credit card."
+        },
+        {
+          "title": "Fix and produce",
+          "desc": "Use AI tools to fix what’s broken and create content built to rank in both Google and AI search."
+        },
+        {
+          "title": "Track what matters",
+          "desc": "Connect Google Search Console and watch real ranking improvements — not vanity metrics."
+        }
       ]
     },
+    "compare": {
+      "label": "Why ScaletoTop",
+      "title": "The only tool that covers SEO and GEO together",
+      "cols": ["Feature", "ScaletoTop", "Ahrefs / SEMrush", "Jasper / Copy.ai"],
+      "rows": [
+        { "feature": "Technical SEO audit", "us": true, "seoOnly": true, "writingOnly": false },
+        { "feature": "GEO readiness check", "us": true, "seoOnly": false, "writingOnly": false },
+        { "feature": "AI-assisted content production", "us": true, "seoOnly": false, "writingOnly": true },
+        { "feature": "Bilingual output (EN + ZH)", "us": true, "seoOnly": false, "writingOnly": false },
+        { "feature": "Google Search Console tracking", "us": true, "seoOnly": true, "writingOnly": false }
+      ]
+    },
+    "faq": {
+      "label": "Questions",
+      "title": "Common questions",
+      "items": [
+        {
+          "q": "I already do SEO — why should I care about GEO?",
+          "a": "SEO optimizes for Google’s ranking algorithm. GEO (Generative Engine Optimization) ensures AI search engines — ChatGPT, Gemini, Perplexity — can read and cite your content when users ask questions in your space. Both matter in 2026."
+        },
+        {
+          "q": "Will AI-generated content hurt my rankings?",
+          "a": "Google rewards helpful, in-depth content — regardless of how it was written. We focus on content that genuinely answers real questions, the kind both Google and AI engines reward. Quality over volume."
+        },
+        {
+          "q": "How is this different from Ahrefs or Jasper?",
+          "a": "Ahrefs is excellent for keyword research but doesn’t help you produce content or check GEO readiness. Jasper writes content but doesn’t audit your site. ScaletoTop combines technical audit, AI content production, GEO signals, and GSC tracking — plus bilingual output for global teams."
+        },
+        {
+          "q": "Is the free audit actually free? Any catch?",
+          "a": "Yes — genuinely free. We crawl up to 20 pages, run a full technical + GEO check, and give you the complete report. No email required. An account is only needed when you want to take action: fix issues, generate content, or track rankings over time."
+        }
+      ]
+    },
+    "cta": {
+      "label": "Start now",
+      "title": "See what’s blocking your growth",
+      "primary": "Audit my site for free",
+      "secondary": "Book a consultation"
+    },
     "consultation": {
-      "text": "Need an expert to build your strategy?",
+      "text": "Want an expert to build your growth strategy?",
       "cta": "Book a Consultation"
+    },
+    "insights": {
+      "label": "Insights",
+      "title": "Playbooks & Case Studies"
     }
   },
   "blog": {
@@ -1547,6 +1609,63 @@
       "totalImpr": "Total impressions",
       "avgCtr": "Avg. CTR",
       "clicksLabel": "Clicks"
+    }
+  },
+  "publicAudit": {
+    "meta": {
+      "title": "Free Site Audit — SEO + GEO Readiness | ScaletoTop",
+      "description": "Get a free, instant SEO health score and GEO readiness check for any website. See exactly what's blocking your search rankings in minutes — no signup needed."
+    },
+    "form": {
+      "label": "Enter your domain to get started",
+      "inputPlaceholder": "your-domain.com",
+      "cta": "Audit My Site — Free",
+      "microcopy": "No signup required · Up to 20 pages · Zero cost"
+    },
+    "scanning": {
+      "discovery": "Mapping site structure…",
+      "progress": "Scanning pages…",
+      "geoCheck": "Checking AI crawler access…",
+      "analyzing": "Analyzing results…"
+    },
+    "results": {
+      "title": "Audit report for {domain}",
+      "pagesScanned": "{count} pages scanned",
+      "scoreLabel": "SEO Health Score",
+      "geoLabel": "GEO Readiness",
+      "geoScore": "GEO Score",
+      "geoReadyLabel": "AI crawlers can access your site",
+      "geoBlockedLabel": "Some AI crawlers are blocked",
+      "geoUnknownLabel": "AI crawler access unknown",
+      "issuesTitle": "Issues affecting your rankings",
+      "noIssuesTitle": "No critical issues found",
+      "noIssuesDesc": "Your site passed the core checks. Sign up to unlock deeper analysis and content recommendations.",
+      "issueCount": "{critical} critical · {warning} warnings · {info} info",
+      "aiCrawlersTitle": "AI crawler access",
+      "cached": "Results from cache — refreshes every 5 minutes",
+      "severity": {
+        "critical": "Critical",
+        "warning": "Warning",
+        "info": "Info"
+      },
+      "affectsPages": "Affects {count} pages",
+      "explanation": "Why it matters",
+      "howToFix": "How to fix"
+    },
+    "action": {
+      "title": "Ready to fix it?",
+      "desc": "The diagnosis is free and fully visible. Create a free account to start fixing issues, generating optimized content, and tracking your rankings.",
+      "primary": "Sign up to take action",
+      "secondary": "Learn how it works",
+      "fixCta": "Sign up to fix →",
+      "generateCta": "Sign up to generate content →",
+      "trackCta": "Sign up to track rankings →"
+    },
+    "error": {
+      "unreachable": "We couldn't reach this site. Please check the domain and try again.",
+      "generic": "Something went wrong during the audit. Please try again.",
+      "rateLimited": "Too many requests. Please wait a moment and try again.",
+      "invalidDomain": "Please enter a valid domain (e.g. example.com)"
     }
   },
   "legal": {},
