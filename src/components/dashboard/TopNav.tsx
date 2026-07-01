@@ -63,7 +63,7 @@ export function TopNav({ sites, currentSiteId, user }: TopNavProps) {
 
   const NAV_LINKS = [
     { name: t('library'), href: '/dashboard/library', icon: Library },
-    { name: t('tools'), href: '/dashboard/tools', icon: Zap },
+    { name: t('tools'), href: '/dashboard/tools/geo-writer', icon: Zap },
     { name: t('billing'), href: '/dashboard/billing', icon: BarChart3 },
   ] as const;
 
