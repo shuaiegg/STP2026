@@ -24,14 +24,14 @@ export function consultationConfirmationHtml(name: string, serviceType: string, 
 
             <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
               <p style="margin:0;font-size:14px;color:#15803d;line-height:1.6;">
-                📌 While you wait, you can try <strong>GEO Writer</strong> for free to see the exposure potential of your content in the AI era.
+                📌 While you wait, explore what ScaletoTop can do for your SEO & GEO growth.
               </p>
             </div>
 
             <table cellpadding="0" cellspacing="0"><tr><td>
-              <a href="${APP_URL}/tools/geo-writer"
+              <a href="${APP_URL}/tools"
                  style="display:inline-block;padding:12px 28px;background:#00d4ff;color:#000000;font-size:15px;font-weight:600;text-decoration:none;border-radius:8px;">
-                Try GEO Writer for Free →
+                See platform capabilities →
               </a>
             </td></tr></table>
           </td>
@@ -73,14 +73,14 @@ export function consultationConfirmationHtml(name: string, serviceType: string, 
 
             <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
               <p style="margin:0;font-size:14px;color:#15803d;line-height:1.6;">
-                📌 在等待期间，你可以先免费体验 <strong>GEO Writer</strong>，看看你的内容在 AI 时代的曝光潜力。
+                📌 在等待期间，了解 ScaletoTop 能为您的 SEO 与 GEO 增长做什么。
               </p>
             </div>
 
             <table cellpadding="0" cellspacing="0"><tr><td>
-              <a href="${APP_URL}/tools/geo-writer"
+              <a href="${APP_URL}/zh/tools"
                  style="display:inline-block;padding:12px 28px;background:#00d4ff;color:#000000;font-size:15px;font-weight:600;text-decoration:none;border-radius:8px;">
-                免费体验 GEO Writer →
+                了解平台能力 →
               </a>
             </td></tr></table>
           </td>

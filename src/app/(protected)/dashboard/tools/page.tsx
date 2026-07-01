@@ -23,7 +23,7 @@ const tools = [
     {
         id: 'geo-writer',
         icon: Zap,
-        href: '/tools/geo-writer',
+        href: '/dashboard/tools/geo-writer',
         credits: 15,           // fallback
         skillName: 'GEO_WRITER_FULL',
         status: 'ACTIVE'

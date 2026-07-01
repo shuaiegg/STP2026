@@ -256,7 +256,7 @@ export function ContentAssetBlueprint({ siteId, blueprint, locale, onStrategySwi
                             </div>
                         </div>
                         <Link
-                            href={`${locale === 'zh' ? '/zh' : ''}/tools/geo-writer?keyword=${encodeURIComponent(crownedPillar.topic)}&pillar=${encodeURIComponent(crownedPillar.topic)}&siteId=${encodeURIComponent(siteId)}`}
+                            href={`/dashboard/tools/geo-writer?keyword=${encodeURIComponent(crownedPillar.topic)}&pillar=${encodeURIComponent(crownedPillar.topic)}&siteId=${encodeURIComponent(siteId)}`}
                             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-secondary text-white text-xs font-bold hover:opacity-90 transition-opacity shrink-0"
                             aria-label={`${t('writeCta')}: ${crownedPillar.topic}`}
                         >
@@ -397,7 +397,7 @@ function PillarRow({ pillar, siteId, locale, isExpanded, isCrewned, onToggle, t 
         if (hasProofGap) {
             return (
                 <Link
-                    href={`${locale === 'zh' ? '/zh' : ''}/tools/geo-writer?keyword=${encodeURIComponent(topic)}&pillar=${encodeURIComponent(topic)}&siteId=${encodeURIComponent(siteId)}`}
+                    href={`/dashboard/tools/geo-writer?keyword=${encodeURIComponent(topic)}&pillar=${encodeURIComponent(topic)}&siteId=${encodeURIComponent(siteId)}`}
                     onClick={(e) => e.stopPropagation()}
                     className={`${cls} text-brand-warning border-brand-warning/30 hover:bg-brand-warning/10`}
                     aria-label={`${t('proofGapAction')}: ${topic}`}
@@ -424,7 +424,7 @@ function PillarRow({ pillar, siteId, locale, isExpanded, isCrewned, onToggle, t 
         // uncovered → write
         return (
             <Link
-                href={`${locale === 'zh' ? '/zh' : ''}/tools/geo-writer?keyword=${encodeURIComponent(topic)}&pillar=${encodeURIComponent(topic)}&siteId=${encodeURIComponent(siteId)}`}
+                href={`/dashboard/tools/geo-writer?keyword=${encodeURIComponent(topic)}&pillar=${encodeURIComponent(topic)}&siteId=${encodeURIComponent(siteId)}`}
                 onClick={(e) => e.stopPropagation()}
                 className={`${cls} text-brand-secondary border-brand-secondary/30 hover:bg-brand-secondary/10`}
                 aria-label={`${t('writeAction')}: ${topic}`}

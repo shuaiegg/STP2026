@@ -117,7 +117,7 @@ export default async function ArticleLibraryPage() {
                     <p className="text-slate-400 max-w-sm mb-8 font-medium">
                         {t('emptyDesc')}
                     </p>
-                    <Link href="/tools/geo-writer">
+                    <Link href="/dashboard/tools/geo-writer">
                         <Button className="font-black px-10 py-7 bg-brand-primary text-white border-2 border-black shadow-[6px_6px_0_0_rgba(10,10,10,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all">
                             {t('emptyCta')} <ExternalLink className="ml-2" size={18} />
                         </Button>

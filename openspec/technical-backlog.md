@@ -155,9 +155,9 @@
 - **根因待办**：autoVisuals 不应把临时占位图（loremflickr）写进**发布**内容——应生成真实图（MinIO 上传）或在发布前替换/剔除占位图。独立排期。
 
 ### 🎨 geo-writer 全文件 i18n + token 归正（2026-06-25 发现）
-- `src/app/[locale]/(public)/tools/geo-writer/page.tsx` 是**公开双语页**（`[locale]` 路由），但全文件 **121 处 `slate-*` 硬编码色 + 0 处 i18n**（无 `useTranslations`、无 COPY 对象，文案全内联中文）→ **EN 用户访问该工具看到的是中文**，且违反 token 纪律。
-- 来源：P2 站点选择器审查时发现是文件级既有债（新加的选择器只是随了大流，故未做局部补丁）。
-- 建议：对该文件单独跑一次 `/normalize`（slate → `--color-brand-*`）+ 文案抽取到 next-intl messages（zh/en）。工作量中等（121 处色 + 全量文案），独立排期。
+- **背景变更**（`tools-placement-and-access`，2026-07-01）：geo-writer 已搬进 dashboard（`/dashboard/tools/geo-writer`），不再是公开双语页，i18n 路由问题不再适用（dashboard 单语中文）。但仍有：
+  - **121 处 `slate-*` 硬编码色**：违反 token 纪律，待 `/normalize` 归正。独立排期（deferred）。
+  - **文案全内联中文**：dashboard 版 locale 由 `User.locale` 决定，EN 用户写 EN 内容时界面仍是中文。待 i18n 化（deferred，低优先）。
 - 对比参考：`library/edit/[id]/LibraryEditor.tsx` 已部分迁移（有 COPY + useTranslations，但仍残留 ~19 处 slate），可一并归正。
 
 ### 🧹 技术卫生（2026-06-25 记录）
@@ -225,5 +225,5 @@
 
 ### 📌 closed-content-loop 审计衍生（2026-06-29）
 - **"我们博客发布免回填"正经做法(deferred)**:需存 Content↔TrackedArticle 的可靠关联(如 TrackedArticle.sourceContentId),发布时按 id 精确回填 + 仅对"确为我们博客发布"的内容生效。已移除按全局标题的孤儿匹配(跨用户写入风险)。
-- **geo-writer "保存为博客草稿" 对普通用户应隐藏**:`saveToBlogDraft` 是 ADMIN-only,普通用户点了只会 Unauthorized。公开工具页该按角色隐藏此按钮,或明确仅 admin 可见。
+- ~~**geo-writer "保存为博客草稿" 对普通用户应隐藏**~~:✅ 已完成（`tools-placement-and-access`）— 按钮已有 `role==='ADMIN'` 检查，且 geo-writer 已整体搬进 dashboard（仅登录用户可访问）。
 - **slug 已就近修**:blog-draft 原来每篇无条件加 5 位随机后缀 → 改为"同 locale 冲突才加后缀",URL 干净。
