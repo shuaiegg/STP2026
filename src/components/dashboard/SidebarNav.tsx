@@ -142,9 +142,10 @@ export function SidebarNav({ sites, currentSiteId, user }: SidebarNavProps) {
     },
     {
       name: t('produce'),
-      href: '/dashboard/tools',
+      // 只有一个生产工具 → 直达写作，不经工具中转页
+      href: '/dashboard/tools/geo-writer',
       icon: Zap,
-      // 仅工具页高亮"生产"；内容库是独立次级项，由其自身高亮（避免双高亮）
+      // 内容库是独立次级项，由其自身高亮（避免双高亮）
       isActive: pathname.startsWith('/dashboard/tools'),
     },
     {
