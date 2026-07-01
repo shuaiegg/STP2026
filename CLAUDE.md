@@ -40,7 +40,7 @@ When implementing or modifying any page, component, or UI element, verify ALL of
 
 ### Tokens & Colors
 - [ ] All colors use `--color-brand-*` CSS variables or Tailwind `brand-*` classes — no hardcoded hex values in JSX/CSS
-- [ ] Primary interactive elements (buttons, links, active states) use `brand-secondary` (`#00d4ff`)
+- [ ] Primary interactive elements (buttons, links, active states) use `brand-secondary` (`#10b981` emerald — the live UI accent; `#00d4ff` cyan is retired, it survives only as the logo-gradient end color, not as an interactive color)
 - [ ] No usage of removed utility classes: `.border-brutalist`, `.border-brutalist-sm`, `.border-brutalist-accent`, `.brutalist-hover`, `.bg-gradient-brand`, `.text-gradient-brand`
 - [ ] Logo gradient (`linear-gradient(135deg, #00ff88, #00d4ff)`) appears ONLY on the logo mark — not on buttons, backgrounds, or decorative elements
 
