@@ -62,7 +62,7 @@ import posthog from 'posthog-js';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSessionContext } from '@/components/providers/SessionProvider';
 
-function GEOWriterPageContent() {
+export function GEOWriterPageContent({ isDashboard = false }: { isDashboard?: boolean }) {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { session } = useSessionContext();
@@ -147,6 +147,16 @@ function GEOWriterPageContent() {
             if (siteIdParam) setFromBlueprintSiteId(siteIdParam);
         }
     }, [searchParams]);
+
+    // Dashboard: sync form.locale from User.locale on first load
+    useEffect(() => {
+        if (!isDashboard) return;
+        const userLocale = (session?.user as any)?.locale;
+        if (userLocale === 'en' || userLocale === 'zh') {
+            setForm(prev => ({ ...prev, locale: userLocale }));
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isDashboard, (session?.user as any)?.id]);
 
     const fetchRealMetadata = async (generatedContent: string, forcedTitle?: string) => {
         setIsLoadingMetadata(true);
@@ -845,10 +855,10 @@ function GEOWriterPageContent() {
     );
 
     return (
-        <div className="container mx-auto py-16 px-6 max-w-7xl min-h-[90vh]">
+        <div className={isDashboard ? "min-h-[70vh]" : "container mx-auto py-16 px-6 max-w-7xl min-h-[90vh]"}>
             {renderStepIndicator()}
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            <div className={`grid grid-cols-1 lg:grid-cols-12 ${isDashboard ? 'gap-6 lg:gap-8' : 'gap-12'}`}>
                 {/* Left Side: Controls */}
                 <div className="lg:col-span-4">
                     {step === 1 && (
@@ -890,6 +900,7 @@ function GEOWriterPageContent() {
                                     />
                                 </div>
 
+                                {!isDashboard && (
                                 <div className="space-y-2">
                                     <label className="text-sm font-bold text-brand-text-primary flex items-center gap-2">
                                         <LinkIcon size={16} className="text-brand-secondary" />
@@ -902,6 +913,7 @@ function GEOWriterPageContent() {
                                         className="w-full bg-white border-2 border-brand-border p-4 outline-none focus:border-brand-primary transition-all text-sm rounded-xl shadow-sm"
                                     />
                                 </div>
+                                )}
 
                                 {userSites.length > 0 && (
                                     <div className="space-y-2">

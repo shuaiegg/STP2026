@@ -138,7 +138,7 @@ function SortableArticle({ article, index, isDragging: isOverlay }: { article: P
                     ) : null}
 
                     {article.status !== 'COMPLETED' && (
-                        <Link href={`/tools/geo-writer?keyword=${encodeURIComponent(article.keyword)}&title=${encodeURIComponent(article.title)}&language=${encodeURIComponent(article.language)}&plannedArticleId=${article.id}`}>
+                        <Link href={`/dashboard/tools/geo-writer?keyword=${encodeURIComponent(article.keyword)}&title=${encodeURIComponent(article.title)}&language=${encodeURIComponent(article.language)}&plannedArticleId=${article.id}`}>
                             <Button onClick={handleStartWriting} size="sm" variant="ghost" className={`h-7 text-[10px] font-black tracking-widest px-2 ${article.status === 'REFACTORING_NEEDED' ? 'text-rose-600 hover:bg-rose-50' : 'text-brand-primary hover:bg-brand-primary/10'}`}>
                                 {article.status === 'REFACTORING_NEEDED' ? t('article.optimizeNow') : t('article.aiWrite')} <Zap size={10} className="ml-1" />
                             </Button>

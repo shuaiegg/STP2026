@@ -117,13 +117,43 @@
     "compare": {
       "label": "为什么选择 ScaletoTop",
       "title": "唯一同时覆盖 SEO 与 GEO 的工具",
-      "cols": ["功能", "ScaletoTop", "Ahrefs / SEMrush", "Jasper / Copy.ai"],
+      "cols": [
+        "功能",
+        "ScaletoTop",
+        "Ahrefs / SEMrush",
+        "Jasper / Copy.ai"
+      ],
       "rows": [
-        { "feature": "技术 SEO 审计", "us": true, "seoOnly": true, "writingOnly": false },
-        { "feature": "GEO 就绪检测", "us": true, "seoOnly": false, "writingOnly": false },
-        { "feature": "AI 内容生产", "us": true, "seoOnly": false, "writingOnly": true },
-        { "feature": "双语内容（中英文）", "us": true, "seoOnly": false, "writingOnly": false },
-        { "feature": "Google Search Console 追踪", "us": true, "seoOnly": true, "writingOnly": false }
+        {
+          "feature": "技术 SEO 审计",
+          "us": true,
+          "seoOnly": true,
+          "writingOnly": false
+        },
+        {
+          "feature": "GEO 就绪检测",
+          "us": true,
+          "seoOnly": false,
+          "writingOnly": false
+        },
+        {
+          "feature": "AI 内容生产",
+          "us": true,
+          "seoOnly": false,
+          "writingOnly": true
+        },
+        {
+          "feature": "双语内容（中英文）",
+          "us": true,
+          "seoOnly": false,
+          "writingOnly": false
+        },
+        {
+          "feature": "Google Search Console 追踪",
+          "us": true,
+          "seoOnly": true,
+          "writingOnly": false
+        }
       ]
     },
     "faq": {
@@ -242,38 +272,60 @@
   },
   "tools": {
     "meta": {
-      "title": "出海营销工具箱 | ScaletoTop",
-      "description": "AI 驱动的出海营销工具集：多语言内容生成、站点 SEO 分析、市场竞争情报，一站式提升海外获客效率。"
+      "title": "出海 SEO 与 GEO 工具集 | ScaletoTop",
+      "description": "GEO 内容写作、站点审计、竞品情报、AI 收录追踪——驱动自然流量增长的完整能力套件。"
     },
-    "title": "数字化效率工具包",
-    "intro": "为出海团队打造的自动化工具，将重复工作流程化，助力每一个决策都可量化、可追踪。",
-    "howToUse": "💡 怎么用：",
-    "items": [
+    "hero": {
+      "tag": "平台能力",
+      "title": "您的 SEO 与 GEO 增长，全流程所需能力",
+      "sub": "ScaletoTop 将 AI 内容写作、站点智能与增长教练打通成一个闭环——从关键词研究到排名验证，一站搞定。",
+      "cta": "免费注册",
+      "ctaFree": "免费站点诊断"
+    },
+    "capabilities": [
       {
-        "name": "SEO & GEO 写作优化器",
-        "description": "基于 Google 地图数据与本地 SEO 算法，一键生成针对特定地理位置的高转化 B2B 文案。",
-        "useCase": "您可以用它快速生成多个城市的本地化服务页内容，批量获取高意向的本地长尾搜索流量。",
-        "cost": "50 积分 / 次",
-        "badge": "热门",
-        "cta": "立即使用"
+        "title": "GEO 内容写作",
+        "body": "实时抓取 SERP 数据、拆解竞品大纲，生成同时针对传统搜索与 AI 引用优化的长内容。一次运行，产出一篇有引力的草稿。",
+        "badge": "仪表盘内",
+        "note": "需要免费账号"
       },
       {
-        "name": "Google Maps 潜在客户采集",
-        "description": "深度采集全球各地区的 B2B 客户信息，包含电话、网站、社交媒体及地理位置。",
-        "useCase": "您可以用它一键批量获取目标市场经销商或客户的精准联系方式，用于冷邮件或跟进开发。",
-        "cost": "50 积分 / 次",
-        "badge": "Beta",
-        "cta": "申请测试"
+        "title": "即时站点诊断",
+        "body": "数分钟内扫描任意域名的技术 SEO、内容质量和 GEO 就绪度，返回评分报告与可执行修复清单。首次诊断完全免费。",
+        "badge": "免费",
+        "note": "无需注册"
       },
       {
-        "name": "出海独立站健康诊断",
-        "description": "全方位扫描独立站的加载速度、SEO 基准、以及移动端适配情况，并提供优化方案。",
-        "useCase": "您可以用它在上线前检查网站是否符合 Google 技术规范，排查影响排名的致命隐患。",
-        "cost": "免费",
-        "badge": "研发中",
-        "cta": "加入等候名单"
+        "title": "竞品情报",
+        "body": "发现头部竞品的排名关键词、内容结构，以及您最快能超越他们的机会点。所有数据实时拉取，不依赖历史快照。",
+        "badge": "仪表盘内",
+        "note": ""
+      },
+      {
+        "title": "内容策略板",
+        "body": "将关键词机会转化为出版计划的 Kanban 看板，每张卡片直连 AI 写作，一键生成对应文章，闭环无需跳转。",
+        "badge": "仪表盘内",
+        "note": ""
+      },
+      {
+        "title": "AI 收录追踪",
+        "body": "文章发布后，粘贴 URL 即可验证它是否被 ChatGPT、Perplexity、Gemini 等 AI 模型引用，持续追踪您的 GEO 曝光足迹。",
+        "badge": "仪表盘内",
+        "note": ""
+      },
+      {
+        "title": "增长激活教练",
+        "body": "持续分析您的站点数据，告诉您下一步最优先的行动——并提供一键直达各功能的入口，让每个诊断都能落地执行。",
+        "badge": "仪表盘内",
+        "note": ""
       }
-    ]
+    ],
+    "footer": {
+      "title": "从免费诊断开始，用完整工作流留下来",
+      "body": "无需信用卡，2 分钟内完成站点诊断，再按自己的节奏探索完整平台。",
+      "cta": "免费注册",
+      "ctaFree": "立即免费诊断 →"
+    }
   },
   "consultation": {
     "meta": {
@@ -1444,7 +1496,7 @@
       "saveError": "保存过程中出现异常",
       "titlePlaceholder": "文章标题...",
       "saving": "正在加固中...",
-      "submitSave": "提交修改并入库",
+      "submitSave": "保存",
       "radarTitle": "实时内容健康度 (Radar)",
       "radarNote": "“杰克，目前的文本读起来非常像真人撰写。如果您继续增加案例研究，GEO 权重还会进一步提升。”",
       "coreKeywords": "核心关键词",

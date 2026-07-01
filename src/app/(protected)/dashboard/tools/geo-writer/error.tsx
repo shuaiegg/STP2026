@@ -1,0 +1,33 @@
+'use client';
+
+import { useEffect } from 'react';
+import { Button } from '@/components/ui/Button';
+import { AlertCircle, RefreshCcw } from 'lucide-react';
+
+export default function Error({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  useEffect(() => {
+    console.error(error);
+  }, [error]);
+
+  return (
+    <div role="alert" className="flex flex-col items-center justify-center min-h-[400px] p-6 text-center space-y-6">
+      <div className="w-16 h-16 rounded-full bg-brand-error/10 flex items-center justify-center text-brand-error">
+        <AlertCircle size={32} aria-hidden="true" />
+      </div>
+      <div className="space-y-2">
+        <h2 className="text-xl font-bold font-display text-brand-text-primary">工具加载失败</h2>
+        <p className="text-sm text-brand-text-secondary max-w-xs mx-auto">出了点问题，请重试。</p>
+      </div>
+      <Button onClick={() => reset()} className="flex items-center gap-2">
+        <RefreshCcw size={18} aria-hidden="true" />
+        重试
+      </Button>
+    </div>
+  );
+}

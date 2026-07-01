@@ -489,7 +489,7 @@ export function ConsultationForm() {
           <p className="text-brand-text-secondary max-w-sm mx-auto leading-relaxed">{t('successBody')}</p>
         </div>
         <Link
-          href="/tools/geo-writer"
+          href="/tools"
           className="inline-flex items-center gap-2 bg-brand-secondary text-black font-semibold px-6 py-3 rounded-lg hover:bg-brand-secondary/90 transition-colors"
         >
           {t('successCta')}

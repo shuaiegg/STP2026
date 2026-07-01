@@ -173,7 +173,7 @@ export const COACH_MOVES_REGISTRY: MoveDefinition[] = [
             en: `Turn your ${ev.publishedCount ?? 0} best articles into LinkedIn / Twitter posts.`,
         }),
         humanCTA: { zh: '去分发', en: 'Distribute' },
-        deepLink: '/tools/geo-writer',
+        deepLink: '/dashboard/tools/geo-writer',
         detect: (ctx) => ({
             eligible: ctx.publishedCount >= 3,
             evidence: { publishedCount: ctx.publishedCount },

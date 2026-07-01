@@ -117,13 +117,43 @@
     "compare": {
       "label": "Why ScaletoTop",
       "title": "The only tool that covers SEO and GEO together",
-      "cols": ["Feature", "ScaletoTop", "Ahrefs / SEMrush", "Jasper / Copy.ai"],
+      "cols": [
+        "Feature",
+        "ScaletoTop",
+        "Ahrefs / SEMrush",
+        "Jasper / Copy.ai"
+      ],
       "rows": [
-        { "feature": "Technical SEO audit", "us": true, "seoOnly": true, "writingOnly": false },
-        { "feature": "GEO readiness check", "us": true, "seoOnly": false, "writingOnly": false },
-        { "feature": "AI-assisted content production", "us": true, "seoOnly": false, "writingOnly": true },
-        { "feature": "Bilingual output (EN + ZH)", "us": true, "seoOnly": false, "writingOnly": false },
-        { "feature": "Google Search Console tracking", "us": true, "seoOnly": true, "writingOnly": false }
+        {
+          "feature": "Technical SEO audit",
+          "us": true,
+          "seoOnly": true,
+          "writingOnly": false
+        },
+        {
+          "feature": "GEO readiness check",
+          "us": true,
+          "seoOnly": false,
+          "writingOnly": false
+        },
+        {
+          "feature": "AI-assisted content production",
+          "us": true,
+          "seoOnly": false,
+          "writingOnly": true
+        },
+        {
+          "feature": "Bilingual output (EN + ZH)",
+          "us": true,
+          "seoOnly": false,
+          "writingOnly": false
+        },
+        {
+          "feature": "Google Search Console tracking",
+          "us": true,
+          "seoOnly": true,
+          "writingOnly": false
+        }
       ]
     },
     "faq": {
@@ -242,38 +272,60 @@
   },
   "tools": {
     "meta": {
-      "title": "International Marketing Toolbox | ScaletoTop",
-      "description": "AI-powered tools for international marketing: multilingual content generation, site SEO analysis, and competitive intelligence — everything you need to acquire customers abroad."
+      "title": "AI SEO & GEO Tools | ScaletoTop",
+      "description": "GEO content writing, site audit, competitor intelligence, and AI citation tracking — the full capability suite for growing organic visibility."
     },
-    "title": "The growth efficiency toolkit",
-    "intro": "Automation tools built for global-facing teams. Turn repetitive work into pipelines and make every decision measurable and traceable.",
-    "howToUse": "💡 How to use:",
-    "items": [
+    "hero": {
+      "tag": "Platform Capabilities",
+      "title": "Every capability your SEO & GEO workflow needs",
+      "sub": "ScaletoTop connects AI writing, site intelligence, and growth coaching into one closed loop — from keyword research to verified rankings.",
+      "cta": "Create your free account",
+      "ctaFree": "Run a free site audit"
+    },
+    "capabilities": [
       {
-        "name": "SEO & GEO Writing Optimizer",
-        "description": "Generate high-converting, location-targeted B2B copy in one click, powered by Google Maps data and local SEO algorithms.",
-        "useCase": "Spin up localized service pages for multiple cities and capture high-intent local long-tail search traffic at scale.",
-        "cost": "50 credits / run",
-        "badge": "Popular",
-        "cta": "Use now"
+        "title": "GEO Content Writer",
+        "body": "Researches live SERP data, deconstructs competitors’ structure, then writes long-form content calibrated for both traditional search and AI citation. One run produces a draft that earns links.",
+        "badge": "In your dashboard",
+        "note": "Requires a free account"
       },
       {
-        "name": "Google Maps Lead Finder",
-        "description": "Collect B2B prospect data across global regions — phone numbers, websites, social profiles, and locations.",
-        "useCase": "Pull accurate contact lists of distributors or prospects in your target market for cold outreach and follow-up.",
-        "cost": "50 credits / run",
-        "badge": "Beta",
-        "cta": "Request access"
+        "title": "Instant Site Audit",
+        "body": "Scan any domain in minutes for tech SEO, content quality, and GEO-readiness. Get a scored report with an actionable fix list — the first audit is free.",
+        "badge": "Free",
+        "note": "No account required"
       },
       {
-        "name": "Site Health Audit",
-        "description": "Scan loading speed, SEO baselines, and mobile readiness across your site, with an actionable fix list.",
-        "useCase": "Verify your site meets Google's technical guidelines before launch and catch ranking-killers early.",
-        "cost": "Free",
-        "badge": "In development",
-        "cta": "Join waitlist"
+        "title": "Competitor Intelligence",
+        "body": "Surface what your top competitors rank for, how their content is structured, and where you have the fastest opportunity to outrank them.",
+        "badge": "In your dashboard",
+        "note": ""
+      },
+      {
+        "title": "Content Strategy Board",
+        "body": "A Kanban board that turns your keyword opportunities into a publishing plan — with AI writing directly connected to each card.",
+        "badge": "In your dashboard",
+        "note": ""
+      },
+      {
+        "title": "AI Citation Tracker",
+        "body": "After publishing, paste your URL and we verify whether it is being cited by AI models (ChatGPT, Perplexity, Gemini). Track your GEO footprint over time.",
+        "badge": "In your dashboard",
+        "note": ""
+      },
+      {
+        "title": "Growth Activation Coach",
+        "body": "A persistent layer that reads your site data and tells you what to do next — with one-click actions into every other capability in the platform.",
+        "badge": "In your dashboard",
+        "note": ""
       }
-    ]
+    ],
+    "footer": {
+      "title": "Start with a free audit, stay for the workflow",
+      "body": "No credit card required. Run a site audit on your domain in under 2 minutes, then explore the full platform at your own pace.",
+      "cta": "Create your free account",
+      "ctaFree": "Run a free site audit →"
+    }
   },
   "consultation": {
     "meta": {
@@ -1440,7 +1492,7 @@
       "saveError": "An error occurred while saving",
       "titlePlaceholder": "Article title...",
       "saving": "Saving...",
-      "submitSave": "Submit & save to library",
+      "submitSave": "Save",
       "radarTitle": "Live content health (Radar)",
       "radarNote": "Jack, the text currently reads very much like a human wrote it. Add more case studies and the GEO weight will climb further.",
       "coreKeywords": "Core keywords",

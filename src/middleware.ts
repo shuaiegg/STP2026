@@ -40,6 +40,14 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL(newPath, request.url), 301);
     }
 
+    // 1.5 /tools/geo-writer (+ /zh/tools/geo-writer) → /tools (301)
+    if (pathname === '/tools/geo-writer' || pathname.startsWith('/tools/geo-writer/')) {
+        return NextResponse.redirect(new URL('/tools', request.url), 301);
+    }
+    if (pathname === '/zh/tools/geo-writer' || pathname.startsWith('/zh/tools/geo-writer/')) {
+        return NextResponse.redirect(new URL('/zh/tools', request.url), 301);
+    }
+
     // --- 2. Protected app routes (no locale segment, skip intl) ---
 
     if (pathname.startsWith('/dashboard')) {
